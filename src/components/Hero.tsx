@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
@@ -108,8 +109,8 @@ const Hero: React.FC = () => {
           }} />
             
             <motion.img 
-              src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800" 
-              alt="Linok.me Mobile Store Preview" 
+              src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&w=800" 
+              alt="Person working on laptop" 
               className="w-full h-auto rounded-3xl shadow-2xl relative z-10" 
               initial={{
                 y: 20
