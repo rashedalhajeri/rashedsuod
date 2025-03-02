@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Menu, X, ChevronDown, LogIn, UserPlus } from "lucide-react";
+import { Menu, X, ChevronDown, LogIn, UserPlus, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -26,6 +26,8 @@ const Header: React.FC = () => {
   const [domainName, setDomainName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isSignupLoading, setIsSignupLoading] = useState(false);
+  const [isDomainAvailable, setIsDomainAvailable] = useState<boolean | null>(null);
+  const [isDomainChecking, setIsDomainChecking] = useState(false);
   
   // Kuwait is the default country and currency
   const country = "Kuwait";
@@ -38,6 +40,40 @@ const Header: React.FC = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+  
+  // Check domain availability when domain name changes
+  useEffect(() => {
+    const checkDomainAvailability = async () => {
+      if (domainName.trim() === '') {
+        setIsDomainAvailable(null);
+        return;
+      }
+      
+      setIsDomainChecking(true);
+      try {
+        const { data, error } = await supabase.rpc('check_domain_availability', {
+          domain: domainName.trim()
+        });
+        
+        if (error) throw error;
+        setIsDomainAvailable(data);
+      } catch (error) {
+        console.error('Error checking domain availability:', error);
+        setIsDomainAvailable(null);
+      } finally {
+        setIsDomainChecking(false);
+      }
+    };
+    
+    // Use debounce to avoid too many API calls
+    const debounceTimeout = setTimeout(() => {
+      if (domainName) {
+        checkDomainAvailability();
+      }
+    }, 500);
+    
+    return () => clearTimeout(debounceTimeout);
+  }, [domainName]);
   
   const toggleLanguage = () => {
     setLanguage(prev => prev === "ar" ? "en" : "ar");
@@ -79,6 +115,11 @@ const Header: React.FC = () => {
     
     if (!email || !password || !storeName || !domainName || !phoneNumber) {
       toast.error(language === "ar" ? "الرجاء تعبئة جميع الحقول المطلوبة" : "Please fill in all required fields");
+      return;
+    }
+    
+    if (isDomainAvailable === false) {
+      toast.error(language === "ar" ? "اسم النطاق غير متاح، الرجاء اختيار اسم آخر" : "Domain name is not available, please choose another one");
       return;
     }
     
@@ -131,6 +172,14 @@ const Header: React.FC = () => {
     } finally {
       setIsSignupLoading(false);
     }
+  };
+  
+  // Helper function to determine domain input class
+  const getDomainInputClass = () => {
+    if (isDomainChecking) return "border-yellow-300 focus:border-yellow-400";
+    if (isDomainAvailable === true) return "border-green-300 focus:border-green-400";
+    if (isDomainAvailable === false) return "border-red-300 focus:border-red-400";
+    return "border-gray-300 focus:border-primary-500";
   };
   
   return (
@@ -234,9 +283,9 @@ const Header: React.FC = () => {
             </DialogTitle>
           </DialogHeader>
           
-          <form onSubmit={handleLogin} className="space-y-4 p-4 rtl">
+          <form onSubmit={handleLogin} className="space-y-5 p-5 rtl">
             <div>
-              <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 mb-1.5">
                 {language === "ar" ? "البريد الإلكتروني" : "Email"}
               </label>
               <input
@@ -244,13 +293,13 @@ const Header: React.FC = () => {
                 type="email"
                 value={loginEmail}
                 onChange={(e) => setLoginEmail(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
                 required
               />
             </div>
             
             <div>
-              <label htmlFor="login-password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="login-password" className="block text-sm font-medium text-gray-700 mb-1.5">
                 {language === "ar" ? "كلمة المرور" : "Password"}
               </label>
               <input
@@ -258,7 +307,7 @@ const Header: React.FC = () => {
                 type="password"
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
                 required
               />
             </div>
@@ -294,16 +343,16 @@ const Header: React.FC = () => {
       
       {/* Signup Dialog */}
       <Dialog open={signupOpen} onOpenChange={setSignupOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-center text-xl font-bold">
               {language === "ar" ? "إنشاء متجر جديد" : "Create a New Store"}
             </DialogTitle>
           </DialogHeader>
           
-          <form onSubmit={handleSignUp} className="space-y-4 p-4 rtl">
+          <form onSubmit={handleSignUp} className="space-y-5 p-5 rtl">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
                 {language === "ar" ? "البريد الإلكتروني" : "Email"}
               </label>
               <input
@@ -311,13 +360,13 @@ const Header: React.FC = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
                 required
               />
             </div>
             
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
                 {language === "ar" ? "كلمة المرور" : "Password"}
               </label>
               <input
@@ -325,13 +374,14 @@ const Header: React.FC = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                minLength={6}
                 required
               />
             </div>
             
             <div>
-              <label htmlFor="storeName" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="storeName" className="block text-sm font-medium text-gray-700 mb-1.5">
                 {language === "ar" ? "اسم المتجر" : "Store Name"}
               </label>
               <input
@@ -339,69 +389,99 @@ const Header: React.FC = () => {
                 type="text"
                 value={storeName}
                 onChange={(e) => setStoreName(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
                 required
               />
             </div>
             
             <div>
-              <label htmlFor="domainName" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="domainName" className="block text-sm font-medium text-gray-700 mb-1.5">
                 {language === "ar" ? "اسم النطاق" : "Domain Name"}
               </label>
               <div className="flex items-center">
-                <input
-                  id="domainName"
-                  type="text"
-                  value={domainName}
-                  onChange={(e) => setDomainName(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-r-md focus:ring-primary-500 focus:border-primary-500"
-                  required
-                />
-                <span className="bg-gray-100 px-3 py-2 border border-gray-300 border-r-0 rounded-l-md text-gray-500">.linok.me</span>
+                <div className="relative flex-grow">
+                  <input
+                    id="domainName"
+                    type="text"
+                    value={domainName}
+                    onChange={(e) => setDomainName(e.target.value)}
+                    className={`w-full px-4 py-2.5 border ${getDomainInputClass()} rounded-r-md focus:ring-primary-500`}
+                    required
+                  />
+                  {domainName && !isDomainChecking && (
+                    <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                      {isDomainAvailable === true && <CheckCircle2 className="h-5 w-5 text-green-500" />}
+                      {isDomainAvailable === false && <XCircle className="h-5 w-5 text-red-500" />}
+                    </div>
+                  )}
+                </div>
+                <span className="bg-gray-100 px-3 py-2.5 border border-gray-300 border-r-0 rounded-l-md text-gray-500">.linok.me</span>
               </div>
+              {domainName && (
+                <p className="mt-1 text-sm">
+                  {isDomainChecking && (
+                    <span className="text-yellow-600">
+                      {language === "ar" ? "جاري التحقق..." : "Checking availability..."}
+                    </span>
+                  )}
+                  {!isDomainChecking && isDomainAvailable === true && (
+                    <span className="text-green-600">
+                      {language === "ar" ? "متاح للاستخدام" : "Available"}
+                    </span>
+                  )}
+                  {!isDomainChecking && isDomainAvailable === false && (
+                    <span className="text-red-600">
+                      {language === "ar" ? "غير متاح، يرجى اختيار اسم آخر" : "Not available, please choose another name"}
+                    </span>
+                  )}
+                </p>
+              )}
             </div>
             
             <div>
-              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1.5">
                 {language === "ar" ? "رقم الهاتف" : "Phone Number"}
               </label>
               <div className="flex items-center">
-                <span className="bg-gray-100 px-3 py-2 border border-gray-300 border-l-0 rounded-r-md text-gray-500">+965</span>
+                <span className="bg-gray-100 px-3 py-2.5 border border-gray-300 border-l-0 rounded-r-md text-gray-500">+965</span>
                 <input
                   id="phoneNumber"
                   type="tel"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-l-md focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-l-md focus:ring-primary-500 focus:border-primary-500"
                   required
                 />
               </div>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 {language === "ar" ? "الدولة والعملة" : "Country and Currency"}
               </label>
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={country}
-                  className="w-1/2 px-4 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-500"
+                  className="w-1/2 px-4 py-2.5 bg-gray-100 border border-gray-300 rounded-md text-gray-500"
                   disabled
                 />
                 <input
                   type="text"
                   value={currency}
-                  className="w-1/2 px-4 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-500"
+                  className="w-1/2 px-4 py-2.5 bg-gray-100 border border-gray-300 rounded-md text-gray-500"
                   disabled
                 />
               </div>
+              <p className="mt-1 text-xs text-gray-500">
+                {language === "ar" ? "حالياً متوفر فقط في الكويت" : "Currently only available in Kuwait"}
+              </p>
             </div>
             
             <button
               type="submit"
               className="w-full btn-primary"
-              disabled={isSignupLoading}
+              disabled={isSignupLoading || isDomainAvailable === false}
             >
               {isSignupLoading 
                 ? (language === "ar" ? "جاري إنشاء الحساب..." : "Creating account...") 
