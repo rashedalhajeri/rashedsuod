@@ -24,9 +24,9 @@ const PricingPlans: React.FC = () => {
   const plans: PricingPlan[] = [
     {
       name: "المبتدئ",
-      monthlyPrice: 49,
-      yearlyPrice: 39,
-      description: "مثالي للشركات الناشئة والأفراد",
+      monthlyPrice: 15,
+      yearlyPrice: 12,
+      description: "مثالي للشركات الناشئة والأفراد في الكويت",
       features: [
         { text: "مخزون حتى 50 منتج", included: true },
         { text: "تكامل مع بوابة دفع واحدة", included: true },
@@ -39,9 +39,9 @@ const PricingPlans: React.FC = () => {
     },
     {
       name: "الاحترافي",
-      monthlyPrice: 99,
-      yearlyPrice: 79,
-      description: "للشركات المتوسطة والمتاجر المتنامية",
+      monthlyPrice: 30,
+      yearlyPrice: 24,
+      description: "للشركات المتوسطة والمتاجر المتنامية في السوق الكويتي",
       features: [
         { text: "مخزون حتى 500 منتج", included: true },
         { text: "تكامل مع 3 بوابات دفع", included: true },
@@ -55,9 +55,9 @@ const PricingPlans: React.FC = () => {
     },
     {
       name: "المؤسسات",
-      monthlyPrice: 199,
-      yearlyPrice: 159,
-      description: "للشركات الكبيرة والعلامات التجارية",
+      monthlyPrice: 60,
+      yearlyPrice: 48,
+      description: "للشركات الكبيرة والعلامات التجارية في الكويت",
       features: [
         { text: "مخزون غير محدود للمنتجات", included: true },
         { text: "تكامل مع جميع بوابات الدفع", included: true },
@@ -90,7 +90,7 @@ const PricingPlans: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.2 }}
           >
-            اختر الخطة التي تناسب احتياجاتك
+            اختر الخطة التي تناسب احتياجاتك في السوق الكويتي
           </motion.p>
           
           <motion.div 
@@ -148,7 +148,7 @@ const PricingPlans: React.FC = () => {
                   <span className="text-4xl font-bold text-gray-900">
                     {billingCycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice}
                   </span>
-                  <span className="text-gray-600"> ر.س / {billingCycle === "monthly" ? "شهر" : "شهر (سنوياً)"}</span>
+                  <span className="text-gray-600"> د.ك / {billingCycle === "monthly" ? "شهر" : "شهر (سنوياً)"}</span>
                 </div>
                 
                 <a 

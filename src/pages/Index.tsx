@@ -48,7 +48,7 @@ const Index: React.FC = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.7 }}
               >
-                جاهز لإطلاق متجرك الإلكتروني؟
+                جاهز لإطلاق متجرك الإلكتروني في الكويت؟
               </motion.h2>
               <motion.p 
                 className="text-xl text-white/90 max-w-2xl mx-auto mb-8"
@@ -57,7 +57,7 @@ const Index: React.FC = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.7, delay: 0.2 }}
               >
-                انضم إلى آلاف التجار الناجحين وابدأ رحلتك في عالم التجارة الإلكترونية اليوم
+                انضم إلى آلاف التجار الناجحين وابدأ رحلتك في عالم التجارة الإلكترونية في السوق الكويتي اليوم
               </motion.p>
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
