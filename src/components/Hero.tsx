@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 const Hero: React.FC = () => {
@@ -32,10 +33,10 @@ const Hero: React.FC = () => {
         }} transition={{
           duration: 0.7
         }} className="md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-slate-950 text-3xl">
-            <span className="inline-block">الحين بدقيقة متجرك جاهز</span>
-            <div className="flex items-center flex-wrap gap-3 mt-2">
-              <span className="relative inline-block text-primary-500 font-extrabold">
-                <span className="relative z-10 my-0 px-0 mx-0 text-right">احتياجاتك</span>
+            <span className="inline-block bg-gradient-to-l from-slate-900 to-slate-800 bg-clip-text text-transparent">ابدأ تجارتك الآن</span>
+            <div className="flex items-center flex-wrap gap-3 mt-3">
+              <span className="relative inline-block">
+                <span className="relative z-10 my-0 px-0 mx-0 text-primary-600 font-extrabold text-shadow-sm">احتياجاتك</span>
                 <motion.span className="absolute -bottom-1 left-0 right-0 h-3 bg-primary-100 rounded-full z-0" initial={{
                 width: 0
               }} animate={{
@@ -45,7 +46,7 @@ const Hero: React.FC = () => {
                 duration: 0.6
               }}></motion.span>
               </span>
-              <span>لزيادة مبيعاتك</span>
+              <span className="bg-gradient-to-r from-slate-950 to-slate-800 bg-clip-text text-transparent font-bold">لتحقيق أرباح مضاعفة</span>
             </div>
           </motion.h1>
           
@@ -58,8 +59,8 @@ const Hero: React.FC = () => {
         }} transition={{
           duration: 0.7,
           delay: 0.2
-        }} className="text-xl mb-8 text-slate-950">
-            متجر متكامل لطلبات الاستلام و التوصيل، بدون عمولة على الطلبات
+        }} className="text-xl mb-8 text-slate-800 font-medium leading-relaxed">
+            منصة متجرك الإلكتروني المتكاملة — <span className="text-primary-600 font-semibold">بدون عمولة</span> على الطلبات
           </motion.p>
           
           <motion.div initial={{
