@@ -3,7 +3,9 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 const Hero: React.FC = () => {
-  const [isRTL, setIsRTL] = useState(true); // true for Arabic direction
+  const [isRTL, setIsRTL] = useState(true);
+  const [rotatingWord, setRotatingWord] = useState(0);
+  const rotatingWords = ["احتياجاتك", "طلباتك", "عملائك"];
 
   // This would be connected to your actual language state in a real app
   useEffect(() => {
@@ -12,15 +14,23 @@ const Hero: React.FC = () => {
     setIsRTL(html?.dir === 'rtl' || true); // Default to RTL for this demo
   }, []);
 
-  return <section className={`min-h-screen flex items-center pt-20 overflow-hidden relative ${isRTL ? 'rtl' : 'ltr'}`}>
+  // Rotating words effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRotatingWord((prev) => (prev + 1) % rotatingWords.length);
+    }, 2000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <section className={`min-h-screen flex items-center pt-20 overflow-hidden relative ${isRTL ? 'rtl' : 'ltr'}`}>
       {/* Video Background */}
       <div className="absolute inset-0 w-full h-full z-0">
         <video className="w-full h-full object-cover" autoPlay muted loop playsInline>
           <source src="/lovable-uploads/ecommerce-video-bg.mp4" type="video/mp4" />
-          {/* Fallback image if video doesn't load */}
           <img src="/lovable-uploads/c8a5c4e7-628d-4c52-acca-e8f603036b6b.png" alt="E-commerce background" className="w-full h-full object-cover" />
         </video>
-        {/* Overlay to ensure text readability */}
         <div className="absolute inset-0 bg-opacity-50 z-10 bg-slate-50"></div>
       </div>
 
@@ -33,29 +43,35 @@ const Hero: React.FC = () => {
             className="mb-6"
           >
             <h1 className="md:text-5xl lg:text-6xl font-bold leading-tight text-slate-950 text-3xl">
-              <span className="inline-block bg-gradient-to-l from-slate-900 via-slate-800 to-primary-700 bg-clip-text text-transparent">
+              <span className="block mb-3 bg-gradient-to-l from-slate-900 via-slate-800 to-primary-700 bg-clip-text text-transparent">
                 أطلق إمكانياتك التجارية
               </span>
-            </h1>
-            
-            <div className="flex flex-col md:flex-row items-start md:items-center flex-wrap gap-3 mt-4">
-              <div className="flex items-center gap-2">
-                <span className="text-4xl font-black text-primary-600 drop-shadow-sm">•</span>
-                <span className="relative">
-                  <span className="relative z-10 text-2xl md:text-3xl lg:text-4xl font-extrabold text-primary-600 drop-shadow-sm">احتياجاتك</span>
-                  <motion.span 
-                    className="absolute -bottom-1 left-0 right-0 h-3 bg-primary-100 rounded-full z-0" 
-                    initial={{ width: 0 }}
-                    animate={{ width: '100%' }}
-                    transition={{ delay: 0.5, duration: 0.6 }}
-                  ></motion.span>
+              
+              <div className="flex items-center gap-3 mt-5">
+                <div className="h-16 relative overflow-hidden">
+                  {rotatingWords.map((word, index) => (
+                    <motion.div
+                      key={word}
+                      className={`absolute inset-0 flex items-center ${index === rotatingWord ? 'text-primary-500' : 'text-transparent'}`}
+                      initial={{ y: 50, opacity: 0 }}
+                      animate={{ 
+                        y: index === rotatingWord ? 0 : -50, 
+                        opacity: index === rotatingWord ? 1 : 0 
+                      }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <span className="text-3xl md:text-4xl lg:text-5xl font-extrabold drop-shadow-sm">
+                        {word}
+                      </span>
+                    </motion.div>
+                  ))}
+                </div>
+                
+                <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-800">
+                  لتحقيق أرباح استثنائية
                 </span>
               </div>
-              
-              <span className="text-2xl md:text-3xl lg:text-4xl bg-gradient-to-r from-slate-950 to-primary-900 bg-clip-text text-transparent font-bold">
-                لتحقيق أرباح استثنائية
-              </span>
-            </div>
+            </h1>
           </motion.div>
           
           <motion.div 
@@ -172,7 +188,8 @@ const Hero: React.FC = () => {
           </motion.div>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
 
 export default Hero;
