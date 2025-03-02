@@ -1,8 +1,6 @@
-
 import React, { useState, useEffect } from "react";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-
 const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -15,18 +13,10 @@ const Header: React.FC = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
   const toggleLanguage = () => {
     setLanguage(prev => prev === "ar" ? "en" : "ar");
   };
-
-  return (
-    <header 
-      className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out px-6 md:px-10 py-4",
-        isScrolled ? "bg-white/80 backdrop-blur-lg shadow-sm" : "bg-transparent"
-      )}
-    >
+  return <header className={cn("fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out px-6 md:px-10 py-4", isScrolled ? "bg-white/80 backdrop-blur-lg shadow-sm" : "bg-transparent")}>
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-3xl font-bold text-primary-600">Linok</span>
@@ -41,17 +31,12 @@ const Header: React.FC = () => {
           <a href="#pricing" className="text-gray-800 hover:text-primary-500 transition-colors">
             {language === "ar" ? "الأسعار" : "Pricing"}
           </a>
-          <a href="#testimonials" className="text-gray-800 hover:text-primary-500 transition-colors">
-            {language === "ar" ? "آراء العملاء" : "Testimonials"}
-          </a>
+          
           <a href="#contact" className="text-gray-800 hover:text-primary-500 transition-colors">
             {language === "ar" ? "تواصل معنا" : "Contact"}
           </a>
           
-          <button 
-            onClick={toggleLanguage}
-            className="flex items-center text-gray-600 hover:text-primary-500 transition-colors"
-          >
+          <button onClick={toggleLanguage} className="flex items-center text-gray-600 hover:text-primary-500 transition-colors">
             {language === "ar" ? "English" : "العربية"}
             <ChevronDown className="h-4 w-4 ml-1" />
           </button>
@@ -62,21 +47,13 @@ const Header: React.FC = () => {
         </nav>
         
         {/* Mobile Menu Button */}
-        <button
-          className="md:hidden text-gray-800"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          {mobileMenuOpen ? (
-            <X className="h-6 w-6" />
-          ) : (
-            <Menu className="h-6 w-6" />
-          )}
+        <button className="md:hidden text-gray-800" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </div>
       
       {/* Mobile Navigation */}
-      {mobileMenuOpen && (
-        <div className="absolute top-full left-0 right-0 bg-white shadow-lg p-6 md:hidden flex flex-col space-y-4 animate-slide-down">
+      {mobileMenuOpen && <div className="absolute top-full left-0 right-0 bg-white shadow-lg p-6 md:hidden flex flex-col space-y-4 animate-slide-down">
           <a href="#features" className="text-gray-800 hover:text-primary-500 transition-colors">
             {language === "ar" ? "المميزات" : "Features"}
           </a>
@@ -90,10 +67,7 @@ const Header: React.FC = () => {
             {language === "ar" ? "تواصل معنا" : "Contact"}
           </a>
           
-          <button 
-            onClick={toggleLanguage}
-            className="flex items-center text-gray-600 hover:text-primary-500 transition-colors"
-          >
+          <button onClick={toggleLanguage} className="flex items-center text-gray-600 hover:text-primary-500 transition-colors">
             {language === "ar" ? "English" : "العربية"}
             <ChevronDown className="h-4 w-4 ml-1" />
           </button>
@@ -101,10 +75,7 @@ const Header: React.FC = () => {
           <a href="#start" className="btn-primary text-center">
             {language === "ar" ? "ابدأ الآن" : "Start Now"}
           </a>
-        </div>
-      )}
-    </header>
-  );
+        </div>}
+    </header>;
 };
-
 export default Header;
