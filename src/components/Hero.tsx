@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
@@ -30,8 +31,8 @@ const Hero: React.FC = () => {
             className="w-full h-full object-cover" 
           />
         </video>
-        {/* Enhanced overlay with gradient for better text readability and visual appeal */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/30 z-10"></div>
+        {/* Overlay to ensure text readability */}
+        <div className="absolute inset-0 bg-black bg-opacity-50 z-10"></div>
       </div>
 
       <div className="container mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 px-6 relative z-20">
