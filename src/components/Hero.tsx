@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+
 const Hero: React.FC = () => {
   const [isRTL, setIsRTL] = useState(true); // true for Arabic direction
 
@@ -9,6 +10,7 @@ const Hero: React.FC = () => {
     const html = document.querySelector('html');
     setIsRTL(html?.dir === 'rtl' || true); // Default to RTL for this demo
   }, []);
+
   return <section className={`min-h-screen flex items-center pt-20 overflow-hidden relative ${isRTL ? 'rtl' : 'ltr'}`}>
       {/* Video Background */}
       <div className="absolute inset-0 w-full h-full z-0">
@@ -105,15 +107,22 @@ const Hero: React.FC = () => {
             repeatType: "reverse"
           }} />
             
-            <motion.img src="/lovable-uploads/c8a5c4e7-628d-4c52-acca-e8f603036b6b.png" alt="Linok.me Mobile Store Preview" className="w-full h-auto rounded-3xl shadow-2xl relative z-10" initial={{
-            y: 20
-          }} animate={{
-            y: [0, -10, 0]
-          }} transition={{
-            duration: 3,
-            repeat: Infinity,
-            repeatType: "reverse"
-          }} />
+            <motion.img 
+              src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800" 
+              alt="Linok.me Mobile Store Preview" 
+              className="w-full h-auto rounded-3xl shadow-2xl relative z-10" 
+              initial={{
+                y: 20
+              }} 
+              animate={{
+                y: [0, -10, 0]
+              }} 
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                repeatType: "reverse"
+              }} 
+            />
             
             <motion.div className="absolute -bottom-5 -right-5 w-24 h-24 bg-primary-500 rounded-2xl z-0" animate={{
             rotate: [0, 10, 0],
@@ -142,4 +151,5 @@ const Hero: React.FC = () => {
       </div>
     </section>;
 };
+
 export default Hero;
