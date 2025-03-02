@@ -1,13 +1,19 @@
 
 import React, { useState, useEffect } from "react";
-import { Menu, X, ChevronDown, LogIn, UserPlus, CheckCircle2, XCircle } from "lucide-react";
+import { Menu, X, ChevronDown, LogIn, UserPlus, CheckCircle2, XCircle, LogOut, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Session } from "@supabase/supabase-js";
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  session: Session | null;
+  onLogout?: () => Promise<void>;
+}
+
+const Header: React.FC<HeaderProps> = ({ session, onLogout }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [language, setLanguage] = useState("ar"); // 'ar' for Arabic, 'en' for English
@@ -110,6 +116,21 @@ const Header: React.FC = () => {
     }
   };
   
+  const handleLogout = async () => {
+    if (onLogout) {
+      await onLogout();
+    } else {
+      try {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+        toast.success(language === "ar" ? "تم تسجيل الخروج بنجاح" : "Logged out successfully");
+      } catch (error: any) {
+        console.error("Error logging out:", error);
+        toast.error(language === "ar" ? "حدث خطأ أثناء تسجيل الخروج" : "An error occurred during logout");
+      }
+    }
+  };
+  
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -209,22 +230,44 @@ const Header: React.FC = () => {
               <ChevronDown className="h-4 w-4 ml-1" />
             </button>
             
-            <button 
-              onClick={() => setLoginOpen(true)} 
-              className="btn-primary flex items-center gap-2"
-            >
-              <LogIn size={16} />
-              {language === "ar" ? "تسجيل الدخول" : "Log In"}
-            </button>
-            
-            <button 
-              onClick={() => setSignupOpen(true)} 
-              className="px-6 py-3 bg-white text-gray-800 rounded-full font-semibold border border-gray-300 
-                shadow-sm hover:shadow-md transition-all duration-300 hover:translate-y-[-2px] flex items-center gap-2"
-            >
-              <UserPlus size={16} />
-              {language === "ar" ? "إنشاء حساب" : "Sign Up"}
-            </button>
+            {session ? (
+              <>
+                <button 
+                  onClick={() => {}} 
+                  className="flex items-center gap-2 text-gray-800 hover:text-primary-500 transition-colors"
+                >
+                  <User size={16} />
+                  {language === "ar" ? "حسابي" : "My Account"}
+                </button>
+                
+                <button 
+                  onClick={handleLogout} 
+                  className="btn-primary flex items-center gap-2"
+                >
+                  <LogOut size={16} />
+                  {language === "ar" ? "تسجيل الخروج" : "Log Out"}
+                </button>
+              </>
+            ) : (
+              <>
+                <button 
+                  onClick={() => setLoginOpen(true)} 
+                  className="btn-primary flex items-center gap-2"
+                >
+                  <LogIn size={16} />
+                  {language === "ar" ? "تسجيل الدخول" : "Log In"}
+                </button>
+                
+                <button 
+                  onClick={() => setSignupOpen(true)} 
+                  className="px-6 py-3 bg-white text-gray-800 rounded-full font-semibold border border-gray-300 
+                    shadow-sm hover:shadow-md transition-all duration-300 hover:translate-y-[-2px] flex items-center gap-2"
+                >
+                  <UserPlus size={16} />
+                  {language === "ar" ? "إنشاء حساب" : "Sign Up"}
+                </button>
+              </>
+            )}
           </nav>
           
           {/* Mobile Menu Button */}
@@ -242,9 +285,6 @@ const Header: React.FC = () => {
             <a href="#pricing" className="text-gray-800 hover:text-primary-500 transition-colors">
               {language === "ar" ? "الأسعار" : "Pricing"}
             </a>
-            <a href="#testimonials" className="text-gray-800 hover:text-primary-500 transition-colors">
-              {language === "ar" ? "آراء العملاء" : "Testimonials"}
-            </a>
             <a href="#contact" className="text-gray-800 hover:text-primary-500 transition-colors">
               {language === "ar" ? "تواصل معنا" : "Contact"}
             </a>
@@ -254,22 +294,44 @@ const Header: React.FC = () => {
               <ChevronDown className="h-4 w-4 ml-1" />
             </button>
             
-            <button 
-              onClick={() => setLoginOpen(true)} 
-              className="btn-primary text-center flex items-center gap-2 justify-center"
-            >
-              <LogIn size={16} />
-              {language === "ar" ? "تسجيل الدخول" : "Log In"}
-            </button>
-            
-            <button 
-              onClick={() => setSignupOpen(true)} 
-              className="px-6 py-3 bg-white text-gray-800 rounded-full font-semibold border border-gray-300 
-                shadow-sm hover:shadow-md transition-all duration-300 hover:translate-y-[-2px] text-center flex items-center gap-2 justify-center"
-            >
-              <UserPlus size={16} />
-              {language === "ar" ? "إنشاء حساب" : "Sign Up"}
-            </button>
+            {session ? (
+              <>
+                <button 
+                  onClick={() => {}} 
+                  className="flex items-center gap-2 justify-center text-gray-800 hover:text-primary-500 transition-colors"
+                >
+                  <User size={16} />
+                  {language === "ar" ? "حسابي" : "My Account"}
+                </button>
+                
+                <button 
+                  onClick={handleLogout} 
+                  className="btn-primary text-center flex items-center gap-2 justify-center"
+                >
+                  <LogOut size={16} />
+                  {language === "ar" ? "تسجيل الخروج" : "Log Out"}
+                </button>
+              </>
+            ) : (
+              <>
+                <button 
+                  onClick={() => setLoginOpen(true)} 
+                  className="btn-primary text-center flex items-center gap-2 justify-center"
+                >
+                  <LogIn size={16} />
+                  {language === "ar" ? "تسجيل الدخول" : "Log In"}
+                </button>
+                
+                <button 
+                  onClick={() => setSignupOpen(true)} 
+                  className="px-6 py-3 bg-white text-gray-800 rounded-full font-semibold border border-gray-300 
+                    shadow-sm hover:shadow-md transition-all duration-300 hover:translate-y-[-2px] text-center flex items-center gap-2 justify-center"
+                >
+                  <UserPlus size={16} />
+                  {language === "ar" ? "إنشاء حساب" : "Sign Up"}
+                </button>
+              </>
+            )}
           </div>
         )}
       </header>
