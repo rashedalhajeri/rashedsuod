@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+
 const Hero: React.FC = () => {
   const [isRTL, setIsRTL] = useState(true); // true for Arabic direction
 
@@ -9,7 +10,9 @@ const Hero: React.FC = () => {
     const html = document.querySelector('html');
     setIsRTL(html?.dir === 'rtl' || true); // Default to RTL for this demo
   }, []);
-  return <section className={`min-h-screen flex items-center pt-20 overflow-hidden relative ${isRTL ? 'rtl' : 'ltr'}`}>
+  
+  return (
+    <section className={`min-h-screen flex items-center pt-20 overflow-hidden relative ${isRTL ? 'rtl' : 'ltr'}`}>
       {/* Video Background */}
       <div className="absolute inset-0 w-full h-full z-0">
         <video className="w-full h-full object-cover" autoPlay muted loop playsInline>
@@ -23,43 +26,32 @@ const Hero: React.FC = () => {
 
       <div className="container mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 px-6 relative z-20">
         <div className={`flex flex-col justify-center ${isRTL ? 'order-1 lg:order-1' : 'order-1 lg:order-0'}`}>
-          <motion.h1 initial={{
-          opacity: 0,
-          y: 20
-        }} animate={{
-          opacity: 1,
-          y: 0
-        }} transition={{
-          duration: 0.7
-        }} className="md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-slate-950 text-3xl">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.7 }} 
+            className="md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-slate-950 text-3xl"
+          >
             متجر إلكتروني في كل 
             <br />
             <span className="text-primary-500">إحتياجاتك</span> لزيادة مبيعاتك
           </motion.h1>
           
-          <motion.p initial={{
-          opacity: 0,
-          y: 20
-        }} animate={{
-          opacity: 1,
-          y: 0
-        }} transition={{
-          duration: 0.7,
-          delay: 0.2
-        }} className="text-xl mb-8 text-slate-950">
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.7, delay: 0.2 }} 
+            className="text-xl mb-8 text-slate-950"
+          >
             متجر متكامل لطلبات الاستلام و التوصيل، بدون عمولة على الطلبات
           </motion.p>
           
-          <motion.div initial={{
-          opacity: 0,
-          y: 20
-        }} animate={{
-          opacity: 1,
-          y: 0
-        }} transition={{
-          duration: 0.7,
-          delay: 0.4
-        }} className="flex flex-wrap gap-4 mb-8 bg-black/0">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.7, delay: 0.4 }} 
+            className="flex flex-wrap gap-4 mb-8 bg-black/0"
+          >
             <a href="#start" className="btn-primary">
               ابدأ الآن
             </a>
@@ -67,21 +59,23 @@ const Hero: React.FC = () => {
               shadow-sm hover:shadow-md transition-all duration-300 hover:translate-y-[-2px]">شاهد المزيد..</a>
           </motion.div>
           
-          <motion.div className="flex flex-wrap items-center gap-6" initial={{
-          opacity: 0
-        }} animate={{
-          opacity: 1
-        }} transition={{
-          duration: 0.7,
-          delay: 0.6
-        }}>
+          <motion.div 
+            className="flex flex-wrap items-center gap-6" 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            transition={{ duration: 0.7, delay: 0.6 }}
+          >
             <div className="flex items-center -space-x-2 rtl:space-x-reverse">
-              {[1, 2, 3, 4].map(index => <div key={index} className="w-10 h-10 rounded-full border-2 border-white bg-gray-200" style={{
-              zIndex: 5 - index
-            }} />)}
+              {[1, 2, 3, 4].map(index => (
+                <div 
+                  key={index} 
+                  className="w-10 h-10 rounded-full border-2 border-white bg-gray-200" 
+                  style={{ zIndex: 5 - index }} 
+                />
+              ))}
             </div>
-            <p className="text-white">
-              أكثر من <span className="font-bold text-primary-500">7500 تاجر خلال 2025</span> عميل راضٍ
+            <p className="text-slate-800 font-medium">
+              أكثر من <span className="font-bold text-primary-500 text-lg">٧٥٠٠ تاجر</span> <span className="bg-primary-100 px-2 py-1 rounded-lg text-primary-700 text-sm">خلال عام جديد</span>
             </p>
           </motion.div>
         </div>
@@ -140,6 +134,8 @@ const Hero: React.FC = () => {
           </motion.div>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default Hero;
