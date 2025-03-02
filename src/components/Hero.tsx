@@ -32,10 +32,10 @@ const Hero: React.FC = () => {
         }} transition={{
           duration: 0.7
         }} className="md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-slate-950 text-3xl">
-            <span className="inline-block">متجر إلكتروني في كل</span>
+            <span className="inline-block">الحين بدقيقة متجرك جاهز</span>
             <div className="flex items-center flex-wrap gap-3 mt-2">
               <span className="relative inline-block text-primary-500 font-extrabold">
-                <span className="relative z-10">احتياجاتك</span>
+                <span className="relative z-10 my-0 px-0 mx-0 text-right">احتياجاتك</span>
                 <motion.span className="absolute -bottom-1 left-0 right-0 h-3 bg-primary-100 rounded-full z-0" initial={{
                 width: 0
               }} animate={{
