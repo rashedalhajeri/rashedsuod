@@ -1,7 +1,5 @@
-
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-
 const Hero: React.FC = () => {
   const [isRTL, setIsRTL] = useState(true); // true for Arabic direction
 
@@ -11,9 +9,7 @@ const Hero: React.FC = () => {
     const html = document.querySelector('html');
     setIsRTL(html?.dir === 'rtl' || true); // Default to RTL for this demo
   }, []);
-  
-  return (
-    <section className={`min-h-screen flex items-center pt-20 overflow-hidden relative ${isRTL ? 'rtl' : 'ltr'}`}>
+  return <section className={`min-h-screen flex items-center pt-20 overflow-hidden relative ${isRTL ? 'rtl' : 'ltr'}`}>
       {/* Video Background */}
       <div className="absolute inset-0 w-full h-full z-0">
         <video className="w-full h-full object-cover" autoPlay muted loop playsInline>
@@ -27,42 +23,55 @@ const Hero: React.FC = () => {
 
       <div className="container mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 px-6 relative z-20">
         <div className={`flex flex-col justify-center ${isRTL ? 'order-1 lg:order-1' : 'order-1 lg:order-0'}`}>
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            transition={{ duration: 0.7 }} 
-            className="md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-slate-950 text-3xl"
-          >
+          <motion.h1 initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          duration: 0.7
+        }} className="md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-slate-950 text-3xl">
             <span className="inline-block">متجر إلكتروني في كل</span>
             <div className="flex items-center flex-wrap gap-3 mt-2">
               <span className="relative inline-block text-primary-500 font-extrabold">
                 <span className="relative z-10">احتياجاتك</span>
-                <motion.span 
-                  className="absolute -bottom-1 left-0 right-0 h-3 bg-primary-100 rounded-full z-0" 
-                  initial={{ width: 0 }}
-                  animate={{ width: '100%' }}
-                  transition={{ delay: 1, duration: 0.6 }}
-                ></motion.span>
+                <motion.span className="absolute -bottom-1 left-0 right-0 h-3 bg-primary-100 rounded-full z-0" initial={{
+                width: 0
+              }} animate={{
+                width: '100%'
+              }} transition={{
+                delay: 1,
+                duration: 0.6
+              }}></motion.span>
               </span>
               <span>لزيادة مبيعاتك</span>
             </div>
           </motion.h1>
           
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            transition={{ duration: 0.7, delay: 0.2 }} 
-            className="text-xl mb-8 text-slate-950"
-          >
+          <motion.p initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          duration: 0.7,
+          delay: 0.2
+        }} className="text-xl mb-8 text-slate-950">
             متجر متكامل لطلبات الاستلام و التوصيل، بدون عمولة على الطلبات
           </motion.p>
           
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            transition={{ duration: 0.7, delay: 0.4 }} 
-            className="flex flex-wrap gap-4 mb-8 bg-black/0"
-          >
+          <motion.div initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          duration: 0.7,
+          delay: 0.4
+        }} className="flex flex-wrap gap-4 mb-8 bg-black/0">
             <a href="#start" className="btn-primary">
               ابدأ الآن
             </a>
@@ -70,20 +79,18 @@ const Hero: React.FC = () => {
               shadow-sm hover:shadow-md transition-all duration-300 hover:translate-y-[-2px]">شاهد المزيد..</a>
           </motion.div>
           
-          <motion.div 
-            className="flex flex-wrap items-center gap-6" 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            transition={{ duration: 0.7, delay: 0.6 }}
-          >
+          <motion.div className="flex flex-wrap items-center gap-6" initial={{
+          opacity: 0
+        }} animate={{
+          opacity: 1
+        }} transition={{
+          duration: 0.7,
+          delay: 0.6
+        }}>
             <div className="flex items-center -space-x-2 rtl:space-x-reverse">
-              {[1, 2, 3, 4].map(index => (
-                <div 
-                  key={index} 
-                  className="w-10 h-10 rounded-full border-2 border-white bg-gray-200" 
-                  style={{ zIndex: 5 - index }} 
-                />
-              ))}
+              {[1, 2, 3, 4].map(index => <div key={index} className="w-10 h-10 rounded-full border-2 border-white bg-gray-200" style={{
+              zIndex: 5 - index
+            }} />)}
             </div>
             <p className="text-slate-800 font-medium">
               أكثر من <span className="font-bold text-primary-500 text-lg">٧٥٠٠ تاجر</span> <span className="bg-primary-100 px-2 py-1 rounded-lg text-primary-700 text-sm">خلال عام جديد</span>
@@ -110,7 +117,7 @@ const Hero: React.FC = () => {
             repeatType: "reverse"
           }} />
             
-            <motion.img src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&w=800" alt="Person working on laptop" className="w-full h-auto rounded-3xl shadow-2xl relative z-10" initial={{
+            <motion.img alt="Person working on laptop" className="w-full h-auto rounded-3xl shadow-2xl relative z-10" initial={{
             y: 20
           }} animate={{
             y: [0, -10, 0]
@@ -118,7 +125,7 @@ const Hero: React.FC = () => {
             duration: 3,
             repeat: Infinity,
             repeatType: "reverse"
-          }} />
+          }} src="/lovable-uploads/827a00fa-f421-45c3-96d7-b9305fb217d1.jpg" />
             
             <motion.div className="absolute -bottom-5 -right-5 w-24 h-24 bg-primary-500 rounded-2xl z-0" animate={{
             rotate: [0, 10, 0],
@@ -145,8 +152,6 @@ const Hero: React.FC = () => {
           </motion.div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Hero;
