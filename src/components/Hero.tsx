@@ -13,11 +13,32 @@ const Hero: React.FC = () => {
   }, []);
 
   return (
-    <section className={`min-h-screen flex items-center pt-20 overflow-hidden ${isRTL ? 'rtl' : 'ltr'}`}>
-      <div className="container mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 px-6">
+    <section className={`min-h-screen flex items-center pt-20 overflow-hidden relative ${isRTL ? 'rtl' : 'ltr'}`}>
+      {/* Video Background */}
+      <div className="absolute inset-0 w-full h-full z-0">
+        <video 
+          className="w-full h-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+        >
+          <source src="/lovable-uploads/ecommerce-video-bg.mp4" type="video/mp4" />
+          {/* Fallback image if video doesn't load */}
+          <img 
+            src="/lovable-uploads/c8a5c4e7-628d-4c52-acca-e8f603036b6b.png" 
+            alt="E-commerce background" 
+            className="w-full h-full object-cover" 
+          />
+        </video>
+        {/* Overlay to ensure text readability */}
+        <div className="absolute inset-0 bg-black bg-opacity-50 z-10"></div>
+      </div>
+
+      <div className="container mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 px-6 relative z-20">
         <div className={`flex flex-col justify-center ${isRTL ? 'order-1 lg:order-1' : 'order-1 lg:order-0'}`}>
           <motion.h1 
-            className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-gray-900"
+            className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-white"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
@@ -28,7 +49,7 @@ const Hero: React.FC = () => {
           </motion.h1>
           
           <motion.p 
-            className="text-xl text-gray-600 mb-8"
+            className="text-xl text-white mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2 }}
@@ -72,13 +93,13 @@ const Hero: React.FC = () => {
                 />
               ))}
             </div>
-            <p className="text-gray-600">
+            <p className="text-white">
               أكثر من <span className="font-bold text-primary-500">5000+</span> عميل راضٍ
             </p>
           </motion.div>
         </div>
         
-        <div className={`flex justify-center items-center ${isRTL ? 'order-0 lg:order-0' : 'order-0 lg:order-1'}`}>
+        <div className={`flex justify-center items-center relative z-20 ${isRTL ? 'order-0 lg:order-0' : 'order-0 lg:order-1'}`}>
           <motion.div
             className="relative w-full max-w-md"
             initial={{ opacity: 0, scale: 0.9 }}
