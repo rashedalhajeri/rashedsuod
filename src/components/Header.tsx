@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from "react";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, LogIn, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
+
 const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -13,9 +15,11 @@ const Header: React.FC = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+  
   const toggleLanguage = () => {
     setLanguage(prev => prev === "ar" ? "en" : "ar");
   };
+  
   return <header className={cn("fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out px-6 md:px-10 py-4", isScrolled ? "bg-white/80 backdrop-blur-lg shadow-sm" : "bg-transparent")}>
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -41,8 +45,15 @@ const Header: React.FC = () => {
             <ChevronDown className="h-4 w-4 ml-1" />
           </button>
           
-          <a href="#start" className="btn-primary">
-            {language === "ar" ? "ابدأ الآن" : "Start Now"}
+          <a href="#login" className="btn-primary flex items-center gap-2">
+            <LogIn size={16} />
+            {language === "ar" ? "تسجيل الدخول" : "Log In"}
+          </a>
+          
+          <a href="#signup" className="px-6 py-3 bg-white text-gray-800 rounded-full font-semibold border border-gray-300 
+              shadow-sm hover:shadow-md transition-all duration-300 hover:translate-y-[-2px] flex items-center gap-2">
+            <UserPlus size={16} />
+            {language === "ar" ? "إنشاء حساب" : "Sign Up"}
           </a>
         </nav>
         
@@ -72,10 +83,18 @@ const Header: React.FC = () => {
             <ChevronDown className="h-4 w-4 ml-1" />
           </button>
           
-          <a href="#start" className="btn-primary text-center">
-            {language === "ar" ? "ابدأ الآن" : "Start Now"}
+          <a href="#login" className="btn-primary text-center flex items-center gap-2 justify-center">
+            <LogIn size={16} />
+            {language === "ar" ? "تسجيل الدخول" : "Log In"}
+          </a>
+          
+          <a href="#signup" className="px-6 py-3 bg-white text-gray-800 rounded-full font-semibold border border-gray-300 
+              shadow-sm hover:shadow-md transition-all duration-300 hover:translate-y-[-2px] text-center flex items-center gap-2 justify-center">
+            <UserPlus size={16} />
+            {language === "ar" ? "إنشاء حساب" : "Sign Up"}
           </a>
         </div>}
     </header>;
 };
+
 export default Header;
