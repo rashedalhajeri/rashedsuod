@@ -12,12 +12,15 @@ interface TimelineItemProps {
   isLast?: boolean;
 }
 
-export function TimelineItem({ title, date, description, icon: Icon, isLast = false }: TimelineItemProps) {
+export function TimelineItem({ title, date, description, icon, isLast = false }: TimelineItemProps) {
+  // Determine if the icon is a React component (ElementType) or a React node
+  const IconComponent = typeof icon === 'function' ? icon as React.ElementType : null;
+  
   return (
     <div className="flex">
       <div className="flex flex-col items-center mr-4">
         <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-100 text-primary-600">
-          {React.isValidElement(Icon) ? Icon : <Icon className="h-4 w-4" />}
+          {IconComponent ? <IconComponent className="h-4 w-4" /> : icon}
         </div>
         {!isLast && <div className="w-px flex-1 bg-gray-200 mt-2"></div>}
       </div>
