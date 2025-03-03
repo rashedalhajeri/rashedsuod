@@ -124,11 +124,9 @@ export const getCategoriesByStoreId = async (storeId: string) => {
 // Helper function to update product category
 export const updateProductCategory = async (productId: string, categoryId: string | null) => {
   try {
-    const updates = { category_id: categoryId };
-    
     const { data, error } = await supabase
       .from('products')
-      .update(updates)
+      .update({ category_id: categoryId })
       .eq('id', productId)
       .select();
       

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +14,7 @@ import CreateStore from "./pages/CreateStore";
 import Auth from "./pages/Auth";
 import { secureRetrieve, secureStore, secureRemove } from "./lib/encryption";
 import { Session } from "@supabase/supabase-js";
+import UnderDevelopmentPage from "./components/dashboard/UnderDevelopmentPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -236,7 +236,7 @@ const App = () => (
             <Route path="/dashboard/customers" element={
               <ProtectedRoute>
                 <StoreCheckRoute>
-                  <NotFound message="صفحة العملاء قيد التطوير" />
+                  <UnderDevelopmentPage message="صفحة العملاء قيد التطوير" />
                 </StoreCheckRoute>
               </ProtectedRoute>
             } />
@@ -244,7 +244,7 @@ const App = () => (
             <Route path="/dashboard/categories" element={
               <ProtectedRoute>
                 <StoreCheckRoute>
-                  <NotFound message="صفحة الفئات قيد التطوير" />
+                  <UnderDevelopmentPage message="صفحة الفئات قيد التطوير" />
                 </StoreCheckRoute>
               </ProtectedRoute>
             } />
@@ -252,7 +252,7 @@ const App = () => (
             <Route path="/dashboard/coupons" element={
               <ProtectedRoute>
                 <StoreCheckRoute>
-                  <NotFound message="صفحة كوبونات الخصم قيد التطوير" />
+                  <UnderDevelopmentPage message="صفحة كوبونات الخصم قيد التطوير" />
                 </StoreCheckRoute>
               </ProtectedRoute>
             } />
@@ -260,7 +260,7 @@ const App = () => (
             <Route path="/dashboard/payment" element={
               <ProtectedRoute>
                 <StoreCheckRoute>
-                  <NotFound message="صفحة المدفوعات قيد التطوير" />
+                  <UnderDevelopmentPage message="صفحة المدفوعات قيد التطوير" />
                 </StoreCheckRoute>
               </ProtectedRoute>
             } />
@@ -268,7 +268,7 @@ const App = () => (
             <Route path="/dashboard/shipping" element={
               <ProtectedRoute>
                 <StoreCheckRoute>
-                  <NotFound message="صفحة الشحن والتوصيل قيد التطوير" />
+                  <UnderDevelopmentPage message="صفحة الشحن والتوصيل قيد التطوير" />
                 </StoreCheckRoute>
               </ProtectedRoute>
             } />
@@ -277,7 +277,7 @@ const App = () => (
             <Route path="/dashboard/sales-reports" element={
               <ProtectedRoute>
                 <StoreCheckRoute>
-                  <NotFound message="صفحة تقارير المبيعات قيد التطوير" />
+                  <UnderDevelopmentPage message="صفحة تقارير المبيعات قيد التطوير" />
                 </StoreCheckRoute>
               </ProtectedRoute>
             } />
@@ -285,7 +285,7 @@ const App = () => (
             <Route path="/dashboard/product-analytics" element={
               <ProtectedRoute>
                 <StoreCheckRoute>
-                  <NotFound message="صفحة أداء المنتجات قيد التطوير" />
+                  <UnderDevelopmentPage message="صفحة أداء المنتجات قيد التطوير" />
                 </StoreCheckRoute>
               </ProtectedRoute>
             } />
@@ -294,7 +294,7 @@ const App = () => (
             <Route path="/dashboard/inbox" element={
               <ProtectedRoute>
                 <StoreCheckRoute>
-                  <NotFound message="صفحة صندوق الوارد قيد التطوير" />
+                  <UnderDevelopmentPage message="صفحة صندوق الوارد قيد التطوير" />
                 </StoreCheckRoute>
               </ProtectedRoute>
             } />
@@ -302,7 +302,7 @@ const App = () => (
             <Route path="/dashboard/reviews" element={
               <ProtectedRoute>
                 <StoreCheckRoute>
-                  <NotFound message="صفحة التقييمات قيد التطوير" />
+                  <UnderDevelopmentPage message="صفحة التقييمات قيد التطوير" />
                 </StoreCheckRoute>
               </ProtectedRoute>
             } />
@@ -311,7 +311,7 @@ const App = () => (
             <Route path="/dashboard/store-info" element={
               <ProtectedRoute>
                 <StoreCheckRoute>
-                  <NotFound message="صفحة معلومات المتجر قيد التطوير" />
+                  <UnderDevelopmentPage message="صفحة معلومات المتجر قيد التطوير" />
                 </StoreCheckRoute>
               </ProtectedRoute>
             } />
@@ -319,7 +319,7 @@ const App = () => (
             <Route path="/dashboard/appearance" element={
               <ProtectedRoute>
                 <StoreCheckRoute>
-                  <NotFound message="صفحة تخصيص الواجهة قيد التطوير" />
+                  <UnderDevelopmentPage message="صفحة تخصيص الواجهة قيد التطوير" />
                 </StoreCheckRoute>
               </ProtectedRoute>
             } />
@@ -327,7 +327,7 @@ const App = () => (
             <Route path="/dashboard/system-settings" element={
               <ProtectedRoute>
                 <StoreCheckRoute>
-                  <NotFound message="صفحة إعدادات النظام قيد التطوير" />
+                  <UnderDevelopmentPage message="صفحة إعدادات النظام قيد التطوير" />
                 </StoreCheckRoute>
               </ProtectedRoute>
             } />
@@ -335,7 +335,7 @@ const App = () => (
             <Route path="/dashboard/subscription" element={
               <ProtectedRoute>
                 <StoreCheckRoute>
-                  <NotFound message="صفحة الاشتراك والباقة قيد التطوير" />
+                  <UnderDevelopmentPage message="صفحة الاشتراك والباقة قيد التطوير" />
                 </StoreCheckRoute>
               </ProtectedRoute>
             } />
