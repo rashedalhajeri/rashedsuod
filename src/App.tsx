@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +14,7 @@ import Auth from "./pages/Auth";
 import CreateStore from "./pages/CreateStore";
 import NotFound from "./pages/NotFound";
 import ProductDetail from "./pages/ProductDetail";
+import Dashboard from "./pages/Dashboard";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -95,7 +95,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// Modified ProtectedRoute to check if user has a store and redirect accordingly
 const ProtectedRoute = ({ children, redirectIfStore = false }: { children: React.ReactNode, redirectIfStore?: boolean }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [hasStore, setHasStore] = useState<boolean | null>(null);
@@ -115,7 +114,6 @@ const ProtectedRoute = ({ children, redirectIfStore = false }: { children: React
           if (sessionData.session && sessionData.session.user.id === userId) {
             setIsAuthenticated(true);
             
-            // Check if user has a store - FIXED: use count() instead of maybeSingle()
             const { count, error: storeError } = await supabase
               .from('stores')
               .select('*', { count: 'exact', head: true })
@@ -123,7 +121,6 @@ const ProtectedRoute = ({ children, redirectIfStore = false }: { children: React
             
             if (storeError) throw storeError;
             
-            // If count is greater than 0, user has at least one store
             setHasStore(count ? count > 0 : false);
           } else {
             secureRemove('user-id');
@@ -137,7 +134,6 @@ const ProtectedRoute = ({ children, redirectIfStore = false }: { children: React
             await secureStore('user-id', sessionData.session.user.id);
             setIsAuthenticated(true);
             
-            // Check if user has a store - FIXED: use count() instead of maybeSingle()
             const { count, error: storeError } = await supabase
               .from('stores')
               .select('*', { count: 'exact', head: true })
@@ -145,7 +141,6 @@ const ProtectedRoute = ({ children, redirectIfStore = false }: { children: React
             
             if (storeError) throw storeError;
             
-            // If count is greater than 0, user has at least one store
             setHasStore(count ? count > 0 : false);
           } else {
             setIsAuthenticated(false);
@@ -172,22 +167,17 @@ const ProtectedRoute = ({ children, redirectIfStore = false }: { children: React
     return <Navigate to="/auth" />;
   }
   
-  // Now handle redirection based on store status and requested redirect behavior
   if (hasStore === false && !redirectIfStore) {
-    // User doesn't have a store and needs one for this route
     return <Navigate to="/create-store" />;
   }
   
   if (hasStore === true && redirectIfStore) {
-    // User has a store and should be redirected to dashboard
     return <Navigate to="/dashboard" />;
   }
   
-  // In all other cases, render the children
   return <>{children}</>;
 };
 
-// Create a specific route component for CreateStore page with different redirection logic
 const CreateStoreRoute = ({ children }: { children: React.ReactNode }) => {
   return <ProtectedRoute redirectIfStore={true}>{children}</ProtectedRoute>;
 };
@@ -200,12 +190,10 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Public Routes */}
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<Auth />} />
             
-            {/* Create Store Route - Will redirect to dashboard if user already has a store */}
             <Route 
               path="/create-store" 
               element={
@@ -215,20 +203,15 @@ const App = () => (
               } 
             />
             
-            {/* Dashboard Route - Protected and requires store */}
             <Route 
               path="/dashboard" 
               element={
                 <ProtectedRoute>
-                  <div className="p-8 text-center">
-                    <h1 className="text-2xl font-bold mb-4">مرحباً بك في لوحة التحكم</h1>
-                    <p>تم توجيهك إلى لوحة التحكم لأن لديك متجراً بالفعل.</p>
-                  </div>
+                  <Dashboard />
                 </ProtectedRoute>
               } 
             />
             
-            {/* Product Details Route - Protected and requires store */}
             <Route 
               path="/products/:productId" 
               element={
@@ -238,7 +221,6 @@ const App = () => (
               } 
             />
             
-            {/* 404 Route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
