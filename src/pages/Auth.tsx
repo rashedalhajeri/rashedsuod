@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { supabase, signInWithEmail, signUpWithEmail, signInWithGoogle, resetPassword } from "@/integrations/supabase/client";
-import { Eye, EyeOff, Mail, Lock, Loader2, ArrowLeft, LogIn, UserPlus } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Loader2, ArrowLeft, LogIn, UserPlus, Globe } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -24,9 +25,29 @@ const Auth = () => {
   // Signup state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [country, setCountry] = useState("Kuwait");
   
   // Reset password state
   const [resetEmail, setResetEmail] = useState("");
+  
+  // Countries list for the dropdown
+  const countries = [
+    { name: "الكويت", value: "Kuwait", currency: "KWD" },
+    { name: "السعودية", value: "Saudi Arabia", currency: "SAR" },
+    { name: "الإمارات", value: "United Arab Emirates", currency: "AED" },
+    { name: "قطر", value: "Qatar", currency: "QAR" },
+    { name: "البحرين", value: "Bahrain", currency: "BHD" },
+    { name: "عمان", value: "Oman", currency: "OMR" },
+    { name: "مصر", value: "Egypt", currency: "EGP" },
+    { name: "الأردن", value: "Jordan", currency: "JOD" },
+    { name: "لبنان", value: "Lebanon", currency: "LBP" },
+  ];
+  
+  // Get currency code based on selected country
+  const getCurrencyCode = (countryName: string) => {
+    const found = countries.find(c => c.value === countryName);
+    return found ? found.currency : "KWD";
+  };
   
   // Determine initial auth mode based on URL path
   useEffect(() => {
@@ -92,6 +113,9 @@ const Auth = () => {
       const storeName = email.split('@')[0];
       const domainName = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
       
+      // Get currency based on selected country
+      const currency = getCurrencyCode(country);
+      
       // Register user with Supabase
       const { data, error } = await signUpWithEmail(
         email,
@@ -99,8 +123,8 @@ const Auth = () => {
         {
           store_name: storeName,
           domain_name: domainName,
-          country: "Kuwait",
-          currency: "KWD"
+          country: country,
+          currency: currency
         }
       );
       
@@ -118,8 +142,8 @@ const Auth = () => {
               store_name: storeName,
               domain_name: domainName,
               phone_number: "",
-              country: "Kuwait",
-              currency: "KWD"
+              country: country,
+              currency: currency
             }
           ]);
         
@@ -419,12 +443,37 @@ const Auth = () => {
                         </p>
                       </div>
                       
-                      <div className="border border-gray-200 bg-gray-50 rounded-md p-3">
-                        <p className="text-sm text-gray-700">بالتسجيل، أنت توافق على:</p>
-                        <ul className="text-xs text-gray-500 mt-1 space-y-1 list-disc list-inside">
-                          <li>إنشاء متجر باسمك</li>
-                          <li>توليد اسم المجال تلقائيًا</li>
-                          <li>استخدام الدينار الكويتي كعملة افتراضية</li>
+                      <div className="space-y-2">
+                        <Label htmlFor="country" className="font-medium">بلد المتجر</Label>
+                        <div className="relative">
+                          <Select value={country} onValueChange={setCountry}>
+                            <SelectTrigger className="h-10 pr-10 bg-white border-gray-200 focus-visible:ring-primary-400">
+                              <Globe className="absolute top-1/2 transform -translate-y-1/2 right-3 h-5 w-5 text-gray-400" />
+                              <SelectValue placeholder="اختر بلد المتجر" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {countries.map((country) => (
+                                <SelectItem key={country.value} value={country.value}>
+                                  <div className="flex items-center gap-2">
+                                    <span>{country.name}</span>
+                                    <span className="text-xs text-gray-500">({country.currency})</span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          سيتم اعتماد عملة البلد لمتجرك ({getCurrencyCode(country)})
+                        </p>
+                      </div>
+                      
+                      <div className="bg-blue-50 border border-blue-100 rounded-md p-3 mt-2">
+                        <p className="text-sm text-blue-700 font-medium">معلومات إنشاء المتجر:</p>
+                        <ul className="text-xs text-blue-600 mt-1 space-y-1 list-disc list-inside">
+                          <li>سيتم إنشاء اسم متجرك تلقائيًا من بريدك الإلكتروني</li>
+                          <li>يمكنك تغيير اسم المتجر والنطاق لاحقًا من لوحة التحكم</li>
+                          <li>ستستطيع إضافة رقم الهاتف وتخصيص المتجر بعد التسجيل</li>
                         </ul>
                       </div>
                       
