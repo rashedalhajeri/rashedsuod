@@ -14,7 +14,6 @@ import Auth from "./pages/Auth";
 import { secureRetrieve, secureStore, secureRemove } from "./lib/encryption";
 import { Session } from "@supabase/supabase-js";
 
-// Create a new query client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -24,7 +23,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// Create auth context
 export const AuthContext = createContext<{
   session: Session | null;
   loading: boolean;
@@ -35,7 +33,6 @@ export const AuthContext = createContext<{
   signOut: async () => {},
 });
 
-// Auth provider component
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -96,7 +93,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// Protected route component with enhanced security
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isVerifying, setIsVerifying] = useState(true);
@@ -145,7 +141,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return isAuthenticated ? <>{children}</> : <Navigate to="/auth" />;
 };
 
-// Store check component that redirects users to create store if they don't have one
 const StoreCheckRoute = ({ children }: { children: React.ReactNode }) => {
   const [hasStore, setHasStore] = useState<boolean | null>(null);
   const [isChecking, setIsChecking] = useState(true);
