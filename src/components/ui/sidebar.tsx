@@ -5,6 +5,7 @@ import { ChevronRight, ChevronLeft, X, Menu, Bell, User, LogOut, Settings, Store
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type SidebarContextType = {
   expanded: boolean;
@@ -135,26 +136,51 @@ export function SidebarMenuLink({
   href,
   icon: Icon,
   children,
-  active = false
+  active = false,
+  title
 }: {
   href: string;
   icon: React.ElementType;
   children: React.ReactNode;
   active?: boolean;
+  title?: string;
 }) {
   const { expanded } = useSidebar();
+  const isMobile = useIsMobile();
   
-  return <Link to={href} className={cn(
-    "flex items-center p-3 rounded-lg transition-colors", 
-    active ? 
-      "bg-gradient-to-r from-primary-50 to-primary-100 text-primary-600 border-r-4 border-primary-500" : 
-      "text-gray-700 hover:bg-primary-50/50 hover:text-primary-600", 
-    !expanded && "md:justify-center"
-  )}>
-    <Icon className={cn("h-5 w-5", expanded ? "ml-3" : "")} />
-    {expanded && <span className="mr-2 font-medium">{children}</span>}
-    {active && expanded && <ChevronRight className="mr-auto h-4 w-4 text-primary-500" />}
-  </Link>;
+  const linkContent = (
+    <Link to={href} className={cn(
+      "flex items-center p-3 rounded-lg transition-colors", 
+      active ? 
+        "bg-gradient-to-r from-primary-50 to-primary-100 text-primary-600 border-r-4 border-primary-500" : 
+        "text-gray-700 hover:bg-primary-50/50 hover:text-primary-600", 
+      !expanded && "md:justify-center"
+    )}>
+      <Icon className={cn("h-5 w-5", expanded ? "ml-3" : "")} />
+      {expanded && <span className="mr-2 font-medium">{children}</span>}
+      {active && expanded && <ChevronRight className="mr-auto h-4 w-4 text-primary-500" />}
+    </Link>
+  );
+  
+  if (!expanded && !isMobile && title) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            {linkContent}
+          </TooltipTrigger>
+          <TooltipContent side="right" align="center" className="bg-gray-800 text-white border-0">
+            <div className="flex flex-col">
+              <span className="font-medium">{children}</span>
+              {title && <span className="text-xs text-gray-300">{title}</span>}
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+  
+  return linkContent;
 }
 
 export function SidebarHeader({

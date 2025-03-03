@@ -1,10 +1,13 @@
-
 import React, { ReactNode, useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase, getStoreData } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import { LogOut, Settings, ShoppingBag, Home, Package, BarChart, Users, Menu, X, Shield, ChevronRight, Zap, Bell, Tag, CreditCard, Store, Percent, Crown, Layers, LayoutDashboard } from "lucide-react";
+import { 
+  LogOut, Settings, ShoppingBag, Home, Package, BarChart, Users, Menu, X, Shield, 
+  ChevronRight, Zap, Bell, Tag, CreditCard, Store, Percent, Crown, Layers, 
+  LayoutDashboard, Star, Mail, MailQuestion, MessageSquare, PieChart, DollarSign
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { secureStore, secureRetrieve, secureRemove } from "@/lib/encryption";
@@ -112,45 +115,81 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       </div>;
   }
 
-  // Reorganize navigation items into logical groups
   const mainNavigation = [
     {
       name: 'الرئيسية',
       href: '/dashboard',
-      icon: LayoutDashboard 
+      icon: LayoutDashboard,
+      description: 'نظرة عامة على المتجر والإحصائيات'
     }, 
     {
       name: 'الطلبات',
       href: '/orders',
-      icon: ShoppingBag
+      icon: ShoppingBag,
+      description: 'إدارة طلبات العملاء وتتبع الشحنات'
     },
     {
       name: 'المنتجات',
       href: '/products',
-      icon: Package
+      icon: Package,
+      description: 'إدارة منتجات المتجر والمخزون'
     },
     {
       name: 'العملاء',
       href: '/customers',
-      icon: Users
+      icon: Users,
+      description: 'إدارة قاعدة العملاء والتواصل معهم'
     }
   ];
   
   const marketingSalesNavigation = [
     {
-      name: 'الفئات',
-      href: '/categories',
-      icon: Layers
+      name: 'كوبونات وتسويق',
+      href: '/marketing',
+      icon: Percent,
+      description: 'إدارة العروض والحملات التسويقية'
     },
     {
-      name: 'كيبونات وتسويق',
-      href: '/marketing',
-      icon: Percent
+      name: 'الفئات',
+      href: '/categories',
+      icon: Layers,
+      description: 'تنظيم المنتجات في فئات وتصنيفات'
     },
     {
       name: 'نظام الدفع',
       href: '/payment',
-      icon: CreditCard
+      icon: CreditCard,
+      description: 'إعدادات طرق الدفع والمعاملات المالية'
+    }
+  ];
+  
+  const analyticsNavigation = [
+    {
+      name: 'التقارير',
+      href: '/reports',
+      icon: BarChart,
+      description: 'تحليل أداء المتجر والمبيعات'
+    },
+    {
+      name: 'الإحصائيات',
+      href: '/analytics',
+      icon: PieChart,
+      description: 'إحصائيات متقدمة عن المتجر'
+    }
+  ];
+  
+  const communicationNavigation = [
+    {
+      name: 'الرسائل',
+      href: '/messages',
+      icon: MessageSquare,
+      description: 'التواصل مع العملاء'
+    },
+    {
+      name: 'الاستفسارات',
+      href: '/inquiries',
+      icon: MailQuestion,
+      description: 'الرد على استفسارات العملاء'
     }
   ];
   
@@ -158,12 +197,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     {
       name: 'المتجر',
       href: '/store',
-      icon: Store
+      icon: Store,
+      description: 'معلومات المتجر الأساسية والتخصيص'
     },
     {
       name: 'الإعدادات',
       href: '/settings',
-      icon: Settings
+      icon: Settings,
+      description: 'إعدادات الحساب وتفضيلات النظام'
     }
   ];
 
@@ -212,7 +253,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-800 text-lg">{store?.store_name || "المتجر"}</h3>
-                    
+                    <p className="text-xs text-gray-500">{store?.domain_name || "my-store"}.linok.me</p>
                   </div>
                 </div>
                 
@@ -253,7 +294,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </SidebarHeader>
             
             <SidebarContent>
-              {/* Main Navigation Group */}
               <SidebarGroup>
                 <div className="px-3 py-2">
                   <h4 className="text-xs font-medium text-gray-500 mb-2">القائمة الرئيسية</h4>
@@ -262,7 +302,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   {mainNavigation.map(item => {
                     const isActive = location.pathname === item.href;
                     return <SidebarMenuItem key={item.name}>
-                          <SidebarMenuLink href={item.href} icon={item.icon} active={isActive}>
+                          <SidebarMenuLink href={item.href} icon={item.icon} active={isActive} title={item.description}>
                             {item.name}
                           </SidebarMenuLink>
                         </SidebarMenuItem>;
@@ -270,7 +310,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 </SidebarMenu>
               </SidebarGroup>
               
-              {/* Marketing & Sales Group */}
               <SidebarGroup>
                 <div className="px-3 py-2 mt-2">
                   <h4 className="text-xs font-medium text-gray-500 mb-2">التسويق والمبيعات</h4>
@@ -279,7 +318,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   {marketingSalesNavigation.map(item => {
                     const isActive = location.pathname === item.href;
                     return <SidebarMenuItem key={item.name}>
-                          <SidebarMenuLink href={item.href} icon={item.icon} active={isActive}>
+                          <SidebarMenuLink href={item.href} icon={item.icon} active={isActive} title={item.description}>
                             {item.name}
                           </SidebarMenuLink>
                         </SidebarMenuItem>;
@@ -287,7 +326,38 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 </SidebarMenu>
               </SidebarGroup>
               
-              {/* Settings Group */}
+              <SidebarGroup>
+                <div className="px-3 py-2 mt-2">
+                  <h4 className="text-xs font-medium text-gray-500 mb-2">التحليلات والتقارير</h4>
+                </div>
+                <SidebarMenu>
+                  {analyticsNavigation.map(item => {
+                    const isActive = location.pathname === item.href;
+                    return <SidebarMenuItem key={item.name}>
+                          <SidebarMenuLink href={item.href} icon={item.icon} active={isActive} title={item.description}>
+                            {item.name}
+                          </SidebarMenuLink>
+                        </SidebarMenuItem>;
+                  })}
+                </SidebarMenu>
+              </SidebarGroup>
+              
+              <SidebarGroup>
+                <div className="px-3 py-2 mt-2">
+                  <h4 className="text-xs font-medium text-gray-500 mb-2">التواصل</h4>
+                </div>
+                <SidebarMenu>
+                  {communicationNavigation.map(item => {
+                    const isActive = location.pathname === item.href;
+                    return <SidebarMenuItem key={item.name}>
+                          <SidebarMenuLink href={item.href} icon={item.icon} active={isActive} title={item.description}>
+                            {item.name}
+                          </SidebarMenuLink>
+                        </SidebarMenuItem>;
+                  })}
+                </SidebarMenu>
+              </SidebarGroup>
+              
               <SidebarGroup>
                 <div className="px-3 py-2 mt-2">
                   <h4 className="text-xs font-medium text-gray-500 mb-2">الإعدادات والإدارة</h4>
@@ -296,7 +366,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   {settingsNavigation.map(item => {
                     const isActive = location.pathname === item.href;
                     return <SidebarMenuItem key={item.name}>
-                          <SidebarMenuLink href={item.href} icon={item.icon} active={isActive}>
+                          <SidebarMenuLink href={item.href} icon={item.icon} active={isActive} title={item.description}>
                             {item.name}
                           </SidebarMenuLink>
                         </SidebarMenuItem>;
@@ -369,7 +439,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       </SidebarProvider>
       
       {isMobile && <div className="mobile-nav bg-white shadow-lg border-t border-gray-100 rounded-t-xl">
-          {/* Update mobile nav to include the most important actions */}
           <Link to="/dashboard" className="mobile-nav-item">
             <LayoutDashboard size={20} className={location.pathname === '/dashboard' ? "text-primary-600" : "text-gray-500"} />
             <span className={cn("mobile-nav-label", location.pathname === '/dashboard' ? "text-primary-600" : "text-gray-500")}>
