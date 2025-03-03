@@ -1,11 +1,11 @@
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   LayoutDashboard, Package, ShoppingBag, Users, Settings, 
-  CreditCard, Tag, ChevronRight, Store, LogOut, BarChart
+  CreditCard, Tag, ChevronRight, Store, LogOut, BarChart, Bell, Gift, Truck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -29,7 +29,8 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ storeData, onLogout }) => {
   const isDesktop = useMediaQuery("(min-width: 1024px)");
   const { expanded } = useSidebar();
   
-  const mainNavItems = [
+  // حل مشكلة التنقل - استخدام useMemo للحفاظ على ثبات مصفوفات عناصر القائمة
+  const mainNavItems = useMemo(() => [
     {
       title: "لوحة التحكم",
       href: "/dashboard",
@@ -59,34 +60,60 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ storeData, onLogout }) => {
       href: "/dashboard/categories",
       icon: Tag,
       description: "إدارة تصنيفات المنتجات"
+    },
+    {
+      title: "كوبونات الخصم",
+      href: "/dashboard/marketing", 
+      icon: Gift,
+      description: "إدارة العروض والكوبونات"
+    },
+    {
+      title: "الشحن",
+      href: "/dashboard/shipping",
+      icon: Truck,
+      description: "إدارة طرق الشحن والتوصيل"
     }
-  ];
+  ], []);
   
-  const analyticItems = [
+  const analyticItems = useMemo(() => [
     {
       title: "التقارير",
       href: "/dashboard/reports",
       icon: BarChart,
       description: "تقارير المبيعات والأداء"
-    }
-  ];
-  
-  const settingItems = [
+    },
     {
-      title: "الإعدادات",
-      href: "/dashboard/settings",
-      icon: Settings,
-      description: "إعدادات المتجر والنظام"
+      title: "الإشعارات",
+      href: "/dashboard/notifications",
+      icon: Bell,
+      description: "إدارة إشعارات المتجر"
+    }
+  ], []);
+  
+  const settingItems = useMemo(() => [
+    {
+      title: "إعدادات المتجر",
+      href: "/dashboard/store",
+      icon: Store,
+      description: "تخصيص إعدادات المتجر"
     },
     {
       title: "المدفوعات",
-      href: "/dashboard/payments",
+      href: "/dashboard/payment",
       icon: CreditCard,
       description: "إدارة طرق الدفع والمعاملات"
+    },
+    {
+      title: "إعدادات النظام",
+      href: "/dashboard/settings",
+      icon: Settings,
+      description: "إعدادات النظام العامة"
     }
-  ];
+  ], []);
   
   const getInitials = (name: string) => {
+    if (!name) return "MT";
+    
     return name
       .split(' ')
       .map(part => part[0])
@@ -94,6 +121,9 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ storeData, onLogout }) => {
       .toUpperCase()
       .substring(0, 2);
   };
+
+  // حل مشكلة عدم تحديث القائمة عند تغيير المسار
+  const currentPath = location.pathname;
 
   return (
     <Sidebar className="border-l border-gray-200">
@@ -103,7 +133,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ storeData, onLogout }) => {
             <div className="flex items-center gap-2">
               <Avatar className="h-8 w-8">
                 <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                  {storeData?.store_name ? getInitials(storeData.store_name) : 'ST'}
+                  {getInitials(storeData?.store_name)}
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
@@ -132,7 +162,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ storeData, onLogout }) => {
                 <TooltipTrigger asChild>
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                      {storeData?.store_name ? getInitials(storeData.store_name) : 'ST'}
+                      {getInitials(storeData?.store_name)}
                     </AvatarFallback>
                   </Avatar>
                 </TooltipTrigger>
@@ -150,7 +180,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ storeData, onLogout }) => {
         <NavigationMenu 
           items={mainNavItems} 
           expanded={expanded} 
-          currentPath={location.pathname}
+          currentPath={currentPath}
         />
         
         {expanded && <div className="px-3 py-2">
@@ -161,7 +191,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ storeData, onLogout }) => {
           title={expanded ? "التحليلات" : undefined}
           items={analyticItems} 
           expanded={expanded} 
-          currentPath={location.pathname}
+          currentPath={currentPath}
         />
         
         {expanded && <div className="px-3 py-2">
@@ -172,7 +202,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ storeData, onLogout }) => {
           title={expanded ? "الإعدادات" : undefined}
           items={settingItems} 
           expanded={expanded} 
-          currentPath={location.pathname}
+          currentPath={currentPath}
         />
       </SidebarContent>
       

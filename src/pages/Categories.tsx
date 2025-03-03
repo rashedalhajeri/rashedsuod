@@ -1,5 +1,6 @@
 
 import React, { useState } from "react";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -11,6 +12,10 @@ import CategoryEmptyState from "@/components/category/CategoryEmptyState";
 import CategoryForm from "@/components/category/CategoryForm";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Category } from "@/types/category";
+import { supabase } from "@/integrations/supabase/client";
+import { useStoreData, useCategories } from "@/hooks/use-store-data";
+import LoadingState from "@/components/ui/loading-state";
+import ErrorState from "@/components/ui/error-state";
 
 // النمط الافتراضي للتصنيف الجديد
 const defaultCategory: Category = {
@@ -26,89 +31,130 @@ const defaultCategory: Category = {
   created_at: new Date().toISOString(),
 };
 
-// بيانات وهمية للتصنيفات
-const mockCategories: Category[] = [
-  {
-    id: "cat-1",
-    name: "الإلكترونيات",
-    description: "أجهزة إلكترونية وملحقاتها",
-    slug: "electronics",
-    parent_id: null,
-    product_count: 42,
-    display_order: 1,
-    is_active: true,
-    created_at: "2023-01-15T10:30:00Z",
-  },
-  {
-    id: "cat-2",
-    name: "الملابس",
-    description: "ملابس رجالية ونسائية",
-    slug: "clothing",
-    parent_id: null,
-    product_count: 64,
-    display_order: 2,
-    is_active: true,
-    created_at: "2023-01-17T09:15:00Z",
-  },
-  {
-    id: "cat-3",
-    name: "الأجهزة المنزلية",
-    description: "أجهزة للمنزل والمطبخ",
-    slug: "home-appliances",
-    parent_id: null,
-    product_count: 28,
-    display_order: 3,
-    is_active: true,
-    created_at: "2023-01-20T14:45:00Z",
-  },
-  {
-    id: "cat-4",
-    name: "الهواتف الذكية",
-    description: "هواتف ذكية وملحقاتها",
-    slug: "smartphones",
-    parent_id: "cat-1",
-    product_count: 16,
-    display_order: 1,
-    is_active: true,
-    created_at: "2023-01-22T11:20:00Z",
-  },
-  {
-    id: "cat-5",
-    name: "أجهزة الكمبيوتر",
-    description: "أجهزة الكمبيوتر المحمولة والمكتبية",
-    slug: "computers",
-    parent_id: "cat-1",
-    product_count: 12,
-    display_order: 2,
-    is_active: true,
-    created_at: "2023-01-25T16:30:00Z",
-  }
-];
-
 const Categories: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [categories, setCategories] = useState<Category[]>(mockCategories);
+  const queryClient = useQueryClient();
+
+  // جلب بيانات المتجر
+  const { 
+    data: storeData,
+    isLoading: isLoadingStore,
+    error: storeError 
+  } = useStoreData();
+
+  // جلب التصنيفات
+  const {
+    data: categories = [],
+    isLoading: isLoadingCategories,
+    error: categoriesError,
+    refetch: refetchCategories
+  } = useCategories(storeData?.id);
+
+  // إضافة تصنيف جديد
+  const addCategoryMutation = useMutation({
+    mutationFn: async (category: Category) => {
+      if (!storeData?.id) {
+        throw new Error("معرف المتجر غير موجود");
+      }
+      
+      const newCategory = {
+        ...category,
+        store_id: storeData.id,
+      };
+      
+      const { data, error } = await supabase
+        .from('categories')
+        .insert([newCategory])
+        .select()
+        .single();
+        
+      if (error) {
+        throw error;
+      }
+      
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      setIsDialogOpen(false);
+      toast.success("تم إضافة التصنيف بنجاح");
+    },
+    onError: (error) => {
+      console.error("خطأ في إضافة التصنيف:", error);
+      toast.error("حدث خطأ أثناء إضافة التصنيف");
+    },
+  });
+
+  // تحديث تصنيف
+  const updateCategoryMutation = useMutation({
+    mutationFn: async (category: Category) => {
+      const { data, error } = await supabase
+        .from('categories')
+        .update({
+          name: category.name,
+          description: category.description,
+          display_order: category.display_order,
+          is_active: category.is_active,
+          parent_id: category.parent_id,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', category.id)
+        .select()
+        .single();
+        
+      if (error) {
+        throw error;
+      }
+      
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      setIsDialogOpen(false);
+      setEditingCategory(null);
+      toast.success("تم تحديث التصنيف بنجاح");
+    },
+    onError: (error) => {
+      console.error("خطأ في تحديث التصنيف:", error);
+      toast.error("حدث خطأ أثناء تحديث التصنيف");
+    },
+  });
+
+  // حذف تصنيف
+  const deleteCategoryMutation = useMutation({
+    mutationFn: async (categoryId: string) => {
+      const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('id', categoryId);
+        
+      if (error) {
+        throw error;
+      }
+      
+      return categoryId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      toast.success("تم حذف التصنيف بنجاح");
+    },
+    onError: (error) => {
+      console.error("خطأ في حذف التصنيف:", error);
+      toast.error("حدث خطأ أثناء حذف التصنيف");
+    },
+  });
 
   // تصفية التصنيفات بناءً على البحث
   const filteredCategories = categories.filter(category =>
     category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    category.description.toLowerCase().includes(searchQuery.toLowerCase())
+    (category.description && category.description.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   // إضافة تصنيف جديد
   const handleAddCategory = (category: Category) => {
-    const newCategory = {
-      ...category,
-      id: `cat-${categories.length + 1}`,
-      created_at: new Date().toISOString(),
-      product_count: 0,
-    };
-    
-    setCategories([...categories, newCategory]);
-    setIsDialogOpen(false);
-    toast.success("تم إضافة التصنيف بنجاح");
+    addCategoryMutation.mutate(category);
   };
 
   // تعديل تصنيف
@@ -119,25 +165,21 @@ const Categories: React.FC = () => {
 
   // حذف تصنيف
   const handleDeleteCategory = (categoryId: string) => {
-    setCategories(categories.filter(cat => cat.id !== categoryId));
-    toast.success("تم حذف التصنيف بنجاح");
+    if (window.confirm("هل أنت متأكد من حذف هذا التصنيف؟")) {
+      deleteCategoryMutation.mutate(categoryId);
+    }
   };
 
   // تحديث تصنيف
   const handleUpdateCategory = (updatedCategory: Category) => {
-    setCategories(categories.map(cat =>
-      cat.id === updatedCategory.id ? updatedCategory : cat
-    ));
-    setIsDialogOpen(false);
-    setEditingCategory(null);
-    toast.success("تم تحديث التصنيف بنجاح");
+    updateCategoryMutation.mutate(updatedCategory);
   };
 
   // مشاهدة منتجات تصنيف معين
-  const handleViewProducts = (categoryId: string) => {
-    toast.info(`عرض منتجات التصنيف: ${categories.find(c => c.id === categoryId)?.name}`);
+  const handleViewProducts = (category: Category) => {
+    toast.info(`عرض منتجات التصنيف: ${category.name}`);
     // في التطبيق الحقيقي يمكن التوجه لصفحة المنتجات مع فلتر التصنيف
-    // navigate(`/dashboard/products?category=${categoryId}`);
+    // navigate(`/dashboard/products?category=${category.id}`);
   };
 
   // مسح نموذج التحرير
@@ -145,6 +187,24 @@ const Categories: React.FC = () => {
     setIsDialogOpen(false);
     setEditingCategory(null);
   };
+
+  // عرض حالة التحميل
+  if (isLoadingStore || (storeData && isLoadingCategories)) {
+    return <LoadingState message="جاري تحميل بيانات التصنيفات..." />;
+  }
+
+  // عرض حالة الخطأ
+  if (storeError || categoriesError) {
+    return (
+      <ErrorState 
+        title="خطأ في تحميل التصنيفات" 
+        message="لم نتمكن من تحميل بيانات التصنيفات" 
+        onRetry={() => {
+          if (categoriesError) refetchCategories();
+        }}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -211,7 +271,7 @@ const Categories: React.FC = () => {
                 onEdit={handleEditCategory}
                 onDelete={handleDeleteCategory}
                 onViewProducts={handleViewProducts}
-                currencyCode="ر.س"
+                currencyCode={storeData?.currency || "ر.س"}
               />
             )}
           </CardContent>

@@ -1,12 +1,13 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
 import { ShoppingBag, Package, Users, DollarSign } from "lucide-react";
 import { secureRetrieve } from "@/lib/encryption";
 import { motion } from "framer-motion";
 import { format, subDays } from "date-fns";
 import { ar } from "date-fns/locale";
+import { toast } from "sonner";
 
 // Import components from features/dashboard
 import StatsCard from "@/features/dashboard/components/StatsCard";
@@ -98,53 +99,50 @@ const mockRecentProducts = [
 
 // Dashboard Page
 const Dashboard: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [storeData, setStoreData] = useState<any>(null);
-  const [stats, setStats] = useState({
-    products: 0,
-    orders: 0,
-    customers: 0,
-    revenue: 0
-  });
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Fetch user session and store data
-        const { data: sessionData } = await supabase.auth.getSession();
-        const userId = sessionData.session?.user.id || await secureRetrieve('user-id');
-        
-        if (!userId) {
-          navigate('/auth');
-          return;
-        }
-        
-        // For now just use mock data, but we'd fetch from Supabase in a real app
-        setStats({
-          products: 54,
-          orders: 128,
-          customers: 35,
-          revenue: 8425
-        });
-        
-        setStoreData({
-          name: "متجر الإلكترونيات",
-          owner: "محمد عبدالله"
-        });
-        
-        // Set loading to false
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-        setIsLoading(false);
-      }
-    };
+  const fetchStoreData = async () => {
+    const userId = await secureRetrieve('user-id');
     
-    fetchDashboardData();
-  }, [navigate]);
+    if (!userId) {
+      throw new Error("لم يتم العثور على معرف المستخدم");
+    }
+    
+    const { data, error } = await supabase
+      .from('stores')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+      
+    if (error) {
+      console.error("خطأ في جلب بيانات المتجر:", error);
+      throw new Error("فشل في جلب بيانات المتجر");
+    }
+    
+    return data;
+  };
+  
+  // استخدام React Query لجلب بيانات المتجر
+  const { 
+    data: storeData, 
+    isLoading, 
+    error 
+  } = useQuery({
+    queryKey: ['storeData'],
+    queryFn: fetchStoreData,
+    staleTime: 1000 * 60 * 5, // 5 دقائق
+    retry: 1,
+    onError: (error) => {
+      console.error("خطأ في جلب بيانات المتجر:", error);
+      toast.error("حدث خطأ في جلب بيانات المتجر");
+    }
+  });
+  
+  // بيانات الإحصائيات
+  const stats = {
+    products: 54,
+    orders: 128,
+    customers: 35,
+    revenue: 8425
+  };
   
   // Format currency helper
   const formatCurrency = (amount: number) => {
@@ -161,16 +159,41 @@ const Dashboard: React.FC = () => {
   };
   
   if (isLoading) {
-    return <div className="flex justify-center items-center h-full py-12">
-      <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
-    </div>;
+    return (
+      <div className="flex justify-center items-center h-full py-12">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+        <span className="mr-3 text-primary">جاري تحميل البيانات...</span>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="flex flex-col justify-center items-center h-full py-12">
+        <div className="text-red-500 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <h3 className="text-xl font-bold text-gray-800 mb-2">حدث خطأ</h3>
+        <p className="text-gray-600 mb-4">لم نتمكن من تحميل بيانات لوحة التحكم</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600 transition-colors"
+        >
+          إعادة المحاولة
+        </button>
+      </div>
+    );
   }
   
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
       <WelcomeSection 
-        storeName={storeData?.name || "متجرك"} 
+        storeName={storeData?.store_name || "متجرك"} 
         ownerName={storeData?.owner || "المدير"} 
         newOrdersCount={7}
         lowStockCount={5}
