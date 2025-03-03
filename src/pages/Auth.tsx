@@ -76,23 +76,29 @@ const Auth = () => {
     }
   };
   
-  // Handle signup
+  // Handle signup - simplified Shopify-like approach
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email || !password) {
-      toast.error("الرجاء تعبئة جميع الحقول المطلوبة");
+      toast.error("الرجاء إدخال البريد الإلكتروني وكلمة المرور");
       return;
     }
     
     try {
       setIsLoading(true);
       
+      // Generate store name and domain from email (like Shopify)
+      const storeName = email.split('@')[0];
+      const domainName = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+      
       // Register user with Supabase
       const { data, error } = await signUpWithEmail(
         email,
         password,
         {
+          store_name: storeName,
+          domain_name: domainName,
           country: "Kuwait",
           currency: "KWD"
         }
@@ -109,8 +115,8 @@ const Auth = () => {
           .insert([
             { 
               user_id: data.user.id,
-              store_name: email.split('@')[0], // Use the part before @ as store name
-              domain_name: email.split('@')[0], // Use the part before @ as domain name
+              store_name: storeName,
+              domain_name: domainName,
               phone_number: "",
               country: "Kuwait",
               currency: "KWD"
@@ -122,7 +128,7 @@ const Auth = () => {
         }
       }
       
-      toast.success("تم إنشاء الحساب بنجاح، تفقد بريدك الإلكتروني للتحقق من حسابك");
+      toast.success("تم إنشاء متجرك بنجاح! تفقد بريدك الإلكتروني للتحقق من حسابك");
       setAuthMode("login");
       
     } catch (error: any) {
@@ -348,7 +354,7 @@ const Auth = () => {
                         onClick={() => setAuthMode("signup")}
                         className="text-primary-500 hover:text-primary-600 hover:underline font-medium"
                       >
-                        إنشاء حساب جديد
+                        إنشاء متجرك الآن
                       </button>
                     </p>
                   </CardFooter>
@@ -358,9 +364,9 @@ const Auth = () => {
               {authMode === "signup" && (
                 <Card className="border-0 shadow-xl bg-white/90 backdrop-blur">
                   <CardHeader className="space-y-2 pb-2">
-                    <CardTitle className="text-2xl text-center font-bold">بدء رحلتك مع Linok</CardTitle>
+                    <CardTitle className="text-2xl text-center font-bold">ابدأ متجرك الإلكتروني</CardTitle>
                     <CardDescription className="text-center text-base">
-                      أنشئ متجرك الإلكتروني بسهولة وسرعة
+                      سجل الآن وابدأ البيع عبر الإنترنت في دقائق
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-4">
@@ -374,11 +380,14 @@ const Auth = () => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="pr-10 pl-3 py-2 bg-white border-gray-200 focus-visible:ring-primary-400"
-                            placeholder="example@domain.com"
+                            placeholder="you@example.com"
                             required
                           />
                           <Mail className="absolute top-1/2 transform -translate-y-1/2 right-3 h-5 w-5 text-gray-400" />
                         </div>
+                        <p className="text-xs text-gray-500">
+                          سنستخدم بريدك الإلكتروني لإنشاء متجرك
+                        </p>
                       </div>
                       
                       <div className="space-y-2">
@@ -410,6 +419,15 @@ const Auth = () => {
                         </p>
                       </div>
                       
+                      <div className="border border-gray-200 bg-gray-50 rounded-md p-3">
+                        <p className="text-sm text-gray-700">بالتسجيل، أنت توافق على:</p>
+                        <ul className="text-xs text-gray-500 mt-1 space-y-1 list-disc list-inside">
+                          <li>إنشاء متجر باسمك</li>
+                          <li>توليد اسم المجال تلقائيًا</li>
+                          <li>استخدام الدينار الكويتي كعملة افتراضية</li>
+                        </ul>
+                      </div>
+                      
                       <Button
                         type="submit"
                         className="w-full h-12 bg-primary-500 hover:bg-primary-600 text-white transition-colors rounded-md font-medium text-base"
@@ -418,12 +436,12 @@ const Auth = () => {
                         {isLoading ? (
                           <>
                             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                            جاري إنشاء الحساب...
+                            جاري إنشاء المتجر...
                           </>
                         ) : (
                           <>
                             <UserPlus className="mr-2 h-5 w-5" />
-                            إنشاء المتجر
+                            إنشاء المتجر الآن
                           </>
                         )}
                       </Button>
@@ -463,7 +481,7 @@ const Auth = () => {
                             fill="#EA4335"
                           />
                         </svg>
-                        إنشاء حساب باستخدام Google
+                        تسجيل حساب باستخدام Google
                       </Button>
                     </form>
                   </CardContent>
