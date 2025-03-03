@@ -201,3 +201,114 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #a5a5a5;
 }
+
+/* Responsive Utilities */
+/* Mobile Navigation */
+.mobile-nav {
+  @apply fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around bg-white py-3 shadow-md md:hidden;
+}
+
+.mobile-nav-item {
+  @apply flex flex-col items-center justify-center space-y-1 text-gray-500 hover:text-primary-500;
+}
+
+.mobile-nav-label {
+  @apply text-xs font-medium;
+}
+
+/* AI Insights Card */
+.ai-insight-card {
+  @apply relative overflow-hidden rounded-lg border border-primary-100 bg-gradient-to-r from-primary-50 to-white p-4 shadow-sm transition-all hover:shadow-md;
+}
+
+.ai-insight-icon {
+  @apply absolute -right-3 -top-3 h-16 w-16 opacity-10 text-primary-300;
+}
+
+.ai-insight-title {
+  @apply mb-2 text-lg font-semibold text-primary-700;
+}
+
+.ai-insight-content {
+  @apply text-sm text-gray-600;
+}
+
+/* Glassmorphism Effects */
+.glass-card {
+  @apply bg-white/90 backdrop-blur-sm border border-white/20 shadow-lg;
+}
+
+.glass-nav {
+  @apply bg-white/80 backdrop-blur-lg border-b border-gray-200/50;
+}
+
+/* Responsive Typography */
+@media (max-width: 640px) {
+  .h1-mobile {
+    @apply text-2xl;
+  }
+  .h2-mobile {
+    @apply text-xl;
+  }
+  .text-mobile {
+    @apply text-sm;
+  }
+}
+
+/* Horizontal Scrollable List */
+.scroll-container {
+  @apply flex w-full overflow-x-auto pb-2 hide-scrollbar gap-3 snap-x snap-mandatory;
+}
+
+.scroll-item {
+  @apply flex-shrink-0 snap-center;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Pulse Animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Mobile Bottom Sheet */
+.bottom-sheet {
+  @apply fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl bg-white shadow-2xl transform transition-transform duration-300;
+}
+
+.bottom-sheet-open {
+  @apply translate-y-0;
+}
+
+.bottom-sheet-closed {
+  @apply translate-y-full;
+}
+
+.bottom-sheet-handle {
+  @apply mx-auto mt-2 h-1 w-16 rounded-full bg-gray-300;
+}
+
+/* Dashboard AI Assistant */
+.ai-assistant-bubble {
+  @apply fixed bottom-20 right-4 h-12 w-12 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 shadow-lg flex items-center justify-center text-white cursor-pointer transform transition-transform hover:scale-110 hover:rotate-12 md:bottom-8;
+}
+
+.ai-assistant-pulse {
+  @apply absolute inset-0 rounded-full bg-primary-400 animate-ping opacity-75;
+}
