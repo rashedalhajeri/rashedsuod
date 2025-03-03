@@ -6,10 +6,14 @@ import { Link } from "react-router-dom";
 
 interface UnderDevelopmentPageProps {
   message?: string;
+  returnPath?: string;
+  returnLabel?: string;
 }
 
 const UnderDevelopmentPage: React.FC<UnderDevelopmentPageProps> = ({ 
-  message = "هذه الصفحة قيد التطوير"
+  message = "هذه الصفحة قيد التطوير",
+  returnPath = "/dashboard",
+  returnLabel = "العودة للوحة التحكم"
 }) => {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
@@ -23,7 +27,7 @@ const UnderDevelopmentPage: React.FC<UnderDevelopmentPageProps> = ({
       </p>
       
       <Button asChild>
-        <Link to="/dashboard">العودة للوحة التحكم</Link>
+        <Link to={returnPath}>{returnLabel}</Link>
       </Button>
     </div>
   );

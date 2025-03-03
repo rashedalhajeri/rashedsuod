@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,8 +22,12 @@ import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
 import Orders from "./pages/Orders";
 import Customers from "./pages/Customers";
+import Categories from "./pages/Categories";
+import Marketing from "./pages/Marketing";
+import Payment from "./pages/Payment";
+import Store from "./pages/Store";
 
-// Import placeholder component
+// Import components
 import UnderDevelopmentPage from "./components/dashboard/UnderDevelopmentPage";
 
 const queryClient = new QueryClient({
@@ -240,11 +243,16 @@ const App = () => (
               <Route path="orders" element={<Orders />} />
               <Route path="products" element={<Products />} />
               <Route path="customers" element={<Customers />} />
-              <Route path="categories" element={<UnderDevelopmentPage message="صفحة التصنيفات قيد التطوير" />} />
+              <Route path="categories" element={<Categories />} />
+              <Route path="marketing" element={<Marketing />} />
+              <Route path="payment" element={<Payment />} />
+              <Route path="store" element={<Store />} />
               <Route path="settings" element={<UnderDevelopmentPage message="صفحة الإعدادات قيد التطوير" />} />
-              <Route path="payments" element={<UnderDevelopmentPage message="صفحة المدفوعات قيد التطوير" />} />
               <Route path="reports" element={<UnderDevelopmentPage message="صفحة التقارير قيد التطوير" />} />
               <Route path="profile" element={<UnderDevelopmentPage message="صفحة الملف الشخصي قيد التطوير" />} />
+              <Route path="reviews" element={<UnderDevelopmentPage message="صفحة التقييمات قيد التطوير" />} />
+              <Route path="subscriptions" element={<UnderDevelopmentPage message="صفحة الاشتراكات قيد التطوير" />} />
+              <Route path="shipping" element={<UnderDevelopmentPage message="صفحة الشحن قيد التطوير" />} />
             </Route>
             
             {/* 404 Route */}
