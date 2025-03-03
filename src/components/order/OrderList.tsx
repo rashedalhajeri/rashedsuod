@@ -218,7 +218,7 @@ const OrderList: React.FC<OrderListProps> = ({
             onChange={(e) => setLocalSearchQuery(e.target.value)}
           />
         </div>
-        <Select value={localStatusFilter} onValueChange={setLocalStatusFilter} className="bg-white">
+        <Select value={localStatusFilter} onValueChange={setLocalStatusFilter}>
           <SelectTrigger className="w-full sm:w-40 border-primary-100 hover:border-primary-300 transition-all bg-white shadow-sm">
             <SelectValue placeholder="حالة الطلب" />
           </SelectTrigger>
