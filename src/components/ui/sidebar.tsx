@@ -150,13 +150,16 @@ export function SidebarMenuLink({
   const isMobile = useIsMobile();
   
   const linkContent = (
-    <Link to={href} className={cn(
-      "flex items-center p-3 rounded-lg transition-colors", 
-      active ? 
-        "bg-gradient-to-r from-primary-50 to-primary-100 text-primary-600 border-r-4 border-primary-500" : 
-        "text-gray-700 hover:bg-primary-50/50 hover:text-primary-600", 
-      !expanded && "md:justify-center"
-    )}>
+    <Link 
+      to={href} 
+      className={cn(
+        "flex items-center p-3 rounded-lg transition-colors", 
+        active ? 
+          "bg-gradient-to-r from-primary-50 to-primary-100 text-primary-600 border-r-4 border-primary-500" : 
+          "text-gray-700 hover:bg-primary-50/50 hover:text-primary-600", 
+        !expanded && "md:justify-center"
+      )}
+    >
       <Icon className={cn("h-5 w-5", expanded ? "ml-3" : "")} />
       {expanded && <span className="mr-2 font-medium">{children}</span>}
       {active && expanded && <ChevronRight className="mr-auto h-4 w-4 text-primary-500" />}
