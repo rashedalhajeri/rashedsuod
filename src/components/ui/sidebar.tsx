@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
@@ -210,20 +209,6 @@ export function SidebarUserSection({
   
   return <div className={cn("p-4 border-b border-gray-100", className)}>
       <div className="flex items-center justify-between">
-        {expanded ? <div className="flex items-center">
-            <div className="h-9 w-9 bg-primary-100 rounded-md flex items-center justify-center mr-2">
-              <User className="h-5 w-5 text-primary-600" />
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-800">حسابي</h3>
-              <p className="text-xs text-gray-500">{storeName}</p>
-            </div>
-          </div> : <div className="flex justify-center w-full">
-            <div className="h-8 w-8 bg-primary-100 rounded-md flex items-center justify-center">
-              <User className="h-4 w-4 text-primary-600" />
-            </div>
-          </div>}
-
         {expanded && <div className="flex items-center gap-2">
             <button className="relative p-2 rounded-full hover:bg-gray-100 text-gray-600">
               <Bell className="h-4 w-4" />
@@ -258,10 +243,5 @@ export function SidebarUserSection({
             </DropdownMenu>
           </div>}
       </div>
-
-      {expanded && storeName && domainName && <Button className="w-full mt-3 text-xs h-8" size="sm" onClick={() => window.open(`https://${domainName}.linok.me`, '_blank')}>
-          <Store className="h-3.5 w-3.5 ml-1" />
-          زيارة المتجر
-        </Button>}
     </div>;
 }
