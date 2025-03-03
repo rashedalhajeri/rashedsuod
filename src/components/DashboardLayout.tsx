@@ -3,16 +3,18 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase, getStoreData } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import { LogOut, Settings, ShoppingBag, Home, Package, BarChart, Users, Menu, X, Shield, ChevronRight, Zap, Bell, Tag, CreditCard, Store, Percent } from "lucide-react";
+import { LogOut, Settings, ShoppingBag, Home, Package, BarChart, Users, Menu, X, Shield, ChevronRight, Zap, Bell, Tag, CreditCard, Store, Percent, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { secureStore, secureRetrieve, secureRemove } from "@/lib/encryption";
 import { useMediaQuery, useIsMobile } from "@/hooks/use-mobile";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuLink, SidebarTrigger, SidebarUserSection } from "@/components/ui/sidebar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
 interface DashboardLayoutProps {
   children: ReactNode;
 }
+
 interface Store {
   id: string;
   store_name: string;
@@ -20,6 +22,7 @@ interface Store {
   country: string;
   currency: string;
 }
+
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   children
 }) => {
@@ -27,9 +30,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const [loading, setLoading] = useState(true);
   const [store, setStore] = useState<Store | null>(null);
   const [hasNotifications, setHasNotifications] = useState(false);
+  const [currentPlan, setCurrentPlan] = useState<string>("free");
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const location = useLocation();
+
   useEffect(() => {
     setHasNotifications(Math.random() > 0.5);
     const fetchSessionAndStore = async () => {
@@ -55,6 +60,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           throw storeError;
         }
         setStore(storeData);
+        setCurrentPlan(Math.random() > 0.7 ? "premium" : "free");
       } catch (error) {
         console.error("Error fetching data:", error);
         toast.error("حدث خطأ أثناء تحميل بيانات المتجر");
@@ -79,6 +85,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       authListener?.subscription.unsubscribe();
     };
   }, [navigate]);
+
   const handleLogout = async () => {
     try {
       const {
@@ -94,6 +101,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       toast.error("حدث خطأ أثناء تسجيل الخروج");
     }
   };
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary-50/50 to-gray-50">
         <div className="text-center">
@@ -102,6 +110,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         </div>
       </div>;
   }
+
   const navigation = [{
     name: 'الرئيسية',
     href: '/dashboard',
@@ -139,6 +148,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     href: '/settings',
     icon: Settings
   }];
+
   return <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 rtl">
       <SidebarProvider defaultExpanded={!isMobile}>
         {isMobile && <header className="fixed top-0 left-0 right-0 z-40 glass-nav shadow-sm backdrop-blur-sm bg-white/90">
@@ -243,18 +253,55 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </SidebarContent>
             
             <SidebarFooter>
-              
-              
               <div className="bg-gradient-to-r from-primary-50 to-blue-50 p-3 rounded-lg border border-primary-100">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="h-6 w-6 bg-primary-500/10 rounded flex items-center justify-center">
-                    <Zap className="h-3.5 w-3.5 text-primary-600" />
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-1.5">
+                    <div className={cn(
+                      "h-5 w-5 rounded-full flex items-center justify-center",
+                      currentPlan === "premium" 
+                        ? "bg-gradient-to-br from-yellow-300 to-yellow-500" 
+                        : "bg-gradient-to-br from-gray-300 to-gray-400"
+                    )}>
+                      <Crown className="h-3 w-3 text-white" />
+                    </div>
+                    <span className="text-xs font-medium text-gray-700">
+                      الباقة الحالية: {currentPlan === "premium" ? "المميزة" : "المجانية"}
+                    </span>
                   </div>
-                  <span className="text-xs font-medium text-primary-700">تحديثات النظام</span>
+                  
+                  {currentPlan === "premium" && (
+                    <span className="text-xs px-1.5 py-0.5 bg-green-100 text-green-800 rounded-full border border-green-200">
+                      مفعلة
+                    </span>
+                  )}
                 </div>
-                <p className="text-xs text-gray-600 mb-2">تم إضافة ميزات جديدة إلى متجرك!</p>
-                <button className="w-full text-xs bg-white text-primary-600 hover:text-primary-700 py-1.5 rounded border border-primary-100 transition-colors">
-                  استكشف الآن
+                
+                {currentPlan === "premium" ? (
+                  <div className="mb-2">
+                    <p className="text-xs text-gray-600">تستمتع حالياً بجميع المميزات المتاحة في متجرك!</p>
+                  </div>
+                ) : (
+                  <div className="mb-2">
+                    <p className="text-xs text-gray-600">قم بترقية متجرك للحصول على ميزات إضافية!</p>
+                  </div>
+                )}
+                
+                <button className={cn(
+                  "w-full text-xs py-1.5 rounded border transition-colors flex items-center justify-center gap-1.5",
+                  currentPlan === "premium"
+                    ? "bg-white text-gray-600 hover:text-gray-700 border-gray-200"
+                    : "bg-white text-primary-600 hover:text-primary-700 border-primary-100 hover:bg-primary-50"
+                )}>
+                  {currentPlan === "premium" ? (
+                    <>
+                      <span>تفاصيل الاشتراك</span>
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="h-3.5 w-3.5" />
+                      <span>ترقية للباقة المميزة</span>
+                    </>
+                  )}
                 </button>
               </div>
             </SidebarFooter>
@@ -302,4 +349,5 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       </div>
     </div>;
 };
+
 export default DashboardLayout;
