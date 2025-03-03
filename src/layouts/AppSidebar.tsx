@@ -7,7 +7,6 @@ import {
   SidebarHeader,
   SidebarContent,
   SidebarFooter,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -31,9 +30,7 @@ import {
   Settings,
   LogOut,
   ChevronDown,
-  ChevronRight,
   Store,
-  Bell,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { secureRemove } from "@/lib/encryption";
@@ -114,11 +111,9 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ storeData }) => {
     },
   ];
 
+  // استخدام className للتحكم في عرض/إخفاء المحتوى بدلاً من onExpand/onCollapse
   return (
-    <Sidebar
-      onExpand={() => setIsExpanded(true)}
-      onCollapse={() => setIsExpanded(false)}
-    >
+    <Sidebar className={isExpanded ? "w-64" : "w-20"}>
       <SidebarHeader className="border-b py-3.5 px-3">
         <div className="flex items-center justify-between">
           {isExpanded ? (
@@ -135,7 +130,14 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ storeData }) => {
               <Store className="h-5 w-5" />
             </div>
           )}
-          <SidebarTrigger />
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="h-8 w-8"
+          >
+            <ChevronDown className="h-4 w-4" />
+          </Button>
         </div>
       </SidebarHeader>
       <SidebarContent className="flex flex-col justify-between">

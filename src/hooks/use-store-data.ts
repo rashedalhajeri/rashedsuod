@@ -15,7 +15,7 @@ export const useStoreData = () => {
     
     console.log("Fetching store data for user:", userId);
     
-    // FIXED: استخدام limit(1) بدلاً من single() لتجنب الخطأ عند وجود أكثر من متجر
+    // استخدام limit(1) بدلاً من single() لتجنب الخطأ عند وجود أكثر من متجر
     const { data, error } = await supabase
       .from('stores')
       .select('*')
@@ -46,13 +46,13 @@ export const useStoreData = () => {
   });
 };
 
-// Helper function for formatting currency based on store currency
+// دالة مساعدة لتنسيق العملة بناءً على عملة المتجر
 export const getCurrencyFormatter = (currency: string = 'SAR') => {
   return (price: number) => {
     let currencyCode = currency;
     let locale = 'ar-SA';
     
-    // Set appropriate locale for the currency
+    // تعيين اللغة المناسبة للعملة
     switch (currency) {
       case 'KWD':
         locale = 'ar-KW';

@@ -1,209 +1,315 @@
 
 import React, { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Filter, User, Mail, Phone, Calendar, ExternalLink } from "lucide-react";
-import { format } from "date-fns";
-import { ar } from "date-fns/locale";
-import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Link } from "react-router-dom";
-import CustomerStats from "@/components/customer/CustomerStats";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Search, Plus, MoreHorizontal, Mail, UserPlus, Filter } from "lucide-react";
+import { useStoreData } from "@/hooks/use-store-data";
 
-// نوع البيانات للعملاء
-interface Customer {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  joinDate: Date;
-  totalOrders: number;
-  totalSpent: number;
-  avatar?: string;
-}
-
-// بيانات وهمية للعملاء (سيتم استبدالها بالبيانات الحقيقية)
-const dummyCustomers: Customer[] = [
+// العملاء التجريبية
+const dummyCustomers = [
   {
     id: "1",
-    name: "أحمد محمد",
-    email: "ahmed@example.com",
-    phone: "966500000001",
-    joinDate: new Date(2023, 0, 15),
-    totalOrders: 5,
-    totalSpent: 850,
+    name: "محمد أحمد",
+    email: "mohamed@example.com",
+    phone: "+966512345678",
+    orders: 8,
+    totalSpent: 1250,
+    lastOrder: "2023-06-15",
   },
   {
     id: "2",
-    name: "سارة علي",
-    email: "sarah@example.com",
-    phone: "966500000002",
-    joinDate: new Date(2023, 1, 20),
-    totalOrders: 3,
-    totalSpent: 600,
+    name: "فاطمة علي",
+    email: "fatima@example.com",
+    phone: "+966523456789",
+    orders: 5,
+    totalSpent: 850,
+    lastOrder: "2023-06-10",
   },
   {
     id: "3",
-    name: "محمد عبدالله",
-    email: "mohammed@example.com",
-    phone: "966500000003",
-    joinDate: new Date(2023, 2, 10),
-    totalOrders: 7,
-    totalSpent: 1200,
+    name: "أحمد محمود",
+    email: "ahmed@example.com",
+    phone: "+966534567890",
+    orders: 3,
+    totalSpent: 520,
+    lastOrder: "2023-06-05",
   },
   {
     id: "4",
-    name: "فاطمة خالد",
-    email: "fatima@example.com",
-    phone: "966500000004",
-    joinDate: new Date(2023, 3, 5),
-    totalOrders: 2,
-    totalSpent: 450,
+    name: "سارة محمد",
+    email: "sara@example.com",
+    phone: "+966545678901",
+    orders: 12,
+    totalSpent: 2200,
+    lastOrder: "2023-06-18",
   },
   {
     id: "5",
-    name: "علي حسن",
-    email: "ali@example.com",
-    phone: "966500000005",
-    joinDate: new Date(2023, 4, 15),
-    totalOrders: 4,
-    totalSpent: 780,
+    name: "عمر خالد",
+    email: "omar@example.com",
+    phone: "+966556789012",
+    orders: 2,
+    totalSpent: 350,
+    lastOrder: "2023-05-28",
   },
 ];
 
+// مكون CustomerStats المخصص
+const CustomerStats = ({ newCustomers, totalCustomers, totalSpent }: { 
+  newCustomers: number;
+  totalCustomers: number;
+  totalSpent: number;
+}) => {
+  return (
+    <div className="grid gap-4 md:grid-cols-3">
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium">إجمالي العملاء</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{totalCustomers}</div>
+          <p className="text-xs text-muted-foreground">
+            +{newCustomers} عميل جديد هذا الشهر
+          </p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium">إجمالي المبيعات</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{totalSpent} ريال</div>
+          <p className="text-xs text-muted-foreground">
+            متوسط 430 ريال لكل عميل
+          </p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium">معدل التفاعل</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">68%</div>
+          <p className="text-xs text-muted-foreground">
+            زيادة 12% عن الشهر الماضي
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
 const Customers = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const { data: storeData } = useStoreData();
 
-  // تصفية العملاء حسب البحث
-  const filteredCustomers = dummyCustomers.filter((customer) => {
-    return (
-      searchQuery === "" ||
-      customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      customer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      customer.phone.includes(searchQuery)
-    );
-  });
+  const handleCustomerSelection = (customerId: string, selected: boolean) => {
+    if (selected) {
+      setSelectedCustomers((prev) => [...prev, customerId]);
+    } else {
+      setSelectedCustomers((prev) =>
+        prev.filter((id) => id !== customerId)
+      );
+    }
+  };
 
+  const handleSelectAll = (selected: boolean) => {
+    if (selected) {
+      setSelectedCustomers(dummyCustomers.map((customer) => customer.id));
+    } else {
+      setSelectedCustomers([]);
+    }
+  };
+
+  // تصفية العملاء بناءً على البحث
+  const filteredCustomers = dummyCustomers.filter((customer) =>
+    customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.phone.includes(searchTerm)
+  );
+
+  // إحصائيات العملاء
+  const totalSpent = dummyCustomers.reduce((sum, customer) => sum + customer.totalSpent, 0);
+  
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">العملاء</h1>
-        <p className="text-muted-foreground mt-1">إدارة قاعدة عملائك</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <CustomerStats 
-          newCustomers={2}
-          totalCustomers={dummyCustomers.length}
-          activeCustomers={4}
-          averageSpend={775}
-        />
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex gap-2 items-center">
-          <h2 className="text-lg font-semibold">قائمة العملاء</h2>
-          <span className="text-muted-foreground text-sm bg-muted px-1.5 py-0.5 rounded-md">
-            {filteredCustomers.length}
-          </span>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">العملاء</h1>
+          <p className="text-muted-foreground mt-1">إدارة قاعدة عملائك</p>
         </div>
-
-        <div className="flex w-full sm:w-auto gap-2">
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="بحث عن عميل..."
-              className="pl-8 w-full"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <Button variant="outline" size="icon">
-            <Filter className="h-4 w-4" />
-          </Button>
-        </div>
+        <Button>
+          <UserPlus className="mr-2 h-4 w-4" />
+          إضافة عميل
+        </Button>
       </div>
+
+      {/* إحصائيات العملاء */}
+      <CustomerStats
+        newCustomers={3}
+        totalCustomers={dummyCustomers.length}
+        totalSpent={totalSpent}
+      />
 
       <Card>
+        <CardHeader className="pb-3">
+          <CardTitle>جميع العملاء</CardTitle>
+          <CardDescription>
+            عرض وإدارة جميع عملائك
+          </CardDescription>
+        </CardHeader>
         <CardContent className="p-0">
-          <ScrollArea className="h-[calc(100vh-20rem)] w-full">
-            <div className="space-y-0.5">
-              {filteredCustomers.length > 0 ? (
-                filteredCustomers.map((customer) => (
-                  <React.Fragment key={customer.id}>
-                    <div className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors cursor-pointer">
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src={customer.avatar} />
-                          <AvatarFallback>
-                            {customer.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")
-                              .toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{customer.name}</p>
-                          <div className="flex items-center gap-3 text-sm">
-                            <div className="flex items-center gap-1">
-                              <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                              <span className="text-muted-foreground">
-                                {customer.email}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Phone className="h-3.5 w-3.5 text-muted-foreground" />
-                              <span className="text-muted-foreground">
-                                {customer.phone}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-muted-foreground">
-                            {format(customer.joinDate, "dd/MM/yyyy", { locale: ar })}
-                          </span>
-                        </div>
-                        <div className="w-32 text-left">
-                          <div className="font-medium">
-                            {customer.totalOrders} طلب
-                          </div>
-                          <div className="text-muted-foreground text-xs">
-                            {customer.totalSpent.toLocaleString()} ريال إجمالي
-                          </div>
-                        </div>
-                        <Button variant="ghost" size="icon" asChild>
-                          <Link to={`/dashboard/customers/${customer.id}`}>
-                            <ExternalLink className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                    <Separator />
-                  </React.Fragment>
-                ))
-              ) : (
-                <div className="py-12 text-center">
-                  <User className="h-12 w-12 mx-auto text-muted-foreground" />
-                  <p className="mt-2 text-muted-foreground">
-                    لا يوجد عملاء مطابقون لعملية البحث
-                  </p>
-                </div>
-              )}
+          <div className="flex flex-col md:flex-row justify-between p-4 space-y-3 md:space-y-0">
+            <div className="flex w-full md:w-1/3 items-center relative">
+              <Search className="absolute right-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="بحث عن عميل..."
+                className="pl-3 pr-9"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-          </ScrollArea>
+            <div className="flex items-center space-x-2 rtl:space-x-reverse">
+              <Select defaultValue="all">
+                <SelectTrigger className="w-[180px]">
+                  <Filter className="mr-2 h-4 w-4" />
+                  <SelectValue placeholder="جميع العملاء" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">جميع العملاء</SelectItem>
+                  <SelectItem value="active">العملاء النشطين</SelectItem>
+                  <SelectItem value="new">العملاء الجدد</SelectItem>
+                  <SelectItem value="vip">كبار العملاء</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="border-t">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[40px]">
+                    <Checkbox
+                      checked={
+                        selectedCustomers.length === filteredCustomers.length &&
+                        filteredCustomers.length > 0
+                      }
+                      onCheckedChange={handleSelectAll}
+                    />
+                  </TableHead>
+                  <TableHead>اسم العميل</TableHead>
+                  <TableHead>البريد الإلكتروني</TableHead>
+                  <TableHead>رقم الهاتف</TableHead>
+                  <TableHead>عدد الطلبات</TableHead>
+                  <TableHead>إجمالي المشتريات</TableHead>
+                  <TableHead>آخر طلب</TableHead>
+                  <TableHead className="text-left">إجراءات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredCustomers.length > 0 ? (
+                  filteredCustomers.map((customer) => (
+                    <TableRow key={customer.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedCustomers.includes(customer.id)}
+                          onCheckedChange={(checked) =>
+                            handleCustomerSelection(customer.id, !!checked)
+                          }
+                        />
+                      </TableCell>
+                      <TableCell className="font-medium">{customer.name}</TableCell>
+                      <TableCell>{customer.email}</TableCell>
+                      <TableCell>{customer.phone}</TableCell>
+                      <TableCell>{customer.orders}</TableCell>
+                      <TableCell>{customer.totalSpent} ريال</TableCell>
+                      <TableCell>{customer.lastOrder}</TableCell>
+                      <TableCell className="text-left">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>إجراءات</DropdownMenuLabel>
+                            <DropdownMenuItem>
+                              عرض التفاصيل
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Mail className="mr-2 h-4 w-4" />
+                              إرسال بريد إلكتروني
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              تعديل البيانات
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-destructive">
+                              حذف
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center h-32">
+                      لا يوجد عملاء متطابقين مع معايير البحث
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {selectedCustomers.length > 0 && (
+            <div className="flex items-center justify-between p-4 border-t">
+              <span className="text-sm">
+                تم تحديد {selectedCustomers.length} عميل
+              </span>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => setSelectedCustomers([])}>
+                  إلغاء التحديد
+                </Button>
+                <Button variant="secondary" size="sm">
+                  <Mail className="mr-2 h-4 w-4" />
+                  إرسال بريد إلكتروني
+                </Button>
+                <Button variant="destructive" size="sm">
+                  حذف المحدد
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
