@@ -1,4 +1,3 @@
-
 import React, { ReactNode, useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase, getStoreData } from "@/integrations/supabase/client";
@@ -251,39 +250,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 className="hidden md:flex items-center gap-1.5 ml-2 p-2 rounded-md hover:bg-gray-100 text-gray-600"
               >
                 <LogOut size={18} />
-              </button>
-            </div>
-          </div>
-        </div>
-        
-        {/* Secondary Navigation */}
-        <div className="border-t border-gray-100 px-4 md:px-6 lg:px-8 bg-white/70 backdrop-blur-md">
-          <div className="flex items-center justify-between h-10">
-            <div className="flex items-center space-x-6 space-x-reverse overflow-x-auto hide-scrollbar">
-              {navigation.slice(0, 6).map((item) => {
-                const isActive = location.pathname === item.href;
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={cn(
-                      "flex items-center px-1 py-2 text-sm font-medium whitespace-nowrap",
-                      isActive 
-                        ? "text-primary-600 border-b-2 border-primary-500" 
-                        : "text-gray-600 hover:text-primary-600 hover:border-b-2 hover:border-primary-200"
-                    )}
-                  >
-                    <item.icon className="h-3.5 w-3.5 ml-1.5" />
-                    {item.name}
-                  </Link>
-                );
-              })}
-            </div>
-            
-            <div className="flex items-center">
-              <button className="flex items-center gap-1 bg-gradient-to-r from-primary-500 to-primary-600 text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-sm hover:shadow-md transition-shadow">
-                <Zap size={12} className="ml-0.5" />
-                المساعد الذكي
               </button>
             </div>
           </div>
