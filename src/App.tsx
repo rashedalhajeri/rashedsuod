@@ -115,16 +115,16 @@ const ProtectedRoute = ({ children, redirectIfStore = false }: { children: React
           if (sessionData.session && sessionData.session.user.id === userId) {
             setIsAuthenticated(true);
             
-            // Check if user has a store
-            const { data: storeData, error: storeError } = await supabase
+            // Check if user has a store - FIXED: use count() instead of maybeSingle()
+            const { count, error: storeError } = await supabase
               .from('stores')
-              .select('id')
-              .eq('user_id', userId)
-              .maybeSingle();
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', userId);
             
             if (storeError) throw storeError;
             
-            setHasStore(!!storeData);
+            // If count is greater than 0, user has at least one store
+            setHasStore(count ? count > 0 : false);
           } else {
             secureRemove('user-id');
             setIsAuthenticated(false);
@@ -137,16 +137,16 @@ const ProtectedRoute = ({ children, redirectIfStore = false }: { children: React
             await secureStore('user-id', sessionData.session.user.id);
             setIsAuthenticated(true);
             
-            // Check if user has a store
-            const { data: storeData, error: storeError } = await supabase
+            // Check if user has a store - FIXED: use count() instead of maybeSingle()
+            const { count, error: storeError } = await supabase
               .from('stores')
-              .select('id')
-              .eq('user_id', sessionData.session.user.id)
-              .maybeSingle();
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', sessionData.session.user.id);
             
             if (storeError) throw storeError;
             
-            setHasStore(!!storeData);
+            // If count is greater than 0, user has at least one store
+            setHasStore(count ? count > 0 : false);
           } else {
             setIsAuthenticated(false);
             setHasStore(false);

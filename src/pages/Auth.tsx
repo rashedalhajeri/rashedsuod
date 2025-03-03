@@ -51,15 +51,14 @@ const Auth = () => {
   // Function to check if user has a store and redirect accordingly
   const checkIfUserHasStore = async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      const { count, error } = await supabase
         .from('stores')
-        .select('id')
-        .eq('user_id', userId)
-        .maybeSingle();
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId);
 
       if (error) throw error;
       
-      if (data) {
+      if (count && count > 0) {
         // User has a store, redirect to dashboard
         navigate("/dashboard");
       } else {

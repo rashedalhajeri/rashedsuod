@@ -15,10 +15,13 @@ export const useStoreData = () => {
     
     console.log("Fetching store data for user:", userId);
     
+    // FIXED: استخدام limit(1) بدلاً من single() لتجنب الخطأ عند وجود أكثر من متجر
     const { data, error } = await supabase
       .from('stores')
       .select('*')
       .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
       .single();
       
     if (error) {
