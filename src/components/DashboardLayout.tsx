@@ -242,31 +242,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 </SidebarMenu>
               </SidebarGroup>
             </SidebarContent>
-            
-            {store && (
-              <SidebarFooter className="border-t border-gray-100 p-4">
-                <div className="bg-gradient-to-r from-gray-50 to-white rounded-md p-3 border border-gray-200">
-                  <h4 className="font-medium text-sm text-gray-800 mb-2 flex items-center">
-                    <Shield className="h-3.5 w-3.5 mr-1.5 text-primary-500" />
-                    معلومات المتجر
-                  </h4>
-                  <div className="space-y-1 text-xs">
-                    <p className="flex justify-between text-gray-500">
-                      <span>المجال:</span>
-                      <span className="font-medium text-gray-800 dir-ltr">{store.domain_name}.linok.me</span>
-                    </p>
-                    <p className="flex justify-between text-gray-500">
-                      <span>البلد:</span>
-                      <span className="font-medium text-gray-800">{store.country}</span>
-                    </p>
-                    <p className="flex justify-between text-gray-500">
-                      <span>العملة:</span>
-                      <span className="font-medium text-gray-800">{store.currency}</span>
-                    </p>
-                  </div>
-                </div>
-              </SidebarFooter>
-            )}
           </Sidebar>
           
           <main className="flex-grow py-6 px-4 md:px-6 lg:px-8 transition-all duration-300">
