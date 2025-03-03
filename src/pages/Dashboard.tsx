@@ -4,7 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import { LogOut, Settings, ShoppingBag, Home } from "lucide-react";
+import { Settings, ShoppingBag, Home, Package, BarChart, Users } from "lucide-react";
+import DashboardLayout from "@/components/DashboardLayout";
+import { Button } from "@/components/ui/button";
 
 interface Store {
   id: string;
@@ -18,6 +20,7 @@ const Dashboard: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [store, setStore] = useState<Store | null>(null);
+  const [productCount, setProductCount] = useState(0);
   const navigate = useNavigate();
 
   // Set the document direction to RTL for Arabic language support
@@ -61,6 +64,18 @@ const Dashboard: React.FC = () => {
         }
         
         setStore(storeData);
+
+        // Fetch product count
+        const { count, error: countError } = await supabase
+          .from('products')
+          .select('*', { count: 'exact', head: true })
+          .eq('store_id', storeData.id);
+        
+        if (countError) {
+          throw countError;
+        }
+        
+        setProductCount(count || 0);
       } catch (error) {
         console.error("Error fetching data:", error);
         toast.error("حدث خطأ أثناء تحميل بيانات المتجر");
@@ -71,34 +86,7 @@ const Dashboard: React.FC = () => {
     };
 
     fetchSessionAndStore();
-
-    // Set up listener for auth changes
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, newSession) => {
-        setSession(newSession);
-        if (event === 'SIGNED_OUT') {
-          navigate("/");
-        }
-      }
-    );
-
-    return () => {
-      authListener?.subscription.unsubscribe();
-    };
   }, [navigate]);
-
-  // Function to handle logout
-  const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      toast.success("تم تسجيل الخروج بنجاح");
-      navigate("/");
-    } catch (error: any) {
-      console.error("Error signing out:", error.message);
-      toast.error("حدث خطأ أثناء تسجيل الخروج");
-    }
-  };
 
   if (loading) {
     return (
@@ -112,38 +100,12 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Dashboard Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-primary-600">Linok</span>
-            <span className="text-lg font-medium text-gray-600">.me</span>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            {store && (
-              <div className="text-gray-700 font-medium">
-                {store.store_name}
-              </div>
-            )}
-            
-            <button 
-              onClick={handleLogout}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full flex items-center gap-2 hover:bg-gray-200 transition-colors"
-            >
-              <LogOut size={16} />
-              تسجيل الخروج
-            </button>
-          </div>
-        </div>
-      </header>
-      
-      {/* Dashboard Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white shadow rounded-lg p-6 mb-8">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">لوحة التحكم</h1>
-          {store && (
+    <DashboardLayout>
+      <div className="p-8">
+        <h1 className="text-2xl font-bold text-gray-800 mb-4">لوحة التحكم</h1>
+        
+        {store && (
+          <div className="bg-white shadow rounded-lg p-6 mb-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-gray-50 rounded-lg p-4">
                 <h2 className="text-lg font-semibold text-gray-700 mb-3">معلومات المتجر</h2>
@@ -157,22 +119,30 @@ const Dashboard: React.FC = () => {
               
               <div className="bg-gray-50 rounded-lg p-4">
                 <h2 className="text-lg font-semibold text-gray-700 mb-3">الإحصائيات</h2>
-                <p className="text-gray-500">لا توجد إحصائيات متاحة حاليًا</p>
+                <div className="space-y-2">
+                  <p><span className="font-medium">عدد المنتجات:</span> {productCount}</p>
+                  <p><span className="font-medium">عدد الطلبات:</span> 0</p>
+                  <p><span className="font-medium">عدد العملاء:</span> 0</p>
+                </div>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-gray-800">المنتجات</h2>
-              <ShoppingBag className="h-6 w-6 text-primary-500" />
+              <Package className="h-6 w-6 text-primary-500" />
             </div>
             <p className="text-gray-600 mb-4">إدارة منتجات متجرك</p>
-            <button className="text-primary-600 font-medium hover:underline">
+            <Button 
+              onClick={() => navigate('/products')}
+              className="text-primary-600 font-medium hover:underline bg-transparent"
+              variant="ghost"
+            >
               إضافة منتج جديد
-            </button>
+            </Button>
           </div>
           
           <div className="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow">
@@ -181,9 +151,12 @@ const Dashboard: React.FC = () => {
               <Settings className="h-6 w-6 text-primary-500" />
             </div>
             <p className="text-gray-600 mb-4">تخصيص إعدادات متجرك</p>
-            <button className="text-primary-600 font-medium hover:underline">
+            <Button 
+              className="text-primary-600 font-medium hover:underline bg-transparent"
+              variant="ghost"
+            >
               تعديل الإعدادات
-            </button>
+            </Button>
           </div>
           
           <div className="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow">
@@ -192,13 +165,16 @@ const Dashboard: React.FC = () => {
               <Home className="h-6 w-6 text-primary-500" />
             </div>
             <p className="text-gray-600 mb-4">زيارة المتجر الخاص بك</p>
-            <button className="text-primary-600 font-medium hover:underline">
+            <Button 
+              className="text-primary-600 font-medium hover:underline bg-transparent"
+              variant="ghost"
+            >
               عرض المتجر
-            </button>
+            </Button>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 };
 
