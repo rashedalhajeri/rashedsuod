@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect } from "react";
-import { Menu, X, ChevronDown, LogIn, UserPlus, CheckCircle2, XCircle, LogOut, User } from "lucide-react";
+import { Menu, X, ChevronDown, LogIn, UserPlus, CheckCircle2, XCircle, LogOut, User, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Session } from "@supabase/supabase-js";
+import { Button } from "@/components/ui/button";
 
 interface HeaderProps {
   session: Session | null;
@@ -19,6 +20,7 @@ const Header: React.FC<HeaderProps> = ({ session, onLogout }) => {
   const [language, setLanguage] = useState("ar"); // 'ar' for Arabic, 'en' for English
   const [loginOpen, setLoginOpen] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
+  const navigate = useNavigate();
   
   // Login form states
   const [loginEmail, setLoginEmail] = useState("");
@@ -205,67 +207,78 @@ const Header: React.FC<HeaderProps> = ({ session, onLogout }) => {
   
   return (
     <>
-      <header className={cn("fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out px-6 md:px-10 py-4", isScrolled ? "bg-white/80 backdrop-blur-lg shadow-sm" : "bg-transparent")}>
+      <header className={cn(
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out px-6 md:px-10 py-4", 
+        isScrolled ? "bg-white/90 backdrop-blur-md shadow-sm" : "bg-transparent"
+      )}>
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-3xl font-bold text-primary-600">Linok</span>
-            <span className="text-xl font-medium text-gray-600">.me</span>
+            <ShoppingBag className="h-7 w-7 text-primary" />
+            <span className="text-3xl font-bold text-gray-800">Linok</span>
+            <span className="text-xl font-medium text-primary">.me</span>
           </div>
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-gray-800 hover:text-primary-500 transition-colors">
+            <a href="#features" className="text-gray-800 hover:text-primary transition-colors relative group">
               {language === "ar" ? "المميزات" : "Features"}
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
             </a>
-            <a href="#pricing" className="text-gray-800 hover:text-primary-500 transition-colors">
+            <a href="#pricing" className="text-gray-800 hover:text-primary transition-colors relative group">
               {language === "ar" ? "الأسعار" : "Pricing"}
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
             </a>
             
-            <a href="#contact" className="text-gray-800 hover:text-primary-500 transition-colors">
+            <a href="#contact" className="text-gray-800 hover:text-primary transition-colors relative group">
               {language === "ar" ? "تواصل معنا" : "Contact"}
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
             </a>
             
-            <button onClick={toggleLanguage} className="flex items-center text-gray-600 hover:text-primary-500 transition-colors">
+            <button onClick={toggleLanguage} className="flex items-center text-gray-700 hover:text-primary transition-colors">
               {language === "ar" ? "English" : "العربية"}
               <ChevronDown className="h-4 w-4 ml-1" />
             </button>
             
+            <div className="h-6 w-px bg-gray-300"></div>
+            
             {session ? (
               <>
-                <button 
-                  onClick={() => {}} 
-                  className="flex items-center gap-2 text-gray-800 hover:text-primary-500 transition-colors"
+                <Button 
+                  onClick={() => navigate("/dashboard")} 
+                  variant="outline"
+                  className="flex items-center gap-2 border-gray-300"
                 >
                   <User size={16} />
-                  {language === "ar" ? "حسابي" : "My Account"}
-                </button>
+                  {language === "ar" ? "لوحة التحكم" : "Dashboard"}
+                </Button>
                 
-                <button 
+                <Button 
                   onClick={handleLogout} 
-                  className="btn-primary flex items-center gap-2"
+                  variant="ghost"
+                  className="flex items-center gap-2 text-gray-700 hover:text-primary hover:bg-transparent"
                 >
                   <LogOut size={16} />
                   {language === "ar" ? "تسجيل الخروج" : "Log Out"}
-                </button>
+                </Button>
               </>
             ) : (
               <>
-                <button 
+                <Button 
                   onClick={() => setLoginOpen(true)} 
-                  className="btn-primary flex items-center gap-2"
+                  variant="ghost"
+                  className="flex items-center gap-2 text-gray-700 hover:text-primary hover:bg-transparent"
                 >
                   <LogIn size={16} />
                   {language === "ar" ? "تسجيل الدخول" : "Log In"}
-                </button>
+                </Button>
                 
-                <button 
+                <Button 
                   onClick={() => setSignupOpen(true)} 
-                  className="px-6 py-3 bg-white text-gray-800 rounded-full font-semibold border border-gray-300 
-                    shadow-sm hover:shadow-md transition-all duration-300 hover:translate-y-[-2px] flex items-center gap-2"
+                  className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white"
                 >
                   <UserPlus size={16} />
                   {language === "ar" ? "إنشاء حساب" : "Sign Up"}
-                </button>
+                </Button>
               </>
             )}
           </nav>
@@ -278,58 +291,66 @@ const Header: React.FC<HeaderProps> = ({ session, onLogout }) => {
         
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="absolute top-full left-0 right-0 bg-white shadow-lg p-6 md:hidden flex flex-col space-y-4 animate-slide-down">
-            <a href="#features" className="text-gray-800 hover:text-primary-500 transition-colors">
+          <div className="absolute top-full left-0 right-0 bg-white shadow-lg p-6 md:hidden flex flex-col space-y-4 animate-slide-down rtl">
+            <a href="#features" className="text-gray-800 hover:text-primary transition-colors py-2 border-b border-gray-100">
               {language === "ar" ? "المميزات" : "Features"}
             </a>
-            <a href="#pricing" className="text-gray-800 hover:text-primary-500 transition-colors">
+            <a href="#pricing" className="text-gray-800 hover:text-primary transition-colors py-2 border-b border-gray-100">
               {language === "ar" ? "الأسعار" : "Pricing"}
             </a>
-            <a href="#contact" className="text-gray-800 hover:text-primary-500 transition-colors">
+            <a href="#contact" className="text-gray-800 hover:text-primary transition-colors py-2 border-b border-gray-100">
               {language === "ar" ? "تواصل معنا" : "Contact"}
             </a>
             
-            <button onClick={toggleLanguage} className="flex items-center text-gray-600 hover:text-primary-500 transition-colors">
+            <button onClick={toggleLanguage} className="flex items-center justify-between text-gray-700 hover:text-primary transition-colors py-2 border-b border-gray-100">
               {language === "ar" ? "English" : "العربية"}
-              <ChevronDown className="h-4 w-4 ml-1" />
+              <ChevronDown className="h-4 w-4" />
             </button>
             
             {session ? (
               <>
-                <button 
-                  onClick={() => {}} 
-                  className="flex items-center gap-2 justify-center text-gray-800 hover:text-primary-500 transition-colors"
+                <Button 
+                  onClick={() => navigate("/dashboard")} 
+                  variant="outline"
+                  className="w-full justify-center"
                 >
-                  <User size={16} />
-                  {language === "ar" ? "حسابي" : "My Account"}
-                </button>
+                  <User size={16} className="ml-2" />
+                  {language === "ar" ? "لوحة التحكم" : "Dashboard"}
+                </Button>
                 
-                <button 
+                <Button 
                   onClick={handleLogout} 
-                  className="btn-primary text-center flex items-center gap-2 justify-center"
+                  variant="ghost"
+                  className="w-full justify-center"
                 >
-                  <LogOut size={16} />
+                  <LogOut size={16} className="ml-2" />
                   {language === "ar" ? "تسجيل الخروج" : "Log Out"}
-                </button>
+                </Button>
               </>
             ) : (
               <>
-                <button 
-                  onClick={() => setLoginOpen(true)} 
-                  className="btn-primary text-center flex items-center gap-2 justify-center"
+                <Button 
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    setLoginOpen(true);
+                  }} 
+                  variant="outline"
+                  className="w-full justify-center"
                 >
-                  <LogIn size={16} />
+                  <LogIn size={16} className="ml-2" />
                   {language === "ar" ? "تسجيل الدخول" : "Log In"}
-                </button>
+                </Button>
                 
-                <button 
-                  onClick={() => setSignupOpen(true)} 
-                  className="px-6 py-3 bg-white text-gray-800 rounded-full font-semibold border border-gray-300 
-                    shadow-sm hover:shadow-md transition-all duration-300 hover:translate-y-[-2px] text-center flex items-center gap-2 justify-center"
+                <Button 
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    setSignupOpen(true);
+                  }} 
+                  className="w-full justify-center bg-primary hover:bg-primary/90"
                 >
-                  <UserPlus size={16} />
+                  <UserPlus size={16} className="ml-2" />
                   {language === "ar" ? "إنشاء حساب" : "Sign Up"}
-                </button>
+                </Button>
               </>
             )}
           </div>
