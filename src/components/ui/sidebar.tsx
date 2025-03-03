@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { ChevronRight, ChevronLeft, X, Menu, Bell, User, LogOut, Settings, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -254,12 +254,15 @@ export function SidebarUserSection({
                 <DropdownMenuLabel>حسابي</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link to="/settings" className="flex items-center cursor-pointer">
+                  <Link to="/settings" className="flex items-center cursor-pointer w-full">
                     <Settings className="ml-2 h-4 w-4" />
                     <span>الإعدادات</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => window.open(`https://${domainName}.linok.me`, '_blank')} className="cursor-pointer">
+                <DropdownMenuItem 
+                  onClick={() => window.open(`https://${domainName}.linok.me`, '_blank')} 
+                  className="cursor-pointer"
+                >
                   <Store className="ml-2 h-4 w-4" />
                   <span>زيارة المتجر</span>
                 </DropdownMenuItem>

@@ -50,7 +50,7 @@ const SidebarHeader: React.FC<SidebarHeaderProps> = ({
               <DropdownMenuLabel>حسابي</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link to="/settings" className="flex items-center cursor-pointer">
+                <Link to="/settings" className="flex items-center cursor-pointer w-full">
                   <Settings className="ml-2 h-4 w-4" />
                   <span>الإعدادات</span>
                 </Link>
