@@ -39,7 +39,8 @@ const Customers = () => {
           totalCustomers={145}
           newCustomers={24}
           returningCustomers={89}
-          vipCustomers={32}
+          loyalCustomers={32}
+          currencySymbol="ر.س"
         />
         
         <Card>

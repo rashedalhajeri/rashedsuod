@@ -1,7 +1,7 @@
 
 import React from "react";
 import { useLocation } from "react-router-dom";
-import { SidebarMenu, SidebarMenuItem, SidebarMenuLink, SidebarGroup, SidebarGroupLabel, useSidebar } from "@/components/ui/sidebar";
+import { SidebarMenu, SidebarMenuItem, SidebarMenuLink, SidebarGroup, useSidebar } from "@/components/ui/sidebar";
 import { mainNavigation, analyticsNavigation, communicationNavigation, settingsNavigation } from "./navigation-items";
 
 const SidebarNavigation: React.FC = () => {
@@ -16,7 +16,7 @@ const SidebarNavigation: React.FC = () => {
   return (
     <div className="space-y-6">
       <SidebarGroup>
-        {expanded && <SidebarGroupLabel>القائمة الرئيسية</SidebarGroupLabel>}
+        {expanded && <div className="px-3 py-2 text-xs font-semibold text-gray-500">القائمة الرئيسية</div>}
         <SidebarMenu>
           {mainNavigation.map((item) => (
             <SidebarMenuItem key={item.name}>
@@ -34,7 +34,7 @@ const SidebarNavigation: React.FC = () => {
       </SidebarGroup>
       
       <SidebarGroup>
-        {expanded && <SidebarGroupLabel>التحليلات</SidebarGroupLabel>}
+        {expanded && <div className="px-3 py-2 text-xs font-semibold text-gray-500">التحليلات</div>}
         <SidebarMenu>
           {analyticsNavigation.map((item) => (
             <SidebarMenuItem key={item.name}>
@@ -52,7 +52,7 @@ const SidebarNavigation: React.FC = () => {
       </SidebarGroup>
       
       <SidebarGroup>
-        {expanded && <SidebarGroupLabel>التواصل</SidebarGroupLabel>}
+        {expanded && <div className="px-3 py-2 text-xs font-semibold text-gray-500">التواصل</div>}
         <SidebarMenu>
           {communicationNavigation.map((item) => (
             <SidebarMenuItem key={item.name}>
@@ -70,7 +70,7 @@ const SidebarNavigation: React.FC = () => {
       </SidebarGroup>
       
       <SidebarGroup>
-        {expanded && <SidebarGroupLabel>الإعدادات</SidebarGroupLabel>}
+        {expanded && <div className="px-3 py-2 text-xs font-semibold text-gray-500">الإعدادات</div>}
         <SidebarMenu>
           {settingsNavigation.map((item) => (
             <SidebarMenuItem key={item.name}>

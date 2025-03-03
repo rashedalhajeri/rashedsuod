@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import ProductCard from "@/components/product/ProductCard";
-import ProductListItem from "@/components/product/ProductListItem";
-import ProductEmptyState from "@/components/product/ProductEmptyState";
-import ProductBulkActions from "@/components/product/ProductBulkActions";
-import ProductFilters from "@/components/product/ProductFilters";
+import { ProductCard } from "@/components/product/ProductCard";
+import { ProductListItem } from "@/components/product/ProductListItem";
+import { ProductEmptyState } from "@/components/product/ProductEmptyState";
+import { ProductBulkActions } from "@/components/product/ProductBulkActions";
+import { ProductFilters } from "@/components/product/ProductFilters";
 
 const Products = () => {
   const [view, setView] = useState<"grid" | "list">("grid");
@@ -41,10 +41,44 @@ const Products = () => {
     // Reset selection after action
     setSelectedProducts([]);
   };
+
+  // Add necessary functions for ProductBulkActions
+  const handleDeleteSelected = async () => {
+    console.log("Deleting selected products:", selectedProducts);
+    setSelectedProducts([]);
+    return Promise.resolve();
+  };
+
+  const handleDuplicateSelected = async () => {
+    console.log("Duplicating selected products:", selectedProducts);
+    setSelectedProducts([]);
+    return Promise.resolve();
+  };
+
+  const handleCategoryChange = async (categoryId: string) => {
+    console.log("Changing category of selected products to:", categoryId);
+    setSelectedProducts([]);
+    return Promise.resolve();
+  };
+
+  // Mock categories
+  const mockCategories = [
+    { id: "cat1", name: "ملابس" },
+    { id: "cat2", name: "إلكترونيات" },
+    { id: "cat3", name: "أحذية" }
+  ];
+  
+  const formatCurrency = (price: number) => {
+    return `${price.toFixed(2)} ر.س`;
+  };
+
+  const handleAddProduct = () => {
+    console.log("Add new product");
+  };
   
   const filteredProducts = mockProducts.filter(product => {
-    const matchesSearch = product.name.includes(searchQuery) || 
-                         product.description.includes(searchQuery);
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         (product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesCategory = categoryFilter === "all" || product.category === categoryFilter;
     
     return matchesSearch && matchesCategory;
@@ -104,15 +138,19 @@ const Products = () => {
               className="mb-4"
             >
               <ProductBulkActions 
-                selectedCount={selectedProducts.length}
-                onAction={handleBulkAction}
+                selectedProducts={selectedProducts}
+                onDeleteSelected={handleDeleteSelected}
+                onDuplicateSelected={handleDuplicateSelected}
+                onCategoryChange={handleCategoryChange}
                 onClearSelection={() => setSelectedProducts([])}
+                categories={mockCategories}
+                isLoading={false}
               />
             </motion.div>
           )}
           
           {filteredProducts.length === 0 ? (
-            <ProductEmptyState searchQuery={searchQuery} />
+            <ProductEmptyState onAddProduct={handleAddProduct} />
           ) : (
             <motion.div
               initial={{ opacity: 0 }}
@@ -124,9 +162,16 @@ const Products = () => {
                   {filteredProducts.map(product => (
                     <ProductCard 
                       key={product.id}
-                      product={product}
-                      isSelected={selectedProducts.includes(product.id)}
-                      onSelect={(selected) => handleProductSelect(product.id, selected)}
+                      product={{
+                        id: product.id,
+                        name: product.name,
+                        description: product.description || null,
+                        price: product.price,
+                        image_url: product.images[0] || null,
+                        stock_quantity: product.stock,
+                        category: product.category
+                      }}
+                      formatCurrency={formatCurrency}
                     />
                   ))}
                 </div>
@@ -135,9 +180,23 @@ const Products = () => {
                   {filteredProducts.map(product => (
                     <ProductListItem 
                       key={product.id}
-                      product={product}
+                      product={{
+                        id: product.id,
+                        name: product.name,
+                        description: product.description || null,
+                        price: product.price,
+                        store_id: "store-1",
+                        image_url: product.images[0] || null,
+                        stock_quantity: product.stock,
+                        created_at: new Date().toISOString(),
+                        category_id: "cat-1",
+                        category_name: product.category
+                      }}
+                      formatCurrency={formatCurrency}
+                      onSelect={handleProductSelect}
                       isSelected={selectedProducts.includes(product.id)}
-                      onSelect={(selected) => handleProductSelect(product.id, selected)}
+                      onDelete={() => console.log("Delete product", product.id)}
+                      onDuplicate={() => console.log("Duplicate product", product.id)}
                     />
                   ))}
                 </div>

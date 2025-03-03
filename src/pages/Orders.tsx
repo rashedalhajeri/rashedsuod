@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { OrderList } from "@/components/order/OrderList";
+import OrderList from "@/components/order/OrderList";
 import { OrderFilters } from "@/components/order/OrderFilters";
 import { OrderStats } from "@/components/order/OrderStats";
 
@@ -16,12 +16,17 @@ const Orders = () => {
 
   const mockData = {
     totalOrders: 123,
-    pendingOrders: 15,
+    newOrders: 15,
     processingOrders: 28,
     shippedOrders: 42,
     completedOrders: 34,
     cancelledOrders: 4,
     totalRevenue: 12500.75
+  };
+
+  // Custom handler for date range changes to match the expected type
+  const handleDateRangeChange = (value: any) => {
+    setDateRange(value);
   };
 
   return (
@@ -46,7 +51,7 @@ const Orders = () => {
       >
         <OrderStats 
           totalOrders={mockData.totalOrders}
-          pendingOrders={mockData.pendingOrders}
+          newOrders={mockData.newOrders}
           processingOrders={mockData.processingOrders}
           shippedOrders={mockData.shippedOrders}
           completedOrders={mockData.completedOrders}
@@ -63,7 +68,7 @@ const Orders = () => {
         <CardContent>
           <OrderFilters 
             onSearch={setSearchQuery} 
-            onDateRangeChange={setDateRange}
+            onDateRangeChange={handleDateRangeChange}
             onStatusChange={setStatusFilter}
           />
           
