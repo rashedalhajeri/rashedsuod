@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
@@ -208,7 +209,7 @@ export function SidebarUserSection({
   if (isMobile) return null;
   
   return <div className={cn("p-4 border-b border-gray-100", className)}>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-end">
         {expanded && <div className="flex items-center gap-2">
             <button className="relative p-2 rounded-full hover:bg-gray-100 text-gray-600">
               <Bell className="h-4 w-4" />
