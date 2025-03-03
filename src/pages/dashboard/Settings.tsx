@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,12 +10,13 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import SubscriptionPlans from "@/features/dashboard/components/SubscriptionPlans";
 import { Separator } from "@/components/ui/separator";
-import { UserCircle, Store, CreditCard, Bell, Shield, Globe, Truck, FileText } from "lucide-react";
+import { UserCircle, Store, CreditCard, Bell, Shield, Globe, Truck, FileText, ChevronLeft, ChevronRight } from "lucide-react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 
 const Settings: React.FC = () => {
   const { data: storeData, isLoading } = useStoreData();
   const [activeTab, setActiveTab] = useState("general");
+  const tabsListRef = useRef<HTMLDivElement>(null);
   
   // Mock current plan
   const currentPlan = "basic";
@@ -35,6 +36,18 @@ const Settings: React.FC = () => {
     toast.success("تم حفظ الإعدادات بنجاح");
   };
 
+  const scrollLeft = () => {
+    if (tabsListRef.current) {
+      tabsListRef.current.scrollBy({ left: -200, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (tabsListRef.current) {
+      tabsListRef.current.scrollBy({ left: 200, behavior: 'smooth' });
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="mb-6">
@@ -43,40 +56,70 @@ const Settings: React.FC = () => {
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid grid-cols-2 md:grid-cols-8 gap-2 bg-gray-100 p-1 mb-8">
-          <TabsTrigger value="general" className="flex gap-2 items-center">
-            <Store className="h-4 w-4" />
-            <span className="hidden md:inline">عام</span>
-          </TabsTrigger>
-          <TabsTrigger value="profile" className="flex gap-2 items-center">
-            <UserCircle className="h-4 w-4" />
-            <span className="hidden md:inline">الملف الشخصي</span>
-          </TabsTrigger>
-          <TabsTrigger value="domain" className="flex gap-2 items-center">
-            <Globe className="h-4 w-4" />
-            <span className="hidden md:inline">النطاق</span>
-          </TabsTrigger>
-          <TabsTrigger value="shipping" className="flex gap-2 items-center">
-            <Truck className="h-4 w-4" />
-            <span className="hidden md:inline">الشحن</span>
-          </TabsTrigger>
-          <TabsTrigger value="legal" className="flex gap-2 items-center">
-            <FileText className="h-4 w-4" />
-            <span className="hidden md:inline">القانونية</span>
-          </TabsTrigger>
-          <TabsTrigger value="billing" className="flex gap-2 items-center">
-            <CreditCard className="h-4 w-4" />
-            <span className="hidden md:inline">الاشتراك</span>
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex gap-2 items-center">
-            <Bell className="h-4 w-4" />
-            <span className="hidden md:inline">الإشعارات</span>
-          </TabsTrigger>
-          <TabsTrigger value="security" className="flex gap-2 items-center">
-            <Shield className="h-4 w-4" />
-            <span className="hidden md:inline">الأمان</span>
-          </TabsTrigger>
-        </TabsList>
+        <div className="relative mb-8">
+          <button 
+            onClick={scrollLeft} 
+            className="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 bg-white shadow-md rounded-full p-1 z-10 hover:bg-gray-100"
+            aria-label="Scroll tabs right"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+          
+          <div className="mx-6 overflow-hidden relative">
+            <TabsList 
+              ref={tabsListRef}
+              className="flex whitespace-nowrap overflow-x-auto scrollbar-hide bg-gray-100 p-1 scroll-smooth hide-scrollbar"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <TabsTrigger value="general" className="flex gap-2 items-center">
+                <Store className="h-4 w-4" />
+                <span className="inline">عام</span>
+              </TabsTrigger>
+              <TabsTrigger value="profile" className="flex gap-2 items-center">
+                <UserCircle className="h-4 w-4" />
+                <span className="inline">الملف الشخصي</span>
+              </TabsTrigger>
+              <TabsTrigger value="domain" className="flex gap-2 items-center">
+                <Globe className="h-4 w-4" />
+                <span className="inline">النطاق</span>
+              </TabsTrigger>
+              <TabsTrigger value="shipping" className="flex gap-2 items-center">
+                <Truck className="h-4 w-4" />
+                <span className="inline">الشحن</span>
+              </TabsTrigger>
+              <TabsTrigger value="legal" className="flex gap-2 items-center">
+                <FileText className="h-4 w-4" />
+                <span className="inline">القانونية</span>
+              </TabsTrigger>
+              <TabsTrigger value="billing" className="flex gap-2 items-center">
+                <CreditCard className="h-4 w-4" />
+                <span className="inline">الاشتراك</span>
+              </TabsTrigger>
+              <TabsTrigger value="notifications" className="flex gap-2 items-center">
+                <Bell className="h-4 w-4" />
+                <span className="inline">الإشعارات</span>
+              </TabsTrigger>
+              <TabsTrigger value="security" className="flex gap-2 items-center">
+                <Shield className="h-4 w-4" />
+                <span className="inline">الأمان</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          
+          <button 
+            onClick={scrollRight} 
+            className="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 bg-white shadow-md rounded-full p-1 z-10 hover:bg-gray-100"
+            aria-label="Scroll tabs left"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+        </div>
+        
+        <style jsx>{`
+          .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
         
         <TabsContent value="general">
           <Card>
