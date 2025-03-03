@@ -146,3 +146,152 @@ export const updateProductCategory = async (productId: string, categoryId: strin
     return { data: null, error };
   }
 };
+
+// Helper function to get products by category ID
+export const getProductsByCategory = async (storeId: string, categoryId: string | null) => {
+  try {
+    let query = supabase
+      .from('products')
+      .select('*')
+      .eq('store_id', storeId);
+    
+    if (categoryId) {
+      query = query.eq('category_id', categoryId);
+    }
+    
+    const { data, error } = await query.order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error("Error fetching products by category:", error);
+      return { data: null, error };
+    }
+    
+    return { data, error: null };
+  } catch (error) {
+    console.error("Error in getProductsByCategory function:", error);
+    return { data: null, error };
+  }
+};
+
+// Helper function to get products with pagination
+export const getProductsWithPagination = async (storeId: string, page: number, pageSize: number, categoryId?: string | null, searchQuery?: string) => {
+  try {
+    const startRange = page * pageSize;
+    const endRange = startRange + pageSize - 1;
+    
+    let query = supabase
+      .from('products')
+      .select('*', { count: 'exact' })
+      .eq('store_id', storeId)
+      .range(startRange, endRange);
+    
+    if (categoryId) {
+      query = query.eq('category_id', categoryId);
+    }
+    
+    if (searchQuery) {
+      query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
+    }
+    
+    const { data, error, count } = await query.order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error("Error fetching products with pagination:", error);
+      return { data: null, error, count: 0 };
+    }
+    
+    return { data, error: null, count: count || 0 };
+  } catch (error) {
+    console.error("Error in getProductsWithPagination function:", error);
+    return { data: null, error, count: 0 };
+  }
+};
+
+// Helper function to get a single product by ID
+export const getProductById = async (productId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select(`
+        *,
+        categories (
+          id,
+          name,
+          description
+        )
+      `)
+      .eq('id', productId)
+      .maybeSingle();
+    
+    if (error) {
+      console.error("Error fetching product by ID:", error);
+      return { data: null, error };
+    }
+    
+    return { data, error: null };
+  } catch (error) {
+    console.error("Error in getProductById function:", error);
+    return { data: null, error };
+  }
+};
+
+// Helper function to create a new product
+export const createProduct = async (productData: any) => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .insert([productData])
+      .select();
+    
+    if (error) {
+      console.error("Error creating product:", error);
+      return { data: null, error };
+    }
+    
+    return { data, error: null };
+  } catch (error) {
+    console.error("Error in createProduct function:", error);
+    return { data: null, error };
+  }
+};
+
+// Helper function to update a product
+export const updateProduct = async (productId: string, updates: any) => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .update(updates)
+      .eq('id', productId)
+      .select();
+    
+    if (error) {
+      console.error("Error updating product:", error);
+      return { data: null, error };
+    }
+    
+    return { data, error: null };
+  } catch (error) {
+    console.error("Error in updateProduct function:", error);
+    return { data: null, error };
+  }
+};
+
+// Helper function to delete a product
+export const deleteProduct = async (productId: string) => {
+  try {
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', productId);
+    
+    if (error) {
+      console.error("Error deleting product:", error);
+      return { success: false, error };
+    }
+    
+    return { success: true, error: null };
+  } catch (error) {
+    console.error("Error in deleteProduct function:", error);
+    return { success: false, error };
+  }
+};
