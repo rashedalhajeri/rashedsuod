@@ -4,13 +4,17 @@ import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { X, Filter, CalendarRange, Check } from "lucide-react";
+import { Filter } from "lucide-react";
 
-export function OrderFilters({ onApplyFilters }: { onApplyFilters: (filters: any) => void }) {
+interface OrderFiltersProps {
+  onSearchChange: (value: string) => void;
+  onStatusChange: (value: string) => void;
+  onDateRangeChange: (value: string) => void;
+}
+
+export function OrderFilters({ onSearchChange, onStatusChange, onDateRangeChange }: OrderFiltersProps) {
   // Placeholder implementation
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
@@ -33,6 +37,21 @@ export function OrderFilters({ onApplyFilters }: { onApplyFilters: (filters: any
     { id: "apple_pay", name: "آبل باي" },
     { id: "stc_pay", name: "STC Pay" },
   ];
+
+  const handleApplyFilters = () => {
+    // Handle status changes
+    const selectedStatuses = statuses
+      .filter((status) => (document.getElementById(`status-${status.id}`) as HTMLInputElement)?.checked)
+      .map((status) => status.id)
+      .join(',');
+    
+    onStatusChange(selectedStatuses);
+    
+    // Handle date range changes
+    if (dateRange.from) {
+      onDateRangeChange(dateRange.from.toISOString());
+    }
+  };
   
   return (
     <div className="space-y-4 py-2 pb-6">
@@ -84,7 +103,7 @@ export function OrderFilters({ onApplyFilters }: { onApplyFilters: (filters: any
         </div>
       </div>
       <Separator />
-      <Button className="w-full" onClick={() => onApplyFilters({})}>
+      <Button className="w-full" onClick={handleApplyFilters}>
         <Filter className="mr-2 h-4 w-4" />
         تطبيق الفلترة
       </Button>
