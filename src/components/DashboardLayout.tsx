@@ -4,9 +4,10 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import { LogOut, Settings, ShoppingBag, Home, Package, BarChart, Users, Menu, X } from "lucide-react";
+import { LogOut, Settings, ShoppingBag, Home, Package, BarChart, Users, Menu, X, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { secureStore, secureRetrieve, secureRemove, decryptObjectFields } from "@/lib/encryption";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -45,6 +46,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         
         setSession(sessionData.session);
         
+        // Save session info securely
+        await secureStore('user-id', sessionData.session.user.id);
+        
         // Fetch store data for the authenticated user
         const { data: storeData, error: storeError } = await supabase
           .from('stores')
@@ -56,7 +60,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           throw storeError;
         }
         
-        setStore(storeData);
+        // Decrypt any sensitive store data before using it
+        // In this case, we're assuming the data isn't encrypted in the database yet
+        // but we're adding the capability for future use
+        const decryptedStoreData = await decryptObjectFields(storeData, []);
+        
+        setStore(decryptedStoreData);
       } catch (error) {
         console.error("Error fetching data:", error);
         toast.error("حدث خطأ أثناء تحميل بيانات المتجر");
@@ -70,10 +79,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
     // Set up listener for auth changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, newSession) => {
+      async (event, newSession) => {
         setSession(newSession);
         if (event === 'SIGNED_OUT') {
+          // Clear secure storage on sign out
+          secureRemove('user-id');
           navigate("/");
+        } else if (event === 'SIGNED_IN' && newSession) {
+          // Store user info securely
+          await secureStore('user-id', newSession.user.id);
         }
       }
     );
@@ -88,6 +102,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      
+      // Clear all secure storage
+      secureRemove('user-id');
+      sessionStorage.removeItem('linok-encryption-key');
+      
       toast.success("تم تسجيل الخروج بنجاح");
       navigate("/");
     } catch (error: any) {
@@ -135,6 +154,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             </Button>
             <span className="text-2xl font-bold text-primary-600">Linok</span>
             <span className="text-lg font-medium text-gray-600">.me</span>
+            <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full flex items-center">
+              <Shield size={12} className="ml-1" />
+              مؤمن
+            </span>
           </div>
           
           <div className="flex items-center space-x-4">

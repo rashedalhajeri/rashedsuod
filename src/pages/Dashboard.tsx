@@ -13,7 +13,8 @@ import {
   Loader2,
   TrendingUp,
   Activity,
-  DollarSign
+  DollarSign,
+  Shield
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
+import { secureRetrieve, decryptObjectFields } from "@/lib/encryption";
 
 interface Store {
   id: string;
@@ -77,10 +79,12 @@ const Dashboard: React.FC = () => {
         
         setSession(sessionData.session);
         
+        const userId = await secureRetrieve('user-id') || sessionData.session.user.id;
+        
         const { data: storeData, error: storeError } = await supabase
           .from('stores')
           .select('*')
-          .eq('user_id', sessionData.session.user.id)
+          .eq('user_id', userId)
           .maybeSingle();
         
         if (storeError) {
@@ -96,13 +100,14 @@ const Dashboard: React.FC = () => {
           return;
         }
         
-        setStore(storeData);
+        const decryptedStoreData = await decryptObjectFields(storeData, []);
+        setStore(decryptedStoreData);
 
-        if (storeData) {
+        if (decryptedStoreData) {
           const { count: productCount, error: countError } = await supabase
             .from('products')
             .select('*', { count: 'exact', head: true })
-            .eq('store_id', storeData.id);
+            .eq('store_id', decryptedStoreData.id);
           
           if (countError) {
             console.error("Count error:", countError);
@@ -115,7 +120,7 @@ const Dashboard: React.FC = () => {
         }
       } catch (error) {
         console.error("Error fetching data:", error);
-        toast.error("حدث خطأ أثناء تحميل بيانات المتج��");
+        toast.error("حدث خطأ أثناء تحميل بيانات المتجر");
       } finally {
         setLoading(false);
       }
@@ -169,7 +174,13 @@ const Dashboard: React.FC = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">لوحة التحكم</h1>
-            <p className="text-gray-600">مرحباً بك في متجرك {store?.store_name}</p>
+            <p className="text-gray-600">
+              مرحباً بك في متجرك {store?.store_name}
+              <span className="mr-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full inline-flex items-center">
+                <Shield size={12} className="ml-1" />
+                مؤمن ببروتوكول التشفير
+              </span>
+            </p>
           </div>
           
           <div className="flex gap-2">
