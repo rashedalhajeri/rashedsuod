@@ -189,7 +189,7 @@ export function SidebarUserSection({
   if (isMobile) return null;
   
   return (
-    <div className={cn("mt-auto border-t border-gray-100 p-3", className)}>
+    <div className={cn("border-b border-gray-100 p-3 mb-4", className)}>
       {expanded ? (
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-medium text-gray-700 flex items-center">
