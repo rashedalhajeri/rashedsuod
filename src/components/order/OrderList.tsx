@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -206,23 +207,23 @@ const OrderList: React.FC<OrderListProps> = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-fade-in">
       <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div className="relative w-full sm:w-64">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-primary-500" />
           <Input
             placeholder="بحث عن طلب..."
-            className="pl-8"
+            className="pl-8 border-primary-100 focus:border-primary-300 bg-white shadow-sm"
             value={localSearchQuery}
             onChange={(e) => setLocalSearchQuery(e.target.value)}
           />
         </div>
-        <Select value={localStatusFilter} onValueChange={setLocalStatusFilter}>
-          <SelectTrigger className="w-full sm:w-40">
+        <Select value={localStatusFilter} onValueChange={setLocalStatusFilter} className="bg-white">
+          <SelectTrigger className="w-full sm:w-40 border-primary-100 hover:border-primary-300 transition-all bg-white shadow-sm">
             <SelectValue placeholder="حالة الطلب" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">جميع الحالات</SelectItem>
+          <SelectContent className="bg-white shadow-md border-primary-100">
+            <SelectItem value="">جميع الحالات</SelectItem>
             <SelectItem value="completed">مكتمل</SelectItem>
             <SelectItem value="processing">قيد المعالجة</SelectItem>
             <SelectItem value="shipped">تم الشحن</SelectItem>
@@ -231,14 +232,14 @@ const OrderList: React.FC<OrderListProps> = ({
         </Select>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
+      <div className="rounded-md border border-primary-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+        <Table className="bg-white">
+          <TableHeader className="bg-primary-50/50">
+            <TableRow className="hover:bg-primary-50/80">
               <TableHead className="w-[100px]">
                 <Button
                   variant="ghost"
-                  className="font-medium"
+                  className="font-medium hover:text-primary-600 transition-colors"
                   onClick={() => handleSort("id")}
                 >
                   رقم الطلب
@@ -248,7 +249,7 @@ const OrderList: React.FC<OrderListProps> = ({
               <TableHead>
                 <Button
                   variant="ghost"
-                  className="font-medium"
+                  className="font-medium hover:text-primary-600 transition-colors"
                   onClick={() => handleSort("customer")}
                 >
                   العميل
@@ -258,7 +259,7 @@ const OrderList: React.FC<OrderListProps> = ({
               <TableHead>
                 <Button
                   variant="ghost"
-                  className="font-medium"
+                  className="font-medium hover:text-primary-600 transition-colors"
                   onClick={() => handleSort("date")}
                 >
                   التاريخ
@@ -269,7 +270,7 @@ const OrderList: React.FC<OrderListProps> = ({
               <TableHead>
                 <Button
                   variant="ghost"
-                  className="font-medium"
+                  className="font-medium hover:text-primary-600 transition-colors"
                   onClick={() => handleSort("total")}
                 >
                   المبلغ
@@ -282,7 +283,7 @@ const OrderList: React.FC<OrderListProps> = ({
           <TableBody>
             {paginatedOrders.length > 0 ? (
               paginatedOrders.map((order) => (
-                <TableRow key={order.id}>
+                <TableRow key={order.id} className="hover:bg-primary-50/30 transition-colors">
                   <TableCell className="font-medium">{order.id}</TableCell>
                   <TableCell>{order.customer}</TableCell>
                   <TableCell>
@@ -291,7 +292,7 @@ const OrderList: React.FC<OrderListProps> = ({
                   <TableCell>
                     <Badge
                       variant="outline"
-                      className={statusColors[order.status as keyof typeof statusColors]}
+                      className={`${statusColors[order.status as keyof typeof statusColors]} transition-all hover:shadow-sm`}
                     >
                       {statusTranslations[order.status as keyof typeof statusTranslations]}
                     </Badge>
@@ -302,7 +303,7 @@ const OrderList: React.FC<OrderListProps> = ({
                       variant="ghost"
                       size="sm"
                       onClick={() => onOpenDetails(order.id)}
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-1 hover:bg-primary-100 hover:text-primary-700 transition-colors"
                     >
                       <Eye className="h-4 w-4" />
                       عرض
@@ -322,12 +323,12 @@ const OrderList: React.FC<OrderListProps> = ({
       </div>
 
       {totalPages > 1 && (
-        <Pagination>
+        <Pagination className="animate-fade-in">
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                className={`${currentPage === 1 ? "pointer-events-none opacity-50" : "hover:bg-primary-100 hover:text-primary-700"} transition-colors`}
               />
             </PaginationItem>
             {Array.from({ length: totalPages }).map((_, i) => (
@@ -335,6 +336,7 @@ const OrderList: React.FC<OrderListProps> = ({
                 <PaginationLink
                   onClick={() => setCurrentPage(i + 1)}
                   isActive={currentPage === i + 1}
+                  className={currentPage === i + 1 ? "bg-primary-500 text-white hover:bg-primary-600" : "hover:bg-primary-100 hover:text-primary-700"}
                 >
                   {i + 1}
                 </PaginationLink>
@@ -343,7 +345,7 @@ const OrderList: React.FC<OrderListProps> = ({
             <PaginationItem>
               <PaginationNext
                 onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                className={`${currentPage === totalPages ? "pointer-events-none opacity-50" : "hover:bg-primary-100 hover:text-primary-700"} transition-colors`}
               />
             </PaginationItem>
           </PaginationContent>

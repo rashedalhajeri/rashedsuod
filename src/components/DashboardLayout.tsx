@@ -1,3 +1,4 @@
+
 import React, { ReactNode, useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase, getStoreData } from "@/integrations/supabase/client";
@@ -105,7 +106,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary-50/50 to-gray-50">
-        <div className="text-center">
+        <div className="text-center animate-pulse">
           <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
           <p className="mt-4 text-lg text-gray-600">جاري تحميل لوحة التحكم...</p>
         </div>
@@ -144,7 +145,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           </Sidebar>
           
           <main className="flex-grow py-6 px-4 md:px-6 lg:px-8 transition-all duration-300">
-            <div className="max-w-7xl mx-auto transition-opacity duration-300">
+            <div className="max-w-7xl mx-auto transition-opacity duration-300 animate-fade-in">
               {children}
             </div>
           </main>
