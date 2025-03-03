@@ -212,7 +212,7 @@ const OrderList: React.FC<OrderListProps> = ({
             <SelectValue placeholder="حالة الطلب" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">جميع الحالات</SelectItem>
+            <SelectItem value="all">جميع الحالات</SelectItem>
             <SelectItem value="completed">مكتمل</SelectItem>
             <SelectItem value="processing">قيد المعالجة</SelectItem>
             <SelectItem value="shipped">تم الشحن</SelectItem>
