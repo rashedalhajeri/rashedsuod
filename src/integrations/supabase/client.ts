@@ -292,3 +292,109 @@ export const deleteProduct = async (productId: string) => {
     return { success: false, error };
   }
 };
+
+// Helper functions for coupons
+export const getCouponsByStoreId = async (storeId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('coupons')
+      .select('*')
+      .eq('store_id', storeId)
+      .order('created_at', { ascending: false });
+      
+    if (error) {
+      console.error("Error fetching coupons:", error);
+      return { data: null, error };
+    }
+    
+    return { data, error: null };
+  } catch (error) {
+    console.error("Error in getCouponsByStoreId function:", error);
+    return { data: null, error };
+  }
+};
+
+// Helper functions for customers
+export const getCustomersByStoreId = async (storeId: string, page: number = 0, pageSize: number = 10, searchQuery?: string) => {
+  try {
+    const startRange = page * pageSize;
+    const endRange = startRange + pageSize - 1;
+    
+    let query = supabase
+      .from('customers')
+      .select('*', { count: 'exact' })
+      .eq('store_id', storeId)
+      .range(startRange, endRange);
+    
+    if (searchQuery) {
+      query = query.or(`name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%,phone.ilike.%${searchQuery}%`);
+    }
+    
+    const { data, error, count } = await query.order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error("Error fetching customers:", error);
+      return { data: null, error, count: 0 };
+    }
+    
+    return { data, error: null, count: count || 0 };
+  } catch (error) {
+    console.error("Error in getCustomersByStoreId function:", error);
+    return { data: null, error, count: 0 };
+  }
+};
+
+// Helper functions for orders
+export const getOrdersByStoreId = async (storeId: string, page: number = 0, pageSize: number = 10, status?: string, searchQuery?: string) => {
+  try {
+    const startRange = page * pageSize;
+    const endRange = startRange + pageSize - 1;
+    
+    let query = supabase
+      .from('orders')
+      .select('*, customers(*)', { count: 'exact' })
+      .eq('store_id', storeId)
+      .range(startRange, endRange);
+    
+    if (status) {
+      query = query.eq('status', status);
+    }
+    
+    if (searchQuery) {
+      query = query.or(`order_number.ilike.%${searchQuery}%,customers.name.ilike.%${searchQuery}%`);
+    }
+    
+    const { data, error, count } = await query.order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error("Error fetching orders:", error);
+      return { data: null, error, count: 0 };
+    }
+    
+    return { data, error: null, count: count || 0 };
+  } catch (error) {
+    console.error("Error in getOrdersByStoreId function:", error);
+    return { data: null, error, count: 0 };
+  }
+};
+
+// Helper functions for shipping
+export const getShippingMethodsByStoreId = async (storeId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('shipping_methods')
+      .select('*')
+      .eq('store_id', storeId)
+      .order('created_at', { ascending: false });
+      
+    if (error) {
+      console.error("Error fetching shipping methods:", error);
+      return { data: null, error };
+    }
+    
+    return { data, error: null };
+  } catch (error) {
+    console.error("Error in getShippingMethodsByStoreId function:", error);
+    return { data: null, error };
+  }
+};

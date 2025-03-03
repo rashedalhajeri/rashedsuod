@@ -207,6 +207,7 @@ const App = () => (
               </ProtectedRoute>
             } />
             
+            {/* Dashboard Routes */}
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <StoreCheckRoute>
@@ -215,7 +216,16 @@ const App = () => (
               </ProtectedRoute>
             } />
             
-            <Route path="/products" element={
+            {/* Main Navigation Routes */}
+            <Route path="/dashboard/orders" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <Orders />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/products" element={
               <ProtectedRoute>
                 <StoreCheckRoute>
                   <Products />
@@ -223,10 +233,109 @@ const App = () => (
               </ProtectedRoute>
             } />
             
-            <Route path="/orders" element={
+            <Route path="/dashboard/customers" element={
               <ProtectedRoute>
                 <StoreCheckRoute>
-                  <Orders />
+                  <NotFound message="صفحة العملاء قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/categories" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <NotFound message="صفحة الفئات قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/coupons" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <NotFound message="صفحة كوبونات الخصم قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/payment" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <NotFound message="صفحة المدفوعات قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/shipping" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <NotFound message="صفحة الشحن والتوصيل قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            {/* Analytics Routes */}
+            <Route path="/dashboard/sales-reports" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <NotFound message="صفحة تقارير المبيعات قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/product-analytics" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <NotFound message="صفحة أداء المنتجات قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            {/* Communication Routes */}
+            <Route path="/dashboard/inbox" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <NotFound message="صفحة صندوق الوارد قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/reviews" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <NotFound message="صفحة التقييمات قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            {/* Settings Routes */}
+            <Route path="/dashboard/store-info" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <NotFound message="صفحة معلومات المتجر قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/appearance" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <NotFound message="صفحة تخصيص الواجهة قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/system-settings" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <NotFound message="صفحة إعدادات النظام قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/subscription" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <NotFound message="صفحة الاشتراك والباقة قيد التطوير" />
                 </StoreCheckRoute>
               </ProtectedRoute>
             } />
