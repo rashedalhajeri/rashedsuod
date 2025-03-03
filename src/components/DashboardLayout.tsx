@@ -291,7 +291,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       </header>
 
       <div className="flex pt-[6.5rem]">
-        <SidebarProvider defaultOpen={!isMobile}>
+        <SidebarProvider defaultExpanded={!isMobile}>
           <Sidebar className="shadow-md border-l border-gray-200">
             <SidebarHeader>
               <div className="p-3 flex items-center justify-between">
@@ -324,12 +324,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                           href={item.href} 
                           icon={item.icon} 
                           active={isActive}
-                          className={cn(
-                            "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                            isActive 
-                              ? "text-primary-600 bg-primary-50" 
-                              : "text-gray-600 hover:text-primary-600 hover:bg-gray-50"
-                          )}
                         >
                           {item.name}
                           {isActive && <ChevronRight className="mr-auto h-4 w-4 text-primary-500" />}
