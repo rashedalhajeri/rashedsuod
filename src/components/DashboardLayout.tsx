@@ -164,7 +164,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="flex items-center">
-              <span className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">Linok</span>
+              <span className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">
+                {store?.store_name || "المتجر"}
+              </span>
               <span className="text-lg font-medium text-gray-600">.me</span>
             </div>
             

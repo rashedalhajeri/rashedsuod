@@ -167,14 +167,7 @@ export function SidebarHeader({ className, children }: { className?: string; chi
 
   return (
     <div className={cn("p-4 border-b border-gray-100", className)}>
-      {children || (
-        <div className="flex items-center">
-          <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">
-            Linok
-          </span>
-          <span className="text-lg font-medium text-gray-600">.me</span>
-        </div>
-      )}
+      {children}
     </div>
   );
 }
