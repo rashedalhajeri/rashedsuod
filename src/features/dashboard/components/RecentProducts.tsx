@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Package, ArrowRight, ImageIcon } from "lucide-react";
 import { Link } from "react-router-dom";
+import { getCurrencyFormatter } from "@/hooks/use-store-data";
 
 interface Product {
   id: string;
@@ -22,13 +23,16 @@ interface RecentProductsProps {
 
 const RecentProducts: React.FC<RecentProductsProps> = ({ 
   products, 
-  currency = "ر.س" 
+  currency = "SAR" 
 }) => {
   const getStockColor = (stock: number) => {
     if (stock > 10) return "bg-green-100 text-green-800 border-green-200";
     if (stock > 0) return "bg-yellow-100 text-yellow-800 border-yellow-200";
     return "bg-red-100 text-red-800 border-red-200";
   };
+  
+  // استخدام منسق العملة من الهوك
+  const formatCurrency = getCurrencyFormatter(currency);
   
   return (
     <Card>
@@ -89,7 +93,7 @@ const RecentProducts: React.FC<RecentProductsProps> = ({
                     {product.stock} متوفر
                   </Badge>
                   <div className="font-medium text-sm">
-                    {product.price.toFixed(2)} {currency}
+                    {formatCurrency(product.price)}
                   </div>
                 </div>
               </div>

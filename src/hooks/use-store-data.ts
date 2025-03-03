@@ -61,10 +61,12 @@ export const useCategories = (storeId: string | undefined) => {
         throw error;
       }
       
-      // إضافة عدد المنتجات (هذا سيكون حقيقيًا في التطبيق الحقيقي عندما تكون هناك علاقة مع جدول المنتجات)
+      // إضافة عدد المنتجات وحقول إضافية
       return data.map(category => ({
         ...category,
         product_count: Math.floor(Math.random() * 50), // بيانات وهمية
+        parent_id: category.parent_id || null,
+        is_active: category.is_active !== undefined ? category.is_active : true
       }));
     } catch (error) {
       console.error("خطأ في جلب التصنيفات:", error);
@@ -84,6 +86,40 @@ export const useCategories = (storeId: string | undefined) => {
       }
     }
   });
+};
+
+// دالة مساعدة لتنسيق العملة بناءً على عملة المتجر
+export const getCurrencyFormatter = (currency: string = 'SAR') => {
+  return (price: number) => {
+    let currencyCode = currency;
+    let locale = 'ar-SA';
+    
+    // تحديد اللغة المناسبة للعملة
+    switch (currency) {
+      case 'KWD':
+        locale = 'ar-KW';
+        break;
+      case 'AED':
+        locale = 'ar-AE';
+        break;
+      case 'QAR':
+        locale = 'ar-QA';
+        break;
+      case 'BHD':
+        locale = 'ar-BH';
+        break;
+      case 'OMR':
+        locale = 'ar-OM';
+        break;
+      default:
+        locale = 'ar-SA';
+    }
+    
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: currencyCode
+    }).format(price);
+  };
 };
 
 export default useStoreData;

@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Edit, Eye, MoreHorizontal, Tag, ImageIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+
 interface Product {
   id: string;
   name: string;
@@ -17,10 +19,12 @@ interface Product {
   category: string;
   isActive: boolean;
 }
+
 interface ProductsGridProps {
   products: Product[];
   formatCurrency: (price: number) => string;
 }
+
 const ProductsGrid: React.FC<ProductsGridProps> = ({
   products,
   formatCurrency
@@ -30,6 +34,7 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({
     if (stock > 0) return "bg-yellow-100 text-yellow-800 border-yellow-200";
     return "bg-red-100 text-red-800 border-red-200";
   };
+  
   return <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {products.map(product => <motion.div key={product.id} layout initial={{
       opacity: 0
@@ -96,17 +101,25 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({
             </CardHeader>
             
             <CardContent className="p-4 pt-0 flex-grow">
-              
+              <p className="text-sm text-muted-foreground line-clamp-2">
+                {product.description}
+              </p>
             </CardContent>
             
             <CardFooter className="p-4 pt-0 flex justify-between items-center">
               <div className="font-medium">
                 {formatCurrency(product.price)}
               </div>
-              
+              <Badge 
+                variant="outline" 
+                className={getStockColor(product.stock)}
+              >
+                {product.stock} متوفر
+              </Badge>
             </CardFooter>
           </Card>
         </motion.div>)}
     </div>;
 };
+
 export default ProductsGrid;

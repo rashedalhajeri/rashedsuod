@@ -1,25 +1,21 @@
 
-// تعريفات أنواع التصنيفات
 export interface Category {
   id: string;
   name: string;
-  description: string | null;
-  slug?: string;
-  image?: string | null;
-  parent_id?: string | null;
-  display_order: number | null;
-  store_id?: string;
-  product_count?: number;
-  is_active?: boolean;
+  description: string;
+  store_id: string;
+  display_order: number;
   created_at: string;
-  updated_at?: string;
+  updated_at: string;
+  product_count: number;
+  parent_id: string | null;
+  is_active: boolean;
 }
 
 export interface CategoryFormData {
   name: string;
-  description?: string | null;
+  description: string;
+  display_order?: number;
   parent_id?: string | null;
-  display_order?: number | null;
-  slug?: string;
   is_active?: boolean;
 }

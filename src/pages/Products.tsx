@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,12 +9,15 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
 
 import ProductsGrid from "@/features/products/components/ProductsGrid";
 import ProductsList from "@/features/products/components/ProductsList";
 import ProductsEmptyState from "@/features/products/components/ProductsEmptyState";
 import ProductsFilters from "@/features/products/components/ProductsFilters";
 import ProductsBulkActions from "@/features/products/components/ProductsBulkActions";
+import LoadingState from "@/components/ui/loading-state";
+import { useStoreData } from "@/hooks/use-store-data";
 
 // Mock data
 const generateMockProducts = () => {
@@ -38,12 +41,31 @@ const Products: React.FC = () => {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const [filterOpen, setFilterOpen] = useState(false);
   
+  // Get store data for currency
+  const { data: storeData, isLoading: storeLoading } = useStoreData();
+  
   const mockProducts = generateMockProducts();
   const mockCategories = [
     { id: "clothes", name: "ملابس" },
     { id: "electronics", name: "إلكترونيات" },
     { id: "shoes", name: "أحذية" }
   ];
+
+  // Currency formatter based on store currency
+  const formatCurrency = (price: number) => {
+    if (!storeData) {
+      return new Intl.NumberFormat('ar-SA', {
+        style: 'currency',
+        currency: 'SAR'
+      }).format(price);
+    }
+    
+    // Use store currency
+    return new Intl.NumberFormat('ar-SA', {
+      style: 'currency',
+      currency: storeData.currency
+    }).format(price);
+  };
   
   // Product selection handling
   const handleProductSelect = (productId: string, selected: boolean) => {
@@ -87,13 +109,9 @@ const Products: React.FC = () => {
     setSelectedProducts([]);
   };
   
-  // Currency formatter
-  const formatCurrency = (price: number) => {
-    return new Intl.NumberFormat('ar-SA', {
-      style: 'currency',
-      currency: 'SAR'
-    }).format(price);
-  };
+  if (storeLoading) {
+    return <LoadingState message="جاري تحميل بيانات المنتجات..." />;
+  }
   
   return (
     <div className="space-y-6">
