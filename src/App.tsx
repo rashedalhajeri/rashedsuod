@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
 import NotFound from "./pages/NotFound";
 import CreateStore from "./pages/CreateStore";
+import Auth from "./pages/Auth";
 import { secureRetrieve } from "./lib/encryption";
 
 // Create a new query client
@@ -55,7 +56,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <div className="flex h-screen items-center justify-center">جاري التحميل...</div>;
   }
 
-  return isAuthenticated ? <>{children}</> : <Navigate to="/" />;
+  return isAuthenticated ? <>{children}</> : <Navigate to="/auth" />;
 };
 
 const App = () => (
@@ -66,6 +67,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/reset-password" element={<Auth />} />
           <Route 
             path="/dashboard" 
             element={

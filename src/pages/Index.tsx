@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { LogIn, UserPlus } from "lucide-react";
 
 const Index: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -76,9 +78,12 @@ const Index: React.FC = () => {
 
   // Function to navigate to dashboard
   const navigateToDashboard = () => {
-    // This would navigate to a dashboard page (to be implemented)
-    toast.info("سيتم التوجيه إلى لوحة التحكم");
-    // Implement dashboard navigation when the dashboard page is created
+    navigate("/dashboard");
+  };
+  
+  // Function to navigate to auth
+  const navigateToAuth = () => {
+    navigate("/auth");
   };
 
   return (
@@ -99,7 +104,7 @@ const Index: React.FC = () => {
           <Features />
           
           {/* Call to Action */}
-          <section className="py-24 bg-primary-500 rtl">
+          <section className="py-24 bg-primary rtl">
             <div className="container mx-auto px-6 text-center">
               <motion.h2 
                 className="text-3xl md:text-4xl font-bold text-white mb-6"
@@ -126,36 +131,46 @@ const Index: React.FC = () => {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.4 }}
+                className="flex flex-wrap gap-4 justify-center"
               >
                 {session ? (
-                  <button 
+                  <Button 
                     onClick={navigateToDashboard} 
-                    className="px-8 py-4 bg-white text-primary-600 rounded-full font-bold text-lg
-                    shadow-xl hover:shadow-2xl transition-all duration-300 hover:translate-y-[-2px]
-                    inline-block mr-4"
+                    size="lg"
+                    className="bg-white text-primary hover:bg-white/90 font-semibold"
                   >
                     لوحة التحكم
-                  </button>
+                  </Button>
                 ) : (
-                  <a 
-                    href="#start" 
-                    id="start"
-                    className="px-8 py-4 bg-white text-primary-600 rounded-full font-bold text-lg
-                    shadow-xl hover:shadow-2xl transition-all duration-300 hover:translate-y-[-2px]
-                    inline-block"
-                  >
-                    ابدأ الآن مجانًا
-                  </a>
+                  <>
+                    <Button 
+                      onClick={navigateToAuth}
+                      size="lg"
+                      className="bg-white text-primary hover:bg-white/90 font-semibold"
+                    >
+                      <UserPlus className="ml-2 h-5 w-5" />
+                      إنشاء متجر جديد
+                    </Button>
+                    <Button 
+                      onClick={navigateToAuth}
+                      size="lg"
+                      variant="outline"
+                      className="border-white text-white hover:bg-white/10 font-semibold"
+                    >
+                      <LogIn className="ml-2 h-5 w-5" />
+                      تسجيل الدخول
+                    </Button>
+                  </>
                 )}
                 {session && (
-                  <button 
+                  <Button 
                     onClick={handleLogout}
-                    className="px-8 py-4 bg-transparent border-2 border-white text-white rounded-full font-bold text-lg
-                    shadow-md hover:shadow-lg transition-all duration-300 hover:translate-y-[-2px]
-                    inline-block"
+                    size="lg"
+                    variant="outline"
+                    className="border-white text-white hover:bg-white/10 font-semibold"
                   >
                     تسجيل الخروج
-                  </button>
+                  </Button>
                 )}
               </motion.div>
             </div>

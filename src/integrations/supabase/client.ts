@@ -9,13 +9,60 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-// Enhanced security configuration
+// Enhanced security configuration with OAuth providers support
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: false,
+    detectSessionInUrl: true,
     flowType: 'pkce', // More secure flow type
     storageKey: 'linok-secure-auth', // Custom storage key for better identification
   }
 });
+
+// Helper functions for authentication
+export const signInWithEmail = async (email: string, password: string) => {
+  return await supabase.auth.signInWithPassword({ email, password });
+};
+
+export const signUpWithEmail = async (
+  email: string, 
+  password: string, 
+  metadata: Record<string, any> = {}
+) => {
+  return await supabase.auth.signUp({ 
+    email, 
+    password,
+    options: { 
+      data: metadata 
+    }
+  });
+};
+
+export const signInWithGoogle = async () => {
+  return await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin,
+    }
+  });
+};
+
+export const resetPassword = async (email: string) => {
+  return await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`,
+  });
+};
+
+export const signOut = async () => {
+  return await supabase.auth.signOut();
+};
+
+export const getCurrentSession = async () => {
+  return await supabase.auth.getSession();
+};
+
+export const getCurrentUser = async () => {
+  const { data } = await supabase.auth.getUser();
+  return data?.user;
+};
