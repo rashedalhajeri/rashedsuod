@@ -1,36 +1,24 @@
 
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  CircleDollarSign,
-  Package,
-  Truck,
-  ShoppingBag,
-  ArrowUp,
-  ArrowDown,
-  CheckCircle,
-  XCircle
-} from "lucide-react";
+import { Users, UserPlus, Repeat, Heart, ArrowUp, ArrowDown } from "lucide-react";
 import { motion } from "framer-motion";
 
-interface OrderStatsProps {
-  totalOrders: number;
-  completedOrders: number;
-  processingOrders: number;
-  shippedOrders: number;
-  cancelledOrders: number;
-  totalRevenue: number;
+interface CustomerStatsProps {
+  totalCustomers: number;
+  newCustomers: number;
+  returningCustomers: number;
+  loyalCustomers: number;
   currencySymbol: string;
 }
 
-export function OrderStats({
-  totalOrders,
-  completedOrders,
-  processingOrders,
-  shippedOrders,
-  cancelledOrders,
-  totalRevenue,
+export function CustomerStats({
+  totalCustomers,
+  newCustomers,
+  returningCustomers,
+  loyalCustomers,
   currencySymbol
-}: OrderStatsProps) {
+}: CustomerStatsProps) {
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -56,11 +44,30 @@ export function OrderStats({
       <motion.div variants={item}>
         <Card className="overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">إجمالي الطلبات</CardTitle>
-            <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">إجمالي العملاء</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalOrders}</div>
+            <div className="text-2xl font-bold">{totalCustomers}</div>
+            <p className="text-xs text-muted-foreground">
+              <span className="text-emerald-500 inline-flex items-center">
+                <ArrowUp className="mr-1 h-3 w-3" />
+                +5%
+              </span>{" "}
+              مقارنة بالشهر الماضي
+            </p>
+          </CardContent>
+        </Card>
+      </motion.div>
+      
+      <motion.div variants={item}>
+        <Card className="overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">عملاء جدد</CardTitle>
+            <UserPlus className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{newCustomers}</div>
             <p className="text-xs text-muted-foreground">
               <span className="text-emerald-500 inline-flex items-center">
                 <ArrowUp className="mr-1 h-3 w-3" />
@@ -75,30 +82,11 @@ export function OrderStats({
       <motion.div variants={item}>
         <Card className="overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">قيد المعالجة</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">عملاء عائدون</CardTitle>
+            <Repeat className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{processingOrders}</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-rose-500 inline-flex items-center">
-                <ArrowDown className="mr-1 h-3 w-3" />
-                -4%
-              </span>{" "}
-              مقارنة بالشهر الماضي
-            </p>
-          </CardContent>
-        </Card>
-      </motion.div>
-      
-      <motion.div variants={item}>
-        <Card className="overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">تم التسليم</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{completedOrders}</div>
+            <div className="text-2xl font-bold">{returningCustomers}</div>
             <p className="text-xs text-muted-foreground">
               <span className="text-emerald-500 inline-flex items-center">
                 <ArrowUp className="mr-1 h-3 w-3" />
@@ -113,15 +101,15 @@ export function OrderStats({
       <motion.div variants={item}>
         <Card className="overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">إجمالي المبيعات</CardTitle>
-            <CircleDollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">عملاء مخلصون</CardTitle>
+            <Heart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalRevenue.toFixed(2)} {currencySymbol}</div>
+            <div className="text-2xl font-bold">{loyalCustomers}</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-emerald-500 inline-flex items-center">
-                <ArrowUp className="mr-1 h-3 w-3" />
-                +16%
+              <span className="text-rose-500 inline-flex items-center">
+                <ArrowDown className="mr-1 h-3 w-3" />
+                -2%
               </span>{" "}
               مقارنة بالشهر الماضي
             </p>

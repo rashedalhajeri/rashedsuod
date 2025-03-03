@@ -8,7 +8,9 @@ import { cn } from "@/lib/utils";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 import { secureStore, secureRetrieve, secureRemove } from "@/lib/encryption";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { motion, AnimatePresence } from "framer-motion";
 
+// Import component files
 import MobileHeader from "./dashboard/MobileHeader";
 import MobileNavBar from "./dashboard/MobileNavBar";
 import SidebarNavigation from "./dashboard/SidebarNavigation";
@@ -106,13 +108,35 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary-50/50 to-gray-50">
-        <div className="text-center animate-pulse">
+        <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
           <p className="mt-4 text-lg text-gray-600">جاري تحميل لوحة التحكم...</p>
         </div>
       </div>
     );
   }
+
+  const pageVariants = {
+    initial: {
+      opacity: 0,
+      y: 10
+    },
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.4,
+        ease: "easeInOut"
+      }
+    },
+    exit: {
+      opacity: 0,
+      y: -10,
+      transition: {
+        duration: 0.2
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 rtl">
@@ -145,9 +169,18 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           </Sidebar>
           
           <main className="flex-grow py-6 px-4 md:px-6 lg:px-8 transition-all duration-300">
-            <div className="max-w-7xl mx-auto transition-opacity duration-300 animate-fade-in">
-              {children}
-            </div>
+            <AnimatePresence mode="wait">
+              <motion.div 
+                key={location.pathname}
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="max-w-7xl mx-auto"
+              >
+                {children}
+              </motion.div>
+            </AnimatePresence>
           </main>
         </div>
       </SidebarProvider>

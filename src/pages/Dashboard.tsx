@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DashboardLayout from "@/components/DashboardLayout";
 import { secureRetrieve } from "@/lib/encryption";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Import component files
 import LoadingState from "@/components/dashboard/LoadingState";
@@ -17,6 +18,11 @@ import OverviewTab from "@/components/dashboard/OverviewTab";
 import StoreInfoTab from "@/components/dashboard/StoreInfoTab";
 import ActivityTab from "@/components/dashboard/ActivityTab";
 import ErrorState from "@/components/dashboard/ErrorState";
+import WelcomeWidget from "@/components/dashboard/WelcomeWidget";
+import SalesOverviewChart from "@/components/dashboard/SalesOverviewChart";
+
+// Add dependency for framer-motion
+import { OrderStats } from "@/components/order/OrderStats";
 
 interface Store {
   id: string;
@@ -32,6 +38,16 @@ interface DashboardStats {
   customerCount: number;
   revenue: number;
 }
+
+const mockSalesData = [
+  { name: "يناير", amount: 1500 },
+  { name: "فبراير", amount: 2500 },
+  { name: "مارس", amount: 2000 },
+  { name: "أبريل", amount: 3000 },
+  { name: "مايو", amount: 2800 },
+  { name: "يونيو", amount: 3200 },
+  { name: "يوليو", amount: 3800 },
+];
 
 const Dashboard: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -195,10 +211,20 @@ const Dashboard: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <div className="animate-fade-in space-y-6">
+      <div className="space-y-6">
         <DashboardHeader storeName={store?.store_name} domain={store?.domain_name} />
         
-        <StatCards stats={stats} formatCurrency={formatCurrency} />
+        <WelcomeWidget storeName={store?.store_name} />
+        
+        <OrderStats 
+          totalOrders={stats.orderCount}
+          completedOrders={Math.floor(stats.orderCount * 0.6)}
+          processingOrders={Math.floor(stats.orderCount * 0.3)}
+          shippedOrders={Math.floor(stats.orderCount * 0.1)}
+          cancelledOrders={0}
+          totalRevenue={stats.revenue}
+          currencySymbol={store?.currency === 'KWD' ? 'د.ك' : 'ر.س'}
+        />
         
         <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="mb-8">
           <TabsList className="grid grid-cols-3 mb-8 bg-gray-100 p-1 border border-gray-200">
@@ -207,24 +233,28 @@ const Dashboard: React.FC = () => {
             <TabsTrigger value="activity" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">النشاط الأخير</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="overview" className="animate-fade-in">
-            <OverviewTab />
-          </TabsContent>
-          
-          <TabsContent value="store" className="animate-fade-in">
-            <StoreInfoTab 
-              store={store} 
-              stats={{
-                productCount: stats.productCount,
-                orderCount: stats.orderCount,
-                customerCount: stats.customerCount
-              }} 
-            />
-          </TabsContent>
-          
-          <TabsContent value="activity" className="animate-fade-in">
-            <ActivityTab />
-          </TabsContent>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              {activeTab === "overview" && <OverviewTab />}
+              {activeTab === "store" && (
+                <StoreInfoTab 
+                  store={store} 
+                  stats={{
+                    productCount: stats.productCount,
+                    orderCount: stats.orderCount,
+                    customerCount: stats.customerCount
+                  }} 
+                />
+              )}
+              {activeTab === "activity" && <ActivityTab />}
+            </motion.div>
+          </AnimatePresence>
         </Tabs>
       </div>
     </DashboardLayout>
