@@ -16,7 +16,11 @@ import {
   Filter,
   Tag,
   LayoutGrid,
-  List
+  List,
+  SlidersHorizontal,
+  Download,
+  Upload,
+  RefreshCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,6 +45,14 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { ProductForm, ProductFormData } from "@/components/product/ProductForm";
 import { ProductFilter } from "@/components/product/ProductFilter";
 import { ProductEmptyState } from "@/components/product/ProductEmptyState";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Product {
   id: string;
@@ -65,6 +77,7 @@ interface Store {
 const Products: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
@@ -73,6 +86,7 @@ const Products: React.FC = () => {
   const [store, setStore] = useState<Store | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<string>("newest");
   const [categories, setCategories] = useState<string[]>([
     "ملابس", "إلكترونيات", "منزل", "طعام", "رياضة", "أخرى"
   ]);
@@ -116,17 +130,7 @@ const Products: React.FC = () => {
         setStoreId(storeData.id);
         setStore(storeData);
         
-        const { data: productsData, error: productsError } = await supabase
-          .from('products')
-          .select('*')
-          .eq('store_id', storeData.id)
-          .order('created_at', { ascending: false });
-        
-        if (productsError) {
-          throw productsError;
-        }
-        
-        setProducts(productsData || []);
+        await fetchProducts(storeData.id);
       } catch (error) {
         console.error("Error fetching data:", error);
         toast.error("حدث خطأ أثناء تحميل بيانات المنتجات");
@@ -137,6 +141,50 @@ const Products: React.FC = () => {
 
     fetchSessionAndProducts();
   }, [navigate]);
+
+  const fetchProducts = async (storeId: string) => {
+    try {
+      let query = supabase
+        .from('products')
+        .select('*')
+        .eq('store_id', storeId);
+        
+      // Apply sorting
+      if (sortOrder === "newest") {
+        query = query.order('created_at', { ascending: false });
+      } else if (sortOrder === "oldest") {
+        query = query.order('created_at', { ascending: true });
+      } else if (sortOrder === "price-high") {
+        query = query.order('price', { ascending: false });
+      } else if (sortOrder === "price-low") {
+        query = query.order('price', { ascending: true });
+      } else if (sortOrder === "name-asc") {
+        query = query.order('name', { ascending: true });
+      } else if (sortOrder === "name-desc") {
+        query = query.order('name', { ascending: false });
+      }
+      
+      const { data: productsData, error: productsError } = await query;
+      
+      if (productsError) {
+        throw productsError;
+      }
+      
+      setProducts(productsData || []);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      toast.error("حدث خطأ أثناء تحميل المنتجات");
+    }
+  };
+
+  const refreshProducts = async () => {
+    if (!storeId) return;
+    
+    setIsRefreshing(true);
+    await fetchProducts(storeId);
+    setIsRefreshing(false);
+    toast.success("تم تحديث قائمة المنتجات");
+  };
 
   const handleAddProduct = async (productData: ProductFormData) => {
     if (!storeId) {
@@ -185,6 +233,24 @@ const Products: React.FC = () => {
     }
   };
 
+  const handleDeleteProduct = async (productId: string) => {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId);
+        
+      if (error) throw error;
+      
+      // Update local state
+      setProducts(products.filter(product => product.id !== productId));
+      toast.success("تم حذف المنتج بنجاح");
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      toast.error("حدث خطأ أثناء حذف المنتج");
+    }
+  };
+
   const filteredProducts = products
     .filter(product => 
       (activeFilter ? product.category === activeFilter : true) &&
@@ -202,6 +268,31 @@ const Products: React.FC = () => {
     }).format(price);
   };
 
+  // Render skeleton loaders during initial loading
+  const renderSkeletons = () => {
+    return Array(6).fill(0).map((_, index) => (
+      <Card key={index} className="overflow-hidden border border-gray-200">
+        <div className="h-48 bg-gray-100">
+          <Skeleton className="h-full w-full" />
+        </div>
+        <CardHeader className="pb-2">
+          <Skeleton className="h-6 w-3/4 mb-2" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-2/3 mt-1" />
+        </CardHeader>
+        <CardContent className="pb-2">
+          <div className="flex justify-between items-center">
+            <Skeleton className="h-7 w-20" />
+            <Skeleton className="h-6 w-16 rounded-full" />
+          </div>
+        </CardContent>
+        <CardFooter className="bg-gray-50 border-t pt-3">
+          <Skeleton className="h-9 w-full" />
+        </CardFooter>
+      </Card>
+    ));
+  };
+
   return (
     <div className="p-4 md:p-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -211,6 +302,14 @@ const Products: React.FC = () => {
         </div>
         
         <div className="flex gap-2 w-full md:w-auto">
+          <Button 
+            onClick={refreshProducts}
+            variant="outline"
+            disabled={isLoading || isRefreshing}
+            className="flex-shrink-0"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </Button>
           <Button 
             onClick={() => setIsAddProductOpen(true)}
             className="bg-primary-600 hover:bg-primary-700 flex-grow md:flex-grow-0"
@@ -244,12 +343,30 @@ const Products: React.FC = () => {
             )}
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <ProductFilter 
               categories={categories}
               activeFilter={activeFilter}
               onFilterChange={setActiveFilter}
             />
+            
+            <Select 
+              value={sortOrder} 
+              onValueChange={setSortOrder}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SlidersHorizontal className="h-4 w-4 ml-2" />
+                <SelectValue placeholder="ترتيب حسب" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">الأحدث</SelectItem>
+                <SelectItem value="oldest">الأقدم</SelectItem>
+                <SelectItem value="price-high">السعر: من الأعلى</SelectItem>
+                <SelectItem value="price-low">السعر: من الأقل</SelectItem>
+                <SelectItem value="name-asc">الاسم: أ-ي</SelectItem>
+                <SelectItem value="name-desc">الاسم: ي-أ</SelectItem>
+              </SelectContent>
+            </Select>
             
             <div className="border rounded-md flex">
               <Button 
@@ -257,6 +374,7 @@ const Products: React.FC = () => {
                 size="icon" 
                 className={`h-10 ${viewMode === "grid" ? "bg-gray-100" : ""}`}
                 onClick={() => setViewMode("grid")}
+                title="عرض شبكي"
               >
                 <LayoutGrid className="h-4 w-4" />
               </Button>
@@ -265,6 +383,7 @@ const Products: React.FC = () => {
                 size="icon" 
                 className={`h-10 ${viewMode === "list" ? "bg-gray-100" : ""}`}
                 onClick={() => setViewMode("list")}
+                title="عرض قائمة"
               >
                 <List className="h-4 w-4" />
               </Button>
@@ -274,9 +393,8 @@ const Products: React.FC = () => {
       </div>
 
       {isLoading ? (
-        <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-          <Loader2 className="h-12 w-12 mx-auto text-primary-500 mb-4 animate-spin" />
-          <p className="text-lg text-gray-600">جاري تحميل المنتجات...</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {renderSkeletons()}
         </div>
       ) : filteredProducts.length === 0 ? (
         searchQuery || activeFilter ? (
@@ -309,6 +427,7 @@ const Products: React.FC = () => {
                 key={product.id} 
                 product={product} 
                 formatCurrency={formatCurrency}
+                onDeleteProduct={handleDeleteProduct}
               />
             ))}
           </div>
@@ -365,15 +484,30 @@ const Products: React.FC = () => {
                       {product.stock_quantity === null ? 'غير محدد' : product.stock_quantity}
                     </span>
                   </div>
-                  <div className="col-span-2 text-center">
+                  <div className="col-span-2 text-center flex justify-center gap-1">
                     <Button
                       variant="ghost"
                       size="sm"
                       className="text-primary-600"
-                      onClick={() => navigate(`/products/${product.id}`)}
+                      onClick={() => navigate(`/dashboard/products/${product.id}`)}
                     >
                       عرض
-                      <ChevronRight className="h-3 w-3 mr-1" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-amber-600"
+                      onClick={() => navigate(`/dashboard/products/${product.id}/edit`)}
+                    >
+                      تعديل
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => handleDeleteProduct(product.id)}
+                    >
+                      حذف
                     </Button>
                   </div>
                 </div>
