@@ -2,7 +2,7 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ShoppingBag, Package, Users, DollarSign, AlertCircle } from "lucide-react";
+import { ShoppingBag, Package, Users, DollarSign, AlertCircle, Tags, Settings } from "lucide-react";
 import useStoreData, { getCurrencyFormatter } from "@/hooks/use-store-data";
 import { secureRetrieve } from "@/lib/encryption";
 import { Button } from "@/components/ui/button";
@@ -150,8 +150,8 @@ const Dashboard: React.FC = () => {
     revenue: 8425
   };
   
-  // Subscription plan status
-  const subscriptionStatus = storeData?.subscription_plan || "basic";
+  // Subscription plan status - use basic as default
+  const subscriptionStatus = "basic"; // Default value since property doesn't exist in type
   const isBasicPlan = subscriptionStatus === "basic";
   
   return (

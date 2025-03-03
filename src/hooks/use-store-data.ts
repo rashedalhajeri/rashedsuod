@@ -4,6 +4,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { secureRetrieve } from "@/lib/encryption";
 import { toast } from "sonner";
 
+// Extended store type with subscription_plan
+type StoreData = {
+  id: string;
+  user_id: string;
+  store_name: string;
+  domain_name: string;
+  phone_number: string;
+  country: string;
+  currency: string;
+  created_at: string;
+  updated_at: string;
+  subscription_plan: "basic" | "premium"; // Add this property
+};
+
 // Hook for fetching store data
 export const useStoreData = () => {
   const fetchStoreData = async () => {
@@ -29,7 +43,11 @@ export const useStoreData = () => {
       throw new Error("فشل في جلب بيانات المتجر");
     }
     
-    return data;
+    // Add subscription_plan with a default value since it doesn't exist in the database yet
+    return {
+      ...data,
+      subscription_plan: "basic" as "basic" | "premium" // Default to basic plan
+    } as StoreData;
   };
   
   return useQuery({
