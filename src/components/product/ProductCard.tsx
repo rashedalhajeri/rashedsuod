@@ -31,7 +31,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, formatCurrenc
   const navigate = useNavigate();
 
   return (
-    <Card className="overflow-hidden hover:shadow-md transition-shadow">
+    <Card className="overflow-hidden hover:shadow-md transition-shadow border border-gray-200">
       <div className="h-48 bg-gray-100 relative">
         {product.image_url ? (
           <img 
@@ -57,21 +57,25 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, formatCurrenc
           </div>
         )}
       </div>
-      <CardHeader>
-        <CardTitle>{product.name}</CardTitle>
-        <CardDescription className="line-clamp-2">{product.description || "لا يوجد وصف"}</CardDescription>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg">{product.name}</CardTitle>
+        <CardDescription className="line-clamp-2 h-10">{product.description || "لا يوجد وصف"}</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="flex justify-between">
-          <span className="font-bold text-lg">{formatCurrency(product.price)}</span>
+      <CardContent className="pb-2">
+        <div className="flex justify-between items-center">
+          <span className="font-bold text-lg text-primary-700">{formatCurrency(product.price)}</span>
           {product.stock_quantity !== null && (
-            <span className={`text-sm ${product.stock_quantity > 10 ? 'text-green-600' : product.stock_quantity > 0 ? 'text-orange-600' : 'text-red-600'}`}>
+            <span className={`text-sm px-2 py-1 rounded-full ${
+              product.stock_quantity > 10 ? 'bg-green-100 text-green-800' : 
+              product.stock_quantity > 0 ? 'bg-orange-100 text-orange-800' : 
+              'bg-red-100 text-red-800'
+            }`}>
               المخزون: {product.stock_quantity}
             </span>
           )}
         </div>
       </CardContent>
-      <CardFooter className="bg-gray-50 border-t">
+      <CardFooter className="bg-gray-50 border-t pt-3">
         <Button 
           variant="ghost" 
           className="w-full text-primary-600 hover:text-primary-700 hover:bg-gray-100"
