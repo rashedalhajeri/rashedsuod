@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, getStoreData } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
@@ -22,7 +22,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
-import { secureRetrieve, decryptObjectFields } from "@/lib/encryption";
+import { secureRetrieve } from "@/lib/encryption";
 
 interface Store {
   id: string;
@@ -81,11 +81,7 @@ const Dashboard: React.FC = () => {
         
         const userId = await secureRetrieve('user-id') || sessionData.session.user.id;
         
-        const { data: storeData, error: storeError } = await supabase
-          .from('stores')
-          .select('*')
-          .eq('user_id', userId)
-          .maybeSingle();
+        const { data: storeData, error: storeError } = await getStoreData(userId);
         
         if (storeError) {
           console.error("Store error:", storeError);
@@ -100,14 +96,13 @@ const Dashboard: React.FC = () => {
           return;
         }
         
-        const decryptedStoreData = await decryptObjectFields(storeData, []);
-        setStore(decryptedStoreData);
+        setStore(storeData);
 
-        if (decryptedStoreData) {
+        if (storeData) {
           const { count: productCount, error: countError } = await supabase
             .from('products')
             .select('*', { count: 'exact', head: true })
-            .eq('store_id', decryptedStoreData.id);
+            .eq('store_id', storeData.id);
           
           if (countError) {
             console.error("Count error:", countError);

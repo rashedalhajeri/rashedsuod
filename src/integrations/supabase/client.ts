@@ -80,3 +80,24 @@ export const getCurrentUser = async () => {
   return data?.user;
 };
 
+// Helper function to safely get store data without encryption errors
+export const getStoreData = async (userId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('stores')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
+      
+    if (error) {
+      console.error("Error fetching store data:", error);
+      return { data: null, error };
+    }
+    
+    return { data, error: null };
+  } catch (error) {
+    console.error("Error in getStoreData function:", error);
+    return { data: null, error };
+  }
+};
+

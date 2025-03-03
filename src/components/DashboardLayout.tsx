@@ -1,13 +1,12 @@
-
 import React, { ReactNode, useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, getStoreData } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { LogOut, Settings, ShoppingBag, Home, Package, BarChart, Users, Menu, X, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { secureStore, secureRetrieve, secureRemove, decryptObjectFields } from "@/lib/encryption";
+import { secureStore, secureRetrieve, secureRemove } from "@/lib/encryption";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -29,7 +28,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Check for auth state and fetch store data
   useEffect(() => {
     const fetchSessionAndStore = async () => {
       try {
@@ -46,26 +44,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         
         setSession(sessionData.session);
         
-        // Save session info securely
         await secureStore('user-id', sessionData.session.user.id);
         
-        // Fetch store data for the authenticated user
-        const { data: storeData, error: storeError } = await supabase
-          .from('stores')
-          .select('*')
-          .eq('user_id', sessionData.session.user.id)
-          .single();
+        const { data: storeData, error: storeError } = await getStoreData(sessionData.session.user.id);
         
         if (storeError) {
           throw storeError;
         }
         
-        // Decrypt any sensitive store data before using it
-        // In this case, we're assuming the data isn't encrypted in the database yet
-        // but we're adding the capability for future use
-        const decryptedStoreData = await decryptObjectFields(storeData, []);
-        
-        setStore(decryptedStoreData);
+        setStore(storeData);
       } catch (error) {
         console.error("Error fetching data:", error);
         toast.error("حدث خطأ أثناء تحميل بيانات المتجر");
@@ -77,16 +64,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
     fetchSessionAndStore();
 
-    // Set up listener for auth changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         setSession(newSession);
         if (event === 'SIGNED_OUT') {
-          // Clear secure storage on sign out
           secureRemove('user-id');
           navigate("/");
         } else if (event === 'SIGNED_IN' && newSession) {
-          // Store user info securely
           await secureStore('user-id', newSession.user.id);
         }
       }
@@ -97,13 +81,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     };
   }, [navigate]);
 
-  // Function to handle logout
   const handleLogout = async () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
-      // Clear all secure storage
       secureRemove('user-id');
       sessionStorage.removeItem('linok-encryption-key');
       
@@ -140,7 +122,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-gray-50 rtl">
-      {/* Dashboard Header */}
       <header className="bg-white shadow-sm z-10 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -178,9 +159,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         </div>
       </header>
       
-      {/* Dashboard Content */}
       <div className="flex min-h-screen">
-        {/* Sidebar */}
         <aside className={cn(
           "bg-white shadow-sm fixed md:sticky top-0 bottom-0 lg:block transition-all duration-300 z-50 border-l",
           sidebarOpen ? "w-64" : "w-0 md:w-16 overflow-hidden",
@@ -225,7 +204,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           </nav>
         </aside>
         
-        {/* Main Content */}
         <main className={cn(
           "flex-grow p-4 transition-all duration-300",
           sidebarOpen ? "md:mr-64" : "md:mr-16"
