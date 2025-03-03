@@ -1,3 +1,4 @@
+
 import React, { ReactNode, useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase, getStoreData } from "@/integrations/supabase/client";
@@ -17,12 +18,10 @@ import {
   ChevronRight,
   Zap,
   Bell,
-  Search,
   Tag,
   CreditCard,
   Store,
   Percent,
-  User
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -41,7 +40,6 @@ import {
   SidebarTrigger,
   SidebarUserSection
 } from "@/components/ui/sidebar";
-import { Input } from "@/components/ui/input";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -160,45 +158,45 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 rtl">
-      {isMobile && (
-        <header className="fixed top-0 left-0 right-0 z-40 glass-nav shadow-sm">
-          <div className="mx-auto">
-            <div className="flex h-16 items-center justify-between px-4">
-              <div className="flex items-center">
-                <div className="relative h-8 w-8 mr-2">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-primary-600 to-primary-400 rounded-md shadow-md transform rotate-3"></div>
-                  <div className="absolute inset-0 bg-white rounded-md flex items-center justify-center border border-primary-100">
-                    <Store className="h-4 w-4 text-primary-500" />
+      <SidebarProvider defaultExpanded={!isMobile}>
+        {isMobile && (
+          <header className="fixed top-0 left-0 right-0 z-40 glass-nav shadow-sm">
+            <div className="mx-auto">
+              <div className="flex h-16 items-center justify-between px-4">
+                <div className="flex items-center">
+                  <div className="relative h-8 w-8 mr-2">
+                    <div className="absolute inset-0 bg-gradient-to-tr from-primary-600 to-primary-400 rounded-md shadow-md transform rotate-3"></div>
+                    <div className="absolute inset-0 bg-white rounded-md flex items-center justify-center border border-primary-100">
+                      <Store className="h-4 w-4 text-primary-500" />
+                    </div>
+                  </div>
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1">
+                      <h1 className="text-lg font-semibold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                        {store?.store_name || "المتجر"}
+                      </h1>
+                    </div>
+                    <span className="text-xs text-gray-500 -mt-1">لوحة التحكم</span>
                   </div>
                 </div>
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-1">
-                    <h1 className="text-lg font-semibold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                      {store?.store_name || "المتجر"}
-                    </h1>
-                  </div>
-                  <span className="text-xs text-gray-500 -mt-1">لوحة التحكم</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-1 space-x-reverse">
-                <button className="relative p-2 rounded-full hover:bg-gray-100 text-gray-600">
-                  <span className="sr-only">الإشعارات</span>
-                  <Bell className="h-5 w-5" />
-                  {hasNotifications && (
-                    <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white animate-pulse"></span>
-                  )}
-                </button>
                 
-                <SidebarTrigger />
+                <div className="flex items-center space-x-1 space-x-reverse">
+                  <button className="relative p-2 rounded-full hover:bg-gray-100 text-gray-600">
+                    <span className="sr-only">الإشعارات</span>
+                    <Bell className="h-5 w-5" />
+                    {hasNotifications && (
+                      <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white animate-pulse"></span>
+                    )}
+                  </button>
+                  
+                  <SidebarTrigger />
+                </div>
               </div>
             </div>
-          </div>
-        </header>
-      )}
+          </header>
+        )}
 
-      <div className={cn("flex", isMobile ? "pt-16" : "")}>
-        <SidebarProvider defaultExpanded={!isMobile}>
+        <div className={cn("flex", isMobile ? "pt-16" : "")}>
           <Sidebar>
             <SidebarHeader>
               <div className="flex items-center">
@@ -249,8 +247,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               {children}
             </div>
           </main>
-        </SidebarProvider>
-      </div>
+        </div>
+      </SidebarProvider>
       
       {isMobile && (
         <div className="mobile-nav">
@@ -312,3 +310,4 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 };
 
 export default DashboardLayout;
+

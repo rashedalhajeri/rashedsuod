@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
@@ -5,12 +6,15 @@ import { ChevronRight, ChevronLeft, X, Menu, Bell, User, LogOut, Settings, Store
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
 type SidebarContextType = {
   expanded: boolean;
   setExpanded: (expanded: boolean) => void;
   toggle: () => void;
 };
+
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
+
 export function SidebarProvider({
   children,
   defaultExpanded = true
@@ -20,6 +24,7 @@ export function SidebarProvider({
 }) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const isMobile = useIsMobile();
+  
   useEffect(() => {
     if (isMobile) {
       setExpanded(false);
@@ -27,7 +32,9 @@ export function SidebarProvider({
       setExpanded(defaultExpanded);
     }
   }, [isMobile, defaultExpanded]);
+  
   const toggle = () => setExpanded(prev => !prev);
+  
   return <SidebarContext.Provider value={{
     expanded,
     setExpanded,
@@ -36,6 +43,7 @@ export function SidebarProvider({
       {children}
     </SidebarContext.Provider>;
 }
+
 export function useSidebar() {
   const context = useContext(SidebarContext);
   if (!context) {
@@ -43,6 +51,7 @@ export function useSidebar() {
   }
   return context;
 }
+
 export function Sidebar({
   className,
   children
@@ -54,10 +63,12 @@ export function Sidebar({
     expanded
   } = useSidebar();
   const isMobile = useIsMobile();
+  
   return <aside className={cn("glass-card bg-white/90 backdrop-blur-sm shadow-sm border-l z-50 transition-all duration-300 overflow-hidden", expanded ? "w-64" : "w-0 md:w-16", isMobile && !expanded ? "w-0" : "", isMobile ? "fixed top-16 bottom-0" : "sticky top-0 h-screen", className)}>
       <div className="h-full flex flex-col">{children}</div>
     </aside>;
 }
+
 export function SidebarContent({
   className,
   children
@@ -67,6 +78,7 @@ export function SidebarContent({
 }) {
   return <div className={cn("p-4 flex-1 overflow-y-auto", className)}>{children}</div>;
 }
+
 export function SidebarGroup({
   className,
   children
@@ -76,6 +88,7 @@ export function SidebarGroup({
 }) {
   return <div className={cn("space-y-1 mb-6", className)}>{children}</div>;
 }
+
 export function SidebarTrigger({
   className
 }: {
@@ -86,15 +99,18 @@ export function SidebarTrigger({
     expanded
   } = useSidebar();
   const isMobile = useIsMobile();
+  
   if (!isMobile && !expanded) {
     return <Button onClick={toggle} variant="ghost" size="icon" className={cn("fixed top-4 right-3 z-50", className)}>
         <ChevronLeft className="h-4 w-4" />
       </Button>;
   }
+  
   return <Button onClick={toggle} variant="ghost" size="icon" className={cn(isMobile ? "fixed top-4 right-3 z-50" : "", className)}>
       {expanded ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
     </Button>;
 }
+
 export function SidebarMenu({
   className,
   children
@@ -104,6 +120,7 @@ export function SidebarMenu({
 }) {
   return <ul className={cn("space-y-1", className)}>{children}</ul>;
 }
+
 export function SidebarMenuItem({
   className,
   children
@@ -113,6 +130,7 @@ export function SidebarMenuItem({
 }) {
   return <li className={className}>{children}</li>;
 }
+
 export function SidebarMenuLink({
   href,
   icon: Icon,
@@ -127,12 +145,14 @@ export function SidebarMenuLink({
   const {
     expanded
   } = useSidebar();
+  
   return <Link to={href} className={cn("flex items-center p-3 rounded-md transition-colors", active ? "bg-gradient-to-r from-primary-50 to-primary-100 text-primary-600 border-r-4 border-primary-500" : "text-gray-700 hover:bg-gray-50", !expanded && "md:justify-center")}>
       <Icon className={cn("h-5 w-5", expanded ? "ml-3" : "")} />
       {expanded && <span className="mr-2">{children}</span>}
       {active && expanded && <ChevronRight className="mr-auto h-4 w-4 text-primary-500" />}
     </Link>;
 }
+
 export function SidebarHeader({
   className,
   children
@@ -144,8 +164,14 @@ export function SidebarHeader({
     expanded
   } = useSidebar();
   const isMobile = useIsMobile();
-  return;
+  
+  if (!expanded && !isMobile) return null;
+  
+  return <div className={cn("p-4 border-b border-gray-100", className)}>
+    {children}
+  </div>;
 }
+
 export function SidebarFooter({
   className,
   children
@@ -156,9 +182,12 @@ export function SidebarFooter({
   const {
     expanded
   } = useSidebar();
+  
   if (!expanded) return null;
+  
   return <div className={cn("p-4 mt-auto border-t border-gray-100", className)}>{children}</div>;
 }
+
 export function SidebarUserSection({
   storeName,
   domainName,
@@ -176,7 +205,9 @@ export function SidebarUserSection({
     expanded
   } = useSidebar();
   const isMobile = useIsMobile();
+  
   if (isMobile) return null;
+  
   return <div className={cn("p-4 border-b border-gray-100", className)}>
       <div className="flex items-center justify-between">
         {expanded ? <div className="flex items-center">
