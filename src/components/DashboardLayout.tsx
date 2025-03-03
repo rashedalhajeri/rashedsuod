@@ -1,4 +1,3 @@
-
 import React, { ReactNode, useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase, getStoreData } from "@/integrations/supabase/client";
@@ -203,20 +202,23 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <SidebarProvider defaultExpanded={!isMobile}>
           <Sidebar>
             <SidebarHeader>
-              <div className={cn("flex items-center", !isMobile && "justify-between")}>
-                <div className="flex items-center">
-                  <div className="h-8 w-8 bg-primary-100 rounded-md flex items-center justify-center mr-2">
-                    <Store className="h-4 w-4 text-primary-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-800">{store?.store_name || "المتجر"}</h3>
-                    <p className="text-xs text-gray-500">متجر إلكتروني</p>
-                  </div>
+              <div className="flex items-center">
+                <div className="h-8 w-8 bg-primary-100 rounded-md flex items-center justify-center mr-2">
+                  <Store className="h-4 w-4 text-primary-600" />
                 </div>
-                
-                {!isMobile && <SidebarTrigger />}
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-800">{store?.store_name || "المتجر"}</h3>
+                  <p className="text-xs text-gray-500">متجر إلكتروني</p>
+                </div>
               </div>
             </SidebarHeader>
+            
+            <SidebarUserSection 
+              storeName={store?.store_name}
+              domainName={store?.domain_name}
+              hasNotifications={hasNotifications}
+              onLogout={handleLogout}
+            />
             
             <SidebarContent>
               {/* مربع البحث */}
@@ -255,14 +257,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 </SidebarMenu>
               </SidebarGroup>
             </SidebarContent>
-            
-            {/* قسم حساب المستخدم */}
-            <SidebarUserSection 
-              storeName={store?.store_name}
-              domainName={store?.domain_name}
-              hasNotifications={hasNotifications}
-              onLogout={handleLogout}
-            />
             
             {store && (
               <SidebarFooter className="border-t border-gray-100 p-4">
