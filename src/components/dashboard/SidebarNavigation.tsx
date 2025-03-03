@@ -23,7 +23,7 @@ const SidebarNavigation: React.FC = () => {
             const isActive = location.pathname === item.href;
             return (
               <SidebarMenuItem key={item.name}>
-                <SidebarMenuLink href={item.href} icon={item.icon} active={isActive} title={item.description}>
+                <SidebarMenuLink to={item.href} icon={item.icon} active={isActive} title={item.description}>
                   {item.name}
                 </SidebarMenuLink>
               </SidebarMenuItem>
@@ -41,7 +41,7 @@ const SidebarNavigation: React.FC = () => {
             const isActive = location.pathname === item.href;
             return (
               <SidebarMenuItem key={item.name}>
-                <SidebarMenuLink href={item.href} icon={item.icon} active={isActive} title={item.description}>
+                <SidebarMenuLink to={item.href} icon={item.icon} active={isActive} title={item.description}>
                   {item.name}
                 </SidebarMenuLink>
               </SidebarMenuItem>
@@ -59,7 +59,7 @@ const SidebarNavigation: React.FC = () => {
             const isActive = location.pathname === item.href;
             return (
               <SidebarMenuItem key={item.name}>
-                <SidebarMenuLink href={item.href} icon={item.icon} active={isActive} title={item.description}>
+                <SidebarMenuLink to={item.href} icon={item.icon} active={isActive} title={item.description}>
                   {item.name}
                 </SidebarMenuLink>
               </SidebarMenuItem>
@@ -77,7 +77,7 @@ const SidebarNavigation: React.FC = () => {
             const isActive = location.pathname === item.href;
             return (
               <SidebarMenuItem key={item.name}>
-                <SidebarMenuLink href={item.href} icon={item.icon} active={isActive} title={item.description}>
+                <SidebarMenuLink to={item.href} icon={item.icon} active={isActive} title={item.description}>
                   {item.name}
                 </SidebarMenuLink>
               </SidebarMenuItem>

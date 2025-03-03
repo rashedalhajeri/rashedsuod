@@ -134,13 +134,13 @@ export function SidebarMenuItem({
 }
 
 export function SidebarMenuLink({
-  href,
+  to,
   icon: Icon,
   children,
   active = false,
   title
 }: {
-  href: string;
+  to: string;
   icon: React.ElementType;
   children: React.ReactNode;
   active?: boolean;
@@ -151,7 +151,7 @@ export function SidebarMenuLink({
   
   const linkContent = (
     <Link 
-      to={href} 
+      to={to} 
       className={cn(
         "flex items-center p-3 rounded-lg transition-colors", 
         active ? 
