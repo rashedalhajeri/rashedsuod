@@ -3,7 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 
-interface CategoryEmptyStateProps {
+export interface CategoryEmptyStateProps {
   onCreateCategory: () => void;
 }
 

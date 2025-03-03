@@ -3,51 +3,64 @@ import React, { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Filter } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { motion } from "framer-motion";
 
 import CategoryList from "@/components/category/CategoryList";
 import CategoryEmptyState from "@/components/category/CategoryEmptyState";
 import CategoryForm from "@/components/category/CategoryForm";
+import { Category, CategoryFormData } from "@/types/category";
 
 const Categories = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<any>(null);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Mock categories data
-  const mockCategories = [
+  // Mock categories data conforming to the Category type
+  const mockCategories: Category[] = [
     { 
       id: "cat-1", 
       name: "إلكترونيات", 
       description: "أجهزة إلكترونية وملحقاتها",
-      productsCount: 24,
-      displayOrder: 1
+      display_order: 1,
+      store_id: "store-1",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      product_count: 24
     },
     { 
       id: "cat-2", 
       name: "ملابس", 
       description: "ملابس رجالية ونسائية",
-      productsCount: 45,
-      displayOrder: 2
+      display_order: 2,
+      store_id: "store-1",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      product_count: 45
     },
     { 
       id: "cat-3", 
       name: "أحذية", 
       description: "أحذية رجالية ونسائية",
-      productsCount: 16,
-      displayOrder: 3
+      display_order: 3,
+      store_id: "store-1",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      product_count: 16
     },
     { 
       id: "cat-4", 
       name: "إكسسوارات", 
       description: "إكسسوارات متنوعة",
-      productsCount: 12,
-      displayOrder: 4
+      display_order: 4,
+      store_id: "store-1",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      product_count: 12
     }
   ];
   
@@ -62,7 +75,7 @@ const Categories = () => {
     setShowForm(true);
   };
   
-  const handleEditCategory = (category: any) => {
+  const handleEditCategory = (category: Category) => {
     setEditingCategory(category);
     setShowForm(true);
   };
@@ -74,20 +87,34 @@ const Categories = () => {
     });
   };
   
-  const handleSaveCategory = (categoryData: any) => {
-    if (editingCategory) {
+  const handleSaveCategory = async (categoryData: CategoryFormData) => {
+    setIsSubmitting(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      if (editingCategory) {
+        toast({
+          title: "تم تحديث التصنيف",
+          description: "تم تحديث التصنيف بنجاح",
+        });
+      } else {
+        toast({
+          title: "تم إضافة التصنيف",
+          description: "تم إضافة التصنيف بنجاح",
+        });
+      }
+      setShowForm(false);
+      setEditingCategory(null);
+    } catch (error) {
       toast({
-        title: "تم تحديث التصنيف",
-        description: "تم تحديث التصنيف بنجاح",
+        title: "حدث خطأ",
+        description: "لم يتم حفظ التصنيف. يرجى المحاولة مرة أخرى.",
+        variant: "destructive",
       });
-    } else {
-      toast({
-        title: "تم إضافة التصنيف",
-        description: "تم إضافة التصنيف بنجاح",
-      });
+    } finally {
+      setIsSubmitting(false);
     }
-    setShowForm(false);
-    setEditingCategory(null);
   };
   
   return (
@@ -119,12 +146,13 @@ const Categories = () => {
               </CardHeader>
               <CardContent>
                 <CategoryForm 
-                  initialData={editingCategory}
-                  onSave={handleSaveCategory}
+                  category={editingCategory}
+                  onSubmit={handleSaveCategory}
                   onCancel={() => {
                     setShowForm(false);
                     setEditingCategory(null);
                   }}
+                  isSubmitting={isSubmitting}
                 />
               </CardContent>
             </Card>
@@ -151,7 +179,7 @@ const Categories = () => {
             
             <CardContent>
               {filteredCategories.length === 0 ? (
-                <CategoryEmptyState onAdd={handleAddCategory} />
+                <CategoryEmptyState onCreateCategory={handleAddCategory} />
               ) : (
                 <CategoryList
                   categories={filteredCategories}

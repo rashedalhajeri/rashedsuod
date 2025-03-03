@@ -16,7 +16,7 @@ const formSchema = z.object({
   display_order: z.number().int().optional().nullable(),
 });
 
-interface CategoryFormProps {
+export interface CategoryFormProps {
   category?: Category | null;
   onSubmit: (data: CategoryFormData) => Promise<void>;
   onCancel: () => void;
