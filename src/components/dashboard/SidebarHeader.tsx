@@ -55,7 +55,10 @@ const SidebarHeader: React.FC<SidebarHeaderProps> = ({
                   <span>الإعدادات</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => window.open(`https://${domainName}.linok.me`, '_blank')} className="cursor-pointer">
+              <DropdownMenuItem 
+                onClick={() => window.open(`https://${domainName}.linok.me`, '_blank')} 
+                className="cursor-pointer"
+              >
                 <Store className="ml-2 h-4 w-4" />
                 <span>زيارة المتجر</span>
               </DropdownMenuItem>
