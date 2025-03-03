@@ -3,48 +3,16 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase, getStoreData } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import { 
-  LogOut, 
-  Settings, 
-  ShoppingBag, 
-  Home, 
-  Package, 
-  BarChart, 
-  Users, 
-  Menu, 
-  X, 
-  Shield, 
-  ChevronRight,
-  Zap,
-  Bell,
-  Tag,
-  CreditCard,
-  Store,
-  Percent,
-} from "lucide-react";
+import { LogOut, Settings, ShoppingBag, Home, Package, BarChart, Users, Menu, X, Shield, ChevronRight, Zap, Bell, Tag, CreditCard, Store, Percent } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { secureStore, secureRetrieve, secureRemove } from "@/lib/encryption";
 import { useMediaQuery, useIsMobile } from "@/hooks/use-mobile";
-import {
-  SidebarProvider,
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuLink,
-  SidebarTrigger,
-  SidebarUserSection
-} from "@/components/ui/sidebar";
+import { SidebarProvider, Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuLink, SidebarTrigger, SidebarUserSection } from "@/components/ui/sidebar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-
 interface DashboardLayoutProps {
   children: ReactNode;
 }
-
 interface Store {
   id: string;
   store_name: string;
@@ -52,8 +20,9 @@ interface Store {
   country: string;
   currency: string;
 }
-
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({
+  children
+}) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [store, setStore] = useState<Store | null>(null);
@@ -61,33 +30,30 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const location = useLocation();
-
   useEffect(() => {
     setHasNotifications(Math.random() > 0.5);
-    
     const fetchSessionAndStore = async () => {
       try {
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        
+        const {
+          data: sessionData,
+          error: sessionError
+        } = await supabase.auth.getSession();
         if (sessionError) {
           throw sessionError;
         }
-        
         if (!sessionData.session) {
           navigate("/");
           return;
         }
-        
         setSession(sessionData.session);
-        
         await secureStore('user-id', sessionData.session.user.id);
-        
-        const { data: storeData, error: storeError } = await getStoreData(sessionData.session.user.id);
-        
+        const {
+          data: storeData,
+          error: storeError
+        } = await getStoreData(sessionData.session.user.id);
         if (storeError) {
           throw storeError;
         }
-        
         setStore(storeData);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -97,34 +63,30 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         setLoading(false);
       }
     };
-
     fetchSessionAndStore();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
-        setSession(newSession);
-        if (event === 'SIGNED_OUT') {
-          secureRemove('user-id');
-          navigate("/");
-        } else if (event === 'SIGNED_IN' && newSession) {
-          await secureStore('user-id', newSession.user.id);
-        }
+    const {
+      data: authListener
+    } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+      setSession(newSession);
+      if (event === 'SIGNED_OUT') {
+        secureRemove('user-id');
+        navigate("/");
+      } else if (event === 'SIGNED_IN' && newSession) {
+        await secureStore('user-id', newSession.user.id);
       }
-    );
-
+    });
     return () => {
       authListener?.subscription.unsubscribe();
     };
   }, [navigate]);
-
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
+      const {
+        error
+      } = await supabase.auth.signOut();
       if (error) throw error;
-      
       secureRemove('user-id');
       sessionStorage.removeItem('linok-encryption-key');
-      
       toast.success("تم تسجيل الخروج بنجاح");
       navigate("/");
     } catch (error: any) {
@@ -132,35 +94,54 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       toast.error("حدث خطأ أثناء تسجيل الخروج");
     }
   };
-
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary-50/50 to-gray-50">
+    return <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary-50/50 to-gray-50">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
           <p className="mt-4 text-lg text-gray-600">جاري تحميل لوحة التحكم...</p>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  const navigation = [
-    { name: 'الرئيسية', href: '/dashboard', icon: Home },
-    { name: 'الطلبات', href: '/orders', icon: ShoppingBag },
-    { name: 'المنتجات', href: '/products', icon: Package },
-    { name: 'العملاء', href: '/customers', icon: Users },
-    { name: 'الفئات', href: '/categories', icon: Tag },
-    { name: 'كيبونات وتسويق', href: '/marketing', icon: Percent },
-    { name: 'نظام الدفع', href: '/payment', icon: CreditCard },
-    { name: 'المتجر', href: '/store', icon: Store },
-    { name: 'الإعدادات', href: '/settings', icon: Settings },
-  ];
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 rtl">
+  const navigation = [{
+    name: 'الرئيسية',
+    href: '/dashboard',
+    icon: Home
+  }, {
+    name: 'الطلبات',
+    href: '/orders',
+    icon: ShoppingBag
+  }, {
+    name: 'المنتجات',
+    href: '/products',
+    icon: Package
+  }, {
+    name: 'العملاء',
+    href: '/customers',
+    icon: Users
+  }, {
+    name: 'الفئات',
+    href: '/categories',
+    icon: Tag
+  }, {
+    name: 'كيبونات وتسويق',
+    href: '/marketing',
+    icon: Percent
+  }, {
+    name: 'نظام الدفع',
+    href: '/payment',
+    icon: CreditCard
+  }, {
+    name: 'المتجر',
+    href: '/store',
+    icon: Store
+  }, {
+    name: 'الإعدادات',
+    href: '/settings',
+    icon: Settings
+  }];
+  return <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 rtl">
       <SidebarProvider defaultExpanded={!isMobile}>
-        {isMobile && (
-          <header className="fixed top-0 left-0 right-0 z-40 glass-nav shadow-sm backdrop-blur-sm bg-white/90">
+        {isMobile && <header className="fixed top-0 left-0 right-0 z-40 glass-nav shadow-sm backdrop-blur-sm bg-white/90">
             <div className="mx-auto">
               <div className="flex h-16 items-center justify-between px-4">
                 <div className="flex items-center">
@@ -184,38 +165,30 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                   <button className="relative p-2 rounded-full hover:bg-gray-100 text-gray-600">
                     <span className="sr-only">الإشعارات</span>
                     <Bell className="h-5 w-5" />
-                    {hasNotifications && (
-                      <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white animate-pulse"></span>
-                    )}
+                    {hasNotifications && <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white animate-pulse"></span>}
                   </button>
                   
                   <SidebarTrigger />
                 </div>
               </div>
             </div>
-          </header>
-        )}
+          </header>}
 
         <div className={cn("flex", isMobile ? "pt-16" : "")}>
           <Sidebar>
             <SidebarHeader>
               <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="h-10 w-10 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex items-center justify-center mr-2 shadow-sm">
-                    <Store className="h-5 w-5 text-primary-600" />
+                <div className="flex items-center mx-0">
+                  <div className="h-10 w-10 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex items-center justify-center mr-2 shadow-sm mx-[6px]">
+                    <Store className="h-5 w-5 text-primary-600 mx-0" />
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-800 text-lg">{store?.store_name || "المتجر"}</h3>
-                    <div className="flex items-center">
-                      <span className="text-xs text-gray-500">متجر إلكتروني</span>
-                      <div className="h-1.5 w-1.5 rounded-full bg-green-500 mx-1.5"></div>
-                      <span className="text-xs text-green-600">متصل</span>
-                    </div>
+                    
                   </div>
                 </div>
                 
-                {!isMobile && (
-                  <div className="flex items-center gap-1">
+                {!isMobile && <div className="flex items-center gap-1">
                     <button className="relative p-1.5 rounded-full hover:bg-gray-100 text-gray-600">
                       <Bell className="h-4 w-4" />
                       {hasNotifications && <span className="absolute top-0.5 right-0.5 h-2 w-2 rounded-full bg-red-500 ring-1 ring-white animate-pulse"></span>}
@@ -247,8 +220,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </div>
-                )}
+                  </div>}
               </div>
             </SidebarHeader>
             
@@ -258,20 +230,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                   <h4 className="text-xs font-medium text-gray-500 mb-2">القائمة الرئيسية</h4>
                 </div>
                 <SidebarMenu>
-                  {navigation.map((item) => {
-                    const isActive = location.pathname === item.href;
-                    return (
-                      <SidebarMenuItem key={item.name}>
-                        <SidebarMenuLink 
-                          href={item.href} 
-                          icon={item.icon} 
-                          active={isActive}
-                        >
+                  {navigation.map(item => {
+                  const isActive = location.pathname === item.href;
+                  return <SidebarMenuItem key={item.name}>
+                        <SidebarMenuLink href={item.href} icon={item.icon} active={isActive}>
                           {item.name}
                         </SidebarMenuLink>
-                      </SidebarMenuItem>
-                    );
-                  })}
+                      </SidebarMenuItem>;
+                })}
                 </SidebarMenu>
               </SidebarGroup>
             </SidebarContent>
@@ -279,10 +245,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             <SidebarFooter>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-gray-500">النسخة 1.0.0</span>
-                <button 
-                  onClick={handleLogout}
-                  className="text-xs text-red-500 hover:text-red-600 flex items-center gap-1"
-                >
+                <button onClick={handleLogout} className="text-xs text-red-500 hover:text-red-600 flex items-center gap-1">
                   <LogOut className="h-3 w-3" />
                   <span>تسجيل الخروج</span>
                 </button>
@@ -311,52 +274,29 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         </div>
       </SidebarProvider>
       
-      {isMobile && (
-        <div className="mobile-nav bg-white shadow-lg border-t border-gray-100 rounded-t-xl">
-          {navigation.slice(0, 3).map((item) => {
-            const isActive = location.pathname === item.href;
-            return (
-              <Link
-                key={item.name}
-                to={item.href}
-                className="mobile-nav-item"
-              >
-                <item.icon 
-                  size={20} 
-                  className={isActive ? "text-primary-600" : "text-gray-500"} 
-                />
-                <span className={cn(
-                  "mobile-nav-label",
-                  isActive ? "text-primary-600" : "text-gray-500"
-                )}>
+      {isMobile && <div className="mobile-nav bg-white shadow-lg border-t border-gray-100 rounded-t-xl">
+          {navigation.slice(0, 3).map(item => {
+        const isActive = location.pathname === item.href;
+        return <Link key={item.name} to={item.href} className="mobile-nav-item">
+                <item.icon size={20} className={isActive ? "text-primary-600" : "text-gray-500"} />
+                <span className={cn("mobile-nav-label", isActive ? "text-primary-600" : "text-gray-500")}>
                   {item.name}
                 </span>
-              </Link>
-            );
-          })}
+              </Link>;
+      })}
           
-          <Link
-            to="/settings"
-            className="mobile-nav-item"
-          >
+          <Link to="/settings" className="mobile-nav-item">
             <Settings size={20} className={location.pathname === '/settings' ? "text-primary-600" : "text-gray-500"} />
-            <span className={cn(
-              "mobile-nav-label",
-              location.pathname === '/settings' ? "text-primary-600" : "text-gray-500"
-            )}>
+            <span className={cn("mobile-nav-label", location.pathname === '/settings' ? "text-primary-600" : "text-gray-500")}>
               الإعدادات
             </span>
           </Link>
           
-          <button 
-            onClick={handleLogout}
-            className="mobile-nav-item"
-          >
+          <button onClick={handleLogout} className="mobile-nav-item">
             <LogOut size={20} className="text-gray-500" />
             <span className="mobile-nav-label">خروج</span>
           </button>
-        </div>
-      )}
+        </div>}
 
       <div className="fixed bottom-20 left-4 md:bottom-8 z-50">
         <div className="relative group">
@@ -366,8 +306,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           </button>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default DashboardLayout;
