@@ -1,4 +1,3 @@
-
 import React, { ReactNode, useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase, getStoreData } from "@/integrations/supabase/client";
@@ -67,7 +66,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const location = useLocation();
 
   useEffect(() => {
-    // Simulate having notifications (in real app would be from a backend)
     setHasNotifications(Math.random() > 0.5);
     
     const fetchSessionAndStore = async () => {
@@ -163,11 +161,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 rtl">
-      {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-40 glass-nav shadow-sm">
         <div className="mx-auto">
           <div className="flex h-16 items-center justify-between px-4 md:px-6 lg:px-8">
-            {/* Logo and Store name */}
             <div className="flex items-center">
               {!isMobile && (
                 <button 
@@ -195,7 +191,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               </div>
             </div>
             
-            {/* Search Bar - Desktop Only */}
             <div className="hidden md:block max-w-sm w-full mx-8">
               <div className="relative">
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
@@ -209,15 +204,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               </div>
             </div>
             
-            {/* Right Side Controls */}
             <div className="flex items-center space-x-1 space-x-reverse">
-              {/* Premium Badge */}
               <span className="hidden lg:flex text-xs bg-gradient-to-r from-amber-50 to-amber-100 text-amber-800 px-2.5 py-1 rounded-full items-center border border-amber-200 mr-2">
                 <Shield size={12} className="ml-1.5" />
                 <span className="font-medium">حساب مميز</span>
               </span>
               
-              {/* Notification Button */}
               <button className="relative p-2 rounded-full hover:bg-gray-100 text-gray-600">
                 <span className="sr-only">الإشعارات</span>
                 <Bell className="h-5 w-5" />
@@ -226,7 +218,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 )}
               </button>
               
-              {/* View Store Button */}
               {!isMobile && (
                 <Button 
                   variant="outline" 
@@ -239,7 +230,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 </Button>
               )}
               
-              {/* User Profile */}
               <div className="relative">
                 <div className="flex items-center pl-2 py-1 rounded-full hover:bg-gray-100 transition-colors">
                   <div className="hidden md:flex flex-col items-end ml-2">
@@ -252,7 +242,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 </div>
               </div>
               
-              {/* Logout Button */}
               <button 
                 onClick={handleLogout}
                 className="hidden md:flex items-center gap-1.5 ml-2 p-2 rounded-md hover:bg-gray-100 text-gray-600"
@@ -278,9 +267,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                     <p className="text-xs text-gray-500">متجر إلكتروني</p>
                   </div>
                 </div>
-                <SidebarTrigger>
-                  <X className="h-4 w-4" />
-                </SidebarTrigger>
+                <SidebarTrigger />
               </div>
             </SidebarHeader>
             
@@ -351,7 +338,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         </SidebarProvider>
       </div>
       
-      {/* Mobile bottom navigation */}
       {isMobile && (
         <div className="mobile-nav">
           {navigation.slice(0, 4).map((item) => {
@@ -386,7 +372,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         </div>
       )}
 
-      {/* AI Assistant Floating Button */}
       <div className="fixed bottom-20 left-4 md:bottom-8 z-50">
         <div className="relative group">
           <div className="absolute -inset-1 bg-gradient-to-r from-primary-400 to-primary-600 rounded-full blur opacity-60 group-hover:opacity-100 transition duration-300"></div>

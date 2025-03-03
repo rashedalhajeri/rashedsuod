@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
@@ -6,7 +5,6 @@ import { ChevronRight, ChevronLeft, X, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-// إنشاء سياق للشريط الجانبي
 type SidebarContextType = {
   expanded: boolean;
   setExpanded: (expanded: boolean) => void;
@@ -15,7 +13,6 @@ type SidebarContextType = {
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
-// مزود السياق للشريط الجانبي
 export function SidebarProvider({
   children,
   defaultExpanded = true,
@@ -26,7 +23,6 @@ export function SidebarProvider({
   const [expanded, setExpanded] = useState(defaultExpanded);
   const isMobile = useIsMobile();
 
-  // ضبط الحالة الافتراضية حسب حجم الشاشة
   useEffect(() => {
     if (isMobile) {
       setExpanded(false);
@@ -44,7 +40,6 @@ export function SidebarProvider({
   );
 }
 
-// هوك للوصول إلى حالة الشريط الجانبي
 export function useSidebar() {
   const context = useContext(SidebarContext);
   if (!context) {
@@ -53,7 +48,6 @@ export function useSidebar() {
   return context;
 }
 
-// مكون الشريط الجانبي الرئيسي
 export function Sidebar({ className, children }: { className?: string; children: React.ReactNode }) {
   const { expanded } = useSidebar();
   const isMobile = useIsMobile();
@@ -73,17 +67,14 @@ export function Sidebar({ className, children }: { className?: string; children:
   );
 }
 
-// مكون محتوى الشريط الجانبي
 export function SidebarContent({ className, children }: { className?: string; children?: React.ReactNode }) {
   return <div className={cn("p-4 flex-1 overflow-y-auto", className)}>{children}</div>;
 }
 
-// مكون مجموعة عناصر الشريط الجانبي
 export function SidebarGroup({ className, children }: { className?: string; children?: React.ReactNode }) {
   return <div className={cn("space-y-1 mb-6", className)}>{children}</div>;
 }
 
-// مكون زر التبديل للشريط الجانبي
 export function SidebarTrigger({ className }: { className?: string }) {
   const { toggle, expanded } = useSidebar();
   const isMobile = useIsMobile();
@@ -101,33 +92,26 @@ export function SidebarTrigger({ className }: { className?: string }) {
     );
   }
 
-  if (isMobile) {
-    return (
-      <Button
-        onClick={toggle}
-        variant="ghost"
-        size="icon"
-        className={cn("fixed top-20 right-3 z-50", className)}
-      >
-        {expanded ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-      </Button>
-    );
-  }
-
-  return null;
+  return (
+    <Button
+      onClick={toggle}
+      variant="ghost"
+      size="icon"
+      className={cn(isMobile ? "fixed top-20 right-3 z-50" : "", className)}
+    >
+      {expanded ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+    </Button>
+  );
 }
 
-// مكون قائمة الشريط الجانبي
 export function SidebarMenu({ className, children }: { className?: string; children?: React.ReactNode }) {
   return <ul className={cn("space-y-1", className)}>{children}</ul>;
 }
 
-// مكون عنصر قائمة الشريط الجانبي
 export function SidebarMenuItem({ className, children }: { className?: string; children?: React.ReactNode }) {
   return <li className={className}>{children}</li>;
 }
 
-// مكون زر قائمة الشريط الجانبي
 export function SidebarMenuLink({
   href,
   icon: Icon,
@@ -159,7 +143,6 @@ export function SidebarMenuLink({
   );
 }
 
-// مكون رأس الشريط الجانبي
 export function SidebarHeader({ className, children }: { className?: string; children?: React.ReactNode }) {
   const { expanded } = useSidebar();
 
@@ -172,7 +155,6 @@ export function SidebarHeader({ className, children }: { className?: string; chi
   );
 }
 
-// مكون ذيل الشريط الجانبي
 export function SidebarFooter({ className, children }: { className?: string; children?: React.ReactNode }) {
   const { expanded } = useSidebar();
 
