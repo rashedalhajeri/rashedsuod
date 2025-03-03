@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -41,12 +40,38 @@ const Auth = () => {
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
       if (data.session) {
-        navigate("/dashboard");
+        // Check if user has a store
+        checkIfUserHasStore(data.session.user.id);
       }
     };
     
     checkSession();
   }, [navigate]);
+
+  // Function to check if user has a store and redirect accordingly
+  const checkIfUserHasStore = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('stores')
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) throw error;
+      
+      if (data) {
+        // User has a store, redirect to dashboard
+        navigate("/dashboard");
+      } else {
+        // User does not have a store, redirect to create store page
+        navigate("/create-store");
+      }
+    } catch (error) {
+      console.error("Error checking if user has store:", error);
+      // On error, default to dashboard which will handle the redirection
+      navigate("/dashboard");
+    }
+  };
   
   // Handle login
   const handleLogin = async (e: React.FormEvent) => {
@@ -60,14 +85,18 @@ const Auth = () => {
     try {
       setIsLoading(true);
       
-      const { error } = await signInWithEmail(loginEmail, loginPassword);
+      const { data, error } = await signInWithEmail(loginEmail, loginPassword);
       
       if (error) {
         throw error;
       }
       
       toast.success("تم تسجيل الدخول بنجاح");
-      navigate("/dashboard");
+      
+      // Check if user has a store
+      if (data && data.user) {
+        checkIfUserHasStore(data.user.id);
+      }
       
     } catch (error: any) {
       console.error("Error logging in:", error);
@@ -185,10 +214,11 @@ const Auth = () => {
         throw error;
       }
       
+      // Redirect will be handled by the auth state change listener
+      
     } catch (error: any) {
       console.error("Error signing in with Google:", error);
       toast.error(error.message || "حدث خطأ أثناء تسجيل الدخول باستخدام Google");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -203,10 +233,11 @@ const Auth = () => {
         throw error;
       }
       
+      // Redirect will be handled by the auth state change listener
+      
     } catch (error: any) {
       console.error("Error signing in with Apple:", error);
       toast.error(error.message || "حدث خطأ أثناء تسجيل الدخول باستخدام Apple");
-    } finally {
       setIsLoading(false);
     }
   };

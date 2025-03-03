@@ -43,7 +43,11 @@ export const signInWithGoogle = async () => {
   return await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: window.location.origin,
+      redirectTo: `${window.location.origin}/auth`,
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent',
+      }
     }
   });
 };
@@ -52,7 +56,7 @@ export const signInWithApple = async () => {
   return await supabase.auth.signInWithOAuth({
     provider: 'apple',
     options: {
-      redirectTo: window.location.origin,
+      redirectTo: `${window.location.origin}/auth`,
     }
   });
 };
@@ -75,3 +79,4 @@ export const getCurrentUser = async () => {
   const { data } = await supabase.auth.getUser();
   return data?.user;
 };
+

@@ -162,6 +162,58 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return isAuthenticated ? <>{children}</> : <Navigate to="/auth" />;
 };
 
+// Store check component that redirects users to create store if they don't have one
+const StoreCheckRoute = ({ children }: { children: React.ReactNode }) => {
+  const [hasStore, setHasStore] = useState<boolean | null>(null);
+  const [isChecking, setIsChecking] = useState(true);
+
+  useEffect(() => {
+    const checkStore = async () => {
+      try {
+        setIsChecking(true);
+        
+        // Check if the user has a session
+        const { data: sessionData } = await supabase.auth.getSession();
+        
+        if (!sessionData.session) {
+          setHasStore(false);
+          return;
+        }
+        
+        // Check if the user has a store
+        const { data, error } = await supabase
+          .from('stores')
+          .select('id')
+          .eq('user_id', sessionData.session.user.id)
+          .maybeSingle();
+        
+        if (error) {
+          console.error('Store check error:', error);
+          setHasStore(false);
+          return;
+        }
+        
+        setHasStore(!!data);
+      } catch (error) {
+        console.error('Store check error:', error);
+        setHasStore(false);
+      } finally {
+        setIsChecking(false);
+      }
+    };
+    
+    checkStore();
+  }, []);
+
+  if (isChecking) {
+    // Still checking
+    return <div className="flex h-screen items-center justify-center">جاري التحقق من المتجر...</div>;
+  }
+
+  // If the user doesn't have a store, redirect to create-store
+  return hasStore ? <>{children}</> : <Navigate to="/create-store" />;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -177,7 +229,9 @@ const App = () => (
               path="/dashboard" 
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <StoreCheckRoute>
+                    <Dashboard />
+                  </StoreCheckRoute>
                 </ProtectedRoute>
               } 
             />
@@ -185,7 +239,9 @@ const App = () => (
               path="/products" 
               element={
                 <ProtectedRoute>
-                  <Products />
+                  <StoreCheckRoute>
+                    <Products />
+                  </StoreCheckRoute>
                 </ProtectedRoute>
               } 
             />
@@ -201,7 +257,9 @@ const App = () => (
               path="/analytics" 
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <StoreCheckRoute>
+                    <Dashboard />
+                  </StoreCheckRoute>
                 </ProtectedRoute>
               } 
             />
@@ -209,7 +267,9 @@ const App = () => (
               path="/customers" 
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <StoreCheckRoute>
+                    <Dashboard />
+                  </StoreCheckRoute>
                 </ProtectedRoute>
               } 
             />
@@ -217,7 +277,9 @@ const App = () => (
               path="/settings" 
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <StoreCheckRoute>
+                    <Dashboard />
+                  </StoreCheckRoute>
                 </ProtectedRoute>
               } 
             />
@@ -230,3 +292,4 @@ const App = () => (
 );
 
 export default App;
+
