@@ -62,22 +62,22 @@ const Categories: React.FC = () => {
         }
         
         // Explicitly type the categories array to avoid excessive type instantiation
-        const categoriesData: any[] = result.data || [];
+        const categoriesData = result.data || [];
         
         // Create a new array with explicit Category typing
+        // The problematic line was here - now using Promise.all and type assertion to fix the type instantiation issue
         const categoryPromises = categoriesData.map(async (category) => {
-          const { count, error: countError } = await supabase
+          // Use a simpler query to avoid deep type instantiation
+          const { count } = await supabase
             .from('products')
             .select('*', { count: 'exact', head: true })
-            .eq('category_id', category.id);
+            .filter('category_id', 'eq', category.id as any);
           
           // Create a new object with the correct type
-          const categoryWithCount: Category = {
+          return {
             ...category,
             product_count: count || 0
-          };
-          
-          return categoryWithCount;
+          } as Category;
         });
         
         const categoriesWithCounts = await Promise.all(categoryPromises);
