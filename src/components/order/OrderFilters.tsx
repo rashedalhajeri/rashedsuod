@@ -1,93 +1,100 @@
 
-import { useState } from "react";
-import { Calendar } from "@/components/ui/calendar";
-import { Checkbox } from "@/components/ui/checkbox";
+import React from "react";
+import { CalendarRange, Package, CreditCard, TruckIcon } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { X, Filter, CalendarRange, Check } from "lucide-react";
 
-export function OrderFilters({ onApplyFilters }: { onApplyFilters: (filters: any) => void }) {
-  // Placeholder implementation
-  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
-    from: undefined,
-    to: undefined,
-  });
-  
-  const statuses = [
-    { id: "pending", name: "قيد الانتظار", color: "yellow" },
-    { id: "processing", name: "قيد المعالجة", color: "blue" },
-    { id: "shipped", name: "تم الشحن", color: "indigo" },
-    { id: "delivered", name: "تم التسليم", color: "green" },
-    { id: "cancelled", name: "ملغي", color: "red" },
-    { id: "refunded", name: "مسترجع", color: "pink" },
-  ];
-  
-  const paymentMethods = [
-    { id: "cash", name: "نقدي عند الاستلام" },
-    { id: "credit_card", name: "بطاقة ائتمان" },
-    { id: "mada", name: "مدى" },
-    { id: "apple_pay", name: "آبل باي" },
-    { id: "stc_pay", name: "STC Pay" },
-  ];
-  
+export function OrderFilters() {
   return (
-    <div className="space-y-4 py-2 pb-6">
-      <div className="space-y-2">
-        <Label className="text-xs font-medium">تاريخ الطلب</Label>
-        <div className="flex flex-col gap-2">
-          <Calendar
-            mode="single"
-            selected={dateRange.from}
-            onSelect={(date) => setDateRange({ ...dateRange, from: date })}
-            className="rounded-md border"
-          />
-        </div>
-      </div>
-      <Separator />
-      <div className="space-y-2">
-        <Label className="text-xs font-medium">حالة الطلب</Label>
-        <div className="space-y-2">
-          {statuses.map((status) => (
-            <div key={status.id} className="flex items-center space-x-2 space-x-reverse">
-              <Checkbox id={`status-${status.id}`} />
-              <Label
-                htmlFor={`status-${status.id}`}
-                className="text-sm font-normal flex items-center cursor-pointer"
-              >
-                <Badge variant="outline" className="mr-2 border-gray-200">
-                  {status.name}
-                </Badge>
-              </Label>
+    <Card>
+      <CardContent className="p-3 grid gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label htmlFor="date-range" className="flex items-center text-xs">
+              <CalendarRange className="h-3 w-3 ml-1" />
+              نطاق التاريخ
+            </Label>
+            <div className="flex gap-2 items-center">
+              <Input 
+                id="date-from"
+                type="date" 
+                className="text-xs h-8" 
+              />
+              <span className="text-xs text-muted-foreground">إلى</span>
+              <Input 
+                id="date-to"
+                type="date" 
+                className="text-xs h-8" 
+              />
             </div>
-          ))}
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="payment-method" className="flex items-center text-xs">
+              <CreditCard className="h-3 w-3 ml-1" />
+              طريقة الدفع
+            </Label>
+            <select 
+              id="payment-method"
+              className="w-full h-8 rounded-md border border-input bg-background px-3 py-1 text-xs"
+            >
+              <option value="">الكل</option>
+              <option value="credit-card">بطاقة ائتمان</option>
+              <option value="cod">الدفع عند الاستلام</option>
+              <option value="bank-transfer">تحويل بنكي</option>
+              <option value="wallet">محفظة إلكترونية</option>
+            </select>
+          </div>
         </div>
-      </div>
-      <Separator />
-      <div className="space-y-2">
-        <Label className="text-xs font-medium">طريقة الدفع</Label>
-        <div className="space-y-2">
-          {paymentMethods.map((method) => (
-            <div key={method.id} className="flex items-center space-x-2 space-x-reverse">
-              <Checkbox id={`payment-${method.id}`} />
-              <Label
-                htmlFor={`payment-${method.id}`}
-                className="text-sm font-normal cursor-pointer"
-              >
-                {method.name}
-              </Label>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label htmlFor="price-range" className="flex items-center text-xs">
+              <Package className="h-3 w-3 ml-1" />
+              نطاق السعر
+            </Label>
+            <div className="flex gap-2 items-center">
+              <Input 
+                id="price-min"
+                type="number" 
+                placeholder="الحد الأدنى"
+                className="text-xs h-8" 
+              />
+              <span className="text-xs text-muted-foreground">إلى</span>
+              <Input 
+                id="price-max"
+                type="number" 
+                placeholder="الحد الأقصى"
+                className="text-xs h-8" 
+              />
             </div>
-          ))}
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="shipping-method" className="flex items-center text-xs">
+              <TruckIcon className="h-3 w-3 ml-1" />
+              شركة الشحن
+            </Label>
+            <select 
+              id="shipping-method"
+              className="w-full h-8 rounded-md border border-input bg-background px-3 py-1 text-xs"
+            >
+              <option value="">الكل</option>
+              <option value="dhl">DHL</option>
+              <option value="aramex">Aramex</option>
+              <option value="fedex">FedEx</option>
+              <option value="other">أخرى</option>
+            </select>
+          </div>
         </div>
-      </div>
-      <Separator />
-      <Button className="w-full" onClick={() => onApplyFilters({})}>
-        <Filter className="mr-2 h-4 w-4" />
-        تطبيق الفلترة
-      </Button>
-    </div>
+        
+        <div className="flex justify-end space-x-2 space-x-reverse mt-1">
+          <Button variant="ghost" size="sm" className="h-8 text-xs">إعادة تعيين</Button>
+          <Button size="sm" className="h-8 text-xs">تطبيق الفلتر</Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

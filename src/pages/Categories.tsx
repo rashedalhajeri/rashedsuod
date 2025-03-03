@@ -1,295 +1,144 @@
 
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
-import { supabase, getCategoriesByStoreId, updateProductCategory } from "@/integrations/supabase/client";
-import { secureRetrieve } from "@/lib/encryption";
+import React, { useState } from "react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import DashboardLayout from "@/components/DashboardLayout";
-import CategoryForm from "@/components/category/CategoryForm";
-import CategoryList from "@/components/category/CategoryList";
-import CategoryEmptyState from "@/components/category/CategoryEmptyState";
-import LoadingState from "@/components/dashboard/LoadingState";
-import { Category, CategoryFormData } from "@/types/category";
+import { Button } from "@/components/ui/button";
+import { Tag, PlusCircle, Edit, Trash2, ChevronRight, Box, ArrowUpDown } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-const Categories: React.FC = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
-  const [currency, setCurrency] = useState("KWD");
-  const [storeId, setStoreId] = useState<string | null>(null);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    document.documentElement.dir = "rtl";
-    document.documentElement.lang = "ar";
-    return () => {
-      document.documentElement.dir = "ltr";
-      document.documentElement.lang = "en";
-    };
-  }, []);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Fetch store data to get currency
-        const userId = await secureRetrieve('user-id');
-        const { data: storeData, error: storeError } = await supabase
-          .from('stores')
-          .select('*')
-          .eq('user_id', userId)
-          .single();
-        
-        if (storeError) {
-          throw storeError;
-        }
-        
-        setCurrency(storeData.currency);
-        setStoreId(storeData.id);
-        
-        // Fetch categories using the helper function and properly type the result
-        const result = await getCategoriesByStoreId(storeData.id);
-        
-        if (result.error) {
-          throw result.error;
-        }
-        
-        // Explicitly type the categories array to avoid excessive type instantiation
-        const categoriesData: any[] = result.data || [];
-        
-        // Create a new array with explicit Category typing
-        const categoryPromises = categoriesData.map(async (category) => {
-          const { count, error: countError } = await supabase
-            .from('products')
-            .select('*', { count: 'exact', head: true })
-            .eq('category_id', category.id);
-          
-          // Create a new object with the correct type
-          const categoryWithCount: Category = {
-            ...category,
-            product_count: count || 0
-          };
-          
-          return categoryWithCount;
-        });
-        
-        const categoriesWithCounts = await Promise.all(categoryPromises);
-        setCategories(categoriesWithCounts);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-        toast.error("حدث خطأ أثناء تحميل الأقسام");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchData();
-  }, []);
-
-  const handleCreateCategory = async (data: CategoryFormData) => {
-    try {
-      setIsSubmitting(true);
-      
-      if (!storeId) {
-        throw new Error("لم يتم العثور على معرف المتجر");
-      }
-      
-      const { data: newCategory, error } = await supabase
-        .from('categories')
-        .insert({
-          store_id: storeId,
-          name: data.name,
-          description: data.description || null,
-          display_order: data.display_order || null
-        })
-        .select()
-        .single();
-      
-      if (error) {
-        throw error;
-      }
-      
-      setCategories(prev => [...prev, { ...newCategory, product_count: 0 }]);
-      setShowForm(false);
-      toast.success("تم إنشاء القسم بنجاح");
-    } catch (error) {
-      console.error("Error creating category:", error);
-      toast.error("حدث خطأ أثناء إنشاء القسم");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleUpdateCategory = async (data: CategoryFormData) => {
-    try {
-      setIsSubmitting(true);
-      
-      if (!selectedCategory) {
-        throw new Error("لم يتم تحديد قسم للتعديل");
-      }
-      
-      const { data: updatedCategory, error } = await supabase
-        .from('categories')
-        .update({
-          name: data.name,
-          description: data.description || null,
-          display_order: data.display_order || null
-        })
-        .eq('id', selectedCategory.id)
-        .select()
-        .single();
-      
-      if (error) {
-        throw error;
-      }
-      
-      setCategories(prev => 
-        prev.map(cat => 
-          cat.id === selectedCategory.id 
-            ? { ...updatedCategory, product_count: cat.product_count } 
-            : cat
-        )
-      );
-      
-      setSelectedCategory(null);
-      setShowForm(false);
-      toast.success("تم تحديث القسم بنجاح");
-    } catch (error) {
-      console.error("Error updating category:", error);
-      toast.error("حدث خطأ أثناء تحديث القسم");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDeleteCategory = async () => {
-    try {
-      if (!categoryToDelete) return;
-      
-      // Update products to remove category_id using the helper function
-      const { error: updateError } = await updateProductCategory(categoryToDelete, null);
-      
-      if (updateError) {
-        throw updateError;
-      }
-      
-      // Delete the category
-      const { error: deleteError } = await supabase
-        .from('categories')
-        .delete()
-        .eq('id', categoryToDelete);
-      
-      if (deleteError) {
-        throw deleteError;
-      }
-      
-      setCategories(prev => prev.filter(cat => cat.id !== categoryToDelete));
-      setCategoryToDelete(null);
-      toast.success("تم حذف القسم بنجاح");
-    } catch (error) {
-      console.error("Error deleting category:", error);
-      toast.error("حدث خطأ أثناء حذف القسم");
-    }
-  };
-
-  const handleEditCategory = (category: Category) => {
-    setSelectedCategory(category);
-    setShowForm(true);
-  };
-
-  const handleCancelForm = () => {
-    setSelectedCategory(null);
-    setShowForm(false);
-  };
-
-  const handleViewProducts = (category: Category) => {
-    navigate(`/products?category=${category.id}`);
-  };
-
-  const handleSubmit = async (data: CategoryFormData) => {
-    if (selectedCategory) {
-      await handleUpdateCategory(data);
-    } else {
-      await handleCreateCategory(data);
-    }
-  };
-
-  if (isLoading) {
-    return <LoadingState />;
-  }
+const Categories = () => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [categories, setCategories] = useState([
+    { id: 1, name: "إلكترونيات", slug: "electronics", count: 15 },
+    { id: 2, name: "ملابس", slug: "clothes", count: 24 },
+    { id: 3, name: "أحذية", slug: "shoes", count: 12 },
+    { id: 4, name: "إكسسوارات", slug: "accessories", count: 8 },
+    { id: 5, name: "هواتف", slug: "phones", count: 10 },
+  ]);
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">الأقسام</h1>
-          {!showForm && categories.length > 0 && (
-            <Button 
-              onClick={() => {
-                setSelectedCategory(null);
-                setShowForm(true);
-              }}
-              className="flex items-center gap-2"
-            >
-              <PlusCircle className="h-4 w-4" />
-              إضافة قسم
-            </Button>
-          )}
+      <div className="animate-fade-in space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">الفئات</h1>
+            <p className="text-gray-600">إدارة فئات المنتجات في متجرك</p>
+          </div>
+          
+          <Button 
+            className="bg-primary-600 hover:bg-primary-700 flex items-center gap-2"
+            onClick={() => setIsDialogOpen(true)}
+          >
+            <PlusCircle size={16} />
+            إضافة فئة جديدة
+          </Button>
         </div>
-        
-        {!showForm && categories.length === 0 && (
-          <CategoryEmptyState onCreateCategory={() => {
-            setSelectedCategory(null);
-            setShowForm(true);
-          }} />
-        )}
-        
-        {showForm && (
-          <CategoryForm
-            category={selectedCategory}
-            onSubmit={handleSubmit}
-            onCancel={handleCancelForm}
-            isSubmitting={isSubmitting}
-          />
-        )}
-        
-        {!showForm && categories.length > 0 && (
-          <CategoryList
-            categories={categories}
-            currencyCode={currency}
-            onEdit={handleEditCategory}
-            onDelete={(id) => setCategoryToDelete(id)}
-            onViewProducts={handleViewProducts}
-          />
-        )}
-        
-        <AlertDialog open={!!categoryToDelete} onOpenChange={() => setCategoryToDelete(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>هل أنت متأكد من حذف هذا القسم؟</AlertDialogTitle>
-              <AlertDialogDescription>
-                سيتم إلغاء ارتباط جميع المنتجات بهذا القسم. هذا الإجراء لا يمكن التراجع عنه.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>إلغاء</AlertDialogCancel>
-              <AlertDialogAction 
-                onClick={handleDeleteCategory}
-                className="bg-red-500 hover:bg-red-600 text-white"
-              >
-                حذف
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+
+        <Card className="border border-gray-100 overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
+            <CardTitle className="flex items-center">
+              <Tag className="inline-block ml-2 h-5 w-5 text-primary-500" />
+              فئات المنتجات
+            </CardTitle>
+            <CardDescription>جميع الفئات المتوفرة في متجرك</CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <div className="grid grid-cols-12 text-sm font-medium text-gray-500 bg-gray-50 p-4 border-b border-gray-100">
+                <div className="col-span-1 flex items-center">#</div>
+                <div className="col-span-4 flex items-center">
+                  الاسم
+                  <ArrowUpDown size={14} className="mr-1 opacity-50" />
+                </div>
+                <div className="col-span-3">رابط الفئة</div>
+                <div className="col-span-2">عدد المنتجات</div>
+                <div className="col-span-2 text-left">إجراءات</div>
+              </div>
+              
+              {categories.map((category) => (
+                <div 
+                  key={category.id} 
+                  className="grid grid-cols-12 p-4 hover:bg-gray-50 transition-colors border-b border-gray-100 text-sm"
+                >
+                  <div className="col-span-1 flex items-center">{category.id}</div>
+                  <div className="col-span-4 font-medium text-gray-800 flex items-center">
+                    <div className="bg-primary-50 text-primary-700 h-8 w-8 rounded-md flex items-center justify-center mr-2">
+                      <Tag size={14} />
+                    </div>
+                    {category.name}
+                  </div>
+                  <div className="col-span-3 text-gray-500">{category.slug}</div>
+                  <div className="col-span-2 text-gray-500">{category.count} منتج</div>
+                  <div className="col-span-2 flex justify-end gap-2">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500">
+                      <Edit size={14} />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500">
+                      <Trash2 size={14} />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              
+              {categories.length === 0 && (
+                <div className="text-center py-12">
+                  <Tag className="mx-auto h-12 w-12 text-gray-300" />
+                  <h3 className="mt-2 text-lg font-medium text-gray-900">لا توجد فئات</h3>
+                  <p className="mt-1 text-gray-500">ابدأ بإضافة فئات لمنتجات متجرك.</p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-4"
+                    onClick={() => setIsDialogOpen(true)}
+                  >
+                    إضافة فئة جديدة
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>إضافة فئة جديدة</DialogTitle>
+            <DialogDescription>
+              قم بإضافة فئة جديدة لمنتجات متجرك.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                اسم الفئة
+              </Label>
+              <Input id="name" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="slug" className="text-right">
+                رابط الفئة
+              </Label>
+              <Input id="slug" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="description" className="text-right">
+                الوصف
+              </Label>
+              <Input id="description" className="col-span-3" />
+            </div>
+          </div>
+          <DialogFooter className="sm:justify-start">
+            <Button type="button">
+              إضافة الفئة
+            </Button>
+            <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+              إلغاء
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };

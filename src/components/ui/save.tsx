@@ -1,4 +1,5 @@
 
-import { Save } from "lucide-react";
+import React from "react";
+import { Save as SaveIcon } from "lucide-react";
 
-export default Save;
+export const Save = SaveIcon;
