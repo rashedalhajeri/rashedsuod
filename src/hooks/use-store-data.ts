@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { secureRetrieve } from "@/lib/encryption";
 import { toast } from "sonner";
 
-// Hook لجلب بيانات المتجر
+// Hook for fetching store data
 export const useStoreData = () => {
   const fetchStoreData = async () => {
     const userId = await secureRetrieve('user-id');
@@ -32,7 +32,7 @@ export const useStoreData = () => {
   return useQuery({
     queryKey: ['storeData'],
     queryFn: fetchStoreData,
-    staleTime: 1000 * 60 * 5, // 5 دقائق
+    staleTime: 1000 * 60 * 5, // 5 minutes
     retry: 1,
     meta: {
       onError: (error: Error) => {
@@ -43,13 +43,13 @@ export const useStoreData = () => {
   });
 };
 
-// دالة مساعدة لتنسيق العملة بناءً على عملة المتجر
+// Helper function for formatting currency based on store currency
 export const getCurrencyFormatter = (currency: string = 'SAR') => {
   return (price: number) => {
     let currencyCode = currency;
     let locale = 'ar-SA';
     
-    // تحديد اللغة المناسبة للعملة
+    // Set appropriate locale for the currency
     switch (currency) {
       case 'KWD':
         locale = 'ar-KW';

@@ -43,7 +43,7 @@ const CreateStore: React.FC = () => {
     });
   };
 
-  // Check domain availability
+  // Check domain availability (manual check since RPC was removed)
   const checkDomainAvailability = async () => {
     if (!formData.domainName.trim()) {
       toast.error("الرجاء إدخال اسم النطاق أولاً");
@@ -59,13 +59,18 @@ const CreateStore: React.FC = () => {
 
     setCheckingDomain(true);
     try {
+      // Check if domain already exists in database
       const { data, error } = await supabase
-        .rpc('check_domain_availability', { domain: formData.domainName });
+        .from('stores')
+        .select('domain_name')
+        .eq('domain_name', formData.domainName)
+        .maybeSingle();
 
       if (error) throw error;
 
-      setDomainAvailable(data);
-      if (data) {
+      // If data is null, domain is available
+      setDomainAvailable(!data);
+      if (!data) {
         toast.success("اسم النطاق متاح");
       } else {
         toast.error("اسم النطاق غير متاح، الرجاء اختيار اسم آخر");
@@ -117,8 +122,8 @@ const CreateStore: React.FC = () => {
       if (error) throw error;
 
       toast.success("تم إنشاء المتجر بنجاح");
-      // Redirect to dashboard
-      navigate("/dashboard");
+      // Redirect to home page since dashboard is removed
+      navigate("/");
     } catch (error) {
       console.error("Error creating store:", error);
       toast.error("حدث خطأ أثناء إنشاء المتجر");
