@@ -1,213 +1,85 @@
-
 import { useState } from "react";
+import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import DashboardLayout from "@/components/DashboardLayout";
-import OrderList from "@/components/order/OrderList";
+import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
+import { OrderFilters } from "@/components/order/OrderFilters";
+import { OrderStats } from "@/components/order/OrderStats";
+import { OrderList } from "@/components/order/OrderList";
 import OrderDetails from "@/components/order/OrderDetails";
-import OrderFilters from "@/components/order/OrderFilters";
-import OrderStats from "@/components/order/OrderStats";
-import { Search, Filter, Download, Plus, RefreshCw } from "lucide-react";
-import { toast } from "@/components/ui/use-toast";
 
 const Orders = () => {
+  const [open, setOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [dateRangeFilter, setDateRangeFilter] = useState("all");
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
-  const totalOrders = 124;
-  const pendingOrders = 32;
-  const processingOrders = 15;
-  const shippedOrders = 48;
-  const deliveredOrders = 29;
-
-  const handleOpenDetails = (orderId: string) => {
+  const handleOrderClick = (orderId: string) => {
     setSelectedOrder(orderId);
-    setIsDetailsOpen(true);
+    setOpen(true);
   };
 
-  const handleCloseDetails = () => {
-    setIsDetailsOpen(false);
+  const handleCloseOrderDetails = () => {
     setSelectedOrder(null);
-  };
-
-  const handleRefresh = () => {
-    toast({
-      title: "تحديث الطلبات",
-      description: "تم تحديث قائمة الطلبات بنجاح",
-    });
-  };
-
-  const handleExport = () => {
-    toast({
-      title: "تصدير الطلبات",
-      description: "جاري تصدير قائمة الطلبات إلى ملف Excel",
-    });
-  };
-
-  const handleCreateOrder = () => {
-    toast({
-      title: "إنشاء طلب جديد",
-      description: "سيتم إضافة القدرة على إنشاء طلبات يدوية قريبًا",
-    });
+    setOpen(false);
   };
 
   return (
-    <DashboardLayout>
-      <div className="space-y-4 p-4 pt-6 md:p-8">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">الطلبات</h2>
-            <p className="text-muted-foreground">
-              إدارة جميع طلبات العملاء ومتابعة حالتها
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleRefresh}
-            >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              تحديث
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleExport}
-            >
-              <Download className="mr-2 h-4 w-4" />
-              تصدير
-            </Button>
-            <Button
-              size="sm"
-              onClick={handleCreateOrder}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              طلب جديد
-            </Button>
-          </div>
+    <>
+      <Helmet>
+        <title>الطلبات</title>
+        <meta name="description" content="إدارة طلبات العملاء وتتبع الشحنات" />
+      </Helmet>
+      <div className="container mx-auto py-10">
+        <div className="mb-4 flex items-center justify-between">
+          <CardHeader className="flex flex-col space-y-1.5">
+            <CardTitle className="text-2xl font-bold">الطلبات</CardTitle>
+            <CardDescription>إدارة طلبات العملاء وتتبع الشحنات</CardDescription>
+          </CardHeader>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline">
+                <Filter className="mr-2 h-4 w-4" />
+                فلترة
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full sm:w-[400px]">
+              <div className="flex flex-col space-y-6">
+                <h3 className="text-lg font-medium">فلترة الطلبات</h3>
+                <Separator />
+                <OrderFilters onApplyFilters={(filters) => console.log(filters)} />
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
 
-        <OrderStats
-          totalOrders={totalOrders}
-          pendingOrders={pendingOrders}
-          processingOrders={processingOrders}
-          shippedOrders={shippedOrders}
-          deliveredOrders={deliveredOrders}
-        />
+        <OrderStats />
+        <Separator className="my-6" />
+        <OrderList onOrderClick={handleOrderClick} />
 
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <Tabs 
-              defaultValue="all" 
-              className="w-full" 
-              value={activeTab}
-              onValueChange={setActiveTab}
-            >
-              <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="all">الكل ({totalOrders})</TabsTrigger>
-                <TabsTrigger value="pending">قيد الانتظار ({pendingOrders})</TabsTrigger>
-                <TabsTrigger value="processing">قيد المعالجة ({processingOrders})</TabsTrigger>
-                <TabsTrigger value="shipped">تم الشحن ({shippedOrders})</TabsTrigger>
-                <TabsTrigger value="delivered">تم التوصيل ({deliveredOrders})</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-
-          <div className="flex flex-col gap-4 md:flex-row md:items-center">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="البحث عن طلب بالاسم أو رقم الطلب أو رقم الهاتف..."
-                className="w-full pl-8"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1"
-              onClick={() => setIsFiltersOpen(!isFiltersOpen)}
-            >
-              <Filter className="h-4 w-4" />
-              فلترة
-              <Badge variant="secondary" className="mr-2 rounded-sm px-1">
-                {statusFilter !== "all" || dateRangeFilter !== "all" ? "2" : "0"}
-              </Badge>
-            </Button>
-          </div>
-
-          {isFiltersOpen && (
-            <OrderFilters
-              statusFilter={statusFilter}
-              dateRangeFilter={dateRangeFilter}
-              onStatusChange={setStatusFilter}
-              onDateRangeChange={setDateRangeFilter}
-              onClose={() => setIsFiltersOpen(false)}
-            />
-          )}
-
-          <Card>
-            <CardHeader className="p-4">
-              <CardTitle className="text-lg">قائمة الطلبات</CardTitle>
-              <CardDescription>
-                {totalOrders} طلب في النظام
-              </CardDescription>
-            </CardHeader>
-            <Separator />
-            <CardContent className="p-0">
-              <ScrollArea className="h-[calc(100vh-350px)]">
-                <OrderList
-                  searchQuery={searchQuery}
-                  statusFilter={statusFilter === "all" ? activeTab : statusFilter}
-                  dateRangeFilter={dateRangeFilter}
-                  onOpenDetails={handleOpenDetails}
-                />
-              </ScrollArea>
-            </CardContent>
-          </Card>
-        </div>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="sm:max-w-[90%]">
+            {selectedOrder && (
+              <OrderDetails orderId={selectedOrder} onClose={handleCloseOrderDetails} />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
-
-      {isDetailsOpen && selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-start justify-end overflow-hidden bg-background/80 p-0">
-          <div className="absolute inset-0 bg-black/40" onClick={handleCloseDetails}></div>
-          <div className="relative h-full w-full max-w-[90%] border-l bg-background shadow-xl animate-in slide-in-from-right md:max-w-2xl">
-            <OrderDetails orderId={selectedOrder} onClose={handleCloseDetails} />
-          </div>
-        </div>
-      )}
-    </DashboardLayout>
+    </>
   );
 };
 

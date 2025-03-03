@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { 
   Tabs, 
   TabsContent, 
@@ -24,7 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "@/components/ui/use-toast";
 import { Avatar } from "@/components/ui/avatar";
-import TimelineItem from "./TimelineItem";
+import { TimelineItem } from "./TimelineItem";
 import { 
   CircleDollarSign, 
   Truck, 
@@ -46,7 +46,7 @@ import {
   Clock, 
   Send 
 } from "lucide-react";
-import Save from "@/components/ui/save";
+import { Save } from "lucide-react";
 
 type OrderDetailsProps = {
   orderId: string;
@@ -109,7 +109,7 @@ const OrderDetails = ({ orderId, onClose }: OrderDetailsProps) => {
   return (
     <div className="flex h-full flex-col gap-4 p-6">
       <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-        <CardTitle tag="h4" className="text-2xl font-bold">
+        <CardTitle className="text-2xl font-bold">
           تفاصيل الطلب: {orderId}
         </CardTitle>
         <div className="flex gap-2">
@@ -294,7 +294,14 @@ const OrderDetails = ({ orderId, onClose }: OrderDetailsProps) => {
                   <div className="relative">
                     <div className="absolute left-4 top-0 h-full w-0.5 bg-border" />
                     {mockOrder.timeline.map((item, index) => (
-                      <TimelineItem key={item.id} item={item} isLast={index === mockOrder.timeline.length - 1} />
+                      <TimelineItem 
+                        key={item.id} 
+                        title={item.status}
+                        date={new Date(item.date)}
+                        description={item.description}
+                        icon={getStatusIcon(item.status)}
+                        isLast={index === mockOrder.timeline.length - 1} 
+                      />
                     ))}
                   </div>
                 </ScrollArea>
@@ -344,6 +351,25 @@ const OrderDetails = ({ orderId, onClose }: OrderDetailsProps) => {
     </div>
   );
 };
+
+function getStatusIcon(status: string) {
+  switch (status) {
+    case "pending":
+      return Clock;
+    case "processing":
+      return AlertCircle;
+    case "shipped":
+      return Truck;
+    case "delivered":
+      return CheckCircle2;
+    case "cancelled":
+      return XCircle;
+    case "refunded":
+      return CircleDollarSign;
+    default:
+      return Package;
+  }
+}
 
 export function OrderNoteDialog({ orderId }: { orderId: string }) {
   const [open, setOpen] = useState(false);
