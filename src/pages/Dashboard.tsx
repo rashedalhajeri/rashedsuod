@@ -1,259 +1,284 @@
 
-import React, { useEffect, useState } from "react";
-import { supabase, getStoreData } from "@/integrations/supabase/client";
+import React, { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Session } from "@supabase/supabase-js";
-import { toast } from "sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ShoppingBag, Package, Users, DollarSign, Bell, ArrowUpRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { secureRetrieve } from "@/lib/encryption";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import { format, subDays } from "date-fns";
+import { ar } from "date-fns/locale";
 
-// Import component files
-import LoadingState from "@/components/dashboard/LoadingState";
-import CreateStorePrompt from "@/components/dashboard/CreateStorePrompt";
-import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import StatCards from "@/components/dashboard/StatCards";
-import OverviewTab from "@/components/dashboard/OverviewTab";
-import StoreInfoTab from "@/components/dashboard/StoreInfoTab";
-import ActivityTab from "@/components/dashboard/ActivityTab";
-import ErrorState from "@/components/dashboard/ErrorState";
-import WelcomeWidget from "@/components/dashboard/WelcomeWidget";
-import SalesOverviewChart from "@/components/dashboard/SalesOverviewChart";
+// Import components from features/dashboard
+import StatsCard from "@/features/dashboard/components/StatsCard";
+import RecentOrders from "@/features/dashboard/components/RecentOrders";
+import RecentProducts from "@/features/dashboard/components/RecentProducts";
+import SalesChart from "@/features/dashboard/components/SalesChart";
 
-// Add dependency for framer-motion
-import { OrderStats } from "@/components/order/OrderStats";
-
-interface Store {
-  id: string;
-  store_name: string;
-  domain_name: string;
-  country: string;
-  currency: string;
-}
-
-interface DashboardStats {
-  productCount: number;
-  orderCount: number;
-  customerCount: number;
-  revenue: number;
-}
-
+// Mock data
 const mockSalesData = [
-  { name: "يناير", amount: 1500 },
-  { name: "فبراير", amount: 2500 },
-  { name: "مارس", amount: 2000 },
-  { name: "أبريل", amount: 3000 },
-  { name: "مايو", amount: 2800 },
-  { name: "يونيو", amount: 3200 },
-  { name: "يوليو", amount: 3800 },
+  { name: "يناير", value: 1500 },
+  { name: "فبراير", value: 2500 },
+  { name: "مارس", value: 2000 },
+  { name: "أبريل", value: 3000 },
+  { name: "مايو", value: 2800 },
+  { name: "يونيو", value: 3200 },
+  { name: "يوليو", value: 3800 },
 ];
 
+const mockRecentOrders = [
+  {
+    id: "ord-1",
+    orderNumber: "10001",
+    customerName: "أحمد محمد",
+    date: "2023-07-22",
+    status: "delivered" as const,
+    total: 255.99
+  },
+  {
+    id: "ord-2",
+    orderNumber: "10002",
+    customerName: "سارة عبدالله",
+    date: "2023-07-21",
+    status: "processing" as const,
+    total: 189.50
+  },
+  {
+    id: "ord-3",
+    orderNumber: "10003",
+    customerName: "محمد أحمد",
+    date: "2023-07-20",
+    status: "pending" as const,
+    total: 340.00
+  },
+  {
+    id: "ord-4",
+    orderNumber: "10004",
+    customerName: "نورة خالد",
+    date: "2023-07-19",
+    status: "shipped" as const,
+    total: 129.99
+  }
+];
+
+const mockRecentProducts = [
+  {
+    id: "prod-1",
+    name: "قميص أنيق",
+    thumbnail: null,
+    price: 120,
+    stock: 25,
+    category: "ملابس رجالية"
+  },
+  {
+    id: "prod-2",
+    name: "سماعات بلوتوث",
+    thumbnail: null,
+    price: 350,
+    stock: 8,
+    category: "إلكترونيات"
+  },
+  {
+    id: "prod-3",
+    name: "حذاء رياضي",
+    thumbnail: null,
+    price: 210,
+    stock: 0,
+    category: "أحذية"
+  },
+  {
+    id: "prod-4",
+    name: "ساعة ذكية",
+    thumbnail: null,
+    price: 499,
+    stock: 15,
+    category: "إلكترونيات"
+  }
+];
+
+// Dashboard Page
 const Dashboard: React.FC = () => {
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [store, setStore] = useState<Store | null>(null);
-  const [stats, setStats] = useState<DashboardStats>({
-    productCount: 0,
-    orderCount: 0,
-    customerCount: 0,
-    revenue: 1250.75 // قيمة افتراضية للإيرادات
+  const [isLoading, setIsLoading] = useState(true);
+  const [storeData, setStoreData] = useState<any>(null);
+  const [stats, setStats] = useState({
+    products: 0,
+    orders: 0,
+    customers: 0,
+    revenue: 0
   });
-  const [showCreateStoreDialog, setShowCreateStoreDialog] = useState(false);
-  const [activeTab, setActiveTab] = useState("overview");
   const navigate = useNavigate();
 
   useEffect(() => {
-    document.documentElement.dir = "rtl";
-    document.documentElement.lang = "ar";
-    return () => {
-      document.documentElement.dir = "ltr";
-      document.documentElement.lang = "en";
-    };
-  }, []);
-
-  useEffect(() => {
-    const fetchSessionAndStore = async () => {
+    const fetchDashboardData = async () => {
       try {
-        setLoading(true);
-        setError(null);
+        setIsLoading(true);
         
-        const {
-          data: sessionData,
-          error: sessionError
-        } = await supabase.auth.getSession();
+        // Fetch user session and store data
+        const { data: sessionData } = await supabase.auth.getSession();
+        const userId = sessionData.session?.user.id || await secureRetrieve('user-id');
         
-        if (sessionError) {
-          throw sessionError;
-        }
-        
-        if (!sessionData.session) {
-          navigate("/");
+        if (!userId) {
+          navigate('/auth');
           return;
         }
         
-        setSession(sessionData.session);
-        const userId = (await secureRetrieve('user-id')) || sessionData.session.user.id;
+        // For now just use mock data, but we'd fetch from Supabase in a real app
+        setStats({
+          products: 54,
+          orders: 128,
+          customers: 35,
+          revenue: 8425
+        });
         
-        const {
-          data: storeData,
-          error: storeError
-        } = await getStoreData(userId);
-        
-        if (storeError) {
-          console.error("Store error:", storeError);
-          toast.error("حدث خطأ أثناء تحميل بيانات المتجر");
-          setError("لا يمكن تحميل بيانات المتجر، يرجى المحاولة مرة أخرى");
-          setLoading(false);
-          return;
-        }
-        
-        if (!storeData) {
-          setShowCreateStoreDialog(true);
-          setLoading(false);
-          return;
-        }
-        
-        setStore(storeData);
-        
-        if (storeData) {
-          // Load product count
-          const {
-            count: productCount,
-            error: productCountError
-          } = await supabase.from('products').select('*', {
-            count: 'exact',
-            head: true
-          }).eq('store_id', storeData.id);
-          
-          if (productCountError) {
-            console.error("Count error:", productCountError);
-          } else {
-            setStats(prev => ({
-              ...prev,
-              productCount: productCount || 0
-            }));
-          }
-          
-          // We would fetch other stats similarly
-          // This is mock data for now
-          setStats(prev => ({
-            ...prev,
-            orderCount: 15,
-            customerCount: 8
-          }));
-        }
+        // Set loading to false
+        setIsLoading(false);
       } catch (error) {
-        console.error("Error fetching data:", error);
-        toast.error("حدث خطأ أثناء تحميل بيانات المتجر");
-        setError("حدث خطأ أثناء تحميل البيانات، يرجى المحاولة مرة أخرى");
-      } finally {
-        setLoading(false);
+        console.error("Error fetching dashboard data:", error);
+        setIsLoading(false);
       }
     };
     
-    fetchSessionAndStore();
+    fetchDashboardData();
   }, [navigate]);
-
-  const handleCreateStore = () => {
-    navigate('/create-store');
-  };
   
-  const retryLoading = () => {
-    setLoading(true);
-    setError(null);
-    // Re-fetch data
-    const fetchDataAgain = async () => {
-      try {
-        const {
-          data: sessionData,
-          error: sessionError
-        } = await supabase.auth.getSession();
-        
-        if (sessionError) throw sessionError;
-        if (!sessionData.session) {
-          navigate("/");
-          return;
-        }
-        
-        // Continue with the rest of the data fetching...
-        // This is simplified for brevity
-        setLoading(false);
-      } catch (error) {
-        console.error("Error retrying data fetch:", error);
-        setError("استمرت المشكلة، يرجى المحاولة لاحقاً");
-        setLoading(false);
-      }
-    };
-    
-    fetchDataAgain();
-  };
-
+  // Format currency helper
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ar-KW', {
+    return new Intl.NumberFormat('ar-SA', {
       style: 'currency',
-      currency: store?.currency || 'KWD'
+      currency: 'SAR',
+      maximumFractionDigits: 0,
     }).format(amount);
   };
-
-  if (loading) {
-    return <LoadingState />;
+  
+  // Format date helper
+  const formatDate = (dateString: string) => {
+    return format(new Date(dateString), 'dd MMM yyyy', { locale: ar });
+  };
+  
+  if (isLoading) {
+    return <div className="flex justify-center items-center h-full py-12">
+      <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+    </div>;
   }
   
-  if (error) {
-    return <ErrorState message={error} retry={retryLoading} />;
-  }
-
-  if (showCreateStoreDialog) {
-    return <CreateStorePrompt onCreateStore={handleCreateStore} />;
-  }
-
   return (
     <div className="space-y-6">
-      <DashboardHeader storeName={store?.store_name} domain={store?.domain_name} />
+      {/* Page Header */}
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">لوحة التحكم</h1>
+        <p className="text-muted-foreground">
+          نظرة عامة على متجرك وأدائه
+        </p>
+      </div>
       
-      <WelcomeWidget storeName={store?.store_name} />
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatsCard 
+          title="المنتجات"
+          value={stats.products}
+          icon={<Package className="h-5 w-5" />}
+          trend={{ value: 12, isPositive: true }}
+          iconClassName="bg-blue-100 text-blue-600"
+        />
+        <StatsCard 
+          title="الطلبات"
+          value={stats.orders}
+          icon={<ShoppingBag className="h-5 w-5" />}
+          trend={{ value: 8, isPositive: true }}
+          iconClassName="bg-orange-100 text-orange-600"
+        />
+        <StatsCard 
+          title="العملاء"
+          value={stats.customers}
+          icon={<Users className="h-5 w-5" />}
+          trend={{ value: 5, isPositive: true }}
+          iconClassName="bg-green-100 text-green-600"
+        />
+        <StatsCard 
+          title="الإيرادات"
+          value={formatCurrency(stats.revenue)}
+          icon={<DollarSign className="h-5 w-5" />}
+          trend={{ value: 14, isPositive: true }}
+          iconClassName="bg-purple-100 text-purple-600"
+        />
+      </div>
       
-      <OrderStats 
-        totalOrders={stats.orderCount}
-        completedOrders={Math.floor(stats.orderCount * 0.6)}
-        processingOrders={Math.floor(stats.orderCount * 0.3)}
-        shippedOrders={Math.floor(stats.orderCount * 0.1)}
-        cancelledOrders={0}
-        totalRevenue={stats.revenue}
-        currencySymbol={store?.currency === 'KWD' ? 'د.ك' : 'ر.س'}
+      {/* Sales Chart */}
+      <SalesChart 
+        data={mockSalesData}
+        currency="ر.س"
       />
       
-      <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="mb-8">
-        <TabsList className="grid grid-cols-3 mb-8 bg-gray-100 p-1 border border-gray-200">
-          <TabsTrigger value="overview" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">نظرة عامة</TabsTrigger>
-          <TabsTrigger value="store" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">معلومات المتجر</TabsTrigger>
-          <TabsTrigger value="activity" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">النشاط الأخير</TabsTrigger>
-        </TabsList>
+      {/* Activity Summary Section */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <RecentOrders 
+          orders={mockRecentOrders.map(order => ({
+            ...order,
+            date: formatDate(order.date)
+          }))}
+        />
         
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-          >
-            {activeTab === "overview" && <OverviewTab />}
-            {activeTab === "store" && (
-              <StoreInfoTab 
-                store={store} 
-                stats={{
-                  productCount: stats.productCount,
-                  orderCount: stats.orderCount,
-                  customerCount: stats.customerCount
-                }} 
-              />
-            )}
-            {activeTab === "activity" && <ActivityTab />}
-          </motion.div>
-        </AnimatePresence>
-      </Tabs>
+        <RecentProducts 
+          products={mockRecentProducts}
+          currency="ر.س"
+        />
+      </div>
+      
+      {/* Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg font-medium">
+            <Bell className="h-4 w-4 inline-block ml-2" />
+            إشعارات ومهام
+          </CardTitle>
+          <CardDescription>
+            قم بإدارة المهام والإشعارات الهامة
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="p-4 border rounded-lg bg-yellow-50 border-yellow-100">
+              <h3 className="font-medium mb-2">طلبات قيد الانتظار</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                لديك 3 طلبات في انتظار المعالجة
+              </p>
+              <Button size="sm" variant="outline" asChild>
+                <a href="/dashboard/orders?status=pending">
+                  معالجة الطلبات
+                  <ArrowUpRight className="h-3 w-3 mr-1" />
+                </a>
+              </Button>
+            </div>
+            
+            <div className="p-4 border rounded-lg bg-red-50 border-red-100">
+              <h3 className="font-medium mb-2">منتجات نفدت من المخزون</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                5 منتجات نفدت من المخزون وتحتاج للتجديد
+              </p>
+              <Button size="sm" variant="outline" asChild>
+                <a href="/dashboard/products?inStock=0">
+                  تحديث المخزون
+                  <ArrowUpRight className="h-3 w-3 mr-1" />
+                </a>
+              </Button>
+            </div>
+            
+            <div className="p-4 border rounded-lg bg-blue-50 border-blue-100">
+              <h3 className="font-medium mb-2">تقارير الشهر</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                تقارير الشهر الحالي جاهزة للمراجعة
+              </p>
+              <Button size="sm" variant="outline" asChild>
+                <a href="/dashboard/reports">
+                  عرض التقارير
+                  <ArrowUpRight className="h-3 w-3 mr-1" />
+                </a>
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

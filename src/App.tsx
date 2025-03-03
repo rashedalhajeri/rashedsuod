@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -5,18 +6,26 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { useEffect, useState, createContext } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { secureRetrieve, secureStore, secureRemove } from "./lib/encryption";
+import { Session } from "@supabase/supabase-js";
+
+// Import pages
 import Index from "./pages/Index";
+import Auth from "./pages/Auth";
+import CreateStore from "./pages/CreateStore";
+import NotFound from "./pages/NotFound";
+
+// Import layouts
+import DashboardLayout from "./layouts/DashboardLayout";
+
+// Import dashboard pages
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
 import Orders from "./pages/Orders";
 import Customers from "./pages/Customers";
-import NotFound from "./pages/NotFound";
-import CreateStore from "./pages/CreateStore";
-import Auth from "./pages/Auth";
-import { secureRetrieve, secureStore, secureRemove } from "./lib/encryption";
-import { Session } from "@supabase/supabase-js";
+
+// Import placeholder component
 import UnderDevelopmentPage from "./components/dashboard/UnderDevelopmentPage";
-import DashboardLayout from "./components/DashboardLayout";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -212,6 +221,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Public Routes */}
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<Auth />} />
@@ -224,25 +234,20 @@ const App = () => (
               } 
             />
             
+            {/* Dashboard Routes */}
             <Route path="/dashboard" element={<ProtectedDashboard />}>
               <Route index element={<Dashboard />} />
               <Route path="orders" element={<Orders />} />
               <Route path="products" element={<Products />} />
               <Route path="customers" element={<Customers />} />
-              <Route path="categories" element={<UnderDevelopmentPage message="صفحة الفئات قيد التطوير" />} />
-              <Route path="coupons" element={<UnderDevelopmentPage message="صفحة كوبونات الخصم قيد التطوير" />} />
-              <Route path="payment" element={<UnderDevelopmentPage message="صفحة المدفوعات قيد التطوير" />} />
-              <Route path="shipping" element={<UnderDevelopmentPage message="صفحة الشحن والتوصيل قيد التطوير" />} />
-              <Route path="sales-reports" element={<UnderDevelopmentPage message="صفحة تقارير المبيعات قيد التطوير" />} />
-              <Route path="product-analytics" element={<UnderDevelopmentPage message="صفحة أداء المنتجات قيد التطوير" />} />
-              <Route path="inbox" element={<UnderDevelopmentPage message="صفحة صندوق الوارد قيد التطوير" />} />
-              <Route path="reviews" element={<UnderDevelopmentPage message="صفحة التقييمات قيد التطوير" />} />
-              <Route path="store-info" element={<UnderDevelopmentPage message="صفحة معلومات المتجر قيد التطوير" />} />
-              <Route path="appearance" element={<UnderDevelopmentPage message="صفحة تخصيص الواجهة قيد التطوير" />} />
-              <Route path="system-settings" element={<UnderDevelopmentPage message="صفحة إعدادات النظام قيد التطوير" />} />
-              <Route path="subscription" element={<UnderDevelopmentPage message="صفحة الاشتراك والباقة قيد التطوير" />} />
+              <Route path="categories" element={<UnderDevelopmentPage message="صفحة التصنيفات قيد التطوير" />} />
+              <Route path="settings" element={<UnderDevelopmentPage message="صفحة الإعدادات قيد التطوير" />} />
+              <Route path="payments" element={<UnderDevelopmentPage message="صفحة المدفوعات قيد التطوير" />} />
+              <Route path="reports" element={<UnderDevelopmentPage message="صفحة التقارير قيد التطوير" />} />
+              <Route path="profile" element={<UnderDevelopmentPage message="صفحة الملف الشخصي قيد التطوير" />} />
             </Route>
             
+            {/* 404 Route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
