@@ -8,9 +8,6 @@ import {
   Package, 
   Plus, 
   Search, 
-  Settings, 
-  ShoppingBag, 
-  Home, 
   X, 
   Check,
   ChevronRight
@@ -35,7 +32,6 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
 import DashboardLayout from "@/components/DashboardLayout";
 
 interface Product {
@@ -47,6 +43,14 @@ interface Product {
   image_url?: string;
   stock_quantity?: number;
   created_at: string;
+}
+
+interface Store {
+  id: string;
+  store_name: string;
+  domain_name: string;
+  country: string;
+  currency: string;
 }
 
 const Products: React.FC = () => {
@@ -62,6 +66,7 @@ const Products: React.FC = () => {
     image_url: "",
     stock_quantity: ""
   });
+  const [storeId, setStoreId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // Check for auth state and fetch products data
@@ -92,6 +97,8 @@ const Products: React.FC = () => {
           throw storeError;
         }
         
+        setStoreId(storeData.id);
+        
         // Fetch products for the store
         const { data: productsData, error: productsError } = await supabase
           .from('products')
@@ -114,20 +121,6 @@ const Products: React.FC = () => {
     };
 
     fetchSessionAndProducts();
-
-    // Set up listener for auth changes
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, newSession) => {
-        setSession(newSession);
-        if (event === 'SIGNED_OUT') {
-          navigate("/");
-        }
-      }
-    );
-
-    return () => {
-      authListener?.subscription.unsubscribe();
-    };
   }, [navigate]);
 
   const handleAddProduct = async () => {
@@ -136,19 +129,13 @@ const Products: React.FC = () => {
       return;
     }
 
+    if (!storeId) {
+      toast.error("لم يتم العثور على معرف المتجر");
+      return;
+    }
+
     try {
       setLoading(true);
-      
-      // Fetch store data for the authenticated user
-      const { data: storeData, error: storeError } = await supabase
-        .from('stores')
-        .select('id')
-        .eq('user_id', session?.user.id)
-        .single();
-      
-      if (storeError) {
-        throw storeError;
-      }
       
       // Add new product
       const { data, error } = await supabase
@@ -160,7 +147,7 @@ const Products: React.FC = () => {
             price: parseFloat(newProduct.price),
             image_url: newProduct.image_url || null,
             stock_quantity: newProduct.stock_quantity ? parseInt(newProduct.stock_quantity) : null,
-            store_id: storeData.id
+            store_id: storeId
           }
         ])
         .select();
@@ -169,17 +156,19 @@ const Products: React.FC = () => {
         throw error;
       }
       
-      setProducts([...data, ...products]);
-      setNewProduct({
-        name: "",
-        description: "",
-        price: "",
-        image_url: "",
-        stock_quantity: ""
-      });
-      
-      setIsAddProductOpen(false);
-      toast.success("تم إضافة المنتج بنجاح");
+      if (data) {
+        setProducts([...data, ...products]);
+        setNewProduct({
+          name: "",
+          description: "",
+          price: "",
+          image_url: "",
+          stock_quantity: ""
+        });
+        
+        setIsAddProductOpen(false);
+        toast.success("تم إضافة المنتج بنجاح");
+      }
     } catch (error) {
       console.error("Error adding product:", error);
       toast.error("حدث خطأ أثناء إضافة المنتج");
@@ -190,7 +179,7 @@ const Products: React.FC = () => {
 
   const filteredProducts = products.filter(product => 
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.description.toLowerCase().includes(searchQuery.toLowerCase())
+    product.description?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (loading && products.length === 0) {
@@ -237,7 +226,7 @@ const Products: React.FC = () => {
 
         {filteredProducts.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-            <ShoppingBag className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+            <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-800 mb-2">لا توجد منتجات</h3>
             <p className="text-gray-600 mb-4">لم تقم بإضافة أي منتجات بعد. أضف منتجك الأول الآن!</p>
             <Button 

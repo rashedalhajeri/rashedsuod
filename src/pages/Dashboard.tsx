@@ -65,17 +65,19 @@ const Dashboard: React.FC = () => {
         
         setStore(storeData);
 
-        // Fetch product count
-        const { count, error: countError } = await supabase
-          .from('products')
-          .select('*', { count: 'exact', head: true })
-          .eq('store_id', storeData.id);
-        
-        if (countError) {
-          throw countError;
+        // Now that we have the store, fetch product count
+        if (storeData) {
+          const { count, error: countError } = await supabase
+            .from('products')
+            .select('*', { count: 'exact', head: true })
+            .eq('store_id', storeData.id);
+          
+          if (countError) {
+            throw countError;
+          }
+          
+          setProductCount(count || 0);
         }
-        
-        setProductCount(count || 0);
       } catch (error) {
         console.error("Error fetching data:", error);
         toast.error("حدث خطأ أثناء تحميل بيانات المتجر");
