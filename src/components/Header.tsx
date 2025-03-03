@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Menu, X, ChevronDown, LogIn, UserPlus, CheckCircle2, XCircle, LogOut, User, Store, Bell, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -9,36 +8,34 @@ import { Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-
 interface HeaderProps {
   session: Session | null;
   onLogout?: () => Promise<void>;
 }
-
-const Header: React.FC<HeaderProps> = ({ session, onLogout }) => {
+const Header: React.FC<HeaderProps> = ({
+  session,
+  onLogout
+}) => {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [language, setLanguage] = useState("ar"); // 'ar' for Arabic, 'en' for English
   const [hasStore, setHasStore] = useState<boolean | null>(null);
   const [showSearch, setShowSearch] = useState(false);
-
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener("scroll", handleScroll);
-    
+
     // Check if user has a store when session changes
     const checkUserStore = async () => {
       if (session) {
         try {
-          const { data, error } = await supabase
-            .from('stores')
-            .select('id')
-            .eq('user_id', session.user.id)
-            .maybeSingle();
-            
+          const {
+            data,
+            error
+          } = await supabase.from('stores').select('id').eq('user_id', session.user.id).maybeSingle();
           if (error) throw error;
           setHasStore(!!data);
         } catch (error) {
@@ -49,26 +46,23 @@ const Header: React.FC<HeaderProps> = ({ session, onLogout }) => {
         setHasStore(null);
       }
     };
-    
     checkUserStore();
-    
     return () => window.removeEventListener("scroll", handleScroll);
   }, [session]);
-  
   const toggleLanguage = () => {
     setLanguage(prev => prev === "ar" ? "en" : "ar");
   };
-  
   const handleLogin = () => {
     navigate("/auth");
   };
-  
   const handleLogout = async () => {
     if (onLogout) {
       await onLogout();
     } else {
       try {
-        const { error } = await supabase.auth.signOut();
+        const {
+          error
+        } = await supabase.auth.signOut();
         if (error) throw error;
         toast.success(language === "ar" ? "تم تسجيل الخروج بنجاح" : "Logged out successfully");
         navigate("/");
@@ -78,7 +72,6 @@ const Header: React.FC<HeaderProps> = ({ session, onLogout }) => {
       }
     }
   };
-  
   const handleDashboardClick = () => {
     if (hasStore) {
       navigate("/dashboard");
@@ -86,17 +79,8 @@ const Header: React.FC<HeaderProps> = ({ session, onLogout }) => {
       navigate("/create-store");
     }
   };
-  
-  return (
-    <>
-      <header 
-        className={cn(
-          "fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out px-4 md:px-8 py-3",
-          isScrolled 
-            ? "bg-white/90 backdrop-blur-md shadow-sm" 
-            : "bg-transparent"
-        )}
-      >
+  return <>
+      <header className={cn("fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out px-4 md:px-8 py-3", isScrolled ? "bg-white/90 backdrop-blur-md shadow-sm" : "bg-transparent")}>
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           {/* Logo Section */}
           <div className="flex items-center gap-1.5">
@@ -106,18 +90,10 @@ const Header: React.FC<HeaderProps> = ({ session, onLogout }) => {
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            {showSearch ? (
-              <div className="relative w-60 ml-6">
+            {showSearch ? <div className="relative w-60 ml-6">
                 <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input 
-                  placeholder={language === "ar" ? "ابحث هنا..." : "Search..."}
-                  className="pr-9 rounded-full border-gray-200 focus-visible:ring-primary-500" 
-                  autoFocus
-                  onBlur={() => setShowSearch(false)}
-                />
-              </div>
-            ) : (
-              <>
+                <Input placeholder={language === "ar" ? "ابحث هنا..." : "Search..."} className="pr-9 rounded-full border-gray-200 focus-visible:ring-primary-500" autoFocus onBlur={() => setShowSearch(false)} />
+              </div> : <>
                 <a href="#features" className="text-gray-700 hover:text-primary-600 transition-colors font-medium">
                   {language === "ar" ? "المميزات" : "Features"}
                 </a>
@@ -127,97 +103,50 @@ const Header: React.FC<HeaderProps> = ({ session, onLogout }) => {
                 <a href="#contact" className="text-gray-700 hover:text-primary-600 transition-colors font-medium">
                   {language === "ar" ? "تواصل معنا" : "Contact"}
                 </a>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="text-gray-600 hover:text-primary-600 hover:bg-gray-100/80"
-                  onClick={() => setShowSearch(true)}
-                >
-                  <Search className="h-4 w-4" />
-                </Button>
-              </>
-            )}
+                
+              </>}
             
-            <Button 
-              variant="ghost" 
-              onClick={toggleLanguage} 
-              className="flex items-center text-gray-600 hover:text-primary-600 hover:bg-gray-100/80 font-medium"
-            >
+            <Button variant="ghost" onClick={toggleLanguage} className="flex items-center text-gray-600 hover:text-primary-600 hover:bg-gray-100/80 font-medium">
               {language === "ar" ? "English" : "العربية"}
               <ChevronDown className="h-4 w-4 mr-0 ml-1" />
             </Button>
             
-            {session ? (
-              <div className="flex items-center space-x-2">
-                <Button 
-                  variant="ghost"
-                  size="icon"
-                  className="text-gray-600 hover:text-primary-600 hover:bg-gray-100/80 relative"
-                >
-                  <Bell className="h-4 w-4" />
-                  <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center">2</Badge>
-                </Button>
+            {session ? <div className="flex items-center space-x-2">
                 
-                <Button 
-                  variant="ghost"
-                  onClick={handleDashboardClick} 
-                  className="flex items-center gap-2 text-gray-700 hover:text-primary-600 hover:bg-gray-100/80 font-medium"
-                >
+                
+                <Button variant="ghost" onClick={handleDashboardClick} className="flex items-center gap-2 text-gray-700 hover:text-primary-600 hover:bg-gray-100/80 font-medium">
                   <Store size={16} />
                   {language === "ar" ? "متجري" : "My Store"}
                 </Button>
                 
-                <Button 
-                  onClick={handleLogout} 
-                  variant="outline"
-                  className="border-primary-500 text-primary-600 hover:bg-primary-50 font-medium"
-                >
+                <Button onClick={handleLogout} variant="outline" className="border-primary-500 text-primary-600 hover:bg-primary-50 font-medium">
                   <LogOut size={16} className="ml-1" />
                   {language === "ar" ? "تسجيل الخروج" : "Log Out"}
                 </Button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-3">
-                <Button 
-                  variant="ghost"
-                  onClick={handleLogin} 
-                  className="text-gray-700 hover:text-primary-600 hover:bg-gray-100/80 font-medium"
-                >
+              </div> : <div className="flex items-center space-x-3">
+                <Button variant="ghost" onClick={handleLogin} className="text-gray-700 hover:text-primary-600 hover:bg-gray-100/80 font-medium">
                   <LogIn size={16} className="ml-1" />
                   {language === "ar" ? "تسجيل الدخول" : "Log In"}
                 </Button>
                 
-                <Button 
-                  onClick={() => navigate("/auth")} 
-                  className="bg-primary-500 hover:bg-primary-600 text-white font-medium transition-all"
-                >
+                <Button onClick={() => navigate("/auth")} className="bg-primary-500 hover:bg-primary-600 text-white font-medium transition-all">
                   <UserPlus size={16} className="ml-1" />
                   {language === "ar" ? "إنشاء حساب" : "Sign Up"}
                 </Button>
-              </div>
-            )}
+              </div>}
           </nav>
           
           {/* Mobile Menu Button */}
-          <Button 
-            variant="ghost" 
-            size="icon"
-            className="md:hidden text-gray-800" 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
+          <Button variant="ghost" size="icon" className="md:hidden text-gray-800" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
         
         {/* Mobile Navigation */}
-        {mobileMenuOpen && (
-          <div className="absolute top-full left-0 right-0 bg-white shadow-lg p-4 md:hidden flex flex-col space-y-3 animate-slide-down rounded-b-xl border-t border-gray-100">
+        {mobileMenuOpen && <div className="absolute top-full left-0 right-0 bg-white shadow-lg p-4 md:hidden flex flex-col space-y-3 animate-slide-down rounded-b-xl border-t border-gray-100">
             <div className="relative mb-2">
               <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input 
-                placeholder={language === "ar" ? "ابحث هنا..." : "Search..."}
-                className="pr-9 rounded-lg border-gray-200" 
-              />
+              <Input placeholder={language === "ar" ? "ابحث هنا..." : "Search..."} className="pr-9 rounded-lg border-gray-200" />
             </div>
             
             <a href="#features" className="text-gray-700 hover:text-primary-600 transition-colors p-2 rounded-md hover:bg-gray-50">
@@ -230,61 +159,36 @@ const Header: React.FC<HeaderProps> = ({ session, onLogout }) => {
               {language === "ar" ? "تواصل معنا" : "Contact"}
             </a>
             
-            <Button 
-              variant="ghost" 
-              onClick={toggleLanguage} 
-              className="flex items-center text-gray-600 hover:text-primary-600 hover:bg-gray-50 transition-colors justify-start p-2"
-            >
+            <Button variant="ghost" onClick={toggleLanguage} className="flex items-center text-gray-600 hover:text-primary-600 hover:bg-gray-50 transition-colors justify-start p-2">
               {language === "ar" ? "English" : "العربية"}
               <ChevronDown className="h-4 w-4 ml-1" />
             </Button>
             
             <div className="h-px w-full bg-gray-100 my-2"></div>
             
-            {session ? (
-              <>
-                <Button 
-                  variant="ghost"
-                  onClick={handleDashboardClick} 
-                  className="flex items-center gap-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 transition-colors justify-start p-2"
-                >
+            {session ? <>
+                <Button variant="ghost" onClick={handleDashboardClick} className="flex items-center gap-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 transition-colors justify-start p-2">
                   <Store size={16} />
                   {language === "ar" ? "متجري" : "My Store"}
                 </Button>
                 
-                <Button 
-                  onClick={handleLogout} 
-                  className="bg-primary-500 hover:bg-primary-600 text-white w-full justify-center mt-2"
-                >
+                <Button onClick={handleLogout} className="bg-primary-500 hover:bg-primary-600 text-white w-full justify-center mt-2">
                   <LogOut size={16} className="ml-1" />
                   {language === "ar" ? "تسجيل الخروج" : "Log Out"}
                 </Button>
-              </>
-            ) : (
-              <>
-                <Button 
-                  variant="ghost"
-                  onClick={handleLogin} 
-                  className="flex items-center gap-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 transition-colors justify-start p-2"
-                >
+              </> : <>
+                <Button variant="ghost" onClick={handleLogin} className="flex items-center gap-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 transition-colors justify-start p-2">
                   <LogIn size={16} />
                   {language === "ar" ? "تسجيل الدخول" : "Log In"}
                 </Button>
                 
-                <Button 
-                  onClick={() => navigate("/auth")} 
-                  className="bg-primary-500 hover:bg-primary-600 text-white w-full justify-center mt-2"
-                >
+                <Button onClick={() => navigate("/auth")} className="bg-primary-500 hover:bg-primary-600 text-white w-full justify-center mt-2">
                   <UserPlus size={16} className="ml-1" />
                   {language === "ar" ? "إنشاء حساب" : "Sign Up"}
                 </Button>
-              </>
-            )}
-          </div>
-        )}
+              </>}
+          </div>}
       </header>
-    </>
-  );
+    </>;
 };
-
 export default Header;
