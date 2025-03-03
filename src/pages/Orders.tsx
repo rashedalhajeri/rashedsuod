@@ -27,11 +27,12 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
-import { Filter } from "lucide-react";
+import { Filter, ShoppingBag } from "lucide-react";
 import { OrderFilters } from "@/components/order/OrderFilters";
 import { OrderStats } from "@/components/order/OrderStats";
 import OrderList from "@/components/order/OrderList";
 import OrderDetails from "@/components/order/OrderDetails";
+import DashboardLayout from "@/components/DashboardLayout";
 
 const Orders = () => {
   const [open, setOpen] = useState(false);
@@ -48,20 +49,21 @@ const Orders = () => {
   };
 
   return (
-    <>
+    <DashboardLayout>
       <Helmet>
         <title>الطلبات</title>
         <meta name="description" content="إدارة طلبات العملاء وتتبع الشحنات" />
       </Helmet>
-      <div className="container mx-auto py-10">
-        <div className="mb-4 flex items-center justify-between">
-          <CardHeader className="flex flex-col space-y-1.5">
-            <CardTitle className="text-2xl font-bold">الطلبات</CardTitle>
-            <CardDescription>إدارة طلبات العملاء وتتبع الشحنات</CardDescription>
-          </CardHeader>
+      <div className="animate-fade-in space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">الطلبات</h1>
+            <p className="text-gray-600">إدارة طلبات العملاء وتتبع الشحنات</p>
+          </div>
+          
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline">
+              <Button variant="outline" className="hover:scale-105 transition-transform duration-300 bg-white border-gray-200">
                 <Filter className="mr-2 h-4 w-4" />
                 فلترة
               </Button>
@@ -78,12 +80,17 @@ const Orders = () => {
 
         <OrderStats />
         <Separator className="my-6" />
-        <OrderList 
-          searchQuery="" 
-          statusFilter="" 
-          dateRangeFilter="" 
-          onOpenDetails={handleOrderClick} 
-        />
+        
+        <Card className="bg-white border-gray-100 shadow-sm">
+          <CardContent className="p-6">
+            <OrderList 
+              searchQuery="" 
+              statusFilter="" 
+              dateRangeFilter="" 
+              onOpenDetails={handleOrderClick} 
+            />
+          </CardContent>
+        </Card>
 
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent className="sm:max-w-[90%]">
@@ -93,7 +100,7 @@ const Orders = () => {
           </DialogContent>
         </Dialog>
       </div>
-    </>
+    </DashboardLayout>
   );
 };
 
