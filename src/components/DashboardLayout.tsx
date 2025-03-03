@@ -1,3 +1,4 @@
+
 import React, { ReactNode, useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase, getStoreData } from "@/integrations/supabase/client";
@@ -42,6 +43,14 @@ import {
   SidebarTrigger
 } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator,
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -60,7 +69,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [store, setStore] = useState<Store | null>(null);
   const [hasNotifications, setHasNotifications] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const location = useLocation();
@@ -167,7 +175,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             <div className="flex items-center">
               {!isMobile && (
                 <button 
-                  onClick={() => setSidebarOpen(!sidebarOpen)} 
+                  onClick={() => {}} 
                   className="mr-2 p-1.5 rounded-md text-gray-500 hover:bg-gray-100 hover:text-primary-600 transition-colors"
                 >
                   <Menu className="h-5 w-5" />
@@ -230,24 +238,44 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 </Button>
               )}
               
-              <div className="relative">
-                <div className="flex items-center pl-2 py-1 rounded-full hover:bg-gray-100 transition-colors">
-                  <div className="hidden md:flex flex-col items-end ml-2">
-                    <span className="text-xs font-medium text-gray-800">مرحباً، {store?.store_name}</span>
-                    <span className="text-xs text-gray-500">متجر مميز</span>
+              {/* User dropdown menu with settings and logout */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <div className="relative cursor-pointer">
+                    <div className="flex items-center pl-2 py-1 rounded-full hover:bg-gray-100 transition-colors">
+                      <div className="hidden md:flex flex-col items-end ml-2">
+                        <span className="text-xs font-medium text-gray-800">مرحباً، {store?.store_name}</span>
+                        <span className="text-xs text-gray-500">متجر مميز</span>
+                      </div>
+                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-gray-100 to-white border border-gray-200 flex items-center justify-center text-primary-600">
+                        <User size={16} />
+                      </div>
+                    </div>
                   </div>
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-gray-100 to-white border border-gray-200 flex items-center justify-center text-primary-600">
-                    <User size={16} />
-                  </div>
-                </div>
-              </div>
-              
-              <button 
-                onClick={handleLogout}
-                className="hidden md:flex items-center gap-1.5 ml-2 p-2 rounded-md hover:bg-gray-100 text-gray-600"
-              >
-                <LogOut size={18} />
-              </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>حسابي</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings" className="flex items-center cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>الإعدادات</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => window.open(`https://${store?.domain_name}.linok.me`, '_blank')}
+                    className="cursor-pointer"
+                  >
+                    <Store className="mr-2 h-4 w-4" />
+                    <span>زيارة المتجر</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>تسجيل الخروج</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
@@ -287,7 +315,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                           active={isActive}
                         >
                           {item.name}
-                          {isActive && <ChevronRight className="mr-auto h-4 w-4 text-primary-500" />}
                         </SidebarMenuLink>
                       </SidebarMenuItem>
                     );
@@ -340,7 +367,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       
       {isMobile && (
         <div className="mobile-nav">
-          {navigation.slice(0, 4).map((item) => {
+          {navigation.slice(0, 3).map((item) => {
             const isActive = location.pathname === item.href;
             return (
               <Link
@@ -361,6 +388,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               </Link>
             );
           })}
+          
+          <Link
+            to="/settings"
+            className="mobile-nav-item"
+          >
+            <Settings size={20} className={location.pathname === '/settings' ? "text-primary-600" : "text-gray-500"} />
+            <span className={cn(
+              "mobile-nav-label",
+              location.pathname === '/settings' ? "text-primary-600" : "text-gray-500"
+            )}>
+              الإعدادات
+            </span>
+          </Link>
           
           <button 
             onClick={handleLogout}
