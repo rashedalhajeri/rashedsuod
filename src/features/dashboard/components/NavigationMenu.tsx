@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -24,6 +24,8 @@ const NavigationMenu: React.FC<NavigationMenuProps> = ({
   currentPath,
   title
 }) => {
+  const location = useLocation();
+  
   if (items.length === 0) return null;
   
   return (
@@ -36,8 +38,8 @@ const NavigationMenu: React.FC<NavigationMenuProps> = ({
       
       <div className="space-y-1 px-2">
         {items.map((item) => {
-          const isActive = currentPath === item.href || 
-                          (item.href !== "/dashboard" && currentPath.startsWith(item.href));
+          const isActive = location.pathname === item.href || 
+                          (item.href !== "/dashboard" && location.pathname.startsWith(item.href));
           
           const linkContent = (
             <Link
