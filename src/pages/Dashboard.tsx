@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -21,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Link } from "react-router-dom";
 
 interface Store {
   id: string;
@@ -51,19 +51,16 @@ const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const navigate = useNavigate();
 
-  // Set the document direction to RTL for Arabic language support
   useEffect(() => {
     document.documentElement.dir = "rtl";
     document.documentElement.lang = "ar";
     
     return () => {
-      // Cleanup if needed
       document.documentElement.dir = "ltr";
       document.documentElement.lang = "en";
     };
   }, []);
 
-  // Check for auth state and fetch store data
   useEffect(() => {
     const fetchSessionAndStore = async () => {
       try {
@@ -80,7 +77,6 @@ const Dashboard: React.FC = () => {
         
         setSession(sessionData.session);
         
-        // Fetch store data for the authenticated user using maybeSingle() instead of single()
         const { data: storeData, error: storeError } = await supabase
           .from('stores')
           .select('*')
@@ -94,7 +90,6 @@ const Dashboard: React.FC = () => {
           return;
         }
         
-        // Check if store exists
         if (!storeData) {
           setShowCreateStoreDialog(true);
           setLoading(false);
@@ -103,7 +98,6 @@ const Dashboard: React.FC = () => {
         
         setStore(storeData);
 
-        // Now that we have the store, fetch product count
         if (storeData) {
           const { count: productCount, error: countError } = await supabase
             .from('products')
@@ -112,7 +106,6 @@ const Dashboard: React.FC = () => {
           
           if (countError) {
             console.error("Count error:", countError);
-            // Don't fail the entire operation if just the count fails
           } else {
             setStats(prev => ({
               ...prev,
@@ -122,7 +115,7 @@ const Dashboard: React.FC = () => {
         }
       } catch (error) {
         console.error("Error fetching data:", error);
-        toast.error("حدث خطأ أثناء تحميل بيانات المتجر");
+        toast.error("حدث خطأ أثناء تحميل بيانات المتج��");
       } finally {
         setLoading(false);
       }
@@ -153,7 +146,6 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  // If showCreateStoreDialog is true, display a dialog prompting the user to create a store
   if (showCreateStoreDialog) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -173,7 +165,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <div className="p-4 md:p-8">
+      <div className="animate-fade-in">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">لوحة التحكم</h1>
@@ -184,7 +176,7 @@ const Dashboard: React.FC = () => {
             <Button 
               variant="outline"
               onClick={() => window.open(`https://${store?.domain_name}.linok.me`, '_blank')}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 hover-scale"
             >
               <Home className="h-4 w-4" />
               زيارة المتجر
@@ -193,7 +185,7 @@ const Dashboard: React.FC = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card>
+          <Card className="hover-scale transition-all duration-300">
             <CardContent className="pt-6">
               <div className="flex justify-between items-center">
                 <div>
@@ -207,7 +199,7 @@ const Dashboard: React.FC = () => {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="hover-scale transition-all duration-300">
             <CardContent className="pt-6">
               <div className="flex justify-between items-center">
                 <div>
@@ -221,7 +213,7 @@ const Dashboard: React.FC = () => {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="hover-scale transition-all duration-300">
             <CardContent className="pt-6">
               <div className="flex justify-between items-center">
                 <div>
@@ -235,7 +227,7 @@ const Dashboard: React.FC = () => {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="hover-scale transition-all duration-300">
             <CardContent className="pt-6">
               <div className="flex justify-between items-center">
                 <div>
@@ -252,43 +244,44 @@ const Dashboard: React.FC = () => {
         
         <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="mb-8">
           <TabsList className="grid grid-cols-3 mb-8">
-            <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
-            <TabsTrigger value="store">معلومات المتجر</TabsTrigger>
-            <TabsTrigger value="activity">النشاط الأخير</TabsTrigger>
+            <TabsTrigger value="overview" className="animate-enter">نظرة عامة</TabsTrigger>
+            <TabsTrigger value="store" className="animate-enter">معلومات المتجر</TabsTrigger>
+            <TabsTrigger value="activity" className="animate-enter">النشاط الأخير</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="overview">
+          <TabsContent value="overview" className="animate-fade-in">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow">
+              <div className="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow hover-scale">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-gray-800">المنتجات</h2>
                   <Package className="h-6 w-6 text-primary-500" />
                 </div>
                 <p className="text-gray-600 mb-4">إدارة منتجات متجرك</p>
                 <Button 
-                  onClick={() => navigate('/products')}
-                  className="text-primary-600 font-medium hover:underline bg-transparent"
                   variant="ghost"
+                  className="text-primary-600 font-medium hover:underline bg-transparent"
+                  asChild
                 >
-                  إدارة المنتجات
+                  <Link to="/products">إدارة المنتجات</Link>
                 </Button>
               </div>
               
-              <div className="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow">
+              <div className="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow hover-scale">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-gray-800">الإعدادات</h2>
                   <Settings className="h-6 w-6 text-primary-500" />
                 </div>
                 <p className="text-gray-600 mb-4">تخصيص إعدادات متجرك</p>
                 <Button 
-                  className="text-primary-600 font-medium hover:underline bg-transparent"
                   variant="ghost"
+                  className="text-primary-600 font-medium hover:underline bg-transparent"
+                  asChild
                 >
-                  تعديل الإعدادات
+                  <Link to="/settings">تعديل الإعدادات</Link>
                 </Button>
               </div>
               
-              <div className="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow">
+              <div className="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow hover-scale">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-gray-800">المتجر</h2>
                   <Home className="h-6 w-6 text-primary-500" />
@@ -305,7 +298,7 @@ const Dashboard: React.FC = () => {
             </div>
           </TabsContent>
           
-          <TabsContent value="store">
+          <TabsContent value="store" className="animate-fade-in">
             {store && (
               <div className="bg-white shadow rounded-lg p-6 mb-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -332,7 +325,7 @@ const Dashboard: React.FC = () => {
             )}
           </TabsContent>
           
-          <TabsContent value="activity">
+          <TabsContent value="activity" className="animate-fade-in">
             <Card>
               <CardHeader>
                 <CardTitle>النشاط الأخير</CardTitle>

@@ -1,10 +1,12 @@
 
 import React, { ReactNode, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import { LogOut, Settings, ShoppingBag, Home, Package, BarChart, Users } from "lucide-react";
+import { LogOut, Settings, ShoppingBag, Home, Package, BarChart, Users, Menu, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -22,7 +24,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [store, setStore] = useState<Store | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Check for auth state and fetch store data
   useEffect(() => {
@@ -103,12 +107,32 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     );
   }
 
+  const navigation = [
+    { name: 'الرئيسية', href: '/dashboard', icon: Home },
+    { name: 'المنتجات', href: '/products', icon: Package },
+    { name: 'الإحصائيات', href: '/analytics', icon: BarChart },
+    { name: 'العملاء', href: '/customers', icon: Users },
+    { name: 'الإعدادات', href: '/settings', icon: Settings },
+  ];
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 rtl">
       {/* Dashboard Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-white shadow-sm z-10 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={toggleSidebar}
+            >
+              {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+            </Button>
             <span className="text-2xl font-bold text-primary-600">Linok</span>
             <span className="text-lg font-medium text-gray-600">.me</span>
           </div>
@@ -134,69 +158,63 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       {/* Dashboard Content */}
       <div className="flex min-h-screen">
         {/* Sidebar */}
-        <aside className="w-64 bg-white shadow-sm hidden md:block">
-          <nav className="p-4">
-            <ul className="space-y-2">
-              <li>
-                <a 
-                  href="/dashboard" 
-                  className={`flex items-center p-3 rounded-md transition-colors ${
-                    window.location.pathname === '/dashboard' 
-                      ? 'bg-primary-50 text-primary-600' 
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  <Home className="h-5 w-5 ml-3" />
-                  <span>الرئيسية</span>
-                </a>
-              </li>
-              <li>
-                <a 
-                  href="/products" 
-                  className={`flex items-center p-3 rounded-md transition-colors ${
-                    window.location.pathname === '/products' 
-                      ? 'bg-primary-50 text-primary-600' 
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  <Package className="h-5 w-5 ml-3" />
-                  <span>المنتجات</span>
-                </a>
-              </li>
-              <li>
-                <a 
-                  href="/analytics" 
-                  className="flex items-center p-3 text-gray-700 rounded-md hover:bg-gray-100 transition-colors"
-                >
-                  <BarChart className="h-5 w-5 ml-3" />
-                  <span>الإحصائيات</span>
-                </a>
-              </li>
-              <li>
-                <a 
-                  href="/customers" 
-                  className="flex items-center p-3 text-gray-700 rounded-md hover:bg-gray-100 transition-colors"
-                >
-                  <Users className="h-5 w-5 ml-3" />
-                  <span>العملاء</span>
-                </a>
-              </li>
-              <li>
-                <a 
-                  href="/settings" 
-                  className="flex items-center p-3 text-gray-700 rounded-md hover:bg-gray-100 transition-colors"
-                >
-                  <Settings className="h-5 w-5 ml-3" />
-                  <span>الإعدادات</span>
-                </a>
-              </li>
+        <aside className={cn(
+          "bg-white shadow-sm fixed md:sticky top-0 bottom-0 lg:block transition-all duration-300 z-50 border-l",
+          sidebarOpen ? "w-64" : "w-0 md:w-16 overflow-hidden",
+          "md:h-[calc(100vh-64px)]"
+        )}>
+          <nav className="p-4 h-full flex flex-col">
+            <ul className="space-y-2 flex-1">
+              {navigation.map((item) => {
+                const isActive = location.pathname === item.href;
+                return (
+                  <li key={item.name}>
+                    <Link
+                      to={item.href}
+                      className={cn(
+                        "flex items-center p-3 rounded-md transition-colors",
+                        isActive
+                          ? "bg-primary-50 text-primary-600" 
+                          : "text-gray-700 hover:bg-gray-100",
+                        !sidebarOpen && "md:justify-center"
+                      )}
+                    >
+                      <item.icon className={cn("h-5 w-5", sidebarOpen ? "ml-3" : "")} />
+                      {sidebarOpen && <span>{item.name}</span>}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
+            
+            {store && sidebarOpen && (
+              <div className="mt-auto pt-4 border-t border-gray-100">
+                <Link
+                  to="/store-preview"
+                  className="flex items-center p-3 text-gray-700 rounded-md hover:bg-gray-100 transition-colors"
+                  target="_blank"
+                >
+                  <ShoppingBag className="h-5 w-5 ml-3" />
+                  <span>زيارة المتجر</span>
+                </Link>
+              </div>
+            )}
           </nav>
         </aside>
         
         {/* Main Content */}
-        <main className="flex-grow">
-          {children}
+        <main className={cn(
+          "flex-grow p-4 transition-all duration-300",
+          sidebarOpen ? "md:mr-64" : "md:mr-16"
+        )}>
+          <div 
+            className={cn(
+              "max-w-7xl mx-auto transition-opacity duration-300",
+              sidebarOpen && "md:mr-0"
+            )}
+          >
+            {children}
+          </div>
         </main>
       </div>
     </div>
