@@ -8,8 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { supabase, signInWithEmail, signUpWithEmail, signInWithGoogle, resetPassword } from "@/integrations/supabase/client";
-import { Eye, EyeOff, Mail, Lock, Loader2, ArrowLeft, LogIn, UserPlus, Globe } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Eye, EyeOff, Mail, Lock, Loader2, ArrowLeft, LogIn, UserPlus } from "lucide-react";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -25,29 +24,10 @@ const Auth = () => {
   // Signup state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [country, setCountry] = useState("Kuwait");
+  const [confirmPassword, setConfirmPassword] = useState("");
   
   // Reset password state
   const [resetEmail, setResetEmail] = useState("");
-  
-  // Countries list for the dropdown
-  const countries = [
-    { name: "الكويت", value: "Kuwait", currency: "KWD" },
-    { name: "السعودية", value: "Saudi Arabia", currency: "SAR" },
-    { name: "الإمارات", value: "United Arab Emirates", currency: "AED" },
-    { name: "قطر", value: "Qatar", currency: "QAR" },
-    { name: "البحرين", value: "Bahrain", currency: "BHD" },
-    { name: "عمان", value: "Oman", currency: "OMR" },
-    { name: "مصر", value: "Egypt", currency: "EGP" },
-    { name: "الأردن", value: "Jordan", currency: "JOD" },
-    { name: "لبنان", value: "Lebanon", currency: "LBP" },
-  ];
-  
-  // Get currency code based on selected country
-  const getCurrencyCode = (countryName: string) => {
-    const found = countries.find(c => c.value === countryName);
-    return found ? found.currency : "KWD";
-  };
   
   // Determine initial auth mode based on URL path
   useEffect(() => {
@@ -97,24 +77,31 @@ const Auth = () => {
     }
   };
   
-  // Handle signup - simplified Shopify-like approach
+  // Handle signup - simplified approach
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
-      toast.error("الرجاء إدخال البريد الإلكتروني وكلمة المرور");
+    if (!email || !password || !confirmPassword) {
+      toast.error("الرجاء إدخال جميع الحقول المطلوبة");
+      return;
+    }
+    
+    if (password !== confirmPassword) {
+      toast.error("كلمة المرور وتأكيد كلمة المرور غير متطابقين");
+      return;
+    }
+    
+    if (password.length < 6) {
+      toast.error("يجب أن تكون كلمة المرور 6 أحرف على الأقل");
       return;
     }
     
     try {
       setIsLoading(true);
       
-      // Generate store name and domain from email (like Shopify)
+      // Generate store name and domain from email
       const storeName = email.split('@')[0];
       const domainName = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-      
-      // Get currency based on selected country
-      const currency = getCurrencyCode(country);
       
       // Register user with Supabase
       const { data, error } = await signUpWithEmail(
@@ -122,9 +109,7 @@ const Auth = () => {
         password,
         {
           store_name: storeName,
-          domain_name: domainName,
-          country: country,
-          currency: currency
+          domain_name: domainName
         }
       );
       
@@ -141,9 +126,7 @@ const Auth = () => {
               user_id: data.user.id,
               store_name: storeName,
               domain_name: domainName,
-              phone_number: "",
-              country: country,
-              currency: currency
+              phone_number: ""
             }
           ]);
         
@@ -152,7 +135,7 @@ const Auth = () => {
         }
       }
       
-      toast.success("تم إنشاء متجرك بنجاح! تفقد بريدك الإلكتروني للتحقق من حسابك");
+      toast.success("تم إنشاء حسابك بنجاح! تفقد بريدك الإلكتروني للتحقق من حسابك");
       setAuthMode("login");
       
     } catch (error: any) {
@@ -378,7 +361,7 @@ const Auth = () => {
                         onClick={() => setAuthMode("signup")}
                         className="text-primary-500 hover:text-primary-600 hover:underline font-medium"
                       >
-                        إنشاء متجرك الآن
+                        إنشاء حساب جديد
                       </button>
                     </p>
                   </CardFooter>
@@ -388,9 +371,9 @@ const Auth = () => {
               {authMode === "signup" && (
                 <Card className="border-0 shadow-xl bg-white/90 backdrop-blur">
                   <CardHeader className="space-y-2 pb-2">
-                    <CardTitle className="text-2xl text-center font-bold">ابدأ متجرك الإلكتروني</CardTitle>
+                    <CardTitle className="text-2xl text-center font-bold">إنشاء حساب جديد</CardTitle>
                     <CardDescription className="text-center text-base">
-                      سجل الآن وابدأ البيع عبر الإنترنت في دقائق
+                      سجل الآن وابدأ رحلتك معنا
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-4">
@@ -409,9 +392,6 @@ const Auth = () => {
                           />
                           <Mail className="absolute top-1/2 transform -translate-y-1/2 right-3 h-5 w-5 text-gray-400" />
                         </div>
-                        <p className="text-xs text-gray-500">
-                          سنستخدم بريدك الإلكتروني لإنشاء متجرك
-                        </p>
                       </div>
                       
                       <div className="space-y-2">
@@ -444,37 +424,19 @@ const Auth = () => {
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="country" className="font-medium">بلد المتجر</Label>
+                        <Label htmlFor="confirm-password" className="font-medium">تأكيد كلمة المرور</Label>
                         <div className="relative">
-                          <Select value={country} onValueChange={setCountry}>
-                            <SelectTrigger className="h-10 pr-10 bg-white border-gray-200 focus-visible:ring-primary-400">
-                              <Globe className="absolute top-1/2 transform -translate-y-1/2 right-3 h-5 w-5 text-gray-400" />
-                              <SelectValue placeholder="اختر بلد المتجر" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {countries.map((country) => (
-                                <SelectItem key={country.value} value={country.value}>
-                                  <div className="flex items-center gap-2">
-                                    <span>{country.name}</span>
-                                    <span className="text-xs text-gray-500">({country.currency})</span>
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <Input
+                            id="confirm-password"
+                            type={showPassword ? "text" : "password"}
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            className="pr-10 pl-3 py-2 bg-white border-gray-200 focus-visible:ring-primary-400"
+                            required
+                            minLength={6}
+                          />
+                          <Lock className="absolute top-1/2 transform -translate-y-1/2 right-3 h-5 w-5 text-gray-400" />
                         </div>
-                        <p className="text-xs text-gray-500">
-                          سيتم اعتماد عملة البلد لمتجرك ({getCurrencyCode(country)})
-                        </p>
-                      </div>
-                      
-                      <div className="bg-blue-50 border border-blue-100 rounded-md p-3 mt-2">
-                        <p className="text-sm text-blue-700 font-medium">معلومات إنشاء المتجر:</p>
-                        <ul className="text-xs text-blue-600 mt-1 space-y-1 list-disc list-inside">
-                          <li>سيتم إنشاء اسم متجرك تلقائيًا من بريدك الإلكتروني</li>
-                          <li>يمكنك تغيير اسم المتجر والنطاق لاحقًا من لوحة التحكم</li>
-                          <li>ستستطيع إضافة رقم الهاتف وتخصيص المتجر بعد التسجيل</li>
-                        </ul>
                       </div>
                       
                       <Button
@@ -485,12 +447,12 @@ const Auth = () => {
                         {isLoading ? (
                           <>
                             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                            جاري إنشاء المتجر...
+                            جاري إنشاء الحساب...
                           </>
                         ) : (
                           <>
                             <UserPlus className="mr-2 h-5 w-5" />
-                            إنشاء المتجر الآن
+                            إنشاء الحساب
                           </>
                         )}
                       </Button>
