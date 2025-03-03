@@ -1,131 +1,151 @@
 
-import React, { useState } from "react";
-import { Check, Loader2, X } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Category, CategoryFormData } from "@/types/category";
+import { Loader2, Save } from "lucide-react";
+
+const formSchema = z.object({
+  name: z.string().min(2, { message: "يجب أن يكون اسم القسم حرفين على الأقل" }).max(50, { message: "اسم القسم طويل جداً" }),
+  description: z.string().max(500, { message: "الوصف طويل جداً" }).optional(),
+  display_order: z.number().int().optional().nullable(),
+});
 
 interface CategoryFormProps {
-  onSubmit: (categoryData: CategoryFormData) => Promise<void>;
+  category?: Category | null;
+  onSubmit: (data: CategoryFormData) => Promise<void>;
   onCancel: () => void;
-  initialData?: Partial<CategoryFormData>;
   isSubmitting: boolean;
-  isEdit?: boolean;
 }
 
-export interface CategoryFormData {
-  name: string;
-  description: string | null;
-  display_order: number | null;
-}
-
-export const CategoryForm: React.FC<CategoryFormProps> = ({
+const CategoryForm: React.FC<CategoryFormProps> = ({
+  category,
   onSubmit,
   onCancel,
-  initialData,
-  isSubmitting,
-  isEdit = false
+  isSubmitting
 }) => {
-  const [formData, setFormData] = useState<CategoryFormData>({
-    name: initialData?.name || "",
-    description: initialData?.description || "",
-    display_order: initialData?.display_order || 0,
+  const form = useForm<CategoryFormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: category?.name || "",
+      description: category?.description || "",
+      display_order: category?.display_order || null,
+    },
   });
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { id, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [id]: value
-    }));
-  };
+  useEffect(() => {
+    if (category) {
+      form.reset({
+        name: category.name || "",
+        description: category.description || "",
+        display_order: category.display_order || null,
+      });
+    }
+  }, [category, form]);
 
-  const handleNumberChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const { id, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [id]: value === "" ? null : Number(value)
-    }));
+  const handleSubmit = async (data: CategoryFormData) => {
+    await onSubmit(data);
   };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
-  };
-
-  const isFormValid = formData.name.trim() !== "";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="name">اسم القسم <span className="text-red-500">*</span></Label>
-        <Input
-          id="name"
-          placeholder="أدخل اسم القسم"
-          value={formData.name}
-          onChange={handleChange}
-          required
-        />
-      </div>
+    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+      <h3 className="text-lg font-medium mb-4 text-gray-900">
+        {category ? "تعديل القسم" : "إنشاء قسم جديد"}
+      </h3>
       
-      <div className="space-y-2">
-        <Label htmlFor="description">وصف القسم</Label>
-        <Textarea
-          id="description"
-          placeholder="أدخل وصف القسم"
-          rows={3}
-          value={formData.description || ""}
-          onChange={handleChange}
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="display_order">ترتيب العرض</Label>
-        <Input
-          id="display_order"
-          placeholder="أدخل ترتيب العرض"
-          type="number"
-          min="0"
-          value={formData.display_order || ""}
-          onChange={handleNumberChange}
-        />
-        <p className="text-xs text-gray-500">الترتيب الذي سيظهر به القسم في المتجر (الأرقام الأصغر تظهر أولاً)</p>
-      </div>
-      
-      <div className="flex flex-col sm:flex-row sm:justify-between gap-2 pt-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={isSubmitting}
-        >
-          <X className="h-4 w-4 ml-2" />
-          إلغاء
-        </Button>
-        
-        <Button 
-          type="submit" 
-          disabled={isSubmitting || !isFormValid}
-          className="bg-primary-600 hover:bg-primary-700"
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="h-4 w-4 ml-2 animate-spin" />
-              {isEdit ? "جاري التحديث..." : "جاري الإضافة..."}
-            </>
-          ) : (
-            <>
-              <Check className="h-4 w-4 ml-2" />
-              {isEdit ? "تحديث القسم" : "إضافة القسم"}
-            </>
-          )}
-        </Button>
-      </div>
-    </form>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>اسم القسم</FormLabel>
+                <FormControl>
+                  <Input placeholder="أدخل اسم القسم" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>الوصف</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    placeholder="أدخل وصف القسم (اختياري)" 
+                    {...field} 
+                    value={field.value || ""}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="display_order"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>ترتيب العرض</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="ترتيب العرض (اختياري)" 
+                    {...field}
+                    value={field.value || ""}
+                    onChange={(e) => {
+                      const value = e.target.value === "" ? null : parseInt(e.target.value);
+                      field.onChange(value);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <div className="flex justify-end space-x-2 space-x-reverse pt-4">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onCancel}
+              disabled={isSubmitting}
+            >
+              إلغاء
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="flex items-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  جاري الحفظ...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  حفظ
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
   );
 };
+
+export default CategoryForm;

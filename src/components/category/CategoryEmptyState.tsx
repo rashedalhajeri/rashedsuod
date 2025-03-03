@@ -1,51 +1,28 @@
 
 import React from "react";
-import { Layers, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
 
 interface CategoryEmptyStateProps {
-  isSearchActive: boolean;
-  searchQuery?: string;
-  onAddCategory: () => void;
-  onResetSearch: () => void;
+  onCreateCategory: () => void;
 }
 
-export const CategoryEmptyState: React.FC<CategoryEmptyStateProps> = ({
-  isSearchActive,
-  searchQuery,
-  onAddCategory,
-  onResetSearch
-}) => {
-  if (isSearchActive) {
-    return (
-      <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-        <Search className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-        <h3 className="text-lg font-medium text-gray-800 mb-2">لم يتم العثور على أقسام</h3>
-        <p className="text-gray-600 mb-4">
-          {searchQuery && `لم نتمكن من العثور على أي أقسام تطابق "${searchQuery}"`}
-        </p>
-        <Button 
-          variant="outline"
-          onClick={onResetSearch}
-        >
-          عرض جميع الأقسام
-        </Button>
-      </div>
-    );
-  }
-
+const CategoryEmptyState: React.FC<CategoryEmptyStateProps> = ({ onCreateCategory }) => {
   return (
-    <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-      <Layers className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-      <h3 className="text-lg font-medium text-gray-800 mb-2">لا توجد أقسام</h3>
-      <p className="text-gray-600 mb-4">لم تقم بإضافة أي أقسام بعد. أضف قسمك الأول الآن!</p>
+    <div className="text-center p-8 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+      <div className="mx-auto w-16 h-16 rounded-full bg-primary-50 flex items-center justify-center mb-4">
+        <PlusCircle className="text-primary-500 w-8 h-8" />
+      </div>
+      <h3 className="text-lg font-medium text-gray-900 mb-2">لا توجد أقسام</h3>
+      <p className="text-gray-500 mb-6">قم بإنشاء أقسام لتنظيم منتجاتك وتسهيل عملية التصفح للعملاء</p>
       <Button 
-        onClick={onAddCategory}
+        onClick={onCreateCategory}
         className="bg-primary-600 hover:bg-primary-700"
       >
-        <Plus className="h-4 w-4 ml-2" />
-        إضافة قسم جديد
+        إنشاء قسم جديد
       </Button>
     </div>
   );
 };
+
+export default CategoryEmptyState;

@@ -101,3 +101,44 @@ export const getStoreData = async (userId: string) => {
   }
 };
 
+// Helper function to get categories by store ID
+export const getCategoriesByStoreId = async (storeId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .eq('store_id', storeId)
+      .order('display_order', { ascending: true, nullsLast: true });
+      
+    if (error) {
+      console.error("Error fetching categories:", error);
+      return { data: null, error };
+    }
+    
+    return { data, error: null };
+  } catch (error) {
+    console.error("Error in getCategoriesByStoreId function:", error);
+    return { data: null, error };
+  }
+};
+
+// Helper function to update product category
+export const updateProductCategory = async (productId: string, categoryId: string | null) => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .update({ category_id: categoryId })
+      .eq('id', productId)
+      .select();
+      
+    if (error) {
+      console.error("Error updating product category:", error);
+      return { data: null, error };
+    }
+    
+    return { data, error: null };
+  } catch (error) {
+    console.error("Error in updateProductCategory function:", error);
+    return { data: null, error };
+  }
+};

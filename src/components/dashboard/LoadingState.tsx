@@ -7,7 +7,7 @@ const LoadingState: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="text-center">
         <Loader2 className="w-16 h-16 text-primary-500 animate-spin mx-auto" />
-        <p className="mt-4 text-lg text-gray-600">جاري تحميل لوحة التحكم...</p>
+        <p className="mt-4 text-lg text-gray-600">جاري تحميل البيانات...</p>
       </div>
     </div>
   );

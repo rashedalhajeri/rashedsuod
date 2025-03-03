@@ -1,93 +1,73 @@
 
 import React from "react";
-import { Edit, MoreHorizontal, Trash } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-
-interface Category {
-  id: string;
-  name: string;
-  description: string | null;
-  display_order: number | null;
-  product_count: number;
-}
+import { Card, CardContent } from "@/components/ui/card";
+import { Pencil, Trash2, ChevronRight, ShoppingBag } from "lucide-react";
+import { Category } from "@/types/category";
 
 interface CategoryListProps {
   categories: Category[];
+  currencyCode: string;
   onEdit: (category: Category) => void;
   onDelete: (categoryId: string) => void;
+  onViewProducts: (category: Category) => void;
 }
 
-export const CategoryList: React.FC<CategoryListProps> = ({
+const CategoryList: React.FC<CategoryListProps> = ({
   categories,
+  currencyCode,
   onEdit,
   onDelete,
+  onViewProducts
 }) => {
   return (
-    <div className="bg-white shadow-sm rounded-lg border border-gray-100 overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>اسم القسم</TableHead>
-            <TableHead>الوصف</TableHead>
-            <TableHead>ترتيب العرض</TableHead>
-            <TableHead>عدد المنتجات</TableHead>
-            <TableHead className="text-left">إجراءات</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {categories.map((category) => (
-            <TableRow key={category.id} className="hover:bg-gray-50">
-              <TableCell className="font-medium">{category.name}</TableCell>
-              <TableCell className="max-w-xs">
-                <span className="line-clamp-1">{category.description || "-"}</span>
-              </TableCell>
-              <TableCell>{category.display_order || "-"}</TableCell>
-              <TableCell>
-                <Badge variant="outline" className="bg-primary-50 text-primary-700 hover:bg-primary-100">
-                  {category.product_count}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => onEdit(category)}>
-                      <Edit className="ml-2 h-4 w-4" />
-                      تعديل
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => onDelete(category.id)}
-                      className="text-red-600 focus:text-red-600"
-                    >
-                      <Trash className="ml-2 h-4 w-4" />
-                      حذف
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <div className="space-y-4">
+      {categories.map((category) => (
+        <Card key={category.id} className="overflow-hidden">
+          <CardContent className="p-0">
+            <div className="flex items-center justify-between p-4 border-b border-gray-100">
+              <div className="flex-1">
+                <h3 className="font-medium text-gray-900">{category.name}</h3>
+                {category.description && (
+                  <p className="text-sm text-gray-500 mt-1 line-clamp-2">{category.description}</p>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onEdit(category)}
+                  className="text-gray-500 hover:text-primary-600"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onDelete(category.id)}
+                  className="text-gray-500 hover:text-red-600"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div
+              className="p-4 bg-gray-50 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+              onClick={() => onViewProducts(category)}
+            >
+              <div className="flex items-center gap-2">
+                <ShoppingBag className="h-4 w-4 text-gray-400" />
+                <span className="text-sm text-gray-500">
+                  {category.product_count || 0} منتج في القسم
+                </span>
+              </div>
+              <ChevronRight className="h-4 w-4 text-gray-400" />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 };
+
+export default CategoryList;
