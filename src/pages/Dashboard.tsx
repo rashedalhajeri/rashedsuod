@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Settings, ShoppingBag, Home, Package, BarChart, Users } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Store {
   id: string;
@@ -21,6 +22,7 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [store, setStore] = useState<Store | null>(null);
   const [productCount, setProductCount] = useState(0);
+  const [showCreateStoreDialog, setShowCreateStoreDialog] = useState(false);
   const navigate = useNavigate();
 
   // Set the document direction to RTL for Arabic language support
@@ -57,10 +59,17 @@ const Dashboard: React.FC = () => {
           .from('stores')
           .select('*')
           .eq('user_id', sessionData.session.user.id)
-          .single();
+          .maybeSingle(); // Changed from single() to maybeSingle()
         
         if (storeError) {
           throw storeError;
+        }
+        
+        // Check if store exists
+        if (!storeData) {
+          setShowCreateStoreDialog(true);
+          setLoading(false);
+          return;
         }
         
         setStore(storeData);
@@ -81,7 +90,6 @@ const Dashboard: React.FC = () => {
       } catch (error) {
         console.error("Error fetching data:", error);
         toast.error("حدث خطأ أثناء تحميل بيانات المتجر");
-        navigate("/");
       } finally {
         setLoading(false);
       }
@@ -90,12 +98,34 @@ const Dashboard: React.FC = () => {
     fetchSessionAndStore();
   }, [navigate]);
 
+  const handleCreateStore = () => {
+    navigate('/create-store');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
           <p className="mt-4 text-lg text-gray-600">جاري تحميل لوحة التحكم...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If showCreateStoreDialog is true, display a dialog prompting the user to create a store
+  if (showCreateStoreDialog) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="max-w-md w-full bg-white shadow-md rounded-lg p-8">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4 text-center">مرحباً بك في Linok.me</h1>
+          <p className="text-gray-600 mb-6 text-center">لم نجد أي متجر مرتبط بحسابك. قم بإنشاء متجرك الآن للبدء!</p>
+          <Button 
+            onClick={handleCreateStore}
+            className="w-full"
+          >
+            إنشاء متجر جديد
+          </Button>
         </div>
       </div>
     );
