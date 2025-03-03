@@ -1,336 +1,344 @@
-
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Avatar } from "@/components/ui/avatar";
-import { formatDistanceToNow } from "date-fns";
-import { Eye, MoreVertical } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { Search, ChevronDown, ChevronUp, Eye, ArrowUpDown } from "lucide-react";
+import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 
-// Mock data for orders
-const generateMockOrders = () => {
-  const statusOptions = [
-    { value: "pending", label: "قيد الانتظار", color: "warning" },
-    { value: "processing", label: "قيد المعالجة", color: "warning" },
-    { value: "shipped", label: "تم الشحن", color: "info" },
-    { value: "delivered", label: "تم التسليم", color: "success" },
-    { value: "cancelled", label: "ملغي", color: "destructive" },
-    { value: "refunded", label: "مسترجع", color: "destructive" },
-  ];
+// Sample order data
+const orders = [
+  {
+    id: "ORD-001",
+    customer: "أحمد محمد",
+    date: new Date("2023-06-15"),
+    total: 245.99,
+    status: "completed",
+    items: 3,
+    paymentMethod: "بطاقة ائتمان",
+  },
+  {
+    id: "ORD-002",
+    customer: "سارة علي",
+    date: new Date("2023-06-14"),
+    total: 125.50,
+    status: "processing",
+    items: 2,
+    paymentMethod: "دفع عند الاستلام",
+  },
+  {
+    id: "ORD-003",
+    customer: "محمد خالد",
+    date: new Date("2023-06-13"),
+    total: 540.00,
+    status: "shipped",
+    items: 5,
+    paymentMethod: "بطاقة ائتمان",
+  },
+  {
+    id: "ORD-004",
+    customer: "فاطمة أحمد",
+    date: new Date("2023-06-12"),
+    total: 75.25,
+    status: "cancelled",
+    items: 1,
+    paymentMethod: "دفع عند الاستلام",
+  },
+  {
+    id: "ORD-005",
+    customer: "عمر حسن",
+    date: new Date("2023-06-11"),
+    total: 320.75,
+    status: "completed",
+    items: 4,
+    paymentMethod: "بطاقة ائتمان",
+  },
+  {
+    id: "ORD-006",
+    customer: "نورا سعيد",
+    date: new Date("2023-06-10"),
+    total: 180.00,
+    status: "processing",
+    items: 2,
+    paymentMethod: "دفع عند الاستلام",
+  },
+  {
+    id: "ORD-007",
+    customer: "خالد محمود",
+    date: new Date("2023-06-09"),
+    total: 420.50,
+    status: "shipped",
+    items: 3,
+    paymentMethod: "بطاقة ائتمان",
+  },
+  {
+    id: "ORD-008",
+    customer: "ليلى عبدالله",
+    date: new Date("2023-06-08"),
+    total: 95.99,
+    status: "completed",
+    items: 1,
+    paymentMethod: "دفع عند الاستلام",
+  },
+  {
+    id: "ORD-009",
+    customer: "يوسف أحمد",
+    date: new Date("2023-06-07"),
+    total: 275.25,
+    status: "cancelled",
+    items: 3,
+    paymentMethod: "بطاقة ائتمان",
+  },
+  {
+    id: "ORD-010",
+    customer: "هدى محمد",
+    date: new Date("2023-06-06"),
+    total: 150.00,
+    status: "processing",
+    items: 2,
+    paymentMethod: "دفع عند الاستلام",
+  },
+];
 
-  const paymentStatusOptions = [
-    { value: "paid", label: "مدفوع", color: "success" },
-    { value: "pending", label: "قيد الانتظار", color: "warning" },
-    { value: "failed", label: "فشل الدفع", color: "destructive" },
-    { value: "refunded", label: "تم استرداد المبلغ", color: "destructive" },
-  ];
-
-  const customerNames = [
-    "أحمد محمد",
-    "سارة عبدالله",
-    "محمد علي",
-    "فاطمة أحمد",
-    "عبدالرحمن محمد",
-    "نورة خالد",
-    "عبدالله محمد",
-    "ريم سعيد",
-    "خالد يوسف",
-    "لمياء عبدالعزيز",
-  ];
-
-  const randomDate = (start: Date, end: Date) => {
-    return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-  };
-
-  const orders = [];
-  const now = new Date();
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-  for (let i = 1; i <= 30; i++) {
-    const status = statusOptions[Math.floor(Math.random() * statusOptions.length)];
-    const paymentStatus = paymentStatusOptions[Math.floor(Math.random() * paymentStatusOptions.length)];
-    const customer = customerNames[Math.floor(Math.random() * customerNames.length)];
-    const orderDate = randomDate(thirtyDaysAgo, now);
-    const total = Math.floor(Math.random() * 1000) + 50;
-    const itemCount = Math.floor(Math.random() * 5) + 1;
-
-    orders.push({
-      id: `ORDER-${10000 + i}`,
-      customer,
-      status: status.value,
-      statusLabel: status.label,
-      statusColor: status.color,
-      paymentStatus: paymentStatus.value,
-      paymentStatusLabel: paymentStatus.label,
-      paymentStatusColor: paymentStatus.color,
-      date: orderDate,
-      dateFormatted: formatDistanceToNow(orderDate, { addSuffix: true, locale: ar }),
-      total,
-      itemCount,
-      products: Array.from({ length: itemCount }, (_, j) => ({
-        id: `PROD-${j + 1}`,
-        name: `منتج ${j + 1}`,
-        price: Math.floor(Math.random() * 200) + 50,
-        quantity: Math.floor(Math.random() * 3) + 1,
-      })),
-    });
-  }
-
-  return orders;
+// Status badge colors
+const statusColors = {
+  completed: "bg-green-100 text-green-800 border-green-200",
+  processing: "bg-blue-100 text-blue-800 border-blue-200",
+  shipped: "bg-purple-100 text-purple-800 border-purple-200",
+  cancelled: "bg-red-100 text-red-800 border-red-200",
 };
 
-type OrderListProps = {
+// Status translations
+const statusTranslations = {
+  completed: "مكتمل",
+  processing: "قيد المعالجة",
+  shipped: "تم الشحن",
+  cancelled: "ملغي",
+};
+
+interface OrderListProps {
   searchQuery: string;
   statusFilter: string;
   dateRangeFilter: string;
   onOpenDetails: (orderId: string) => void;
-};
+}
 
-const OrderList = ({
+const OrderList: React.FC<OrderListProps> = ({
   searchQuery,
   statusFilter,
   dateRangeFilter,
   onOpenDetails,
-}: OrderListProps) => {
-  const [orders, setOrders] = useState<any[]>([]);
-  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
-  const [filteredOrders, setFilteredOrders] = useState<any[]>([]);
+}) => {
+  const [sortField, setSortField] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [localSearchQuery, setLocalSearchQuery] = useState("");
+  const [localStatusFilter, setLocalStatusFilter] = useState("");
+  const itemsPerPage = 5;
 
-  useEffect(() => {
-    // Simulate API call
-    setOrders(generateMockOrders());
-  }, []);
-
-  useEffect(() => {
-    let filtered = [...orders];
-
-    // Apply status filter
-    if (statusFilter && statusFilter !== "all") {
-      filtered = filtered.filter((order) => order.status === statusFilter);
-    }
-
-    // Apply date range filter
-    if (dateRangeFilter && dateRangeFilter !== "all") {
-      const now = new Date();
-      let fromDate: Date;
-
-      switch (dateRangeFilter) {
-        case "today":
-          fromDate = new Date(now.setHours(0, 0, 0, 0));
-          break;
-        case "yesterday":
-          fromDate = new Date(now);
-          fromDate.setDate(fromDate.getDate() - 1);
-          fromDate.setHours(0, 0, 0, 0);
-          const yesterday = new Date(now);
-          yesterday.setDate(yesterday.getDate() - 1);
-          yesterday.setHours(23, 59, 59, 999);
-          filtered = filtered.filter(
-            (order) => order.date >= fromDate && order.date <= yesterday
-          );
-          break;
-        case "last7days":
-          fromDate = new Date(now);
-          fromDate.setDate(fromDate.getDate() - 7);
-          filtered = filtered.filter((order) => order.date >= fromDate);
-          break;
-        case "last30days":
-          fromDate = new Date(now);
-          fromDate.setDate(fromDate.getDate() - 30);
-          filtered = filtered.filter((order) => order.date >= fromDate);
-          break;
-        default:
-          break;
-      }
-    }
-
-    // Apply search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (order) =>
-          order.id.toLowerCase().includes(query) ||
-          order.customer.toLowerCase().includes(query)
-      );
-    }
-
-    setFilteredOrders(filtered);
-  }, [orders, searchQuery, statusFilter, dateRangeFilter]);
-
-  const toggleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedOrders(filteredOrders.map((order) => order.id));
+  // Handle sorting
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
-      setSelectedOrders([]);
+      setSortField(field);
+      setSortDirection("asc");
     }
   };
 
-  const toggleSelectOrder = (orderId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedOrders([...selectedOrders, orderId]);
-    } else {
-      setSelectedOrders(selectedOrders.filter((id) => id !== orderId));
+  // Filter and sort orders
+  const filteredOrders = orders.filter((order) => {
+    const matchesSearch =
+      !localSearchQuery ||
+      order.id.toLowerCase().includes(localSearchQuery.toLowerCase()) ||
+      order.customer.toLowerCase().includes(localSearchQuery.toLowerCase());
+
+    const matchesStatus = !localStatusFilter || order.status === localStatusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
+
+  const sortedOrders = [...filteredOrders].sort((a, b) => {
+    if (!sortField) return 0;
+
+    let comparison = 0;
+    if (sortField === "date") {
+      comparison = a.date.getTime() - b.date.getTime();
+    } else if (sortField === "total") {
+      comparison = a.total - b.total;
+    } else if (sortField === "id") {
+      comparison = a.id.localeCompare(b.id);
+    } else if (sortField === "customer") {
+      comparison = a.customer.localeCompare(b.customer);
     }
-  };
 
-  const getStatusBadgeVariant = (statusColor: string) => {
-    switch (statusColor) {
-      case "success":
-        return "success";
-      case "warning":
-        return "warning";
-      case "destructive":
-        return "destructive";
-      case "info":
-        return "info";
-      default:
-        return "secondary";
-    }
-  };
+    return sortDirection === "asc" ? comparison : -comparison;
+  });
 
-  const isAllSelected = filteredOrders.length > 0 && selectedOrders.length === filteredOrders.length;
+  // Pagination
+  const totalPages = Math.ceil(sortedOrders.length / itemsPerPage);
+  const paginatedOrders = sortedOrders.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
-  if (filteredOrders.length === 0) {
-    return (
-      <div className="flex h-[400px] flex-col items-center justify-center p-6 text-center">
-        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-10 w-10 opacity-50"
-          >
-            <path d="M16 16h6"></path>
-            <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"></path>
-            <path d="M7.5 4.27l9 5.15"></path>
-            <path d="M3.29 7 12 12l8.71-5"></path>
-            <path d="M12 22V12"></path>
-          </svg>
-        </div>
-        <h3 className="mt-4 text-lg font-semibold">لا توجد طلبات</h3>
-        <p className="mt-2 text-sm text-muted-foreground">
-          لا توجد طلبات تطابق معايير البحث الحالية.
-        </p>
-      </div>
+  // Sort indicator
+  const SortIndicator = ({ field }: { field: string }) => {
+    if (sortField !== field) return <ArrowUpDown className="h-4 w-4 ml-1" />;
+    return sortDirection === "asc" ? (
+      <ChevronUp className="h-4 w-4 ml-1" />
+    ) : (
+      <ChevronDown className="h-4 w-4 ml-1" />
     );
-  }
+  };
 
   return (
-    <div className="w-full">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b">
-            <th className="h-12 px-4 text-right">
-              <Checkbox
-                checked={isAllSelected}
-                onCheckedChange={toggleSelectAll}
-                aria-label="Select all"
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row justify-between gap-4">
+        <div className="relative w-full sm:w-64">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="بحث عن طلب..."
+            className="pl-8"
+            value={localSearchQuery}
+            onChange={(e) => setLocalSearchQuery(e.target.value)}
+          />
+        </div>
+        <Select value={localStatusFilter} onValueChange={setLocalStatusFilter}>
+          <SelectTrigger className="w-full sm:w-40">
+            <SelectValue placeholder="حالة الطلب" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">جميع الحالات</SelectItem>
+            <SelectItem value="completed">مكتمل</SelectItem>
+            <SelectItem value="processing">قيد المعالجة</SelectItem>
+            <SelectItem value="shipped">تم الشحن</SelectItem>
+            <SelectItem value="cancelled">ملغي</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[100px]">
+                <Button
+                  variant="ghost"
+                  className="font-medium"
+                  onClick={() => handleSort("id")}
+                >
+                  رقم الطلب
+                  <SortIndicator field="id" />
+                </Button>
+              </TableHead>
+              <TableHead>
+                <Button
+                  variant="ghost"
+                  className="font-medium"
+                  onClick={() => handleSort("customer")}
+                >
+                  العميل
+                  <SortIndicator field="customer" />
+                </Button>
+              </TableHead>
+              <TableHead>
+                <Button
+                  variant="ghost"
+                  className="font-medium"
+                  onClick={() => handleSort("date")}
+                >
+                  التاريخ
+                  <SortIndicator field="date" />
+                </Button>
+              </TableHead>
+              <TableHead>الحالة</TableHead>
+              <TableHead>
+                <Button
+                  variant="ghost"
+                  className="font-medium"
+                  onClick={() => handleSort("total")}
+                >
+                  المبلغ
+                  <SortIndicator field="total" />
+                </Button>
+              </TableHead>
+              <TableHead className="text-left">الإجراءات</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {paginatedOrders.length > 0 ? (
+              paginatedOrders.map((order) => (
+                <TableRow key={order.id}>
+                  <TableCell className="font-medium">{order.id}</TableCell>
+                  <TableCell>{order.customer}</TableCell>
+                  <TableCell>
+                    {format(order.date, "d MMMM yyyy", { locale: ar })}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className={statusColors[order.status as keyof typeof statusColors]}
+                    >
+                      {statusTranslations[order.status as keyof typeof statusTranslations]}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{order.total.toFixed(2)} ر.س</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onOpenDetails(order.id)}
+                      className="flex items-center gap-1"
+                    >
+                      <Eye className="h-4 w-4" />
+                      عرض
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={6} className="h-24 text-center">
+                  لا توجد طلبات متطابقة مع معايير البحث
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      {totalPages > 1 && (
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
               />
-            </th>
-            <th className="h-12 px-4 text-right font-medium">رقم الطلب</th>
-            <th className="h-12 px-4 text-right font-medium">العميل</th>
-            <th className="h-12 px-4 text-right font-medium">الحالة</th>
-            <th className="h-12 px-4 text-right font-medium">حالة الدفع</th>
-            <th className="h-12 px-4 text-right font-medium">المبلغ</th>
-            <th className="h-12 px-4 text-right font-medium">التاريخ</th>
-            <th className="h-12 px-4 text-right font-medium">العمليات</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredOrders.map((order) => (
-            <tr
-              key={order.id}
-              className="border-b transition-colors hover:bg-muted/50"
-            >
-              <td className="p-4 align-middle">
-                <Checkbox
-                  checked={selectedOrders.includes(order.id)}
-                  onCheckedChange={(checked) =>
-                    toggleSelectOrder(order.id, !!checked)
-                  }
-                  aria-label={`Select order ${order.id}`}
-                />
-              </td>
-              <td className="p-4 align-middle font-medium">{order.id}</td>
-              <td className="p-4 align-middle">
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8">
-                    <div className="flex h-full w-full items-center justify-center bg-muted font-semibold">
-                      {order.customer.charAt(0)}
-                    </div>
-                  </Avatar>
-                  <span>{order.customer}</span>
-                </div>
-              </td>
-              <td className="p-4 align-middle">
-                <Badge
-                  variant={getStatusBadgeVariant(order.statusColor) as any}
-                  className="whitespace-nowrap"
+            </PaginationItem>
+            {Array.from({ length: totalPages }).map((_, i) => (
+              <PaginationItem key={i}>
+                <PaginationLink
+                  onClick={() => setCurrentPage(i + 1)}
+                  isActive={currentPage === i + 1}
                 >
-                  {order.statusLabel}
-                </Badge>
-              </td>
-              <td className="p-4 align-middle">
-                <Badge
-                  variant={getStatusBadgeVariant(order.paymentStatusColor) as any}
-                  className="whitespace-nowrap"
-                >
-                  {order.paymentStatusLabel}
-                </Badge>
-              </td>
-              <td className="p-4 align-middle font-medium">
-                {order.total} ر.س
-              </td>
-              <td className="p-4 align-middle text-muted-foreground">
-                {order.dateFormatted}
-              </td>
-              <td className="p-4 align-middle">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onOpenDetails(order.id)}
-                  >
-                    <Eye className="h-4 w-4" />
-                    <span className="sr-only">عرض</span>
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreVertical className="h-4 w-4" />
-                        <span className="sr-only">المزيد</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onOpenDetails(order.id)}>
-                        عرض التفاصيل
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>طباعة الفاتورة</DropdownMenuItem>
-                      <DropdownMenuItem>تحديث الحالة</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">
-                        إلغاء الطلب
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                  {i + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
     </div>
   );
 };
