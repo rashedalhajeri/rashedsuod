@@ -19,12 +19,28 @@ import {
   PanelLeft,
   Zap,
   Bell,
-  Search
+  Search,
+  Tag,
+  CreditCard,
+  Store,
+  Percent
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { secureStore, secureRetrieve, secureRemove } from "@/lib/encryption";
-import { useMediaQuery } from "@/hooks/use-mobile";
+import { useMediaQuery, useIsMobile } from "@/hooks/use-mobile";
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuLink,
+  SidebarTrigger
+} from "@/components/ui/sidebar";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -42,19 +58,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [store, setStore] = useState<Store | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [hasNotifications, setHasNotifications] = useState(false);
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const location = useLocation();
-
-  useEffect(() => {
-    if (isMobile) {
-      setSidebarOpen(false);
-    } else {
-      setSidebarOpen(true);
-    }
-  }, [isMobile]);
 
   useEffect(() => {
     // Simulate having notifications (in real app would be from a backend)
@@ -141,29 +148,21 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
   const navigation = [
     { name: 'الرئيسية', href: '/dashboard', icon: Home },
+    { name: 'الطلبات', href: '/orders', icon: ShoppingBag },
     { name: 'المنتجات', href: '/products', icon: Package },
-    { name: 'الإحصائيات', href: '/analytics', icon: BarChart },
     { name: 'العملاء', href: '/customers', icon: Users },
+    { name: 'الفئات', href: '/categories', icon: Tag },
+    { name: 'كيبونات وتسويق', href: '/marketing', icon: Percent },
+    { name: 'نظام الدفع', href: '/payment', icon: CreditCard },
+    { name: 'المتجر', href: '/store', icon: Store },
     { name: 'الإعدادات', href: '/settings', icon: Settings },
   ];
-
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 rtl">
       <header className="glass-nav bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-              onClick={toggleSidebar}
-            >
-              {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
-            </Button>
             <div className="flex items-center">
               <span className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">Linok</span>
               <span className="text-lg font-medium text-gray-600">.me</span>
@@ -218,41 +217,32 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       </header>
       
       <div className="flex min-h-[calc(100vh-64px)]">
-        {/* Sidebar for desktop */}
-        <aside className={cn(
-          "glass-card bg-white/90 backdrop-blur-sm shadow-sm fixed md:sticky top-16 bottom-0 lg:block transition-all duration-300 z-50 border-l",
-          sidebarOpen ? "w-64" : "w-0 md:w-16 overflow-hidden",
-          "md:h-[calc(100vh-64px)]"
-        )}>
-          <nav className="p-4 h-full flex flex-col">
-            <ul className="space-y-1 flex-1">
-              {navigation.map((item) => {
-                const isActive = location.pathname === item.href;
-                return (
-                  <li key={item.name}>
-                    <Link
-                      to={item.href}
-                      className={cn(
-                        "flex items-center p-3 rounded-md transition-colors",
-                        isActive
-                          ? "bg-gradient-to-r from-primary-50 to-primary-100 text-primary-600 border-r-4 border-primary-500" 
-                          : "text-gray-700 hover:bg-gray-50",
-                        !sidebarOpen && "md:justify-center"
-                      )}
-                    >
-                      <item.icon className={cn("h-5 w-5", sidebarOpen ? "ml-3" : "")} />
-                      {sidebarOpen && <span>{item.name}</span>}
-                      {isActive && sidebarOpen && (
-                        <ChevronRight className="mr-auto h-4 w-4 text-primary-500" />
-                      )}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+        <SidebarProvider>
+          <Sidebar>
+            <SidebarHeader />
+            <SidebarContent>
+              <SidebarGroup>
+                <SidebarMenu>
+                  {navigation.map((item) => {
+                    const isActive = location.pathname === item.href;
+                    return (
+                      <SidebarMenuItem key={item.name}>
+                        <SidebarMenuLink 
+                          href={item.href} 
+                          icon={item.icon} 
+                          active={isActive}
+                        >
+                          {item.name}
+                        </SidebarMenuLink>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroup>
+            </SidebarContent>
             
-            {store && sidebarOpen && (
-              <div className="mt-auto pt-4 border-t border-gray-100">
+            {store && (
+              <SidebarFooter>
                 <Link
                   to="/store-preview"
                   className="flex items-center p-3 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
@@ -261,30 +251,23 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                   <ShoppingBag className="h-5 w-5 ml-3" />
                   <span>زيارة المتجر</span>
                 </Link>
-              </div>
+              </SidebarFooter>
             )}
-          </nav>
-        </aside>
-        
-        <main className={cn(
-          "flex-grow p-4 transition-all duration-300",
-          sidebarOpen ? "md:mr-64" : "md:mr-16"
-        )}>
-          <div 
-            className={cn(
-              "max-w-7xl mx-auto transition-opacity duration-300",
-              sidebarOpen && "md:mr-0"
-            )}
-          >
-            {children}
-          </div>
-        </main>
+          </Sidebar>
+          
+          <main className="flex-grow p-4 transition-all duration-300">
+            <div className="max-w-7xl mx-auto transition-opacity duration-300">
+              <SidebarTrigger />
+              {children}
+            </div>
+          </main>
+        </SidebarProvider>
       </div>
       
       {/* Mobile bottom navigation */}
       {isMobile && (
         <div className="mobile-nav">
-          {navigation.map((item) => {
+          {navigation.slice(0, 5).map((item) => {
             const isActive = location.pathname === item.href;
             return (
               <Link
