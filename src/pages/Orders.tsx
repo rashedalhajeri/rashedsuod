@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
@@ -5,6 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,9 +27,10 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
+import { Filter } from "lucide-react";
 import { OrderFilters } from "@/components/order/OrderFilters";
 import { OrderStats } from "@/components/order/OrderStats";
-import { OrderList } from "@/components/order/OrderList";
+import OrderList from "@/components/order/OrderList";
 import OrderDetails from "@/components/order/OrderDetails";
 
 const Orders = () => {
@@ -69,7 +78,12 @@ const Orders = () => {
 
         <OrderStats />
         <Separator className="my-6" />
-        <OrderList onOrderClick={handleOrderClick} />
+        <OrderList 
+          searchQuery="" 
+          statusFilter="" 
+          dateRangeFilter="" 
+          onOpenDetails={handleOrderClick} 
+        />
 
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent className="sm:max-w-[90%]">
