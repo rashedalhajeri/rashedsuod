@@ -1,159 +1,157 @@
-
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ChevronRight, Shield, CheckCircle, Store } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-
 const Hero: React.FC = () => {
-  const navigate = useNavigate();
+  const [isRTL, setIsRTL] = useState(true); // true for Arabic direction
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-      },
-    },
-  };
+  // This would be connected to your actual language state in a real app
+  useEffect(() => {
+    // Example to detect language and set direction
+    const html = document.querySelector('html');
+    setIsRTL(html?.dir === 'rtl' || true); // Default to RTL for this demo
+  }, []);
+  return <section className={`min-h-screen flex items-center pt-20 overflow-hidden relative ${isRTL ? 'rtl' : 'ltr'}`}>
+      {/* Video Background */}
+      <div className="absolute inset-0 w-full h-full z-0">
+        <video className="w-full h-full object-cover" autoPlay muted loop playsInline>
+          <source src="/lovable-uploads/ecommerce-video-bg.mp4" type="video/mp4" />
+          {/* Fallback image if video doesn't load */}
+          <img src="/lovable-uploads/c8a5c4e7-628d-4c52-acca-e8f603036b6b.png" alt="E-commerce background" className="w-full h-full object-cover" />
+        </video>
+        {/* Overlay to ensure text readability */}
+        <div className="absolute inset-0 bg-opacity-50 z-10 bg-slate-50"></div>
+      </div>
 
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 },
-  };
-
-  const heroFeatures = [
-    { icon: <Store className="w-5 h-5" />, text: "إنشاء متجر احترافي في دقائق" },
-    { icon: <Shield className="w-5 h-5" />, text: "حماية كاملة للمتجر والمدفوعات" },
-    { icon: <CheckCircle className="w-5 h-5" />, text: "بدون عمولات على المبيعات" },
-  ];
-
-  return (
-    <section className="hero-pattern pt-32 pb-20 md:pb-32 rtl">
-      <div className="container mx-auto px-6">
-        <div className="flex flex-col lg:flex-row gap-12 items-center">
-          {/* Content */}
-          <motion.div 
-            className="lg:w-1/2 text-center lg:text-right"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-          >
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              أطلق متجرك الإلكتروني في <span className="text-primary inline-block">الكويت</span> اليوم
-            </h1>
-            
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto lg:mr-0">
-              منصة لينوك توفر لك كل ما تحتاجه لإطلاق متجرك الإلكتروني بسهولة وسرعة، مع دعم كامل لكل احتياجات التاجر الكويتي.
-            </p>
-            
-            <motion.div 
-              className="flex flex-wrap gap-4 justify-center lg:justify-start mb-10"
-              variants={container}
-              initial="hidden"
-              animate="show"
-            >
-              <Button
-                size="lg"
-                onClick={() => navigate("/auth")}
-                className="text-lg shadow-md hover:shadow-lg hover:-translate-y-1 transition-all bg-primary hover:bg-primary/90"
-              >
-                ابدأ الآن مجانًا
-                <ChevronRight className="mr-2 h-5 w-5" />
-              </Button>
-              
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => navigate("#features")}
-                className="text-lg border-gray-300"
-              >
-                اكتشف المميزات
-              </Button>
-            </motion.div>
-            
-            <motion.div
-              variants={container}
-              initial="hidden"
-              animate="show"
-              className="flex flex-col sm:flex-row gap-5 justify-center lg:justify-start"
-            >
-              {heroFeatures.map((feature, index) => (
-                <motion.div 
-                  key={index}
-                  variants={item}
-                  className="flex items-center gap-2 text-gray-700"
-                >
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                    {feature.icon}
-                  </div>
-                  <span>{feature.text}</span>
-                </motion.div>
-              ))}
-            </motion.div>
+      <div className="container mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 px-6 relative z-20">
+        <div className={`flex flex-col justify-center ${isRTL ? 'order-1 lg:order-1' : 'order-1 lg:order-0'}`}>
+          <motion.h1 initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          duration: 0.7
+        }} className="md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-slate-950 text-3xl">
+            <span className="inline-block">متجر إلكتروني في كل</span>
+            <div className="flex items-center flex-wrap gap-3 mt-2">
+              <span className="relative inline-block text-primary-500 font-extrabold">
+                <span className="relative z-10">احتياجاتك</span>
+                <motion.span className="absolute -bottom-1 left-0 right-0 h-3 bg-primary-100 rounded-full z-0" initial={{
+                width: 0
+              }} animate={{
+                width: '100%'
+              }} transition={{
+                delay: 1,
+                duration: 0.6
+              }}></motion.span>
+              </span>
+              <span>لزيادة مبيعاتك</span>
+            </div>
+          </motion.h1>
+          
+          <motion.p initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          duration: 0.7,
+          delay: 0.2
+        }} className="text-xl mb-8 text-slate-950">
+            متجر متكامل لطلبات الاستلام و التوصيل، بدون عمولة على الطلبات
+          </motion.p>
+          
+          <motion.div initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          duration: 0.7,
+          delay: 0.4
+        }} className="flex flex-wrap gap-4 mb-8 bg-black/0">
+            <a href="#start" className="btn-primary">
+              ابدأ الآن
+            </a>
+            <a href="#learn-more" className="px-6 py-3 bg-white text-gray-800 rounded-full font-semibold border border-gray-300 
+              shadow-sm hover:shadow-md transition-all duration-300 hover:translate-y-[-2px]">شاهد المزيد..</a>
           </motion.div>
           
-          {/* Image */}
-          <motion.div 
-            className="lg:w-1/2"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, delay: 0.3 }}
-          >
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent rounded-2xl transform rotate-3 scale-105 -z-10"></div>
-              <div className="bg-white p-3 rounded-2xl shadow-xl">
-                <img 
-                  src="/public/lovable-uploads/c8a5c4e7-628d-4c52-acca-e8f603036b6b.png" 
-                  alt="Linok Store Dashboard" 
-                  className="w-full h-auto rounded-xl shadow-sm"
-                />
-              </div>
-              
-              <div className="absolute -bottom-8 -right-8 bg-white py-3 px-5 rounded-lg shadow-lg flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-primary">
-                  <Shield className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-800">تأمين كامل</p>
-                  <p className="text-xs text-gray-500">حماية البيانات والمدفوعات</p>
-                </div>
-              </div>
+          <motion.div className="flex flex-wrap items-center gap-6" initial={{
+          opacity: 0
+        }} animate={{
+          opacity: 1
+        }} transition={{
+          duration: 0.7,
+          delay: 0.6
+        }}>
+            <div className="flex items-center -space-x-2 rtl:space-x-reverse">
+              {[1, 2, 3, 4].map(index => <div key={index} className="w-10 h-10 rounded-full border-2 border-white bg-gray-200" style={{
+              zIndex: 5 - index
+            }} />)}
             </div>
+            <p className="text-slate-800 font-medium">
+              أكثر من <span className="font-bold text-primary-500 text-lg">٧٥٠٠ تاجر</span> <span className="bg-primary-100 px-2 py-1 rounded-lg text-primary-700 text-sm">خلال عام جديد</span>
+            </p>
           </motion.div>
         </div>
         
-        {/* Stats */}
-        <motion.div 
-          className="grid grid-cols-2 md:grid-cols-4 gap-5 mt-20 max-w-4xl mx-auto"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.6 }}
-        >
-          <div className="bg-white shadow-sm rounded-xl p-6 text-center">
-            <p className="text-3xl font-bold text-primary mb-1">+1000</p>
-            <p className="text-gray-600 text-sm">متجر نشط</p>
-          </div>
-          
-          <div className="bg-white shadow-sm rounded-xl p-6 text-center">
-            <p className="text-3xl font-bold text-primary mb-1">+25000</p>
-            <p className="text-gray-600 text-sm">طلب شهريًا</p>
-          </div>
-          
-          <div className="bg-white shadow-sm rounded-xl p-6 text-center">
-            <p className="text-3xl font-bold text-primary mb-1">99.9%</p>
-            <p className="text-gray-600 text-sm">وقت تشغيل</p>
-          </div>
-          
-          <div className="bg-white shadow-sm rounded-xl p-6 text-center">
-            <p className="text-3xl font-bold text-primary mb-1">24/7</p>
-            <p className="text-gray-600 text-sm">دعم فني</p>
-          </div>
-        </motion.div>
+        <div className={`flex justify-center items-center relative z-20 ${isRTL ? 'order-0 lg:order-0' : 'order-0 lg:order-1'}`}>
+          <motion.div className="relative w-full max-w-md" initial={{
+          opacity: 0,
+          scale: 0.9
+        }} animate={{
+          opacity: 1,
+          scale: 1
+        }} transition={{
+          duration: 0.7
+        }}>
+            <motion.div className="absolute inset-0 bg-gradient-to-br from-primary-400/30 to-primary-500/30 rounded-3xl blur-3xl" animate={{
+            scale: [1, 1.05, 1],
+            opacity: [0.5, 0.6, 0.5]
+          }} transition={{
+            duration: 5,
+            repeat: Infinity,
+            repeatType: "reverse"
+          }} />
+            
+            <motion.img alt="Person working on laptop" className="w-full h-auto rounded-3xl shadow-2xl relative z-10" initial={{
+            y: 20
+          }} animate={{
+            y: [0, -10, 0]
+          }} transition={{
+            duration: 3,
+            repeat: Infinity,
+            repeatType: "reverse"
+          }} src="/lovable-uploads/827a00fa-f421-45c3-96d7-b9305fb217d1.jpg" />
+            
+            <motion.div className="absolute -bottom-5 -right-5 w-24 h-24 bg-primary-500 rounded-2xl z-0" animate={{
+            rotate: [0, 10, 0],
+            scale: [1, 1.05, 1]
+          }} transition={{
+            duration: 5,
+            repeat: Infinity,
+            repeatType: "reverse"
+          }} />
+            
+            <motion.div className="absolute -top-3 -left-3 w-16 h-16 bg-white/80 backdrop-blur-md rounded-xl shadow-xl z-20" animate={{
+            rotate: [0, -10, 0],
+            scale: [1, 1.05, 1]
+          }} transition={{
+            duration: 4,
+            repeat: Infinity,
+            repeatType: "reverse",
+            delay: 1
+          }}>
+              <div className="h-full w-full flex items-center justify-center">
+                <div className="text-primary-500 font-bold text-xl">Linok</div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Hero;
