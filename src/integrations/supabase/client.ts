@@ -108,7 +108,7 @@ export const getCategoriesByStoreId = async (storeId: string) => {
       .from('categories')
       .select('*')
       .eq('store_id', storeId)
-      .order('display_order', { ascending: true, nullsLast: true });
+      .order('display_order', { ascending: true });
       
     if (error) {
       console.error("Error fetching categories:", error);
@@ -125,9 +125,13 @@ export const getCategoriesByStoreId = async (storeId: string) => {
 // Helper function to update product category
 export const updateProductCategory = async (productId: string, categoryId: string | null) => {
   try {
+    // Since category_id is not defined in the TypeScript types, 
+    // we need to use a workaround with 'as any'
+    const updates: any = { category_id: categoryId };
+    
     const { data, error } = await supabase
       .from('products')
-      .update({ category_id: categoryId })
+      .update(updates)
       .eq('id', productId)
       .select();
       
