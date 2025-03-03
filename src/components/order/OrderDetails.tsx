@@ -1,490 +1,565 @@
-
-import React, { useState } from "react";
-import { format } from "date-fns";
-import { ar } from "date-fns/locale";
-import { 
-  CheckCircle2, AlertCircle, Printer, Download, MapPin, Phone, 
-  Mail, CreditCard, Clock, Package, TruckIcon, Calendar, User,
-  ChevronDown, ChevronUp, Edit, Copy, ExternalLink, 
-  CheckCircle, XCircle, Send
-} from "lucide-react";
-import { 
-  Card, CardContent, CardDescription, CardFooter, 
-  CardHeader, CardTitle 
-} from "@/components/ui/card";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { 
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger 
+} from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { 
+  Dialog,
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
-import { Order } from "@/pages/Orders";
-import { TimelineItem } from "@/components/order/TimelineItem";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "@/components/ui/use-toast";
+import { Avatar } from "@/components/ui/avatar";
+import TimelineItem from "./TimelineItem";
+import { 
+  CircleDollarSign, 
+  Truck, 
+  Package, 
+  ClipboardCheck, 
+  UserRound, 
+  MapPin, 
+  Phone, 
+  Mail, 
+  CalendarClock, 
+  AlertCircle, 
+  CheckCircle2, 
+  XCircle, 
+  ArrowUpDown, 
+  FileText, 
+  Copy, 
+  Printer, 
+  MoreHorizontal, 
+  Clock, 
+  Send 
+} from "lucide-react";
+import Save from "@/components/ui/save";
 
-interface OrderDetailsProps {
-  order: Order;
-  formatCurrency: (amount: number) => string;
-}
+type OrderDetailsProps = {
+  orderId: string;
+  onClose: () => void;
+};
 
-export function OrderDetails({ order, formatCurrency }: OrderDetailsProps) {
-  const [showAllItems, setShowAllItems] = useState(false);
+const mockOrder = {
+  id: "ORDER-12345",
+  customer: "أحمد محمد",
+  customerEmail: "ahmed.mohamed@example.com",
+  customerPhone: "0555555555",
+  shippingAddress: "الرياض، المملكة العربية السعودية",
+  billingAddress: "الرياض، المملكة العربية السعودية",
+  status: "processing",
+  date: "2024-07-15T12:00:00.000Z",
+  total: 540,
+  paymentMethod: "Apple Pay",
+  shippingMethod: "DHL",
+  trackingNumber: "1234567890",
+  notes: "يرجى التعامل مع هذا الطلب بعناية",
+  items: [
+    { id: "PROD-001", name: "تيشيرت أبيض", quantity: 2, price: 90 },
+    { id: "PROD-002", name: "بنطلون جينز", quantity: 1, price: 180 },
+    { id: "PROD-003", name: "حذاء رياضي", quantity: 1, price: 180 },
+  ],
+  timeline: [
+    {
+      id: "TIMELINE-001",
+      status: "pending",
+      date: "2024-07-15T12:00:00.000Z",
+      description: "تم إنشاء الطلب",
+    },
+    {
+      id: "TIMELINE-002",
+      status: "processing",
+      date: "2024-07-16T09:00:00.000Z",
+      description: "تم تأكيد الطلب وجاري تجهيزه",
+    },
+    {
+      id: "TIMELINE-003",
+      status: "shipped",
+      date: "2024-07-17T14:00:00.000Z",
+      description: "تم شحن الطلب",
+    },
+  ],
+};
+
+const statusOptions = [
+  { value: "pending", label: "قيد الانتظار" },
+  { value: "processing", label: "قيد المعالجة" },
+  { value: "shipped", label: "تم الشحن" },
+  { value: "delivered", label: "تم التسليم" },
+  { value: "cancelled", label: "ملغي" },
+  { value: "refunded", label: "مسترجع" },
+];
+
+const OrderDetails = ({ orderId, onClose }: OrderDetailsProps) => {
+  const [activeTab, setActiveTab] = useState("overview");
+
+  return (
+    <div className="flex h-full flex-col gap-4 p-6">
+      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+        <CardTitle tag="h4" className="text-2xl font-bold">
+          تفاصيل الطلب: {orderId}
+        </CardTitle>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            <ArrowUpDown className="mr-2 h-4 w-4" />
+            تعديل
+          </Button>
+          <Button variant="outline" size="sm">
+            <FileText className="mr-2 h-4 w-4" />
+            إنشاء فاتورة
+          </Button>
+          <Button variant="outline" size="sm">
+            <Copy className="mr-2 h-4 w-4" />
+            نسخ
+          </Button>
+          <Button variant="outline" size="sm">
+            <Printer className="mr-2 h-4 w-4" />
+            طباعة
+          </Button>
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </div>
+      </CardHeader>
+      <Separator />
+      <CardContent className="overflow-hidden">
+        <Tabs defaultValue="overview" className="space-y-4" value={activeTab} onValueChange={setActiveTab}>
+          <TabsList>
+            <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
+            <TabsTrigger value="timeline">الجدول الزمني</TabsTrigger>
+            <TabsTrigger value="notes">ملاحظات</TabsTrigger>
+            <TabsTrigger value="invoice">الفاتورة</TabsTrigger>
+          </TabsList>
+          <TabsContent value="overview" className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold">
+                    معلومات العميل
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <UserRound className="h-4 w-4 text-muted-foreground" />
+                    <span>{mockOrder.customer}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <a
+                      href={`mailto:${mockOrder.customerEmail}`}
+                      className="text-primary underline-offset-4 hover:underline"
+                    >
+                      {mockOrder.customerEmail}
+                    </a>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <a
+                      href={`tel:${mockOrder.customerPhone}`}
+                      className="text-primary underline-offset-4 hover:underline"
+                    >
+                      {mockOrder.customerPhone}
+                    </a>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold">
+                    معلومات الشحن
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <span>{mockOrder.shippingAddress}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Truck className="h-4 w-4 text-muted-foreground" />
+                    <span>{mockOrder.shippingMethod}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Package className="h-4 w-4 text-muted-foreground" />
+                    <span>{mockOrder.trackingNumber}</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold">
+                    معلومات الدفع
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <CircleDollarSign className="h-4 w-4 text-muted-foreground" />
+                    <span>{mockOrder.paymentMethod}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CalendarClock className="h-4 w-4 text-muted-foreground" />
+                    <span>
+                      {new Date(mockOrder.date).toLocaleDateString("ar-SA", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <ClipboardCheck className="h-4 w-4 text-muted-foreground" />
+                    <span>
+                      المجموع: {mockOrder.total} ر.س
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">
+                  حالة الطلب
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <Badge variant="secondary">
+                    {
+                      statusOptions.find(
+                        (option) => option.value === mockOrder.status
+                      )?.label
+                    }
+                  </Badge>
+                  <UpdateStatusDialog orderId={orderId} />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">
+                  عناصر الطلب
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[300px] w-full">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="p-2 text-right font-medium">المنتج</th>
+                        <th className="p-2 text-right font-medium">الكمية</th>
+                        <th className="p-2 text-right font-medium">السعر</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {mockOrder.items.map((item) => (
+                        <tr key={item.id} className="border-b">
+                          <td className="p-2">{item.name}</td>
+                          <td className="p-2">{item.quantity}</td>
+                          <td className="p-2">{item.price} ر.س</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="timeline">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">
+                  الجدول الزمني للطلب
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[450px] w-full">
+                  <div className="relative">
+                    <div className="absolute left-4 top-0 h-full w-0.5 bg-border" />
+                    {mockOrder.timeline.map((item, index) => (
+                      <TimelineItem key={item.id} item={item} isLast={index === mockOrder.timeline.length - 1} />
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="notes">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">
+                  ملاحظات الطلب
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  {mockOrder.notes}
+                </p>
+                <OrderNoteDialog orderId={orderId} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="invoice">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">
+                  معاينة الفاتورة
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-sm text-muted-foreground">
+                  <p>
+                    سيتم إضافة معاينة الفاتورة هنا قريبًا.
+                  </p>
+                </div>
+                <PrintInvoiceDialog />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+      <Separator />
+      <CardFooter className="flex justify-end gap-2">
+        <CancelOrderDialog orderId={orderId} />
+        <RefundOrderDialog orderId={orderId} />
+        <Button onClick={onClose}>إغلاق</Button>
+      </CardFooter>
+    </div>
+  );
+};
+
+export function OrderNoteDialog({ orderId }: { orderId: string }) {
+  const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");
-  
-  // Get status info and actions based on order status
-  const getStatusInfo = (status: Order["status"]) => {
-    const statusInfo = {
-      pending: {
-        color: "text-yellow-600",
-        bgColor: "bg-yellow-50",
-        borderColor: "border-yellow-200",
-        icon: AlertCircle,
-        label: "طلب جديد",
-        description: "تم إنشاء الطلب ولكن لم تتم معالجته بعد",
-        actions: ["process", "cancel"]
-      },
-      processing: {
-        color: "text-blue-600",
-        bgColor: "bg-blue-50",
-        borderColor: "border-blue-200",
-        icon: Clock,
-        label: "قيد المعالجة",
-        description: "يتم تجهيز الطلب حالياً",
-        actions: ["ship", "cancel"]
-      },
-      shipped: {
-        color: "text-purple-600",
-        bgColor: "bg-purple-50",
-        borderColor: "border-purple-200",
-        icon: TruckIcon,
-        label: "تم الشحن",
-        description: "تم إرسال الطلب للتوصيل",
-        actions: ["deliver", "return"]
-      },
-      delivered: {
-        color: "text-green-600",
-        bgColor: "bg-green-50",
-        borderColor: "border-green-200",
-        icon: CheckCircle2,
-        label: "تم التسليم",
-        description: "تم توصيل الطلب بنجاح",
-        actions: ["return"]
-      },
-      cancelled: {
-        color: "text-red-600",
-        bgColor: "bg-red-50",
-        borderColor: "border-red-200",
-        icon: XCircle,
-        label: "ملغي",
-        description: "تم إلغاء الطلب",
-        actions: ["reactivate"]
-      },
-      returned: {
-        color: "text-gray-600",
-        bgColor: "bg-gray-50",
-        borderColor: "border-gray-200",
-        icon: Package,
-        label: "مرتجع",
-        description: "تم إرجاع الطلب",
-        actions: ["reactivate"]
-      }
-    };
 
-    return statusInfo[status];
-  };
-
-  const statusInfo = getStatusInfo(order.status);
-  const StatusIcon = statusInfo.icon;
-
-  // Generate mock timeline based on order status
-  const getOrderTimeline = (order: Order) => {
-    const timeline = [];
-    const orderDate = new Date(order.date);
-    
-    // Order created
-    timeline.push({
-      date: orderDate,
-      title: "تم استلام الطلب",
-      description: "تم إنشاء الطلب وإرسال تأكيد للعميل",
-      icon: Package
+  const handleSaveNote = () => {
+    toast({
+      title: "تم حفظ الملاحظة",
+      description: "تم حفظ ملاحظة الطلب بنجاح",
     });
-    
-    // Processing
-    if (["processing", "shipped", "delivered"].includes(order.status)) {
-      const processingDate = new Date(orderDate);
-      processingDate.setHours(processingDate.getHours() + 2);
-      timeline.push({
-        date: processingDate,
-        title: "قيد المعالجة",
-        description: "تم بدء تجهيز الطلب",
-        icon: Clock
-      });
-    }
-    
-    // Shipped
-    if (["shipped", "delivered"].includes(order.status)) {
-      const shippedDate = new Date(orderDate);
-      shippedDate.setHours(shippedDate.getHours() + 24);
-      timeline.push({
-        date: shippedDate,
-        title: "تم الشحن",
-        description: order.tracking_number ? `تم شحن الطلب برقم تتبع ${order.tracking_number}` : "تم شحن الطلب",
-        icon: TruckIcon
-      });
-    }
-    
-    // Delivered
-    if (order.status === "delivered") {
-      const deliveredDate = new Date(orderDate);
-      deliveredDate.setHours(deliveredDate.getHours() + 72);
-      timeline.push({
-        date: deliveredDate,
-        title: "تم التسليم",
-        description: "تم توصيل الطلب بنجاح",
-        icon: CheckCircle2
-      });
-    }
-    
-    // Cancelled
-    if (order.status === "cancelled") {
-      const cancelledDate = new Date(orderDate);
-      cancelledDate.setHours(cancelledDate.getHours() + 4);
-      timeline.push({
-        date: cancelledDate,
-        title: "تم الإلغاء",
-        description: "تم إلغاء الطلب",
-        icon: XCircle
-      });
-    }
-    
-    // Returned
-    if (order.status === "returned") {
-      const returnDate = new Date(orderDate);
-      returnDate.setDate(returnDate.getDate() + 5);
-      timeline.push({
-        date: returnDate,
-        title: "تم الإرجاع",
-        description: "تم إرجاع الطلب",
-        icon: Package
-      });
-    }
-    
-    return timeline.sort((a, b) => b.date.getTime() - a.date.getTime());
-  };
-
-  const timeline = getOrderTimeline(order);
-
-  // Action buttons based on order status
-  const renderActionButtons = () => {
-    const actions = {
-      process: <Button size="sm" className="gap-1">
-                <Clock className="h-3.5 w-3.5" />
-                <span>بدء المعالجة</span>
-              </Button>,
-      ship: <Button size="sm" className="gap-1">
-              <TruckIcon className="h-3.5 w-3.5" />
-              <span>شحن الطلب</span>
-            </Button>,
-      deliver: <Button size="sm" className="gap-1">
-                <CheckCircle className="h-3.5 w-3.5" />
-                <span>تأكيد التسليم</span>
-              </Button>,
-      cancel: <Button size="sm" variant="outline" className="text-red-600 gap-1">
-                <XCircle className="h-3.5 w-3.5" />
-                <span>إلغاء الطلب</span>
-              </Button>,
-      return: <Button size="sm" variant="outline" className="gap-1">
-                <Package className="h-3.5 w-3.5" />
-                <span>إرجاع الطلب</span>
-              </Button>,
-      reactivate: <Button size="sm" className="gap-1">
-                    <CheckCircle className="h-3.5 w-3.5" />
-                    <span>إعادة تفعيل</span>
-                  </Button>
-    };
-
-    return (
-      <div className="flex flex-wrap gap-2">
-        {statusInfo.actions.map(action => (
-          <div key={action}>{actions[action]}</div>
-        ))}
-      </div>
-    );
+    setOpen(false);
   };
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader className={cn(
-          "pb-3",
-          statusInfo.bgColor,
-          statusInfo.borderColor,
-          "border-b"
-        )}>
-          <div className="flex justify-between items-start">
-            <div className="space-y-1">
-              <CardTitle className="flex items-center gap-2">
-                <span>طلب #{order.order_number}</span>
-              </CardTitle>
-              <CardDescription>
-                {format(new Date(order.date), "d MMMM yyyy, HH:mm", { locale: ar })}
-              </CardDescription>
-            </div>
-            <div className="flex items-center">
-              <StatusIcon className={cn("h-5 w-5 mr-1", statusInfo.color)} />
-              <span className={cn("font-medium", statusInfo.color)}>
-                {statusInfo.label}
-              </span>
-            </div>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="mt-4">
+          <Clock className="mr-2 h-4 w-4" />
+          تعديل الملاحظة
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>تعديل ملاحظة الطلب</DialogTitle>
+          <DialogDescription>
+            أضف ملاحظة إضافية لهذا الطلب
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="note" className="text-right">
+              الملاحظة
+            </Label>
+            <Textarea
+              id="note"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              className="col-span-3"
+            />
           </div>
-        </CardHeader>
-        <CardContent className="pt-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <h4 className="text-sm font-medium text-muted-foreground mb-1">العميل</h4>
-              <div className="flex items-start gap-2">
-                <User className="h-4 w-4 text-muted-foreground mt-0.5" />
-                <div>
-                  <p className="font-medium">{order.customer_name}</p>
-                  <div className="text-sm text-muted-foreground space-y-1 mt-1">
-                    {order.customer_phone && (
-                      <div className="flex items-center gap-1">
-                        <Phone className="h-3 w-3" />
-                        <span>{order.customer_phone}</span>
-                      </div>
-                    )}
-                    {order.customer_email && (
-                      <div className="flex items-center gap-1">
-                        <Mail className="h-3 w-3" />
-                        <span>{order.customer_email}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {order.shipping_address && (
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground mb-1">عنوان التوصيل</h4>
-                <div className="flex items-start gap-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                  <p className="text-sm">{order.shipping_address}</p>
-                </div>
-              </div>
-            )}
-
-            <div>
-              <h4 className="text-sm font-medium text-muted-foreground mb-1">الدفع</h4>
-              <div className="flex items-start gap-2">
-                <CreditCard className="h-4 w-4 text-muted-foreground mt-0.5" />
-                <div>
-                  <p className="font-medium">{order.payment_method}</p>
-                  <p className="text-sm text-muted-foreground">المبلغ: {formatCurrency(order.total)}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <Separator className="my-4" />
-
-          <h4 className="font-medium mb-3">المنتجات</h4>
-          <div className="space-y-3">
-            {(showAllItems ? order.items : order.items.slice(0, 2)).map((item, index) => (
-              <div key={item.id} className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded bg-gray-100 overflow-hidden flex-shrink-0">
-                  {item.product_image ? (
-                    <img src={item.product_image} alt={item.product_name} className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="h-full w-full flex items-center justify-center text-gray-400">
-                      <Package className="h-6 w-6" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between">
-                    <p className="font-medium truncate">{item.product_name}</p>
-                    <p className="font-medium whitespace-nowrap">{formatCurrency(item.price * item.quantity)}</p>
-                  </div>
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <div className="truncate">
-                      {item.quantity} × {formatCurrency(item.price)}
-                      {item.variant && <span className="mr-1">({item.variant})</span>}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {order.items.length > 2 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full text-primary-600"
-                onClick={() => setShowAllItems(!showAllItems)}
-              >
-                {showAllItems ? (
-                  <span className="flex items-center">
-                    <ChevronUp className="h-4 w-4 ml-1" />
-                    عرض أقل
-                  </span>
-                ) : (
-                  <span className="flex items-center">
-                    <ChevronDown className="h-4 w-4 ml-1" />
-                    عرض كل المنتجات ({order.items.length})
-                  </span>
-                )}
-              </Button>
-            )}
-          </div>
-          
-          <Separator className="my-4" />
-          
-          <div className="space-y-1">
-            <div className="flex justify-between text-sm">
-              <span>المجموع الفرعي</span>
-              <span>{formatCurrency(order.total * 0.9)}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span>الضريبة (10%)</span>
-              <span>{formatCurrency(order.total * 0.1)}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span>التوصيل</span>
-              <span>مجاناً</span>
-            </div>
-            <Separator className="my-2" />
-            <div className="flex justify-between font-medium">
-              <span>الإجمالي</span>
-              <span>{formatCurrency(order.total)}</span>
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter className="flex justify-between border-t pt-4 pb-4">
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-1">
-              <Printer className="h-4 w-4" />
-              <span>طباعة</span>
-            </Button>
-            <Button variant="outline" size="sm" className="gap-1">
-              <Download className="h-4 w-4" />
-              <span>تصدير</span>
-            </Button>
-          </div>
-          {renderActionButtons()}
-        </CardFooter>
-      </Card>
-
-      <Tabs defaultValue="timeline">
-        <TabsList className="w-full">
-          <TabsTrigger value="timeline" className="flex-1">المسار الزمني</TabsTrigger>
-          <TabsTrigger value="notes" className="flex-1">الملاحظات</TabsTrigger>
-          <TabsTrigger value="settings" className="flex-1">الإعدادات</TabsTrigger>
-        </TabsList>
-        <TabsContent value="timeline" className="mt-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle>المسار الزمني للطلب</CardTitle>
-              <CardDescription>تتبع تقدم حالة الطلب</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {timeline.map((item, index) => (
-                  <TimelineItem 
-                    key={index}
-                    title={item.title}
-                    date={item.date}
-                    description={item.description}
-                    icon={item.icon}
-                    isLast={index === timeline.length - 1}
-                  />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="notes" className="mt-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle>ملاحظات الطلب</CardTitle>
-              <CardDescription>إضافة ملاحظات خاصة بالطلب</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {order.notes && (
-                  <div className="p-3 border rounded-md bg-muted/50">
-                    <h4 className="text-sm font-medium mb-1">ملاحظات العميل</h4>
-                    <p className="text-sm">{order.notes}</p>
-                  </div>
-                )}
-                <div>
-                  <Textarea 
-                    value={note} 
-                    onChange={(e) => setNote(e.target.value)}
-                    placeholder="إضافة ملاحظة حول الطلب..."
-                    className="mb-2"
-                  />
-                  <Button size="sm" className="gap-1">
-                    <Send className="h-3.5 w-3.5" />
-                    <span>إضافة ملاحظة</span>
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="settings" className="mt-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle>إعدادات الطلب</CardTitle>
-              <CardDescription>تعديل إعدادات متقدمة للطلب</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <h4 className="font-medium">رقم التتبع</h4>
-                  <div className="flex gap-2">
-                    <div className="flex-1">
-                      <input 
-                        type="text" 
-                        className="w-full rounded-md border px-3 py-2 text-sm" 
-                        placeholder="أدخل رقم التتبع"
-                        defaultValue={order.tracking_number || ""}
-                      />
-                    </div>
-                    <Button variant="outline" size="sm">تحديث</Button>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-medium">معلومات الشحن</h4>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <select className="w-full rounded-md border px-3 py-2 text-sm">
-                        <option value="">اختر شركة الشحن</option>
-                        <option value="dhl">DHL</option>
-                        <option value="aramex">Aramex</option>
-                        <option value="fedex">FedEx</option>
-                      </select>
-                    </div>
-                    <div>
-                      <select className="w-full rounded-md border px-3 py-2 text-sm">
-                        <option value="">طريقة الشحن</option>
-                        <option value="standard">قياسي</option>
-                        <option value="express">سريع</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="border-t pt-4">
-              <Button className="gap-1">
-                <Save className="h-4 w-4" />
-                <span>حفظ التغييرات</span>
-              </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
+        </div>
+        <DialogFooter>
+          <Button type="button" onClick={handleSaveNote}>
+            <Save className="mr-2 h-4 w-4" />
+            حفظ
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
+
+export function PrintInvoiceDialog() {
+  const [open, setOpen] = useState(false);
+
+  const handlePrintInvoice = () => {
+    toast({
+      title: "طباعة الفاتورة",
+      description: "جاري طباعة الفاتورة",
+    });
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="mt-4">
+          <Printer className="mr-2 h-4 w-4" />
+          طباعة الفاتورة
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>طباعة الفاتورة</DialogTitle>
+          <DialogDescription>
+            هل أنت متأكد أنك تريد طباعة الفاتورة؟
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button type="button" onClick={handlePrintInvoice}>
+            طباعة
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export function CancelOrderDialog({ orderId }: { orderId: string }) {
+  const [open, setOpen] = useState(false);
+
+  const handleCancelOrder = () => {
+    toast({
+      title: "تم إلغاء الطلب",
+      description: "تم إلغاء الطلب بنجاح",
+    });
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="destructive">
+          <XCircle className="mr-2 h-4 w-4" />
+          إلغاء الطلب
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>إلغاء الطلب</DialogTitle>
+          <DialogDescription>
+            هل أنت متأكد أنك تريد إلغاء هذا الطلب؟
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button type="button" onClick={handleCancelOrder}>
+            إلغاء
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export function RefundOrderDialog({ orderId }: { orderId: string }) {
+  const [open, setOpen] = useState(false);
+
+  const handleRefundOrder = () => {
+    toast({
+      title: "تم استرجاع المبلغ",
+      description: "تم استرجاع المبلغ للعميل بنجاح",
+    });
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline">
+          <CircleDollarSign className="mr-2 h-4 w-4" />
+          استرجاع المبلغ
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>استرجاع المبلغ</DialogTitle>
+          <DialogDescription>
+            هل أنت متأكد أنك تريد استرجاع المبلغ لهذا الطلب؟
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button type="button" onClick={handleRefundOrder}>
+            استرجاع
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export function UpdateStatusDialog({ orderId }: { orderId: string }) {
+  const [open, setOpen] = useState(false);
+  const [status, setStatus] = useState(mockOrder.status);
+
+  const handleUpdateStatus = () => {
+    toast({
+      title: "تم تحديث الحالة",
+      description: "تم تحديث حالة الطلب بنجاح",
+    });
+    mockOrder.status = status;
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline">
+          <AlertCircle className="mr-2 h-4 w-4" />
+          تحديث الحالة
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>تحديث حالة الطلب</DialogTitle>
+          <DialogDescription>
+            اختر الحالة الجديدة لهذا الطلب
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="status" className="text-right">
+              الحالة
+            </Label>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="اختر الحالة" />
+              </SelectTrigger>
+              <SelectContent>
+                {statusOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button type="button" onClick={handleUpdateStatus}>
+            <Send className="mr-2 h-4 w-4" />
+            تحديث
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export default OrderDetails;
