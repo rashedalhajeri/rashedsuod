@@ -1,21 +1,93 @@
 
-import React from "react";
+import React, { useState } from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tag, Plus, Search } from "lucide-react";
+import { Tag, Plus, Search, Percent, Calendar, Filter, ArrowDownUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Coupons: React.FC = () => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+  };
+
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">إدارة الكوبونات</h1>
-          <Button className="gap-2">
-            <Plus className="h-4 w-4" />
-            <span>إضافة كوبون</span>
-          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2">
+                <Plus className="h-4 w-4" />
+                <span>إضافة كوبون</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>إضافة كوبون جديد</DialogTitle>
+                <DialogDescription>
+                  أدخل تفاصيل الكوبون لتقديم خصومات لعملائك
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="coupon-code" className="col-span-4">
+                    كود الكوبون
+                  </Label>
+                  <Input
+                    id="coupon-code"
+                    placeholder="مثال: SUMMER2023"
+                    className="col-span-4"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="discount-type" className="col-span-4">
+                    نوع الخصم
+                  </Label>
+                  <Select>
+                    <SelectTrigger className="col-span-4">
+                      <SelectValue placeholder="اختر نوع الخصم" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="percentage">نسبة مئوية (%)</SelectItem>
+                      <SelectItem value="fixed">مبلغ ثابت</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="discount-value" className="col-span-4">
+                    قيمة الخصم
+                  </Label>
+                  <Input
+                    id="discount-value"
+                    type="number"
+                    placeholder="أدخل قيمة الخصم"
+                    className="col-span-4"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="expiry-date" className="col-span-4">
+                    تاريخ الانتهاء
+                  </Label>
+                  <Input
+                    id="expiry-date"
+                    type="date"
+                    className="col-span-4"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={handleCloseDialog}>إلغاء</Button>
+                <Button type="submit">إضافة الكوبون</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -27,6 +99,16 @@ const Coupons: React.FC = () => {
                 className="pl-3 pr-10" 
               />
             </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" className="gap-2 flex-1">
+              <Filter className="h-4 w-4" />
+              <span>التصفية</span>
+            </Button>
+            <Button variant="outline" className="gap-2 flex-1">
+              <ArrowDownUp className="h-4 w-4" />
+              <span>الترتيب</span>
+            </Button>
           </div>
         </div>
         
@@ -44,7 +126,7 @@ const Coupons: React.FC = () => {
               <p className="mt-2 text-sm text-muted-foreground">
                 أضف كوبونات خصم لتشجيع العملاء على الشراء
               </p>
-              <Button className="mt-4 gap-2">
+              <Button className="mt-4 gap-2" onClick={() => setIsDialogOpen(true)}>
                 <Plus className="h-4 w-4" />
                 <span>إضافة أول كوبون</span>
               </Button>
