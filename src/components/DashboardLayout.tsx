@@ -23,7 +23,8 @@ import {
   Tag,
   CreditCard,
   Store,
-  Percent
+  Percent,
+  User
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -160,62 +161,123 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 rtl">
-      <header className="glass-nav bg-white/90 backdrop-blur-lg border-b border-gray-200/60 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 rtl">
+      <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+            {/* Logo and store name */}
             <div className="flex items-center">
-              <span className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">
-                {store?.store_name || "المتجر"}
+              <div className="flex-shrink-0">
+                <div className="flex items-center gap-1">
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-primary-600 to-primary-400 flex items-center justify-center shadow-md">
+                    <Store className="h-4 w-4 text-white" />
+                  </div>
+                  <div className="flex flex-col mr-2">
+                    <div className="flex items-center">
+                      <span className="text-xl font-bold text-gray-800">
+                        {store?.store_name || "المتجر"}
+                      </span>
+                      <span className="text-sm font-medium text-primary-500 mr-1">.me</span>
+                    </div>
+                    <span className="text-xs text-gray-500 -mt-1">لوحة التحكم</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Search Bar - Desktop */}
+            <div className="flex-1 max-w-md mx-8 hidden md:block">
+              <div className="relative">
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <Search className="h-4 w-4 text-gray-400" />
+                </div>
+                <Input 
+                  type="search" 
+                  className="w-full border border-gray-200 rounded-lg bg-gray-50/80 pr-10 focus:ring-primary-500 text-sm placeholder:text-gray-400"
+                  placeholder="البحث في المتجر..." 
+                />
+              </div>
+            </div>
+
+            {/* Notifications and User Menu */}
+            <div className="flex items-center gap-4">
+              {/* Security Badge */}
+              <span className="hidden lg:flex mr-2 text-xs bg-gradient-to-r from-green-100 to-green-50 text-green-800 px-2.5 py-1 rounded-full items-center border border-green-200">
+                <Shield size={12} className="ml-1.5" />
+                <span className="font-medium">مؤمن</span>
               </span>
-              <span className="text-lg font-medium text-gray-500">.me</span>
-            </div>
-            
-            <span className="hidden md:flex ml-2 text-xs bg-gradient-to-r from-green-100 to-green-50 text-green-800 px-2.5 py-1 rounded-full items-center border border-green-200 security-badge">
-              <Shield size={12} className="ml-1.5" />
-              <span className="font-medium">مؤمن</span>
-            </span>
-          </div>
-          
-          <div className="flex-1 max-w-xl mx-auto px-4 hidden md:block">
-            <div className="relative">
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <Search className="h-4 w-4 text-gray-400" />
-              </div>
-              <Input 
-                type="search" 
-                className="w-full border border-gray-200 rounded-full bg-gray-50/80 pr-10 focus:ring-primary-500 text-sm placeholder:text-gray-400"
-                placeholder="البحث في المتجر..." 
-              />
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-1 rtl:space-x-reverse">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="relative text-gray-500 hover:text-primary-600 hover:bg-primary-50"
-            >
-              <Bell size={20} />
-              {hasNotifications && (
-                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 animate-pulse ring-2 ring-white"></span>
+              
+              {/* Notification Button */}
+              <button className="relative p-1 rounded-full text-gray-500 hover:text-primary-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                <span className="sr-only">عرض الإشعارات</span>
+                <Bell size={20} />
+                {hasNotifications && (
+                  <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white animate-pulse"></span>
+                )}
+              </button>
+              
+              {/* Store Info - Desktop */}
+              {store && (
+                <div className="hidden lg:flex items-center mr-2 text-gray-700 font-medium bg-white px-3 py-1.5 rounded-md border border-gray-200 shadow-sm">
+                  <Store size={16} className="ml-2 text-primary-500" />
+                  <span>{store.store_name}</span>
+                </div>
               )}
-            </Button>
-            
-            {store && (
-              <div className="hidden lg:flex items-center mr-2 text-gray-700 font-medium glass-effect px-3 py-1.5 rounded-md border border-gray-100">
-                <Store size={16} className="ml-2 text-primary-500" />
-                <span>{store.store_name}</span>
+
+              {/* User Menu Button */}
+              <div className="border-r border-gray-200 h-8 mx-2 hidden md:block"></div>
+
+              {/* User Profile */}
+              <div className="flex items-center gap-3">
+                <div className="hidden md:flex flex-col items-end">
+                  <span className="text-sm font-medium text-gray-700">المدير</span>
+                  <span className="text-xs text-gray-500">admin@example.com</span>
+                </div>
+                
+                <div className="h-9 w-9 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 border border-primary-200">
+                  <User size={18} />
+                </div>
               </div>
-            )}
-            
-            <button 
-              onClick={handleLogout}
-              className="mr-3 px-4 py-2 bg-gray-100 text-gray-700 rounded-full flex items-center gap-2 hover:bg-gray-200 transition-colors border border-gray-200/70 hover:border-gray-300/70"
-            >
-              <LogOut size={16} />
-              <span className="font-medium">تسجيل الخروج</span>
-            </button>
+
+              {/* Logout Button */}
+              <button 
+                onClick={handleLogout}
+                className="hidden md:flex mr-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md items-center gap-2 hover:bg-gray-200 transition-colors border border-gray-200 shadow-sm"
+              >
+                <LogOut size={16} />
+                <span className="font-medium">تسجيل الخروج</span>
+              </button>
+            </div>
+          </div>
+          
+          {/* Secondary Navigation Bar */}
+          <div className="border-t border-gray-100 bg-white/50 backdrop-blur-sm py-2 px-4 hidden md:flex items-center justify-between">
+            <div className="flex gap-6">
+              {navigation.slice(0, 5).map((item) => {
+                const isActive = location.pathname === item.href;
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className={cn(
+                      "flex items-center text-sm font-medium py-1 px-2 rounded-md transition-colors",
+                      isActive 
+                        ? "text-primary-600 bg-primary-50 border-b-2 border-primary-500" 
+                        : "text-gray-600 hover:text-primary-600 hover:bg-gray-50"
+                    )}
+                  >
+                    <item.icon size={16} className="ml-1.5" />
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </div>
+            <div className="flex items-center">
+              <button className="px-3 py-1 bg-primary-50 text-primary-600 rounded-md text-sm font-medium flex items-center">
+                <Zap size={14} className="ml-1" />
+                المساعد الذكي
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -271,7 +333,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       {/* Mobile bottom navigation */}
       {isMobile && (
         <div className="mobile-nav">
-          {navigation.slice(0, 5).map((item) => {
+          {navigation.slice(0, 4).map((item) => {
             const isActive = location.pathname === item.href;
             return (
               <Link
@@ -292,6 +354,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               </Link>
             );
           })}
+          
+          <button 
+            onClick={handleLogout}
+            className="mobile-nav-item"
+          >
+            <LogOut size={20} className="text-gray-500" />
+            <span className="mobile-nav-label">خروج</span>
+          </button>
         </div>
       )}
 
