@@ -23,7 +23,7 @@ export const ProductFilter: React.FC<ProductFilterProps> = ({
 }) => {
   return (
     <div>
-      <Select value={activeFilter || ""} onValueChange={(value) => onFilterChange(value || null)}>
+      <Select value={activeFilter || "all"} onValueChange={(value) => onFilterChange(value === "all" ? null : value)}>
         <SelectTrigger className="w-[180px]">
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4" />
@@ -31,7 +31,7 @@ export const ProductFilter: React.FC<ProductFilterProps> = ({
           </div>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">جميع التصنيفات</SelectItem>
+          <SelectItem value="all">جميع التصنيفات</SelectItem>
           {categories.map(category => (
             <SelectItem key={category} value={category}>{category}</SelectItem>
           ))}

@@ -9,7 +9,6 @@ import { Search, ChevronDown, ChevronUp, Eye, ArrowUpDown } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 
-// Sample order data
 const orders = [
   {
     id: "ORD-001",
@@ -103,7 +102,6 @@ const orders = [
   },
 ];
 
-// Status badge colors
 const statusColors = {
   completed: "bg-green-100 text-green-800 border-green-200",
   processing: "bg-blue-100 text-blue-800 border-blue-200",
@@ -111,7 +109,6 @@ const statusColors = {
   cancelled: "bg-red-100 text-red-800 border-red-200",
 };
 
-// Status translations
 const statusTranslations = {
   completed: "مكتمل",
   processing: "قيد المعالجة",
@@ -119,16 +116,15 @@ const statusTranslations = {
   cancelled: "ملغي",
 };
 
-// Currency symbols mapping
 const currencySymbols: Record<string, string> = {
-  KWD: "د.ك", // Kuwaiti Dinar
-  SAR: "ر.س", // Saudi Riyal
-  AED: "د.إ", // UAE Dirham
-  QAR: "ر.ق", // Qatari Riyal
-  BHD: "د.ب", // Bahraini Dinar
-  OMR: "ر.ع", // Omani Riyal
-  USD: "$", // US Dollar
-  EUR: "€", // Euro
+  KWD: "د.ك",
+  SAR: "ر.س",
+  AED: "د.إ",
+  QAR: "ر.ق",
+  BHD: "د.ب",
+  OMR: "ر.ع",
+  USD: "$",
+  EUR: "€",
 };
 
 interface OrderListProps {
@@ -153,12 +149,10 @@ const OrderList: React.FC<OrderListProps> = ({
   const [localStatusFilter, setLocalStatusFilter] = useState("");
   const itemsPerPage = 5;
 
-  // Get currency symbol 
   const getCurrencySymbol = (currencyCode: string): string => {
     return currencySymbols[currencyCode] || currencyCode;
   };
 
-  // Handle sorting
   const handleSort = (field: string) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -168,7 +162,6 @@ const OrderList: React.FC<OrderListProps> = ({
     }
   };
 
-  // Filter and sort orders
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
       !localSearchQuery ||
@@ -197,14 +190,12 @@ const OrderList: React.FC<OrderListProps> = ({
     return sortDirection === "asc" ? comparison : -comparison;
   });
 
-  // Pagination
   const totalPages = Math.ceil(sortedOrders.length / itemsPerPage);
   const paginatedOrders = sortedOrders.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  // Sort indicator
   const SortIndicator = ({ field }: { field: string }) => {
     if (sortField !== field) return <ArrowUpDown className="h-4 w-4 ml-1" />;
     return sortDirection === "asc" ? (
