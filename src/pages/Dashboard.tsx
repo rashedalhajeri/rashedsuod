@@ -2,9 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { ShoppingBag, Package, Users, DollarSign, Bell, ArrowUpRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ShoppingBag, Package, Users, DollarSign } from "lucide-react";
 import { secureRetrieve } from "@/lib/encryption";
 import { motion } from "framer-motion";
 import { format, subDays } from "date-fns";
@@ -15,6 +13,7 @@ import StatsCard from "@/features/dashboard/components/StatsCard";
 import RecentOrders from "@/features/dashboard/components/RecentOrders";
 import RecentProducts from "@/features/dashboard/components/RecentProducts";
 import SalesChart from "@/features/dashboard/components/SalesChart";
+import WelcomeSection from "@/features/dashboard/components/WelcomeSection";
 
 // Mock data
 const mockSalesData = [
@@ -131,6 +130,11 @@ const Dashboard: React.FC = () => {
           revenue: 8425
         });
         
+        setStoreData({
+          name: "متجر الإلكترونيات",
+          owner: "محمد عبدالله"
+        });
+        
         // Set loading to false
         setIsLoading(false);
       } catch (error) {
@@ -164,13 +168,13 @@ const Dashboard: React.FC = () => {
   
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">لوحة التحكم</h1>
-        <p className="text-muted-foreground">
-          نظرة عامة على متجرك وأدائه
-        </p>
-      </div>
+      {/* Welcome Section */}
+      <WelcomeSection 
+        storeName={storeData?.name || "متجرك"} 
+        ownerName={storeData?.owner || "المدير"} 
+        newOrdersCount={7}
+        lowStockCount={5}
+      />
       
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -224,61 +228,6 @@ const Dashboard: React.FC = () => {
           currency="ر.س"
         />
       </div>
-      
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg font-medium">
-            <Bell className="h-4 w-4 inline-block ml-2" />
-            إشعارات ومهام
-          </CardTitle>
-          <CardDescription>
-            قم بإدارة المهام والإشعارات الهامة
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="p-4 border rounded-lg bg-yellow-50 border-yellow-100">
-              <h3 className="font-medium mb-2">طلبات قيد الانتظار</h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                لديك 3 طلبات في انتظار المعالجة
-              </p>
-              <Button size="sm" variant="outline" asChild>
-                <a href="/dashboard/orders?status=pending">
-                  معالجة الطلبات
-                  <ArrowUpRight className="h-3 w-3 mr-1" />
-                </a>
-              </Button>
-            </div>
-            
-            <div className="p-4 border rounded-lg bg-red-50 border-red-100">
-              <h3 className="font-medium mb-2">منتجات نفدت من المخزون</h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                5 منتجات نفدت من المخزون وتحتاج للتجديد
-              </p>
-              <Button size="sm" variant="outline" asChild>
-                <a href="/dashboard/products?inStock=0">
-                  تحديث المخزون
-                  <ArrowUpRight className="h-3 w-3 mr-1" />
-                </a>
-              </Button>
-            </div>
-            
-            <div className="p-4 border rounded-lg bg-blue-50 border-blue-100">
-              <h3 className="font-medium mb-2">تقارير الشهر</h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                تقارير الشهر الحالي جاهزة للمراجعة
-              </p>
-              <Button size="sm" variant="outline" asChild>
-                <a href="/dashboard/reports">
-                  عرض التقارير
-                  <ArrowUpRight className="h-3 w-3 mr-1" />
-                </a>
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

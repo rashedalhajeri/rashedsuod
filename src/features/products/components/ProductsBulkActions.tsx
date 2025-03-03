@@ -20,6 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 interface Category {
   id: string;
@@ -51,6 +52,10 @@ const ProductsBulkActions: React.FC<ProductsBulkActionsProps> = ({
     try {
       setIsDeleting(true);
       await onDelete();
+      toast.success(`تم حذف ${selectedCount} منتج بنجاح`);
+    } catch (error) {
+      toast.error("حدث خطأ أثناء حذف المنتجات");
+      console.error(error);
     } finally {
       setIsDeleting(false);
     }
@@ -60,6 +65,7 @@ const ProductsBulkActions: React.FC<ProductsBulkActionsProps> = ({
     try {
       setIsDuplicating(true);
       await onDuplicate();
+      toast.success(`تم نسخ ${selectedCount} منتج بنجاح`);
     } finally {
       setIsDuplicating(false);
     }
@@ -69,6 +75,8 @@ const ProductsBulkActions: React.FC<ProductsBulkActionsProps> = ({
     try {
       setIsChangingCategory(true);
       await onCategoryChange(categoryId);
+      const category = categories.find(c => c.id === categoryId);
+      toast.success(`تم تغيير تصنيف ${selectedCount} منتج إلى ${category?.name || "التصنيف المحدد"}`);
     } finally {
       setIsChangingCategory(false);
     }
@@ -134,16 +142,36 @@ const ProductsBulkActions: React.FC<ProductsBulkActionsProps> = ({
           نسخ
         </Button>
         
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleDelete}
-          disabled={isDeleting}
-          className="text-destructive hover:text-destructive"
-        >
-          <Trash className="h-4 w-4 ml-2" />
-          حذف
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isDeleting}
+              className="text-destructive hover:text-destructive"
+            >
+              <Trash className="h-4 w-4 ml-2" />
+              حذف
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>هل أنت متأكد من حذف المنتجات؟</AlertDialogTitle>
+              <AlertDialogDescription>
+                أنت على وشك حذف {selectedCount} منتج. هذا الإجراء لا يمكن التراجع عنه.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>إلغاء</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={handleDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {isDeleting ? "جاري الحذف..." : "تأكيد الحذف"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </motion.div>
   );

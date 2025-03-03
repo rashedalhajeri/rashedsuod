@@ -1,83 +1,65 @@
 
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { LineChart } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
-interface SalesData {
+interface SalesDataPoint {
   name: string;
   value: number;
 }
 
 interface SalesChartProps {
-  data: SalesData[];
-  title?: string;
-  currency?: string;
+  data: SalesDataPoint[];
+  currency: string;
 }
 
-const SalesChart: React.FC<SalesChartProps> = ({ 
-  data, 
-  title = "المبيعات الشهرية", 
-  currency = "ر.س" 
-}) => {
-  const [timeRange, setTimeRange] = React.useState("monthly");
+const SalesChart: React.FC<SalesChartProps> = ({ data, currency }) => {
+  const [period, setPeriod] = useState("monthly");
   
+  // Custom tooltip to display in Arabic
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-background border border-border p-2 rounded-md shadow">
+        <div className="bg-white p-2 border rounded shadow-sm text-right">
           <p className="text-sm font-medium">{label}</p>
-          <p className="text-sm text-primary">
-            {`${payload[0].value.toFixed(2)} ${currency}`}
+          <p className="text-sm text-primary-600">
+            {`المبيعات: ${new Intl.NumberFormat('ar-SA', {
+              style: 'currency',
+              currency: currency === 'ر.س' ? 'SAR' : 'USD',
+            }).format(payload[0].value)}`}
           </p>
         </div>
       );
     }
+    
     return null;
   };
-
+  
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-lg font-medium">
-          <LineChart className="h-4 w-4 inline-block ml-2" />
-          {title}
-        </CardTitle>
-        
-        <Select
-          value={timeRange}
-          onValueChange={setTimeRange}
-        >
-          <SelectTrigger className="w-32 h-8">
-            <SelectValue placeholder="اختر فترة" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="weekly">أسبوعي</SelectItem>
-            <SelectItem value="monthly">شهري</SelectItem>
-            <SelectItem value="yearly">سنوي</SelectItem>
-          </SelectContent>
-        </Select>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>إحصائيات المبيعات</CardTitle>
+            <CardDescription>تحليل المبيعات خلال الفترة الماضية</CardDescription>
+          </div>
+          
+          <Tabs defaultValue="monthly" value={period} onValueChange={setPeriod}>
+            <TabsList>
+              <TabsTrigger value="weekly">أسبوعي</TabsTrigger>
+              <TabsTrigger value="monthly">شهري</TabsTrigger>
+              <TabsTrigger value="yearly">سنوي</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
       </CardHeader>
-      <CardContent className="pt-4">
-        <div className="h-72">
+      
+      <CardContent>
+        <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={data}
-              margin={{
-                top: 5,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+            <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis 
                 dataKey="name" 
                 axisLine={false}
@@ -88,15 +70,15 @@ const SalesChart: React.FC<SalesChartProps> = ({
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 12 }}
-                tickFormatter={(value) => `${value}`}
+                tickFormatter={(value) => `${value} ${currency}`}
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }} />
+              <Tooltip content={<CustomTooltip />} />
               <Bar 
                 dataKey="value" 
-                fill="currentColor" 
-                radius={[4, 4, 0, 0]} 
-                className="fill-primary/80"
-                barSize={30}
+                fill="#8884d8" 
+                radius={[4, 4, 0, 0]}
+                barSize={40}
+                animationDuration={500}
               />
             </BarChart>
           </ResponsiveContainer>
