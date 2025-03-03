@@ -1,12 +1,19 @@
 
 import React from "react";
-import { 
-  Trash, Copy, Tag, X, AlertDialog, AlertDialogAction, 
-  AlertDialogCancel, AlertDialogContent, AlertDialogDescription, 
-  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger 
-} from "lucide-react";
+import { Trash, Copy, Tag, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
