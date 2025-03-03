@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -115,11 +116,14 @@ const Settings: React.FC = () => {
           </button>
         </div>
         
-        <style jsx>{`
-          .hide-scrollbar::-webkit-scrollbar {
-            display: none;
-          }
-        `}</style>
+        {/* Replace the style JSX tag with regular CSS */}
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            .hide-scrollbar::-webkit-scrollbar {
+              display: none;
+            }
+          `
+        }} />
         
         <TabsContent value="general">
           <Card>
