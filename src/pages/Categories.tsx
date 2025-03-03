@@ -86,6 +86,14 @@ const Categories = () => {
       description: "تم حذف التصنيف بنجاح",
     });
   };
+
+  const handleViewProducts = (category: Category) => {
+    toast({
+      title: "عرض منتجات التصنيف",
+      description: `عرض منتجات التصنيف: ${category.name}`,
+    });
+    // Here you would typically navigate to products filtered by this category
+  };
   
   const handleSaveCategory = async (categoryData: CategoryFormData) => {
     setIsSubmitting(true);
@@ -185,6 +193,8 @@ const Categories = () => {
                   categories={filteredCategories}
                   onEdit={handleEditCategory}
                   onDelete={handleDeleteCategory}
+                  onViewProducts={handleViewProducts}
+                  currencyCode="ر.س"
                 />
               )}
             </CardContent>
