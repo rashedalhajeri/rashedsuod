@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,7 +14,16 @@ import Auth from "./pages/Auth";
 import CreateStore from "./pages/CreateStore";
 import NotFound from "./pages/NotFound";
 import ProductDetail from "./pages/ProductDetail";
+
+// Import dashboard pages
 import Dashboard from "./pages/Dashboard";
+import DashboardHome from "./pages/dashboard/Home";
+import Products from "./pages/dashboard/Products";
+import Orders from "./pages/dashboard/Orders";
+import Categories from "./pages/dashboard/Categories";
+import Customers from "./pages/dashboard/Customers";
+import Payments from "./pages/dashboard/Payments";
+import Coupons from "./pages/dashboard/Coupons";
 import Settings from "./pages/dashboard/Settings";
 
 // Create a new query client with retry disabled
@@ -210,12 +218,11 @@ const App = () => (
               path="/dashboard" 
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <DashboardHome />
                 </ProtectedRoute>
               } 
             />
             
-            {/* Dashboard Routes */}
             <Route
               path="/dashboard/settings"
               element={
@@ -229,7 +236,7 @@ const App = () => (
               path="/dashboard/products"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <Products />
                 </ProtectedRoute>
               }
             />
@@ -238,7 +245,7 @@ const App = () => (
               path="/dashboard/orders"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <Orders />
                 </ProtectedRoute>
               }
             />
@@ -247,7 +254,7 @@ const App = () => (
               path="/dashboard/categories"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <Categories />
                 </ProtectedRoute>
               }
             />
@@ -256,7 +263,7 @@ const App = () => (
               path="/dashboard/customers"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <Customers />
                 </ProtectedRoute>
               }
             />
@@ -265,16 +272,7 @@ const App = () => (
               path="/dashboard/payments"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="/dashboard/reports"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
+                  <Payments />
                 </ProtectedRoute>
               }
             />
@@ -283,20 +281,11 @@ const App = () => (
               path="/dashboard/coupons"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <Coupons />
                 </ProtectedRoute>
               }
             />
             
-            <Route
-              path="/dashboard/support"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-
             <Route 
               path="/products/:productId" 
               element={

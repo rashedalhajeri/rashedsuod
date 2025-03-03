@@ -2,18 +2,21 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ShoppingBag, Package, Users, DollarSign } from "lucide-react";
+import { ShoppingBag, Package, Users, DollarSign, AlertCircle, Tags, Settings } from "lucide-react";
 import useStoreData, { getCurrencyFormatter } from "@/hooks/use-store-data";
-import { motion } from "framer-motion";
 import { secureRetrieve } from "@/lib/encryption";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import DashboardLayout from "@/layouts/DashboardLayout";
 
-// Components
+// Import components
 import WelcomeSection from "@/features/dashboard/components/WelcomeSection";
 import StatsCard from "@/features/dashboard/components/StatsCard";
 import SalesChart from "@/features/dashboard/components/SalesChart";
 import RecentOrders from "@/features/dashboard/components/RecentOrders";
 import RecentProducts from "@/features/dashboard/components/RecentProducts";
-import { LoadingState } from "@/components/ui/loading-state";
+import LoadingState from "@/components/ui/loading-state";
+import ErrorState from "@/components/ui/error-state";
 
 // Mock data for demonstration
 const mockSalesData = [
@@ -97,7 +100,7 @@ const mockRecentProducts = [
 ];
 
 // Dashboard Home Page
-const Home: React.FC = () => {
+const DashboardHome: React.FC = () => {
   // Fetch store data using the custom hook
   const { data: storeData, isLoading, error } = useStoreData();
   
@@ -128,23 +131,11 @@ const Home: React.FC = () => {
   
   if (error) {
     return (
-      <div className="flex flex-col justify-center items-center h-full py-12">
-        <div className="text-red-500 mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
-        </div>
-        <h3 className="text-xl font-bold text-gray-800 mb-2">حدث خطأ</h3>
-        <p className="text-gray-600 mb-4">لم نتمكن من تحميل بيانات لوحة التحكم</p>
-        <button 
-          onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600 transition-colors"
-        >
-          إعادة المحاولة
-        </button>
-      </div>
+      <ErrorState 
+        title="حدث خطأ"
+        message="لم نتمكن من تحميل بيانات لوحة التحكم"
+        onRetry={() => window.location.reload()}
+      />
     );
   }
   
@@ -159,8 +150,12 @@ const Home: React.FC = () => {
     revenue: 8425
   };
   
+  // Subscription plan status
+  const subscriptionStatus = "basic"; // Default value since property doesn't exist in type
+  const isBasicPlan = subscriptionStatus === "basic";
+  
   return (
-    <div className="space-y-6 p-6">
+    <DashboardLayout>
       {/* Welcome Section */}
       <WelcomeSection 
         storeName={storeData?.store_name || "متجرك"} 
@@ -168,6 +163,24 @@ const Home: React.FC = () => {
         newOrdersCount={7}
         lowStockCount={5}
       />
+      
+      {/* Subscription Alert for Basic Plan */}
+      {isBasicPlan && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5" />
+          <div className="flex-1">
+            <h4 className="font-medium text-amber-800">أنت تستخدم الباقة الأساسية</h4>
+            <p className="text-sm text-amber-700 mt-1">
+              قم بترقية متجرك إلى الباقة الاحترافية للحصول على المزيد من المميزات المتقدمة
+            </p>
+            <div className="mt-2">
+              <Button asChild size="sm" variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-100">
+                <Link to="/dashboard/settings">ترقية الباقة</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -204,8 +217,36 @@ const Home: React.FC = () => {
       {/* Sales Chart */}
       <SalesChart 
         data={mockSalesData}
-        currency="ر.س"
+        currency={storeData?.currency || "SAR"}
       />
+      
+      {/* Quick Actions */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Button asChild variant="outline" className="h-auto py-4 border-gray-200 hover:border-primary-200 hover:bg-primary-50">
+          <Link to="/dashboard/products/new" className="flex flex-col items-center gap-2">
+            <Package className="h-6 w-6 text-primary-500" />
+            <span>إضافة منتج</span>
+          </Link>
+        </Button>
+        <Button asChild variant="outline" className="h-auto py-4 border-gray-200 hover:border-primary-200 hover:bg-primary-50">
+          <Link to="/dashboard/categories" className="flex flex-col items-center gap-2">
+            <Tags className="h-6 w-6 text-primary-500" />
+            <span>إدارة التصنيفات</span>
+          </Link>
+        </Button>
+        <Button asChild variant="outline" className="h-auto py-4 border-gray-200 hover:border-primary-200 hover:bg-primary-50">
+          <Link to="/dashboard/orders" className="flex flex-col items-center gap-2">
+            <ShoppingBag className="h-6 w-6 text-primary-500" />
+            <span>تتبع الطلبات</span>
+          </Link>
+        </Button>
+        <Button asChild variant="outline" className="h-auto py-4 border-gray-200 hover:border-primary-200 hover:bg-primary-50">
+          <Link to="/dashboard/settings" className="flex flex-col items-center gap-2">
+            <Settings className="h-6 w-6 text-primary-500" />
+            <span>إعدادات المتجر</span>
+          </Link>
+        </Button>
+      </div>
       
       {/* Activity Summary Section */}
       <div className="grid gap-4 md:grid-cols-2">
@@ -215,11 +256,11 @@ const Home: React.FC = () => {
         
         <RecentProducts 
           products={mockRecentProducts}
-          currency="ر.س"
+          currency={storeData?.currency || "SAR"}
         />
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 
-export default Home;
+export default DashboardHome;
