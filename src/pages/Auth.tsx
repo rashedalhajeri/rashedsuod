@@ -6,17 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { supabase, signInWithEmail, signUpWithEmail, signInWithGoogle, resetPassword } from "@/integrations/supabase/client";
-import { Eye, EyeOff, Mail, Lock, User, Phone, Globe, CircleDollarSign, LogIn, UserPlus, AlertCircle, CheckCircle, Loader2, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Loader2, ArrowLeft, LogIn, UserPlus } from "lucide-react";
 
 const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
-  const [isDomainChecking, setIsDomainChecking] = useState(false);
-  const [isDomainAvailable, setIsDomainAvailable] = useState<boolean | null>(null);
   const [authMode, setAuthMode] = useState<"login" | "signup" | "reset-password">("login");
   const [showPassword, setShowPassword] = useState(false);
   
@@ -27,9 +24,6 @@ const Auth = () => {
   // Signup state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [storeName, setStoreName] = useState("");
-  const [domainName, setDomainName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
   
   // Reset password state
   const [resetEmail, setResetEmail] = useState("");
@@ -52,48 +46,6 @@ const Auth = () => {
     
     checkSession();
   }, [navigate]);
-  
-  // Check domain availability
-  useEffect(() => {
-    const checkDomainAvailability = async () => {
-      if (domainName.trim() === '') {
-        setIsDomainAvailable(null);
-        return;
-      }
-      
-      setIsDomainChecking(true);
-      try {
-        const { data, error } = await supabase.rpc('check_domain_availability', {
-          domain: domainName.trim()
-        });
-        
-        if (error) throw error;
-        setIsDomainAvailable(data);
-      } catch (error) {
-        console.error('Error checking domain availability:', error);
-        setIsDomainAvailable(null);
-      } finally {
-        setIsDomainChecking(false);
-      }
-    };
-    
-    // Use debounce to avoid too many API calls
-    const debounceTimeout = setTimeout(() => {
-      if (domainName) {
-        checkDomainAvailability();
-      }
-    }, 500);
-    
-    return () => clearTimeout(debounceTimeout);
-  }, [domainName]);
-  
-  // Helper function for domain input class
-  const getDomainInputClass = () => {
-    if (isDomainChecking) return "border-yellow-300 focus-visible:ring-yellow-300";
-    if (isDomainAvailable === true) return "border-green-300 focus-visible:ring-green-300";
-    if (isDomainAvailable === false) return "border-red-300 focus-visible:ring-red-300";
-    return "";
-  };
   
   // Handle login
   const handleLogin = async (e: React.FormEvent) => {
@@ -128,13 +80,8 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password || !storeName || !domainName || !phoneNumber) {
+    if (!email || !password) {
       toast.error("الرجاء تعبئة جميع الحقول المطلوبة");
-      return;
-    }
-    
-    if (isDomainAvailable === false) {
-      toast.error("اسم النطاق غير متاح، الرجاء اختيار اسم آخر");
       return;
     }
     
@@ -146,9 +93,6 @@ const Auth = () => {
         email,
         password,
         {
-          store_name: storeName,
-          domain_name: domainName,
-          phone_number: phoneNumber,
           country: "Kuwait",
           currency: "KWD"
         }
@@ -159,21 +103,23 @@ const Auth = () => {
       }
       
       // Insert store data into the stores table
-      const { error: storeError } = await supabase
-        .from('stores')
-        .insert([
-          { 
-            user_id: data.user?.id,
-            store_name: storeName,
-            domain_name: domainName,
-            phone_number: phoneNumber,
-            country: "Kuwait",
-            currency: "KWD"
-          }
-        ]);
-      
-      if (storeError) {
-        throw storeError;
+      if (data.user) {
+        const { error: storeError } = await supabase
+          .from('stores')
+          .insert([
+            { 
+              user_id: data.user.id,
+              store_name: email.split('@')[0], // Use the part before @ as store name
+              domain_name: email.split('@')[0], // Use the part before @ as domain name
+              phone_number: "",
+              country: "Kuwait",
+              currency: "KWD"
+            }
+          ]);
+        
+        if (storeError) {
+          throw storeError;
+        }
       }
       
       toast.success("تم إنشاء الحساب بنجاح، تفقد بريدك الإلكتروني للتحقق من حسابك");
@@ -414,7 +360,7 @@ const Auth = () => {
                   <CardHeader className="space-y-2 pb-2">
                     <CardTitle className="text-2xl text-center font-bold">بدء رحلتك مع Linok</CardTitle>
                     <CardDescription className="text-center text-base">
-                      أنشئ متجرك الإلكتروني في دقائق معدودة
+                      أنشئ متجرك الإلكتروني بسهولة وسرعة
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-4">
@@ -464,116 +410,10 @@ const Auth = () => {
                         </p>
                       </div>
                       
-                      <div className="space-y-2">
-                        <Label htmlFor="storeName" className="font-medium">اسم المتجر</Label>
-                        <div className="relative">
-                          <Input
-                            id="storeName"
-                            type="text"
-                            value={storeName}
-                            onChange={(e) => setStoreName(e.target.value)}
-                            className="pr-10 pl-3 py-2 bg-white border-gray-200 focus-visible:ring-primary-400"
-                            required
-                          />
-                          <User className="absolute top-1/2 transform -translate-y-1/2 right-3 h-5 w-5 text-gray-400" />
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="domainName" className="font-medium">اسم النطاق</Label>
-                        <div className="flex items-center">
-                          <div className="relative flex-grow">
-                            <Input
-                              id="domainName"
-                              type="text"
-                              value={domainName}
-                              onChange={(e) => setDomainName(e.target.value)}
-                              className={`rounded-r-md bg-white pl-3 py-2 ${getDomainInputClass()}`}
-                              required
-                            />
-                            {domainName && !isDomainChecking && (
-                              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                                {isDomainAvailable === true && <CheckCircle className="h-5 w-5 text-green-500" />}
-                                {isDomainAvailable === false && <AlertCircle className="h-5 w-5 text-red-500" />}
-                              </div>
-                            )}
-                          </div>
-                          <span className="bg-gray-100 px-4 py-2 border border-gray-200 rounded-l-md text-gray-600 font-medium">.linok.me</span>
-                        </div>
-                        {domainName && (
-                          <p className="text-xs">
-                            {isDomainChecking && (
-                              <span className="text-yellow-600 flex items-center gap-1">
-                                <Loader2 className="h-3 w-3 animate-spin" />
-                                جاري التحقق...
-                              </span>
-                            )}
-                            {!isDomainChecking && isDomainAvailable === true && (
-                              <span className="text-green-600 flex items-center gap-1">
-                                <CheckCircle className="h-3 w-3" />
-                                متاح للاستخدام
-                              </span>
-                            )}
-                            {!isDomainChecking && isDomainAvailable === false && (
-                              <span className="text-red-600 flex items-center gap-1">
-                                <AlertCircle className="h-3 w-3" />
-                                غير متاح، يرجى اختيار اسم آخر
-                              </span>
-                            )}
-                          </p>
-                        )}
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="phoneNumber" className="font-medium">رقم الهاتف</Label>
-                        <div className="flex items-center">
-                          <span className="bg-gray-100 px-4 py-2 border border-gray-200 rounded-r-md text-gray-600 font-medium">+965</span>
-                          <div className="relative flex-grow">
-                            <Input
-                              id="phoneNumber"
-                              type="tel"
-                              value={phoneNumber}
-                              onChange={(e) => setPhoneNumber(e.target.value)}
-                              className="rounded-l-md bg-white border-gray-200 pl-10 py-2 focus-visible:ring-primary-400"
-                              required
-                            />
-                            <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label className="font-medium">الدولة والعملة</Label>
-                        <div className="flex gap-2">
-                          <div className="relative flex-grow">
-                            <Input
-                              type="text"
-                              value="الكويت"
-                              className="bg-gray-50 border-gray-200 pr-10 py-2"
-                              disabled
-                            />
-                            <Globe className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                          </div>
-                          <div className="relative flex-grow">
-                            <Input
-                              type="text"
-                              value="د.ك"
-                              className="bg-gray-50 border-gray-200 pr-10 py-2"
-                              disabled
-                            />
-                            <CircleDollarSign className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                          </div>
-                        </div>
-                        <p className="text-xs text-gray-500 flex items-center gap-1">
-                          <InfoIcon className="h-3 w-3" />
-                          حالياً متوفر فقط في الكويت
-                        </p>
-                      </div>
-                      
                       <Button
                         type="submit"
                         className="w-full h-12 bg-primary-500 hover:bg-primary-600 text-white transition-colors rounded-md font-medium text-base"
-                        disabled={isLoading || isDomainAvailable === false}
+                        disabled={isLoading}
                       >
                         {isLoading ? (
                           <>
@@ -709,20 +549,5 @@ const Auth = () => {
     </div>
   );
 };
-
-// InfoIcon component to avoid import error since it's not in lucide-react
-const InfoIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    {...props}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <circle cx="12" cy="12" r="10" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-    <path d="M12 16v-4" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-    <path d="M12 8h.01" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-  </svg>
-);
 
 export default Auth;
