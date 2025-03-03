@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,7 +16,9 @@ import CreateStore from "./pages/CreateStore";
 import NotFound from "./pages/NotFound";
 import ProductDetail from "./pages/ProductDetail";
 import Dashboard from "./pages/Dashboard";
+import Settings from "./pages/dashboard/Settings";
 
+// Create a new query client with retry disabled
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -212,6 +215,16 @@ const App = () => (
               } 
             />
             
+            {/* Dashboard Routes */}
+            <Route
+              path="/dashboard/settings"
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
+
             <Route 
               path="/products/:productId" 
               element={

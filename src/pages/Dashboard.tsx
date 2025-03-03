@@ -14,6 +14,7 @@ import RecentOrders from "@/features/dashboard/components/RecentOrders";
 import RecentProducts from "@/features/dashboard/components/RecentProducts";
 import LoadingState from "@/components/ui/loading-state";
 import ErrorState from "@/components/ui/error-state";
+import Sidebar from "@/features/dashboard/components/Sidebar";
 
 // Mock data for demonstration
 const mockSalesData = [
@@ -148,64 +149,70 @@ const Dashboard: React.FC = () => {
   };
   
   return (
-    <div className="space-y-6 p-6">
-      {/* Welcome Section */}
-      <WelcomeSection 
-        storeName={storeData?.store_name || "متجرك"} 
-        ownerName={userName}
-        newOrdersCount={7}
-        lowStockCount={5}
-      />
+    <div className="flex h-screen overflow-hidden bg-gray-50 rtl">
+      <Sidebar />
       
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatsCard 
-          title="المنتجات"
-          value={statsData.products.toString()}
-          trend={{ value: 12, isPositive: true }}
-          icon={<Package className="h-5 w-5" />}
-          iconClassName="bg-blue-100 text-blue-600"
-        />
-        <StatsCard 
-          title="الطلبات"
-          value={statsData.orders.toString()}
-          trend={{ value: 8, isPositive: true }}
-          icon={<ShoppingBag className="h-5 w-5" />}
-          iconClassName="bg-orange-100 text-orange-600"
-        />
-        <StatsCard 
-          title="العملاء"
-          value={statsData.customers.toString()}
-          trend={{ value: 5, isPositive: true }}
-          icon={<Users className="h-5 w-5" />}
-          iconClassName="bg-green-100 text-green-600"
-        />
-        <StatsCard 
-          title="الإيرادات"
-          value={formatCurrency(statsData.revenue)}
-          trend={{ value: 14, isPositive: true }}
-          icon={<DollarSign className="h-5 w-5" />}
-          iconClassName="bg-purple-100 text-purple-600"
-        />
-      </div>
-      
-      {/* Sales Chart */}
-      <SalesChart 
-        data={mockSalesData}
-        currency={storeData?.currency || "SAR"}
-      />
-      
-      {/* Activity Summary Section */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <RecentOrders 
-          orders={mockRecentOrders}
-        />
-        
-        <RecentProducts 
-          products={mockRecentProducts}
-          currency={storeData?.currency || "SAR"}
-        />
-      </div>
+      <main className="flex-1 overflow-x-hidden overflow-y-auto ml-0 md:ml-[80px] rtl:mr-0 rtl:md:mr-[80px]">
+        <div className="space-y-6 p-6">
+          {/* Welcome Section */}
+          <WelcomeSection 
+            storeName={storeData?.store_name || "متجرك"} 
+            ownerName={userName}
+            newOrdersCount={7}
+            lowStockCount={5}
+          />
+          
+          {/* Stats Cards */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <StatsCard 
+              title="المنتجات"
+              value={statsData.products.toString()}
+              trend={{ value: 12, isPositive: true }}
+              icon={<Package className="h-5 w-5" />}
+              iconClassName="bg-blue-100 text-blue-600"
+            />
+            <StatsCard 
+              title="الطلبات"
+              value={statsData.orders.toString()}
+              trend={{ value: 8, isPositive: true }}
+              icon={<ShoppingBag className="h-5 w-5" />}
+              iconClassName="bg-orange-100 text-orange-600"
+            />
+            <StatsCard 
+              title="العملاء"
+              value={statsData.customers.toString()}
+              trend={{ value: 5, isPositive: true }}
+              icon={<Users className="h-5 w-5" />}
+              iconClassName="bg-green-100 text-green-600"
+            />
+            <StatsCard 
+              title="الإيرادات"
+              value={formatCurrency(statsData.revenue)}
+              trend={{ value: 14, isPositive: true }}
+              icon={<DollarSign className="h-5 w-5" />}
+              iconClassName="bg-purple-100 text-purple-600"
+            />
+          </div>
+          
+          {/* Sales Chart */}
+          <SalesChart 
+            data={mockSalesData}
+            currency={storeData?.currency || "SAR"}
+          />
+          
+          {/* Activity Summary Section */}
+          <div className="grid gap-4 md:grid-cols-2">
+            <RecentOrders 
+              orders={mockRecentOrders}
+            />
+            
+            <RecentProducts 
+              products={mockRecentProducts}
+              currency={storeData?.currency || "SAR"}
+            />
+          </div>
+        </div>
+      </main>
     </div>
   );
 };
