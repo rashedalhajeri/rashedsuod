@@ -119,11 +119,24 @@ const statusTranslations = {
   cancelled: "ملغي",
 };
 
+// Currency symbols mapping
+const currencySymbols: Record<string, string> = {
+  KWD: "د.ك", // Kuwaiti Dinar
+  SAR: "ر.س", // Saudi Riyal
+  AED: "د.إ", // UAE Dirham
+  QAR: "ر.ق", // Qatari Riyal
+  BHD: "د.ب", // Bahraini Dinar
+  OMR: "ر.ع", // Omani Riyal
+  USD: "$", // US Dollar
+  EUR: "€", // Euro
+};
+
 interface OrderListProps {
   searchQuery: string;
   statusFilter: string;
   dateRangeFilter: string;
   onOpenDetails: (orderId: string) => void;
+  currency?: string;
 }
 
 const OrderList: React.FC<OrderListProps> = ({
@@ -131,6 +144,7 @@ const OrderList: React.FC<OrderListProps> = ({
   statusFilter,
   dateRangeFilter,
   onOpenDetails,
+  currency = "KWD",
 }) => {
   const [sortField, setSortField] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
@@ -138,6 +152,11 @@ const OrderList: React.FC<OrderListProps> = ({
   const [localSearchQuery, setLocalSearchQuery] = useState("");
   const [localStatusFilter, setLocalStatusFilter] = useState("");
   const itemsPerPage = 5;
+
+  // Get currency symbol 
+  const getCurrencySymbol = (currencyCode: string): string => {
+    return currencySymbols[currencyCode] || currencyCode;
+  };
 
   // Handle sorting
   const handleSort = (field: string) => {
@@ -286,7 +305,7 @@ const OrderList: React.FC<OrderListProps> = ({
                       {statusTranslations[order.status as keyof typeof statusTranslations]}
                     </Badge>
                   </TableCell>
-                  <TableCell>{order.total.toFixed(2)} ر.س</TableCell>
+                  <TableCell>{order.total.toFixed(2)} {getCurrencySymbol(currency)}</TableCell>
                   <TableCell>
                     <Button
                       variant="ghost"

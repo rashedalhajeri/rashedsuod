@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,10 +33,47 @@ import { OrderStats } from "@/components/order/OrderStats";
 import OrderList from "@/components/order/OrderList";
 import OrderDetails from "@/components/order/OrderDetails";
 import DashboardLayout from "@/components/DashboardLayout";
+import { supabase, getCurrentUser, getStoreData } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Orders = () => {
   const [open, setOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
+  const [storeCurrency, setStoreCurrency] = useState("KWD");
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStoreData = async () => {
+      try {
+        setIsLoading(true);
+        // Get current user
+        const user = await getCurrentUser();
+        if (!user) {
+          toast.error("يرجى تسجيل الدخول للوصول إلى هذه الصفحة");
+          return;
+        }
+
+        // Get store data
+        const { data, error } = await getStoreData(user.id);
+        if (error) {
+          console.error("Error fetching store data:", error);
+          toast.error("حدث خطأ أثناء جلب بيانات المتجر");
+          return;
+        }
+
+        if (data) {
+          setStoreCurrency(data.currency);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        toast.error("حدث خطأ غير متوقع");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStoreData();
+  }, []);
 
   const handleOrderClick = (orderId: string) => {
     setSelectedOrder(orderId);
@@ -87,7 +124,8 @@ const Orders = () => {
               searchQuery="" 
               statusFilter="" 
               dateRangeFilter="" 
-              onOpenDetails={handleOrderClick} 
+              onOpenDetails={handleOrderClick}
+              currency={storeCurrency}
             />
           </CardContent>
         </Card>
