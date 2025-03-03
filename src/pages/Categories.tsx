@@ -2,10 +2,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { PlusCircle } from "lucide-react";
+import { supabase, getCategoriesByStoreId, updateProductCategory } from "@/integrations/supabase/client";
 import { secureRetrieve } from "@/lib/encryption";
 import DashboardLayout from "@/components/DashboardLayout";
 import CategoryForm from "@/components/category/CategoryForm";
@@ -54,12 +54,8 @@ const Categories: React.FC = () => {
         setCurrency(storeData.currency);
         setStoreId(storeData.id);
         
-        // Fetch categories
-        const { data: categoriesData, error: categoriesError } = await supabase
-          .from('categories')
-          .select('*')
-          .eq('store_id', storeData.id)
-          .order('display_order', { ascending: true, nullsLast: true });
+        // Fetch categories using the helper function
+        const { data: categoriesData, error: categoriesError } = await getCategoriesByStoreId(storeData.id);
         
         if (categoriesError) {
           throw categoriesError;
@@ -172,11 +168,8 @@ const Categories: React.FC = () => {
     try {
       if (!categoryToDelete) return;
       
-      // Update products to remove category_id
-      const { error: updateError } = await supabase
-        .from('products')
-        .update({ category_id: null })
-        .eq('category_id', categoryToDelete);
+      // Update products to remove category_id using the helper function
+      const { error: updateError } = await updateProductCategory(categoryToDelete, null);
       
       if (updateError) {
         throw updateError;
