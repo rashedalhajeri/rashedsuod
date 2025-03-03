@@ -54,16 +54,19 @@ const Categories: React.FC = () => {
         setCurrency(storeData.currency);
         setStoreId(storeData.id);
         
-        // Fetch categories using the helper function
-        const { data: categoriesData, error: categoriesError } = await getCategoriesByStoreId(storeData.id);
+        // Fetch categories using the helper function and properly type the result
+        const result = await getCategoriesByStoreId(storeData.id);
         
-        if (categoriesError) {
-          throw categoriesError;
+        if (result.error) {
+          throw result.error;
         }
+        
+        // Explicitly type categoriesData to avoid excessive type instantiation
+        const categoriesData = result.data || [];
         
         // Fetch product counts for each category
         const categoriesWithCounts = await Promise.all(
-          (categoriesData || []).map(async (category) => {
+          categoriesData.map(async (category) => {
             const { count, error: countError } = await supabase
               .from('products')
               .select('*', { count: 'exact', head: true })
@@ -72,7 +75,7 @@ const Categories: React.FC = () => {
             return {
               ...category,
               product_count: count || 0
-            };
+            } as Category;
           })
         );
         
