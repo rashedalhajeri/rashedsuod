@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import { Settings, ShoppingBag, Home, Package, BarChart, Users } from "lucide-react";
+import { Settings, ShoppingBag, Home, Package, BarChart, Users, Loader2 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -54,15 +54,18 @@ const Dashboard: React.FC = () => {
         
         setSession(sessionData.session);
         
-        // Fetch store data for the authenticated user
+        // Fetch store data for the authenticated user using maybeSingle() instead of single()
         const { data: storeData, error: storeError } = await supabase
           .from('stores')
           .select('*')
           .eq('user_id', sessionData.session.user.id)
-          .maybeSingle(); // Changed from single() to maybeSingle()
+          .maybeSingle();
         
         if (storeError) {
-          throw storeError;
+          console.error("Store error:", storeError);
+          toast.error("حدث خطأ أثناء تحميل بيانات المتجر");
+          setLoading(false);
+          return;
         }
         
         // Check if store exists
@@ -82,10 +85,12 @@ const Dashboard: React.FC = () => {
             .eq('store_id', storeData.id);
           
           if (countError) {
-            throw countError;
+            console.error("Count error:", countError);
+            // Don't fail the entire operation if just the count fails
+            setProductCount(0);
+          } else {
+            setProductCount(count || 0);
           }
-          
-          setProductCount(count || 0);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -106,7 +111,7 @@ const Dashboard: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <Loader2 className="w-16 h-16 text-primary-500 animate-spin mx-auto" />
           <p className="mt-4 text-lg text-gray-600">جاري تحميل لوحة التحكم...</p>
         </div>
       </div>
@@ -122,7 +127,7 @@ const Dashboard: React.FC = () => {
           <p className="text-gray-600 mb-6 text-center">لم نجد أي متجر مرتبط بحسابك. قم بإنشاء متجرك الآن للبدء!</p>
           <Button 
             onClick={handleCreateStore}
-            className="w-full"
+            className="w-full bg-primary-600 hover:bg-primary-700"
           >
             إنشاء متجر جديد
           </Button>
@@ -173,7 +178,7 @@ const Dashboard: React.FC = () => {
               className="text-primary-600 font-medium hover:underline bg-transparent"
               variant="ghost"
             >
-              إضافة منتج جديد
+              إدارة المنتجات
             </Button>
           </div>
           

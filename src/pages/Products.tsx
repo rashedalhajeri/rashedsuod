@@ -10,7 +10,9 @@ import {
   Search, 
   X, 
   Check,
-  ChevronRight
+  ChevronRight,
+  Loader2,
+  Image as ImageIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,11 +39,11 @@ import DashboardLayout from "@/components/DashboardLayout";
 interface Product {
   id: string;
   name: string;
-  description: string;
+  description: string | null;
   price: number;
   store_id: string;
-  image_url?: string;
-  stock_quantity?: number;
+  image_url?: string | null;
+  stock_quantity?: number | null;
   created_at: string;
 }
 
@@ -55,7 +57,8 @@ interface Store {
 
 const Products: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -67,12 +70,16 @@ const Products: React.FC = () => {
     stock_quantity: ""
   });
   const [storeId, setStoreId] = useState<string | null>(null);
+  const [store, setStore] = useState<Store | null>(null);
   const navigate = useNavigate();
 
   // Check for auth state and fetch products data
   useEffect(() => {
     const fetchSessionAndProducts = async () => {
       try {
+        setIsLoading(true);
+        
+        // Get session data
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -80,24 +87,33 @@ const Products: React.FC = () => {
         }
         
         if (!sessionData.session) {
+          toast.error("يرجى تسجيل الدخول للوصول إلى صفحة المنتجات");
           navigate("/");
           return;
         }
         
         setSession(sessionData.session);
         
-        // Fetch store data for the authenticated user
+        // Fetch store data for the authenticated user using maybeSingle() instead of single()
         const { data: storeData, error: storeError } = await supabase
           .from('stores')
           .select('*')
           .eq('user_id', sessionData.session.user.id)
-          .single();
+          .maybeSingle();
         
         if (storeError) {
           throw storeError;
         }
         
+        // Check if store exists
+        if (!storeData) {
+          toast.error("لم يتم العثور على متجر. يرجى إنشاء متجر أولاً");
+          navigate("/create-store");
+          return;
+        }
+        
         setStoreId(storeData.id);
+        setStore(storeData);
         
         // Fetch products for the store
         const { data: productsData, error: productsError } = await supabase
@@ -114,14 +130,23 @@ const Products: React.FC = () => {
       } catch (error) {
         console.error("Error fetching data:", error);
         toast.error("حدث خطأ أثناء تحميل بيانات المنتجات");
-        navigate("/dashboard");
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
     fetchSessionAndProducts();
   }, [navigate]);
+
+  const resetNewProductForm = () => {
+    setNewProduct({
+      name: "",
+      description: "",
+      price: "",
+      image_url: "",
+      stock_quantity: ""
+    });
+  };
 
   const handleAddProduct = async () => {
     if (!newProduct.name || !newProduct.price) {
@@ -135,7 +160,14 @@ const Products: React.FC = () => {
     }
 
     try {
-      setLoading(true);
+      setIsSubmitting(true);
+      
+      // Validate price is a valid number
+      const price = parseFloat(newProduct.price);
+      if (isNaN(price) || price < 0) {
+        toast.error("يرجى إدخال سعر صحيح");
+        return;
+      }
       
       // Add new product
       const { data, error } = await supabase
@@ -143,8 +175,8 @@ const Products: React.FC = () => {
         .insert([
           { 
             name: newProduct.name,
-            description: newProduct.description,
-            price: parseFloat(newProduct.price),
+            description: newProduct.description || null,
+            price: price,
             image_url: newProduct.image_url || null,
             stock_quantity: newProduct.stock_quantity ? parseInt(newProduct.stock_quantity) : null,
             store_id: storeId
@@ -156,16 +188,10 @@ const Products: React.FC = () => {
         throw error;
       }
       
-      if (data) {
+      if (data && data.length > 0) {
+        // Update products list - add at the beginning for better UX
         setProducts([...data, ...products]);
-        setNewProduct({
-          name: "",
-          description: "",
-          price: "",
-          image_url: "",
-          stock_quantity: ""
-        });
-        
+        resetNewProductForm();
         setIsAddProductOpen(false);
         toast.success("تم إضافة المنتج بنجاح");
       }
@@ -173,27 +199,36 @@ const Products: React.FC = () => {
       console.error("Error adding product:", error);
       toast.error("حدث خطأ أثناء إضافة المنتج");
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   const filteredProducts = products.filter(product => 
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    (product.description?.toLowerCase() || "").includes(searchQuery.toLowerCase())
   );
 
-  if (loading && products.length === 0) {
-    return (
-      <DashboardLayout>
-        <div className="p-8">
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="mt-4 text-lg text-gray-600">جاري تحميل المنتجات...</p>
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
+  const formatCurrency = (price: number) => {
+    return new Intl.NumberFormat('ar-KW', { 
+      style: 'currency', 
+      currency: store?.currency || 'KWD'
+    }).format(price);
+  };
+
+  const renderEmptyState = () => (
+    <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+      <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+      <h3 className="text-lg font-medium text-gray-800 mb-2">لا توجد منتجات</h3>
+      <p className="text-gray-600 mb-4">لم تقم بإضافة أي منتجات بعد. أضف منتجك الأول الآن!</p>
+      <Button 
+        onClick={() => setIsAddProductOpen(true)}
+        className="bg-primary-600 hover:bg-primary-700"
+      >
+        <Plus className="h-4 w-4 mr-2" />
+        إضافة منتج جديد
+      </Button>
+    </div>
+  );
 
   return (
     <DashboardLayout>
@@ -206,6 +241,7 @@ const Products: React.FC = () => {
           <Button 
             onClick={() => setIsAddProductOpen(true)}
             className="bg-primary-600 hover:bg-primary-700"
+            disabled={isLoading}
           >
             <Plus className="h-4 w-4 mr-2" />
             إضافة منتج جديد
@@ -221,22 +257,38 @@ const Products: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            {searchQuery && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 h-6 w-6" 
+                onClick={() => setSearchQuery("")}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
 
-        {filteredProducts.length === 0 ? (
+        {isLoading ? (
           <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-            <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-800 mb-2">لا توجد منتجات</h3>
-            <p className="text-gray-600 mb-4">لم تقم بإضافة أي منتجات بعد. أضف منتجك الأول الآن!</p>
-            <Button 
-              onClick={() => setIsAddProductOpen(true)}
-              className="bg-primary-600 hover:bg-primary-700"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              إضافة منتج جديد
-            </Button>
+            <Loader2 className="h-12 w-12 mx-auto text-primary-500 mb-4 animate-spin" />
+            <p className="text-lg text-gray-600">جاري تحميل المنتجات...</p>
           </div>
+        ) : filteredProducts.length === 0 ? (
+          searchQuery ? (
+            <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+              <Search className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-800 mb-2">لم يتم العثور على منتجات</h3>
+              <p className="text-gray-600 mb-4">لم نتمكن من العثور على أي منتجات تطابق "{searchQuery}"</p>
+              <Button 
+                variant="outline"
+                onClick={() => setSearchQuery("")}
+              >
+                عرض جميع المنتجات
+              </Button>
+            </div>
+          ) : renderEmptyState()
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts.map((product) => (
@@ -247,20 +299,26 @@ const Products: React.FC = () => {
                       src={product.image_url} 
                       alt={product.name}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Handle image loading error
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null;
+                        target.src = 'https://via.placeholder.com/300x150?text=صورة+غير+متوفرة';
+                      }}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <Package className="h-12 w-12 text-gray-400" />
+                      <ImageIcon className="h-12 w-12 text-gray-400" />
                     </div>
                   )}
                 </div>
                 <CardHeader>
                   <CardTitle>{product.name}</CardTitle>
-                  <CardDescription className="line-clamp-2">{product.description}</CardDescription>
+                  <CardDescription className="line-clamp-2">{product.description || "لا يوجد وصف"}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex justify-between">
-                    <span className="font-bold text-lg">{product.price.toFixed(2)} {'\u062F\u002E\u0643'}</span>
+                    <span className="font-bold text-lg">{formatCurrency(product.price)}</span>
                     {product.stock_quantity !== null && (
                       <span className="text-sm text-gray-600">
                         المخزون: {product.stock_quantity}
@@ -284,7 +342,10 @@ const Products: React.FC = () => {
         )}
 
         {/* Add Product Dialog */}
-        <Dialog open={isAddProductOpen} onOpenChange={setIsAddProductOpen}>
+        <Dialog open={isAddProductOpen} onOpenChange={(open) => {
+          if (!open) resetNewProductForm();
+          setIsAddProductOpen(open);
+        }}>
           <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-center text-xl font-bold">إضافة منتج جديد</DialogTitle>
@@ -348,6 +409,7 @@ const Products: React.FC = () => {
                   value={newProduct.image_url}
                   onChange={(e) => setNewProduct({...newProduct, image_url: e.target.value})}
                 />
+                <p className="text-xs text-gray-500">ادخل رابط صورة المنتج الخاص بك. يفضل صور بحجم 300×300 بكسل.</p>
               </div>
             </div>
             
@@ -355,8 +417,12 @@ const Products: React.FC = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setIsAddProductOpen(false)}
+                onClick={() => {
+                  resetNewProductForm();
+                  setIsAddProductOpen(false);
+                }}
                 className="mb-2 sm:mb-0"
+                disabled={isSubmitting}
               >
                 <X className="h-4 w-4 mr-2" />
                 إلغاء
@@ -365,11 +431,20 @@ const Products: React.FC = () => {
               <Button 
                 type="button" 
                 onClick={handleAddProduct}
-                disabled={loading || !newProduct.name || !newProduct.price}
+                disabled={isSubmitting || !newProduct.name || !newProduct.price}
                 className="bg-primary-600 hover:bg-primary-700"
               >
-                <Check className="h-4 w-4 mr-2" />
-                {loading ? "جاري الإضافة..." : "إضافة المنتج"}
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    جاري الإضافة...
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4 mr-2" />
+                    إضافة المنتج
+                  </>
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
