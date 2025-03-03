@@ -1,541 +1,151 @@
 
-import React, { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { Session } from "@supabase/supabase-js";
-import { toast } from "sonner";
-import { 
-  Package, 
-  Plus, 
-  Search, 
-  X, 
-  Check,
-  ChevronRight,
-  Loader2,
-  Image as ImageIcon,
-  Filter,
-  Tag,
-  LayoutGrid,
-  List,
-  SlidersHorizontal,
-  Download,
-  Upload,
-  RefreshCw
-} from "lucide-react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogFooter, 
-  DialogDescription
-} from "@/components/ui/dialog";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { ProductCard } from "@/components/product/ProductCard";
-import { ProductForm, ProductFormData } from "@/components/product/ProductForm";
-import { ProductFilter } from "@/components/product/ProductFilter";
-import { ProductEmptyState } from "@/components/product/ProductEmptyState";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { motion } from "framer-motion";
+import ProductCard from "@/components/product/ProductCard";
+import ProductListItem from "@/components/product/ProductListItem";
+import ProductEmptyState from "@/components/product/ProductEmptyState";
+import ProductBulkActions from "@/components/product/ProductBulkActions";
+import ProductFilters from "@/components/product/ProductFilters";
 
-interface Product {
-  id: string;
-  name: string;
-  description: string | null;
-  price: number;
-  store_id: string;
-  image_url?: string | null;
-  stock_quantity?: number | null;
-  created_at: string;
-  category?: string | null;
-}
-
-interface Store {
-  id: string;
-  store_name: string;
-  domain_name: string;
-  country: string;
-  currency: string;
-}
-
-const Products: React.FC = () => {
-  const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
+const Products = () => {
+  const [view, setView] = useState<"grid" | "list">("grid");
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [storeId, setStoreId] = useState<string | null>(null);
-  const [store, setStore] = useState<Store | null>(null);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [activeFilter, setActiveFilter] = useState<string | null>(null);
-  const [sortOrder, setSortOrder] = useState<string>("newest");
-  const [categories, setCategories] = useState<string[]>([
-    "ملابس", "إلكترونيات", "منزل", "طعام", "رياضة", "أخرى"
-  ]);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchSessionAndProducts = async () => {
-      try {
-        setIsLoading(true);
-        
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          throw sessionError;
-        }
-        
-        if (!sessionData.session) {
-          toast.error("يرجى تسجيل الدخول للوصول إلى صفحة المنتجات");
-          navigate("/");
-          return;
-        }
-        
-        setSession(sessionData.session);
-        
-        const { data: storeData, error: storeError } = await supabase
-          .from('stores')
-          .select('*')
-          .eq('user_id', sessionData.session.user.id)
-          .maybeSingle();
-        
-        if (storeError) {
-          throw storeError;
-        }
-        
-        if (!storeData) {
-          toast.error("لم يتم العثور على متجر. يرجى إنشاء متجر أولاً");
-          navigate("/create-store");
-          return;
-        }
-        
-        setStoreId(storeData.id);
-        setStore(storeData);
-        
-        await fetchProducts(storeData.id);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        toast.error("حدث خطأ أثناء تحميل بيانات المنتجات");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchSessionAndProducts();
-  }, [navigate]);
-
-  const fetchProducts = async (storeId: string) => {
-    try {
-      let query = supabase
-        .from('products')
-        .select('*')
-        .eq('store_id', storeId);
-        
-      // Apply sorting
-      if (sortOrder === "newest") {
-        query = query.order('created_at', { ascending: false });
-      } else if (sortOrder === "oldest") {
-        query = query.order('created_at', { ascending: true });
-      } else if (sortOrder === "price-high") {
-        query = query.order('price', { ascending: false });
-      } else if (sortOrder === "price-low") {
-        query = query.order('price', { ascending: true });
-      } else if (sortOrder === "name-asc") {
-        query = query.order('name', { ascending: true });
-      } else if (sortOrder === "name-desc") {
-        query = query.order('name', { ascending: false });
-      }
-      
-      const { data: productsData, error: productsError } = await query;
-      
-      if (productsError) {
-        throw productsError;
-      }
-      
-      setProducts(productsData || []);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      toast.error("حدث خطأ أثناء تحميل المنتجات");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  
+  // Mock products data
+  const mockProducts = Array(12).fill(0).map((_, i) => ({
+    id: `prod-${i + 1}`,
+    name: `منتج تجريبي ${i + 1}`,
+    description: "وصف المنتج يظهر هنا ويمكن أن يكون طويلاً",
+    price: 99.99 + i * 10,
+    stock: Math.floor(Math.random() * 100),
+    images: ["/placeholder.svg"],
+    category: i % 3 === 0 ? "ملابس" : i % 3 === 1 ? "إلكترونيات" : "أحذية",
+    isActive: Math.random() > 0.2
+  }));
+  
+  const handleProductSelect = (productId: string, selected: boolean) => {
+    if (selected) {
+      setSelectedProducts(prev => [...prev, productId]);
+    } else {
+      setSelectedProducts(prev => prev.filter(id => id !== productId));
     }
   };
-
-  const refreshProducts = async () => {
-    if (!storeId) return;
+  
+  const handleBulkAction = (action: string) => {
+    console.log(`Performing ${action} on`, selectedProducts);
+    // Reset selection after action
+    setSelectedProducts([]);
+  };
+  
+  const filteredProducts = mockProducts.filter(product => {
+    const matchesSearch = product.name.includes(searchQuery) || 
+                         product.description.includes(searchQuery);
+    const matchesCategory = categoryFilter === "all" || product.category === categoryFilter;
     
-    setIsRefreshing(true);
-    await fetchProducts(storeId);
-    setIsRefreshing(false);
-    toast.success("تم تحديث قائمة المنتجات");
-  };
-
-  const handleAddProduct = async (productData: ProductFormData) => {
-    if (!storeId) {
-      toast.error("لم يتم العثور على معرف المتجر");
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      
-      const price = parseFloat(String(productData.price));
-      if (isNaN(price) || price < 0) {
-        toast.error("يرجى إدخال سعر صحيح");
-        return;
-      }
-      
-      const { data, error } = await supabase
-        .from('products')
-        .insert([
-          { 
-            name: productData.name,
-            description: productData.description || null,
-            price: price,
-            image_url: productData.image_url || null,
-            stock_quantity: productData.stock_quantity || null,
-            store_id: storeId,
-            category: productData.category || "أخرى"
-          }
-        ])
-        .select();
-      
-      if (error) {
-        throw error;
-      }
-      
-      if (data && data.length > 0) {
-        setProducts([...data, ...products]);
-        setIsAddProductOpen(false);
-        toast.success("تم إضافة المنتج بنجاح");
-      }
-    } catch (error) {
-      console.error("Error adding product:", error);
-      toast.error("حدث خطأ أثناء إضافة المنتج");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDeleteProduct = async (productId: string) => {
-    try {
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', productId);
-        
-      if (error) throw error;
-      
-      // Update local state
-      setProducts(products.filter(product => product.id !== productId));
-      toast.success("تم حذف المنتج بنجاح");
-    } catch (error) {
-      console.error("Error deleting product:", error);
-      toast.error("حدث خطأ أثناء حذف المنتج");
-    }
-  };
-
-  const filteredProducts = products
-    .filter(product => 
-      (activeFilter ? product.category === activeFilter : true) &&
-      (searchQuery ? 
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (product.description?.toLowerCase() || "").includes(searchQuery.toLowerCase())
-        : true
-      )
-    );
-
-  const formatCurrency = (price: number) => {
-    return new Intl.NumberFormat('ar-KW', { 
-      style: 'currency', 
-      currency: store?.currency || 'KWD'
-    }).format(price);
-  };
-
-  // Render skeleton loaders during initial loading
-  const renderSkeletons = () => {
-    return Array(6).fill(0).map((_, index) => (
-      <Card key={index} className="overflow-hidden border border-gray-200">
-        <div className="h-48 bg-gray-100">
-          <Skeleton className="h-full w-full" />
-        </div>
-        <CardHeader className="pb-2">
-          <Skeleton className="h-6 w-3/4 mb-2" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-2/3 mt-1" />
-        </CardHeader>
-        <CardContent className="pb-2">
-          <div className="flex justify-between items-center">
-            <Skeleton className="h-7 w-20" />
-            <Skeleton className="h-6 w-16 rounded-full" />
-          </div>
-        </CardContent>
-        <CardFooter className="bg-gray-50 border-t pt-3">
-          <Skeleton className="h-9 w-full" />
-        </CardFooter>
-      </Card>
-    ));
-  };
+    return matchesSearch && matchesCategory;
+  });
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">إدارة المنتجات</h1>
-          <p className="text-gray-600">أضف وعدل منتجات متجرك</p>
+          <h2 className="text-3xl font-bold tracking-tight">المنتجات</h2>
+          <p className="text-muted-foreground">
+            إدارة منتجات متجرك وتتبع المخزون
+          </p>
         </div>
-        
-        <div className="flex gap-2 w-full md:w-auto">
-          <Button 
-            onClick={refreshProducts}
-            variant="outline"
-            disabled={isLoading || isRefreshing}
-            className="flex-shrink-0"
-          >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          </Button>
-          <Button 
-            onClick={() => setIsAddProductOpen(true)}
-            className="bg-primary-600 hover:bg-primary-700 flex-grow md:flex-grow-0"
-            disabled={isLoading}
-          >
-            <Plus className="h-4 w-4 ml-2" />
-            إضافة منتج جديد
-          </Button>
+        <div className="flex gap-2">
+          <Button variant="outline">استيراد</Button>
+          <Button variant="outline">تصدير</Button>
+          <Button>إضافة منتج</Button>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-grow">
-            <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <Input
-              className="pl-10 pr-12 py-2"
-              placeholder="ابحث عن منتج..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            {searchQuery && (
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex justify-between items-center">
+            <CardTitle>قائمة المنتجات</CardTitle>
+            <div className="flex items-center gap-2">
               <Button 
-                variant="ghost" 
-                size="icon" 
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 h-6 w-6" 
-                onClick={() => setSearchQuery("")}
+                variant={view === "grid" ? "default" : "outline"} 
+                size="sm"
+                onClick={() => setView("grid")}
               >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-          
-          <div className="flex flex-wrap gap-2">
-            <ProductFilter 
-              categories={categories}
-              activeFilter={activeFilter}
-              onFilterChange={setActiveFilter}
-            />
-            
-            <Select 
-              value={sortOrder} 
-              onValueChange={setSortOrder}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SlidersHorizontal className="h-4 w-4 ml-2" />
-                <SelectValue placeholder="ترتيب حسب" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">الأحدث</SelectItem>
-                <SelectItem value="oldest">الأقدم</SelectItem>
-                <SelectItem value="price-high">السعر: من الأعلى</SelectItem>
-                <SelectItem value="price-low">السعر: من الأقل</SelectItem>
-                <SelectItem value="name-asc">الاسم: أ-ي</SelectItem>
-                <SelectItem value="name-desc">الاسم: ي-أ</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <div className="border rounded-md flex">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className={`h-10 ${viewMode === "grid" ? "bg-gray-100" : ""}`}
-                onClick={() => setViewMode("grid")}
-                title="عرض شبكي"
-              >
-                <LayoutGrid className="h-4 w-4" />
+                شبكة
               </Button>
               <Button 
-                variant="ghost" 
-                size="icon" 
-                className={`h-10 ${viewMode === "list" ? "bg-gray-100" : ""}`}
-                onClick={() => setViewMode("list")}
-                title="عرض قائمة"
+                variant={view === "list" ? "default" : "outline"} 
+                size="sm"
+                onClick={() => setView("list")}
               >
-                <List className="h-4 w-4" />
+                قائمة
               </Button>
             </div>
           </div>
-        </div>
-      </div>
-
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {renderSkeletons()}
-        </div>
-      ) : filteredProducts.length === 0 ? (
-        searchQuery || activeFilter ? (
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-            <Search className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-800 mb-2">لم يتم العثور على منتجات</h3>
-            <p className="text-gray-600 mb-4">
-              {searchQuery && `لم نتمكن من العثور على أي منتجات تطابق "${searchQuery}"`}
-              {activeFilter && !searchQuery && `لم نتمكن من العثور على منتجات في تصنيف "${activeFilter}"`}
-              {activeFilter && searchQuery && ` في تصنيف "${activeFilter}"`}
-            </p>
-            <Button 
-              variant="outline"
-              onClick={() => {
-                setSearchQuery("");
-                setActiveFilter(null);
-              }}
-            >
-              عرض جميع المنتجات
-            </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-6">
+            <ProductFilters 
+              onSearch={setSearchQuery}
+              onCategoryChange={setCategoryFilter}
+            />
           </div>
-        ) : (
-          <ProductEmptyState onAddProduct={() => setIsAddProductOpen(true)} />
-        )
-      ) : (
-        viewMode === "grid" ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map((product) => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                formatCurrency={formatCurrency}
-                onDeleteProduct={handleDeleteProduct}
+          
+          {selectedProducts.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-4"
+            >
+              <ProductBulkActions 
+                selectedCount={selectedProducts.length}
+                onAction={handleBulkAction}
+                onClearSelection={() => setSelectedProducts([])}
               />
-            ))}
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-            <div className="border-b px-4 py-3 bg-gray-50 font-medium">
-              <div className="grid grid-cols-12 gap-4">
-                <div className="col-span-6">المنتج</div>
-                <div className="col-span-2 text-center">السعر</div>
-                <div className="col-span-2 text-center">المخزون</div>
-                <div className="col-span-2 text-center">الإجراءات</div>
-              </div>
-            </div>
-            {filteredProducts.map((product) => (
-              <div key={product.id} className="border-b last:border-0 px-4 py-3 hover:bg-gray-50 transition-colors">
-                <div className="grid grid-cols-12 gap-4 items-center">
-                  <div className="col-span-6 flex items-center gap-3">
-                    <div className="h-12 w-12 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
-                      {product.image_url ? (
-                        <img
-                          src={product.image_url}
-                          alt={product.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.onerror = null;
-                            target.src = 'https://via.placeholder.com/48?text=صورة';
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <ImageIcon className="h-6 w-6 text-gray-400" />
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <div className="font-medium">{product.name}</div>
-                      <div className="text-xs text-gray-500 flex items-center gap-1">
-                        <Tag className="h-3 w-3" />
-                        {product.category || "غير مصنف"}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-span-2 text-center font-medium">
-                    {formatCurrency(product.price)}
-                  </div>
-                  <div className="col-span-2 text-center">
-                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                      product.stock_quantity === null ? 'bg-gray-100 text-gray-600' :
-                      product.stock_quantity > 10 ? 'bg-green-100 text-green-800' : 
-                      product.stock_quantity > 0 ? 'bg-orange-100 text-orange-800' : 
-                      'bg-red-100 text-red-800'
-                    }`}>
-                      {product.stock_quantity === null ? 'غير محدد' : product.stock_quantity}
-                    </span>
-                  </div>
-                  <div className="col-span-2 text-center flex justify-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-primary-600"
-                      onClick={() => navigate(`/dashboard/products/${product.id}`)}
-                    >
-                      عرض
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-amber-600"
-                      onClick={() => navigate(`/dashboard/products/${product.id}/edit`)}
-                    >
-                      تعديل
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => handleDeleteProduct(product.id)}
-                    >
-                      حذف
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )
-      )}
-
-      <Dialog open={isAddProductOpen} onOpenChange={(open) => {
-        setIsAddProductOpen(open);
-      }}>
-        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-center text-xl font-bold">إضافة منتج جديد</DialogTitle>
-            <DialogDescription className="text-center">
-              أضف منتجًا جديدًا إلى متجرك
-            </DialogDescription>
-          </DialogHeader>
+            </motion.div>
+          )}
           
-          <ProductForm
-            categories={categories}
-            onSubmit={handleAddProduct}
-            onCancel={() => setIsAddProductOpen(false)}
-            isSubmitting={isSubmitting}
-          />
-        </DialogContent>
-      </Dialog>
+          {filteredProducts.length === 0 ? (
+            <ProductEmptyState searchQuery={searchQuery} />
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              {view === "grid" ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {filteredProducts.map(product => (
+                    <ProductCard 
+                      key={product.id}
+                      product={product}
+                      isSelected={selectedProducts.includes(product.id)}
+                      onSelect={(selected) => handleProductSelect(product.id, selected)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {filteredProducts.map(product => (
+                    <ProductListItem 
+                      key={product.id}
+                      product={product}
+                      isSelected={selectedProducts.includes(product.id)}
+                      onSelect={(selected) => handleProductSelect(product.id, selected)}
+                    />
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import DashboardLayout from "@/components/DashboardLayout";
 import { secureRetrieve } from "@/lib/encryption";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -210,54 +209,52 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <DashboardHeader storeName={store?.store_name} domain={store?.domain_name} />
+    <div className="space-y-6">
+      <DashboardHeader storeName={store?.store_name} domain={store?.domain_name} />
+      
+      <WelcomeWidget storeName={store?.store_name} />
+      
+      <OrderStats 
+        totalOrders={stats.orderCount}
+        completedOrders={Math.floor(stats.orderCount * 0.6)}
+        processingOrders={Math.floor(stats.orderCount * 0.3)}
+        shippedOrders={Math.floor(stats.orderCount * 0.1)}
+        cancelledOrders={0}
+        totalRevenue={stats.revenue}
+        currencySymbol={store?.currency === 'KWD' ? 'د.ك' : 'ر.س'}
+      />
+      
+      <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="mb-8">
+        <TabsList className="grid grid-cols-3 mb-8 bg-gray-100 p-1 border border-gray-200">
+          <TabsTrigger value="overview" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">نظرة عامة</TabsTrigger>
+          <TabsTrigger value="store" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">معلومات المتجر</TabsTrigger>
+          <TabsTrigger value="activity" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">النشاط الأخير</TabsTrigger>
+        </TabsList>
         
-        <WelcomeWidget storeName={store?.store_name} />
-        
-        <OrderStats 
-          totalOrders={stats.orderCount}
-          completedOrders={Math.floor(stats.orderCount * 0.6)}
-          processingOrders={Math.floor(stats.orderCount * 0.3)}
-          shippedOrders={Math.floor(stats.orderCount * 0.1)}
-          cancelledOrders={0}
-          totalRevenue={stats.revenue}
-          currencySymbol={store?.currency === 'KWD' ? 'د.ك' : 'ر.س'}
-        />
-        
-        <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="mb-8">
-          <TabsList className="grid grid-cols-3 mb-8 bg-gray-100 p-1 border border-gray-200">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">نظرة عامة</TabsTrigger>
-            <TabsTrigger value="store" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">معلومات المتجر</TabsTrigger>
-            <TabsTrigger value="activity" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">النشاط الأخير</TabsTrigger>
-          </TabsList>
-          
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-            >
-              {activeTab === "overview" && <OverviewTab />}
-              {activeTab === "store" && (
-                <StoreInfoTab 
-                  store={store} 
-                  stats={{
-                    productCount: stats.productCount,
-                    orderCount: stats.orderCount,
-                    customerCount: stats.customerCount
-                  }} 
-                />
-              )}
-              {activeTab === "activity" && <ActivityTab />}
-            </motion.div>
-          </AnimatePresence>
-        </Tabs>
-      </div>
-    </DashboardLayout>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            {activeTab === "overview" && <OverviewTab />}
+            {activeTab === "store" && (
+              <StoreInfoTab 
+                store={store} 
+                stats={{
+                  productCount: stats.productCount,
+                  orderCount: stats.orderCount,
+                  customerCount: stats.customerCount
+                }} 
+              />
+            )}
+            {activeTab === "activity" && <ActivityTab />}
+          </motion.div>
+        </AnimatePresence>
+      </Tabs>
+    </div>
   );
 };
 

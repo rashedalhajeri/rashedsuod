@@ -1,91 +1,92 @@
 
 import React from "react";
 import { useLocation } from "react-router-dom";
-import { SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuLink } from "@/components/ui/sidebar";
-import { 
-  mainNavigation, 
-  analyticsNavigation, 
-  communicationNavigation, 
-  settingsNavigation 
-} from "./navigation-items";
+import { SidebarMenu, SidebarMenuItem, SidebarMenuLink, SidebarGroup, SidebarGroupLabel, useSidebar } from "@/components/ui/sidebar";
+import { mainNavigation, analyticsNavigation, communicationNavigation, settingsNavigation } from "./navigation-items";
 
 const SidebarNavigation: React.FC = () => {
   const location = useLocation();
-
+  const { expanded } = useSidebar();
+  
+  const isActive = (href: string) => {
+    return location.pathname === href || 
+           (href !== '/dashboard' && location.pathname.startsWith(href));
+  };
+  
   return (
-    <>
+    <div className="space-y-6">
       <SidebarGroup>
-        <div className="px-3 py-2">
-          <h4 className="text-xs font-medium text-gray-500 mb-2">القائمة الرئيسية</h4>
-        </div>
+        {expanded && <SidebarGroupLabel>القائمة الرئيسية</SidebarGroupLabel>}
         <SidebarMenu>
-          {mainNavigation.map(item => {
-            const isActive = location.pathname === item.href;
-            return (
-              <SidebarMenuItem key={item.name}>
-                <SidebarMenuLink to={item.href} icon={item.icon} active={isActive} title={item.description}>
-                  {item.name}
-                </SidebarMenuLink>
-              </SidebarMenuItem>
-            );
-          })}
+          {mainNavigation.map((item) => (
+            <SidebarMenuItem key={item.name}>
+              <SidebarMenuLink 
+                to={item.href}
+                icon={item.icon}
+                active={isActive(item.href)}
+                title={expanded ? undefined : item.description}
+              >
+                {item.name}
+              </SidebarMenuLink>
+            </SidebarMenuItem>
+          ))}
         </SidebarMenu>
       </SidebarGroup>
       
       <SidebarGroup>
-        <div className="px-3 py-2 mt-2">
-          <h4 className="text-xs font-medium text-gray-500 mb-2">التقارير والإحصائيات</h4>
-        </div>
+        {expanded && <SidebarGroupLabel>التحليلات</SidebarGroupLabel>}
         <SidebarMenu>
-          {analyticsNavigation.map(item => {
-            const isActive = location.pathname === item.href;
-            return (
-              <SidebarMenuItem key={item.name}>
-                <SidebarMenuLink to={item.href} icon={item.icon} active={isActive} title={item.description}>
-                  {item.name}
-                </SidebarMenuLink>
-              </SidebarMenuItem>
-            );
-          })}
+          {analyticsNavigation.map((item) => (
+            <SidebarMenuItem key={item.name}>
+              <SidebarMenuLink 
+                to={item.href}
+                icon={item.icon}
+                active={isActive(item.href)}
+                title={expanded ? undefined : item.description}
+              >
+                {item.name}
+              </SidebarMenuLink>
+            </SidebarMenuItem>
+          ))}
         </SidebarMenu>
       </SidebarGroup>
       
       <SidebarGroup>
-        <div className="px-3 py-2 mt-2">
-          <h4 className="text-xs font-medium text-gray-500 mb-2">التواصل والدعم</h4>
-        </div>
+        {expanded && <SidebarGroupLabel>التواصل</SidebarGroupLabel>}
         <SidebarMenu>
-          {communicationNavigation.map(item => {
-            const isActive = location.pathname === item.href;
-            return (
-              <SidebarMenuItem key={item.name}>
-                <SidebarMenuLink to={item.href} icon={item.icon} active={isActive} title={item.description}>
-                  {item.name}
-                </SidebarMenuLink>
-              </SidebarMenuItem>
-            );
-          })}
+          {communicationNavigation.map((item) => (
+            <SidebarMenuItem key={item.name}>
+              <SidebarMenuLink 
+                to={item.href}
+                icon={item.icon}
+                active={isActive(item.href)}
+                title={expanded ? undefined : item.description}
+              >
+                {item.name}
+              </SidebarMenuLink>
+            </SidebarMenuItem>
+          ))}
         </SidebarMenu>
       </SidebarGroup>
       
       <SidebarGroup>
-        <div className="px-3 py-2 mt-2">
-          <h4 className="text-xs font-medium text-gray-500 mb-2">الإعدادات</h4>
-        </div>
+        {expanded && <SidebarGroupLabel>الإعدادات</SidebarGroupLabel>}
         <SidebarMenu>
-          {settingsNavigation.map(item => {
-            const isActive = location.pathname === item.href;
-            return (
-              <SidebarMenuItem key={item.name}>
-                <SidebarMenuLink to={item.href} icon={item.icon} active={isActive} title={item.description}>
-                  {item.name}
-                </SidebarMenuLink>
-              </SidebarMenuItem>
-            );
-          })}
+          {settingsNavigation.map((item) => (
+            <SidebarMenuItem key={item.name}>
+              <SidebarMenuLink 
+                to={item.href}
+                icon={item.icon}
+                active={isActive(item.href)}
+                title={expanded ? undefined : item.description}
+              >
+                {item.name}
+              </SidebarMenuLink>
+            </SidebarMenuItem>
+          ))}
         </SidebarMenu>
       </SidebarGroup>
-    </>
+    </div>
   );
 };
 

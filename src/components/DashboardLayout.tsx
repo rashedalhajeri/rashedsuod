@@ -1,6 +1,5 @@
-
 import React, { ReactNode, useEffect, useState } from "react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate, Link, useLocation, Outlet } from "react-router-dom";
 import { supabase, getStoreData } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
@@ -19,7 +18,7 @@ import SubscriptionPlan from "./dashboard/SubscriptionPlan";
 import ActionButton from "./dashboard/ActionButton";
 
 interface DashboardLayoutProps {
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 interface Store {
@@ -138,6 +137,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     }
   };
 
+  const renderContent = () => {
+    if (children) {
+      return children;
+    }
+    return <Outlet />;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 rtl">
       <SidebarProvider defaultExpanded={!isMobile}>
@@ -178,7 +184,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 exit="exit"
                 className="max-w-7xl mx-auto"
               >
-                {children}
+                {renderContent()}
               </motion.div>
             </AnimatePresence>
           </main>
