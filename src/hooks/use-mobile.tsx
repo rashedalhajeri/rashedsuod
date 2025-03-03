@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 
 export function useMediaQuery(query: string): boolean {
@@ -31,3 +30,6 @@ export function useMediaQuery(query: string): boolean {
 export function useIsMobile(): boolean {
   return useMediaQuery("(max-width: 768px)");
 }
+
+// For backward compatibility, keep useMobile as an alias to useIsMobile
+export const useMobile = useIsMobile;

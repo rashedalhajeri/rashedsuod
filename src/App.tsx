@@ -2,17 +2,19 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { useEffect, useState, createContext } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
+import Orders from "./pages/Orders";
 import NotFound from "./pages/NotFound";
 import CreateStore from "./pages/CreateStore";
 import Auth from "./pages/Auth";
 import { secureRetrieve, secureStore, secureRemove } from "./lib/encryption";
 import { Session } from "@supabase/supabase-js";
+import UnderDevelopmentPage from "./components/dashboard/UnderDevelopmentPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -199,249 +201,144 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<Auth />} />
-            <Route 
-              path="/dashboard" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Dashboard />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/products" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Products />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/create-store" 
-              element={
-                <ProtectedRoute>
-                  <CreateStore />
-                </ProtectedRoute>
-              } 
-            />
+            <Route path="/create-store" element={
+              <ProtectedRoute>
+                <CreateStore />
+              </ProtectedRoute>
+            } />
             
-            <Route 
-              path="/orders" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Dashboard />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/customers" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Dashboard />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
+            {/* Dashboard Routes */}
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <Dashboard />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
             
-            <Route 
-              path="/promotions" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Dashboard />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/coupons" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Dashboard />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/categories" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Dashboard />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/payment" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Dashboard />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/shipping" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Dashboard />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
+            {/* Main Navigation Routes */}
+            <Route path="/dashboard/orders" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <Orders />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
             
-            <Route 
-              path="/sales-reports" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Dashboard />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/product-analytics" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Dashboard />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/customer-analytics" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Dashboard />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/financial" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Dashboard />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
+            <Route path="/dashboard/products" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <Products />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
             
-            <Route 
-              path="/inbox" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Dashboard />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/product-inquiries" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Dashboard />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/support" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Dashboard />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/reviews" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Dashboard />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
+            <Route path="/dashboard/customers" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <UnderDevelopmentPage message="صفحة العملاء قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
             
-            <Route 
-              path="/store-info" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Dashboard />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/appearance" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Dashboard />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/system-settings" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Dashboard />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/subscription" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Dashboard />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/user-management" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Dashboard />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/security" 
-              element={
-                <ProtectedRoute>
-                  <StoreCheckRoute>
-                    <Dashboard />
-                  </StoreCheckRoute>
-                </ProtectedRoute>
-              } 
-            />
+            <Route path="/dashboard/categories" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <UnderDevelopmentPage message="صفحة الفئات قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/coupons" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <UnderDevelopmentPage message="صفحة كوبونات الخصم قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/payment" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <UnderDevelopmentPage message="صفحة المدفوعات قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/shipping" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <UnderDevelopmentPage message="صفحة الشحن والتوصيل قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            {/* Analytics Routes */}
+            <Route path="/dashboard/sales-reports" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <UnderDevelopmentPage message="صفحة تقارير المبيعات قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/product-analytics" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <UnderDevelopmentPage message="صفحة أداء المنتجات قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            {/* Communication Routes */}
+            <Route path="/dashboard/inbox" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <UnderDevelopmentPage message="صفحة صندوق الوارد قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/reviews" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <UnderDevelopmentPage message="صفحة التقييمات قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            {/* Settings Routes */}
+            <Route path="/dashboard/store-info" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <UnderDevelopmentPage message="صفحة معلومات المتجر قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/appearance" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <UnderDevelopmentPage message="صفحة تخصيص الواجهة قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/system-settings" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <UnderDevelopmentPage message="صفحة إعدادات النظام قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/subscription" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <UnderDevelopmentPage message="صفحة الاشتراك والباقة قيد التطوير" />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
             
             <Route path="*" element={<NotFound />} />
           </Routes>
