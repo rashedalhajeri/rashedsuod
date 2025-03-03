@@ -61,24 +61,26 @@ const Categories: React.FC = () => {
           throw result.error;
         }
         
-        // Explicitly type categoriesData to avoid excessive type instantiation
-        const categoriesData = result.data || [];
+        // Explicitly type the categories array to avoid excessive type instantiation
+        const categoriesData: any[] = result.data || [];
         
-        // Fetch product counts for each category
-        const categoriesWithCounts = await Promise.all(
-          categoriesData.map(async (category) => {
-            const { count, error: countError } = await supabase
-              .from('products')
-              .select('*', { count: 'exact', head: true })
-              .eq('category_id', category.id);
-            
-            return {
-              ...category,
-              product_count: count || 0
-            } as Category;
-          })
-        );
+        // Create a new array with explicit Category typing
+        const categoryPromises = categoriesData.map(async (category) => {
+          const { count, error: countError } = await supabase
+            .from('products')
+            .select('*', { count: 'exact', head: true })
+            .eq('category_id', category.id);
+          
+          // Create a new object with the correct type
+          const categoryWithCount: Category = {
+            ...category,
+            product_count: count || 0
+          };
+          
+          return categoryWithCount;
+        });
         
+        const categoriesWithCounts = await Promise.all(categoryPromises);
         setCategories(categoriesWithCounts);
       } catch (error) {
         console.error("Error fetching categories:", error);
