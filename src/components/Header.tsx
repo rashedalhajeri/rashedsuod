@@ -17,14 +17,39 @@ const Header: React.FC<HeaderProps> = ({ session, onLogout }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [language, setLanguage] = useState("ar"); // 'ar' for Arabic, 'en' for English
+  const [hasStore, setHasStore] = useState<boolean | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener("scroll", handleScroll);
+    
+    // Check if user has a store when session changes
+    const checkUserStore = async () => {
+      if (session) {
+        try {
+          const { data, error } = await supabase
+            .from('stores')
+            .select('id')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+            
+          if (error) throw error;
+          setHasStore(!!data);
+        } catch (error) {
+          console.error("Error checking store:", error);
+          setHasStore(false);
+        }
+      } else {
+        setHasStore(null);
+      }
+    };
+    
+    checkUserStore();
+    
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [session]);
   
   const toggleLanguage = () => {
     setLanguage(prev => prev === "ar" ? "en" : "ar");
@@ -42,10 +67,19 @@ const Header: React.FC<HeaderProps> = ({ session, onLogout }) => {
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
         toast.success(language === "ar" ? "تم تسجيل الخروج بنجاح" : "Logged out successfully");
+        navigate("/");
       } catch (error: any) {
         console.error("Error logging out:", error);
         toast.error(language === "ar" ? "حدث خطأ أثناء تسجيل الخروج" : "An error occurred during logout");
       }
+    }
+  };
+  
+  const handleDashboardClick = () => {
+    if (hasStore) {
+      navigate("/dashboard");
+    } else {
+      navigate("/create-store");
     }
   };
   
@@ -79,7 +113,7 @@ const Header: React.FC<HeaderProps> = ({ session, onLogout }) => {
             {session ? (
               <>
                 <button 
-                  onClick={() => navigate("/dashboard")} 
+                  onClick={handleDashboardClick} 
                   className="flex items-center gap-2 text-gray-800 hover:text-primary-500 transition-colors"
                 >
                   <User size={16} />
@@ -143,7 +177,7 @@ const Header: React.FC<HeaderProps> = ({ session, onLogout }) => {
             {session ? (
               <>
                 <button 
-                  onClick={() => navigate("/dashboard")} 
+                  onClick={handleDashboardClick} 
                   className="flex items-center gap-2 justify-center text-gray-800 hover:text-primary-500 transition-colors"
                 >
                   <User size={16} />

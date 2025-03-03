@@ -40,8 +40,8 @@ const Auth = () => {
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
       if (data.session) {
-        // Check if user has a store
-        checkIfUserHasStore(data.session.user.id);
+        // Check if user has a store and redirect accordingly
+        await checkIfUserHasStore(data.session.user.id);
       }
     };
     
@@ -68,8 +68,8 @@ const Auth = () => {
       }
     } catch (error) {
       console.error("Error checking if user has store:", error);
-      // On error, default to dashboard which will handle the redirection
-      navigate("/dashboard");
+      // On error, default to create-store which is safer
+      navigate("/create-store");
     }
   };
   
@@ -93,9 +93,9 @@ const Auth = () => {
       
       toast.success("تم تسجيل الدخول بنجاح");
       
-      // Check if user has a store
+      // Check if user has a store and redirect accordingly
       if (data && data.user) {
-        checkIfUserHasStore(data.user.id);
+        await checkIfUserHasStore(data.user.id);
       }
       
     } catch (error: any) {

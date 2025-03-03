@@ -95,9 +95,12 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+// Modified ProtectedRoute to check if user has a store and redirect accordingly
+const ProtectedRoute = ({ children, redirectIfStore = false }: { children: React.ReactNode, redirectIfStore?: boolean }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [hasStore, setHasStore] = useState<boolean | null>(null);
   const [isVerifying, setIsVerifying] = useState(true);
+  const navigate = Navigate;
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -107,27 +110,52 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         const userId = await secureRetrieve('user-id');
         
         if (userId) {
-          const { data } = await supabase.auth.getSession();
+          const { data: sessionData } = await supabase.auth.getSession();
           
-          if (data.session && data.session.user.id === userId) {
+          if (sessionData.session && sessionData.session.user.id === userId) {
             setIsAuthenticated(true);
+            
+            // Check if user has a store
+            const { data: storeData, error: storeError } = await supabase
+              .from('stores')
+              .select('id')
+              .eq('user_id', userId)
+              .maybeSingle();
+            
+            if (storeError) throw storeError;
+            
+            setHasStore(!!storeData);
           } else {
             secureRemove('user-id');
             setIsAuthenticated(false);
+            setHasStore(false);
           }
         } else {
-          const { data } = await supabase.auth.getSession();
+          const { data: sessionData } = await supabase.auth.getSession();
           
-          if (data.session) {
-            await secureStore('user-id', data.session.user.id);
+          if (sessionData.session) {
+            await secureStore('user-id', sessionData.session.user.id);
             setIsAuthenticated(true);
+            
+            // Check if user has a store
+            const { data: storeData, error: storeError } = await supabase
+              .from('stores')
+              .select('id')
+              .eq('user_id', sessionData.session.user.id)
+              .maybeSingle();
+            
+            if (storeError) throw storeError;
+            
+            setHasStore(!!storeData);
           } else {
             setIsAuthenticated(false);
+            setHasStore(false);
           }
         }
       } catch (error) {
         console.error('Auth check error:', error);
         setIsAuthenticated(false);
+        setHasStore(false);
       } finally {
         setIsVerifying(false);
       }
@@ -139,8 +167,29 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (isVerifying) {
     return <div className="flex h-screen items-center justify-center">جاري التحقق...</div>;
   }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/auth" />;
+  }
+  
+  // Now handle redirection based on store status and requested redirect behavior
+  if (hasStore === false && !redirectIfStore) {
+    // User doesn't have a store and needs one for this route
+    return <Navigate to="/create-store" />;
+  }
+  
+  if (hasStore === true && redirectIfStore) {
+    // User has a store and should be redirected to dashboard
+    return <Navigate to="/dashboard" />;
+  }
+  
+  // In all other cases, render the children
+  return <>{children}</>;
+};
 
-  return isAuthenticated ? <>{children}</> : <Navigate to="/auth" />;
+// Create a specific route component for CreateStore page with different redirection logic
+const CreateStoreRoute = ({ children }: { children: React.ReactNode }) => {
+  return <ProtectedRoute redirectIfStore={true}>{children}</ProtectedRoute>;
 };
 
 const App = () => (
@@ -155,16 +204,31 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<Auth />} />
+            
+            {/* Create Store Route - Will redirect to dashboard if user already has a store */}
             <Route 
               path="/create-store" 
               element={
-                <ProtectedRoute>
+                <CreateStoreRoute>
                   <CreateStore />
+                </CreateStoreRoute>
+              } 
+            />
+            
+            {/* Dashboard Route - Protected and requires store */}
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute>
+                  <div className="p-8 text-center">
+                    <h1 className="text-2xl font-bold mb-4">مرحباً بك في لوحة التحكم</h1>
+                    <p>تم توجيهك إلى لوحة التحكم لأن لديك متجراً بالفعل.</p>
+                  </div>
                 </ProtectedRoute>
               } 
             />
             
-            {/* Product Details Route */}
+            {/* Product Details Route - Protected and requires store */}
             <Route 
               path="/products/:productId" 
               element={
