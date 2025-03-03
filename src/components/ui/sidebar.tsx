@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
@@ -59,14 +58,18 @@ export function Sidebar({
   className?: string;
   children: React.ReactNode;
 }) {
-  const {
-    expanded
-  } = useSidebar();
+  const { expanded } = useSidebar();
   const isMobile = useIsMobile();
   
-  return <aside className={cn("glass-card bg-white/90 backdrop-blur-sm shadow-sm border-l z-50 transition-all duration-300 overflow-hidden", expanded ? "w-64" : "w-0 md:w-16", isMobile && !expanded ? "w-0" : "", isMobile ? "fixed top-16 bottom-0" : "sticky top-0 h-screen", className)}>
-      <div className="h-full flex flex-col">{children}</div>
-    </aside>;
+  return <aside className={cn(
+    "glass-card bg-white/95 backdrop-blur-sm shadow-sm border-l z-50 transition-all duration-300 overflow-hidden",
+    expanded ? "w-64" : "w-0 md:w-16", 
+    isMobile && !expanded ? "w-0" : "", 
+    isMobile ? "fixed top-16 bottom-0" : "sticky top-0 h-screen", 
+    className
+  )}>
+    <div className="h-full flex flex-col">{children}</div>
+  </aside>;
 }
 
 export function SidebarContent({
@@ -94,10 +97,7 @@ export function SidebarTrigger({
 }: {
   className?: string;
 }) {
-  const {
-    toggle,
-    expanded
-  } = useSidebar();
+  const { toggle, expanded } = useSidebar();
   const isMobile = useIsMobile();
   
   if (!isMobile && !expanded) {
@@ -142,15 +142,19 @@ export function SidebarMenuLink({
   children: React.ReactNode;
   active?: boolean;
 }) {
-  const {
-    expanded
-  } = useSidebar();
+  const { expanded } = useSidebar();
   
-  return <Link to={href} className={cn("flex items-center p-3 rounded-md transition-colors", active ? "bg-gradient-to-r from-primary-50 to-primary-100 text-primary-600 border-r-4 border-primary-500" : "text-gray-700 hover:bg-gray-50", !expanded && "md:justify-center")}>
-      <Icon className={cn("h-5 w-5", expanded ? "ml-3" : "")} />
-      {expanded && <span className="mr-2">{children}</span>}
-      {active && expanded && <ChevronRight className="mr-auto h-4 w-4 text-primary-500" />}
-    </Link>;
+  return <Link to={href} className={cn(
+    "flex items-center p-3 rounded-lg transition-colors", 
+    active ? 
+      "bg-gradient-to-r from-primary-50 to-primary-100 text-primary-600 border-r-4 border-primary-500" : 
+      "text-gray-700 hover:bg-primary-50/50 hover:text-primary-600", 
+    !expanded && "md:justify-center"
+  )}>
+    <Icon className={cn("h-5 w-5", expanded ? "ml-3" : "")} />
+    {expanded && <span className="mr-2 font-medium">{children}</span>}
+    {active && expanded && <ChevronRight className="mr-auto h-4 w-4 text-primary-500" />}
+  </Link>;
 }
 
 export function SidebarHeader({
@@ -160,9 +164,7 @@ export function SidebarHeader({
   className?: string;
   children?: React.ReactNode;
 }) {
-  const {
-    expanded
-  } = useSidebar();
+  const { expanded } = useSidebar();
   const isMobile = useIsMobile();
   
   if (!expanded && !isMobile) return null;
@@ -179,9 +181,7 @@ export function SidebarFooter({
   className?: string;
   children?: React.ReactNode;
 }) {
-  const {
-    expanded
-  } = useSidebar();
+  const { expanded } = useSidebar();
   
   if (!expanded) return null;
   
@@ -201,9 +201,7 @@ export function SidebarUserSection({
   onLogout?: () => void;
   className?: string;
 }) {
-  const {
-    expanded
-  } = useSidebar();
+  const { expanded } = useSidebar();
   const isMobile = useIsMobile();
   
   if (isMobile) return null;

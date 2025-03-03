@@ -39,6 +39,7 @@ import {
   SidebarTrigger,
   SidebarUserSection
 } from "@/components/ui/sidebar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -134,7 +135,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary-50/50 to-gray-50">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
           <p className="mt-4 text-lg text-gray-600">جاري تحميل لوحة التحكم...</p>
@@ -159,7 +160,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 rtl">
       <SidebarProvider defaultExpanded={!isMobile}>
         {isMobile && (
-          <header className="fixed top-0 left-0 right-0 z-40 glass-nav shadow-sm">
+          <header className="fixed top-0 left-0 right-0 z-40 glass-nav shadow-sm backdrop-blur-sm bg-white/90">
             <div className="mx-auto">
               <div className="flex h-16 items-center justify-between px-4">
                 <div className="flex items-center">
@@ -198,23 +199,58 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <div className={cn("flex", isMobile ? "pt-16" : "")}>
           <Sidebar>
             <SidebarHeader>
-              <div className="flex items-center">
-                <div className="h-8 w-8 bg-primary-100 rounded-md flex items-center justify-center mr-2">
-                  <Store className="h-4 w-4 text-primary-600" />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="h-10 w-10 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex items-center justify-center mr-2 shadow-sm">
+                    <Store className="h-5 w-5 text-primary-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-800 text-lg">{store?.store_name || "المتجر"}</h3>
+                    <div className="flex items-center">
+                      <span className="text-xs text-gray-500">متجر إلكتروني</span>
+                      <div className="h-1.5 w-1.5 rounded-full bg-green-500 mx-1.5"></div>
+                      <span className="text-xs text-green-600">متصل</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-800">{store?.store_name || "المتجر"}</h3>
-                  <p className="text-xs text-gray-500">متجر إلكتروني</p>
-                </div>
+                
+                {!isMobile && (
+                  <div className="flex items-center gap-1">
+                    <button className="relative p-1.5 rounded-full hover:bg-gray-100 text-gray-600">
+                      <Bell className="h-4 w-4" />
+                      {hasNotifications && <span className="absolute top-0.5 right-0.5 h-2 w-2 rounded-full bg-red-500 ring-1 ring-white animate-pulse"></span>}
+                    </button>
+                    
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="p-1.5 rounded-full hover:bg-gray-100 text-gray-600">
+                          <Settings className="h-4 w-4" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuLabel>حسابي</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link to="/settings" className="flex items-center cursor-pointer">
+                            <Settings className="ml-2 h-4 w-4" />
+                            <span>الإعدادات</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => window.open(`https://${store?.domain_name}.linok.me`, '_blank')} className="cursor-pointer">
+                          <Store className="ml-2 h-4 w-4" />
+                          <span>زيارة المتجر</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
+                          <LogOut className="ml-2 h-4 w-4" />
+                          <span>تسجيل الخروج</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                )}
               </div>
             </SidebarHeader>
-            
-            <SidebarUserSection 
-              storeName={store?.store_name}
-              domainName={store?.domain_name}
-              hasNotifications={hasNotifications}
-              onLogout={handleLogout}
-            />
             
             <SidebarContent>
               <SidebarGroup>
@@ -239,6 +275,32 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 </SidebarMenu>
               </SidebarGroup>
             </SidebarContent>
+            
+            <SidebarFooter>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-gray-500">النسخة 1.0.0</span>
+                <button 
+                  onClick={handleLogout}
+                  className="text-xs text-red-500 hover:text-red-600 flex items-center gap-1"
+                >
+                  <LogOut className="h-3 w-3" />
+                  <span>تسجيل الخروج</span>
+                </button>
+              </div>
+              
+              <div className="bg-gradient-to-r from-primary-50 to-blue-50 p-3 rounded-lg border border-primary-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="h-6 w-6 bg-primary-500/10 rounded flex items-center justify-center">
+                    <Zap className="h-3.5 w-3.5 text-primary-600" />
+                  </div>
+                  <span className="text-xs font-medium text-primary-700">تحديثات النظام</span>
+                </div>
+                <p className="text-xs text-gray-600 mb-2">تم إضافة ميزات جديدة إلى متجرك!</p>
+                <button className="w-full text-xs bg-white text-primary-600 hover:text-primary-700 py-1.5 rounded border border-primary-100 transition-colors">
+                  استكشف الآن
+                </button>
+              </div>
+            </SidebarFooter>
           </Sidebar>
           
           <main className="flex-grow py-6 px-4 md:px-6 lg:px-8 transition-all duration-300">
@@ -250,7 +312,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       </SidebarProvider>
       
       {isMobile && (
-        <div className="mobile-nav">
+        <div className="mobile-nav bg-white shadow-lg border-t border-gray-100 rounded-t-xl">
           {navigation.slice(0, 3).map((item) => {
             const isActive = location.pathname === item.href;
             return (
