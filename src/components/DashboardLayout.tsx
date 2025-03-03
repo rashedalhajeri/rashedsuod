@@ -1,3 +1,4 @@
+
 import React, { ReactNode, useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase, getStoreData } from "@/integrations/supabase/client";
@@ -225,11 +226,18 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 )}
               </button>
               
-              {/* Store Preview Button */}
-              <Button variant="outline" size="sm" className="hidden md:flex items-center gap-1.5 mr-2 border-gray-200 bg-white/60 hover:bg-gray-50">
-                <Store className="h-3.5 w-3.5 text-primary-500" />
-                <span className="text-xs font-medium">عرض المتجر</span>
-              </Button>
+              {/* View Store Button */}
+              {!isMobile && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-1.5 mr-2 border-gray-200 bg-white/60 hover:bg-gray-50"
+                  onClick={() => window.open(`https://${store?.domain_name}.linok.me`, '_blank')}
+                >
+                  <Store className="h-3.5 w-3.5 text-primary-500" />
+                  <span className="text-xs font-medium">زيارة المتجر</span>
+                </Button>
+              )}
               
               {/* User Profile */}
               <div className="relative">
@@ -258,7 +266,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
       <div className="flex pt-[6.5rem]">
         <SidebarProvider defaultExpanded={!isMobile}>
-          <Sidebar className="shadow-md border-l border-gray-200">
+          <Sidebar>
             <SidebarHeader>
               <div className="p-3 flex items-center justify-between">
                 <div className="flex items-center">
@@ -270,7 +278,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                     <p className="text-xs text-gray-500">متجر إلكتروني</p>
                   </div>
                 </div>
-                <SidebarTrigger className="p-1.5 hover:bg-gray-100 rounded-md text-gray-500">
+                <SidebarTrigger>
                   <X className="h-4 w-4" />
                 </SidebarTrigger>
               </div>
@@ -322,7 +330,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                       <span className="font-medium text-gray-800">{store.currency}</span>
                     </p>
                   </div>
-                  <Button className="w-full mt-3 text-xs h-8" size="sm">
+                  <Button 
+                    className="w-full mt-3 text-xs h-8" 
+                    size="sm"
+                    onClick={() => window.open(`https://${store?.domain_name}.linok.me`, '_blank')}
+                  >
                     <ShoppingBag className="h-3.5 w-3.5 ml-1" />
                     زيارة المتجر
                   </Button>
