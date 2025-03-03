@@ -4,8 +4,8 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import OrderList from "@/components/order/OrderList";
-import OrderStats from "@/components/order/OrderStats";
-import OrderFilters from "@/components/order/OrderFilters";
+import { OrderStats } from "@/components/order/OrderStats";
+import { OrderFilters } from "@/components/order/OrderFilters";
 import OrderDetailsModal from "@/components/order/OrderDetailsModal";
 import { ShoppingBag } from "lucide-react";
 

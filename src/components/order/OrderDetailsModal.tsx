@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -7,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Package, Truck, XCircle, CheckCircle, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import TimelineItem from "./TimelineItem";
+import { TimelineItem } from "./TimelineItem";
 
 interface OrderDetailsModalProps {
   isOpen: boolean;
@@ -49,14 +48,12 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   
   if (!order) return null;
   
-  // Mock order items
   const orderItems = [
     { id: 1, name: "قميص قطني", quantity: 2, price: 45.50, total: 91.00 },
     { id: 2, name: "بنطلون جينز", quantity: 1, price: 120.99, total: 120.99 },
     { id: 3, name: "حذاء رياضي", quantity: 1, price: 34.00, total: 34.00 },
   ];
   
-  // Mock timeline events
   const timelineEvents = [
     { 
       id: 1, 

@@ -8,7 +8,7 @@ interface TimelineItemProps {
   title: string;
   date: Date;
   description?: string;
-  icon: React.ElementType;
+  icon: React.ReactType | React.ReactNode;
   isLast?: boolean;
 }
 
@@ -17,7 +17,7 @@ export function TimelineItem({ title, date, description, icon: Icon, isLast = fa
     <div className="flex">
       <div className="flex flex-col items-center mr-4">
         <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-100 text-primary-600">
-          <Icon className="h-4 w-4" />
+          {React.isValidElement(Icon) ? Icon : <Icon className="h-4 w-4" />}
         </div>
         {!isLast && <div className="w-px flex-1 bg-gray-200 mt-2"></div>}
       </div>
