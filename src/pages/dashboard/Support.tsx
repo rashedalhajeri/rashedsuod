@@ -3,7 +3,7 @@ import React from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Search, ArrowRight, HelpCircle, ExternalLink, FileText, Mail, PhoneCall } from "lucide-react";
+import { MessageSquare, Search, ArrowRight, HelpCircle, ExternalLink, FileText, Mail, PhoneCall, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
