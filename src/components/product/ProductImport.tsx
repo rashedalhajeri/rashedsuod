@@ -1,84 +1,68 @@
 
-import React, { useState } from "react";
-import { UploadCloud, AlertCircle, Check, X, FileText, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import Papa from "papaparse";
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Upload, AlertTriangle, Check, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import Papa from 'papaparse';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProductImportProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onImport: (products: any[]) => Promise<void>;
   storeId: string;
+  onSuccess: () => void;
 }
 
-export const ProductImport: React.FC<ProductImportProps> = ({
-  isOpen,
-  onClose,
-  onImport,
-  storeId
-}) => {
+export const ProductImport: React.FC<ProductImportProps> = ({ storeId, onSuccess }) => {
   const [file, setFile] = useState<File | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [parsedData, setParsedData] = useState<any[] | null>(null);
-  
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-  
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-  
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFileSelected(e.dataTransfer.files[0]);
-    }
-  };
-  
+  const [importing, setImporting] = useState(false);
+  const [importResults, setImportResults] = useState<{
+    success: number;
+    errors: string[];
+  } | null>(null);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      handleFileSelected(e.target.files[0]);
+      setFile(e.target.files[0]);
+      setImportResults(null);
     }
   };
-  
-  const handleFileSelected = (file: File) => {
-    const fileExtension = file.name.split('.').pop()?.toLowerCase();
+
+  const validateRow = (row: any) => {
+    const errors = [];
     
-    if (fileExtension !== 'csv') {
-      setError('الرجاء اختيار ملف CSV فقط');
-      return;
-    }
+    if (!row.name) errors.push('اسم المنتج مطلوب');
+    if (isNaN(parseFloat(row.price)) || parseFloat(row.price) < 0) errors.push('السعر غير صالح');
+    if (row.stock_quantity && isNaN(parseInt(row.stock_quantity))) errors.push('الكمية غير صالحة');
     
-    setFile(file);
-    setError(null);
+    return errors;
+  };
+
+  const handleImport = async () => {
+    if (!file) return;
     
-    // Parse CSV file
+    setImporting(true);
+    setImportResults(null);
+    
     Papa.parse(file, {
       header: true,
-      complete: (results) => {
-        const requiredFields = ['name', 'price'];
-        const headers = results.meta.fields || [];
+      skipEmptyLines: true,
+      complete: async (results) => {
+        const { data, errors: parseErrors } = results;
+        const importErrors: string[] = [];
+        let successCount = 0;
         
-        const missingFields = requiredFields.filter(field => !headers.includes(field));
-        
-        if (missingFields.length > 0) {
-          setError(`الملف غير صالح. الحقول التالية مفقودة: ${missingFields.join(', ')}`);
-          return;
-        }
-        
-        // Validate and transform data
-        const validProducts = results.data
-          .filter((row: any) => row.name && !isNaN(parseFloat(row.price)))
-          .map((row: any) => ({
+        // Process each row
+        for (let i = 0; i < data.length; i++) {
+          const row = data[i] as any;
+          const rowErrors = validateRow(row);
+          
+          if (rowErrors.length > 0) {
+            importErrors.push(`صف ${i+1}: ${rowErrors.join(', ')}`);
+            continue;
+          }
+          
+          // Create product
+          const productData = {
             name: row.name,
             price: parseFloat(row.price),
             description: row.description || null,
@@ -86,145 +70,133 @@ export const ProductImport: React.FC<ProductImportProps> = ({
             image_url: row.image_url || null,
             store_id: storeId,
             category_id: row.category_id || null
-          }));
-        
-        if (validProducts.length === 0) {
-          setError('لا توجد منتجات صالحة في الملف المختار');
-          return;
+          };
+          
+          try {
+            const { error } = await supabase
+              .from('products')
+              .insert([productData]);
+            
+            if (error) {
+              importErrors.push(`صف ${i+1}: ${error.message}`);
+            } else {
+              successCount++;
+            }
+          } catch (error) {
+            importErrors.push(`صف ${i+1}: خطأ في إدخال البيانات`);
+          }
         }
         
-        setParsedData(validProducts);
+        setImportResults({
+          success: successCount,
+          errors: importErrors
+        });
+        
+        if (successCount > 0 && importErrors.length === 0) {
+          onSuccess();
+        }
+        
+        setImporting(false);
       },
       error: (error) => {
-        setError(`خطأ في تحليل الملف: ${error.message}`);
+        setImportResults({
+          success: 0,
+          errors: [error.message]
+        });
+        setImporting(false);
       }
     });
   };
-  
-  const handleImport = async () => {
-    if (!parsedData) return;
-    
-    try {
-      setIsUploading(true);
-      await onImport(parsedData);
-      toast.success(`تم استيراد ${parsedData.length} منتج بنجاح`);
-      onClose();
-    } catch (error) {
-      toast.error('حدث خطأ أثناء استيراد المنتجات');
-      console.error('Import error:', error);
-    } finally {
-      setIsUploading(false);
-    }
+
+  const resetImport = () => {
+    setFile(null);
+    setImportResults(null);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>استيراد المنتجات</DialogTitle>
-          <DialogDescription>
-            يمكنك استيراد منتجات متعددة عن طريق ملف CSV. تأكد من أن الملف يحتوي على الأعمدة المطلوبة.
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="space-y-4 p-2">
-          <div
-            className={cn(
-              "border-2 border-dashed rounded-lg p-6 transition-colors text-center",
-              isDragging ? "border-primary-500 bg-primary-50" : "border-gray-300",
-              error ? "border-red-300" : ""
-            )}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          >
-            {file ? (
-              <div className="space-y-2">
-                <div className="bg-primary-50 p-2 rounded-md flex items-center justify-center">
-                  <FileText className="h-8 w-8 text-primary-600 mx-auto" />
-                </div>
-                <div className="text-sm font-medium">{file.name}</div>
-                <div className="text-xs text-gray-500">{(file.size / 1024).toFixed(2)} كيلوبايت</div>
-                {parsedData && (
-                  <div className="text-sm text-green-600 flex items-center justify-center gap-1">
-                    <Check className="h-4 w-4" />
-                    تم تحليل {parsedData.length} منتج
-                  </div>
-                )}
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-gray-500" 
-                  onClick={() => {
-                    setFile(null);
-                    setParsedData(null);
-                  }}
-                >
-                  <X className="h-4 w-4 ml-2" />
-                  إزالة الملف
-                </Button>
-              </div>
-            ) : (
-              <>
-                <UploadCloud className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <div className="text-sm text-gray-600">
-                  اسحب وأفلت ملف CSV هنا أو
-                  <label className="mx-1 text-primary-600 hover:text-primary-700 cursor-pointer">
-                    تصفح
-                    <input
-                      type="file"
-                      accept=".csv"
-                      className="hidden"
-                      onChange={handleFileChange}
-                    />
-                  </label>
-                </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  حجم الملف الأقصى: 10 ميجابايت
-                </p>
-              </>
-            )}
+    <div className="space-y-4">
+      <div className="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-6 text-center">
+        <div className="flex flex-col items-center justify-center space-y-2">
+          <Upload className="h-8 w-8 text-gray-400" />
+          <h3 className="text-lg font-medium">استيراد المنتجات من ملف</h3>
+          <p className="text-sm text-gray-500">
+            يمكنك استيراد المنتجات من ملف CSV أو XLSX
+          </p>
+          
+          <div className="mt-4 w-full max-w-xs">
+            <Input
+              type="file"
+              accept=".csv,.xlsx"
+              onChange={handleFileChange}
+              disabled={importing}
+              className="cursor-pointer"
+            />
           </div>
           
-          {error && (
-            <div className="bg-red-50 text-red-700 p-3 rounded-md flex items-start gap-2 text-sm">
-              <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
-              <div>{error}</div>
+          {file && (
+            <div className="mt-2 flex items-center space-x-2 space-x-reverse">
+              <span className="text-sm">{file.name}</span>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={resetImport}
+                disabled={importing}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
           )}
           
-          <div className="bg-gray-50 p-3 rounded-md">
-            <h4 className="text-sm font-medium mb-2">تنسيق الملف المطلوب:</h4>
-            <ul className="text-xs text-gray-600 list-disc list-inside space-y-1">
-              <li>يجب أن يكون الملف بتنسيق CSV</li>
-              <li>الأعمدة المطلوبة: name, price</li>
-              <li>الأعمدة الاختيارية: description, stock_quantity, image_url, category_id</li>
-            </ul>
-          </div>
-        </div>
-        
-        <DialogFooter className="flex gap-2 justify-end">
-          <Button variant="outline" onClick={onClose} disabled={isUploading}>
-            إلغاء
-          </Button>
-          <Button 
-            onClick={handleImport} 
-            disabled={!parsedData || isUploading}
+          <Button
+            className="mt-4"
+            onClick={handleImport}
+            disabled={!file || importing}
           >
-            {isUploading ? (
+            {importing ? 'جاري الاستيراد...' : 'استيراد'}
+          </Button>
+        </div>
+      </div>
+      
+      {importResults && (
+        <Alert variant={importResults.errors.length === 0 ? "default" : "destructive"}>
+          <AlertTitle className="flex items-center gap-2">
+            {importResults.errors.length === 0 ? (
               <>
-                <Loader2 className="h-4 w-4 ml-2 animate-spin" />
-                جاري الاستيراد...
+                <Check className="h-4 w-4" />
+                تم الاستيراد بنجاح
               </>
             ) : (
               <>
-                <Check className="h-4 w-4 ml-2" />
-                استيراد المنتجات
+                <AlertTriangle className="h-4 w-4" />
+                حدثت بعض الأخطاء أثناء الاستيراد
               </>
             )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </AlertTitle>
+          <AlertDescription>
+            <div className="mt-2">
+              <p>تم استيراد {importResults.success} منتج بنجاح</p>
+              
+              {importResults.errors.length > 0 && (
+                <div className="mt-2">
+                  <p className="font-medium">الأخطاء:</p>
+                  <ul className="list-disc list-inside mt-1 text-sm space-y-1">
+                    {importResults.errors.map((error, index) => (
+                      <li key={index}>{error}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      <div className="mt-4">
+        <h4 className="text-sm font-medium mb-2">تنسيق الملف المطلوب:</h4>
+        <p className="text-sm text-gray-500">
+          يجب أن يحتوي الملف على الأعمدة التالية: name, price, description (اختياري), stock_quantity (اختياري), image_url (اختياري), category_id (اختياري)
+        </p>
+      </div>
+    </div>
   );
 };

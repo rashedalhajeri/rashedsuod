@@ -74,9 +74,9 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
   const activeFiltersCount = getActiveFiltersCount();
   
   const handleReset = () => {
-    const resetFilters = {
+    const resetFilters: FilterOptions = {
       categoryId: null,
-      priceRange: [0, maxPrice],
+      priceRange: [0, maxPrice] as [number, number],
       inStock: null,
       sortBy: 'newest'
     };
@@ -372,7 +372,10 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
         <div className="flex gap-2">
           <Select 
             value={filters.categoryId || ""}
-            onValueChange={(value) => onFilterChange({...filters, categoryId: value || null})}
+            onValueChange={(value) => onFilterChange({
+              ...filters, 
+              categoryId: value || null
+            })}
           >
             <SelectTrigger className="w-[180px]">
               <div className="flex items-center gap-2">
