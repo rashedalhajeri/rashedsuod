@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -42,39 +41,31 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up an auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
         setLoading(false);
         
         if (session) {
-          // Securely store user ID for quick auth checking
           await secureStore('user-id', session.user.id);
         } else {
-          // Remove stored ID on logout
           secureRemove('user-id');
         }
       }
     );
     
-    // Initial session check
     const checkCurrentSession = async () => {
       try {
-        // First check for secure stored user ID
         const userId = await secureRetrieve('user-id');
         
         if (userId) {
-          // Validate with supabase
           const { data } = await supabase.auth.getSession();
           if (data.session) {
             setSession(data.session);
           } else {
-            // Remove invalid stored ID
             secureRemove('user-id');
           }
         } else {
-          // No stored ID, check Supabase session
           const { data } = await supabase.auth.getSession();
           setSession(data.session);
         }
@@ -87,13 +78,11 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     checkCurrentSession();
     
-    // Cleanup subscription
     return () => {
       subscription.unsubscribe();
     };
   }, []);
   
-  // Sign out function
   const signOut = async () => {
     await supabase.auth.signOut();
     secureRemove('user-id');
@@ -117,26 +106,21 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       try {
         setIsVerifying(true);
         
-        // First check for secure stored user ID with enhanced security
         const userId = await secureRetrieve('user-id');
         
         if (userId) {
-          // Double check with Supabase for additional security
           const { data } = await supabase.auth.getSession();
           
           if (data.session && data.session.user.id === userId) {
             setIsAuthenticated(true);
           } else {
-            // Remove invalid stored ID
             secureRemove('user-id');
             setIsAuthenticated(false);
           }
         } else {
-          // Fallback to Supabase session check
           const { data } = await supabase.auth.getSession();
           
           if (data.session) {
-            // Store user ID securely for future quick checks
             await secureStore('user-id', data.session.user.id);
             setIsAuthenticated(true);
           } else {
@@ -155,7 +139,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   if (isVerifying) {
-    // Still loading
     return <div className="flex h-screen items-center justify-center">جاري التحقق...</div>;
   }
 
@@ -172,7 +155,6 @@ const StoreCheckRoute = ({ children }: { children: React.ReactNode }) => {
       try {
         setIsChecking(true);
         
-        // Check if the user has a session
         const { data: sessionData } = await supabase.auth.getSession();
         
         if (!sessionData.session) {
@@ -180,7 +162,6 @@ const StoreCheckRoute = ({ children }: { children: React.ReactNode }) => {
           return;
         }
         
-        // Check if the user has a store
         const { data, error } = await supabase
           .from('stores')
           .select('id')
@@ -206,11 +187,9 @@ const StoreCheckRoute = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   if (isChecking) {
-    // Still checking
     return <div className="flex h-screen items-center justify-center">جاري التحقق من المتجر...</div>;
   }
 
-  // If the user doesn't have a store, redirect to create-store
   return hasStore ? <>{children}</> : <Navigate to="/create-store" />;
 };
 
@@ -253,8 +232,9 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
+            
             <Route 
-              path="/analytics" 
+              path="/orders" 
               element={
                 <ProtectedRoute>
                   <StoreCheckRoute>
@@ -273,8 +253,9 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
+            
             <Route 
-              path="/settings" 
+              path="/promotions" 
               element={
                 <ProtectedRoute>
                   <StoreCheckRoute>
@@ -283,6 +264,190 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/coupons" 
+              element={
+                <ProtectedRoute>
+                  <StoreCheckRoute>
+                    <Dashboard />
+                  </StoreCheckRoute>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/categories" 
+              element={
+                <ProtectedRoute>
+                  <StoreCheckRoute>
+                    <Dashboard />
+                  </StoreCheckRoute>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/payment" 
+              element={
+                <ProtectedRoute>
+                  <StoreCheckRoute>
+                    <Dashboard />
+                  </StoreCheckRoute>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/shipping" 
+              element={
+                <ProtectedRoute>
+                  <StoreCheckRoute>
+                    <Dashboard />
+                  </StoreCheckRoute>
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/sales-reports" 
+              element={
+                <ProtectedRoute>
+                  <StoreCheckRoute>
+                    <Dashboard />
+                  </StoreCheckRoute>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/product-analytics" 
+              element={
+                <ProtectedRoute>
+                  <StoreCheckRoute>
+                    <Dashboard />
+                  </StoreCheckRoute>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/customer-analytics" 
+              element={
+                <ProtectedRoute>
+                  <StoreCheckRoute>
+                    <Dashboard />
+                  </StoreCheckRoute>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/financial" 
+              element={
+                <ProtectedRoute>
+                  <StoreCheckRoute>
+                    <Dashboard />
+                  </StoreCheckRoute>
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/inbox" 
+              element={
+                <ProtectedRoute>
+                  <StoreCheckRoute>
+                    <Dashboard />
+                  </StoreCheckRoute>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/product-inquiries" 
+              element={
+                <ProtectedRoute>
+                  <StoreCheckRoute>
+                    <Dashboard />
+                  </StoreCheckRoute>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/support" 
+              element={
+                <ProtectedRoute>
+                  <StoreCheckRoute>
+                    <Dashboard />
+                  </StoreCheckRoute>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/reviews" 
+              element={
+                <ProtectedRoute>
+                  <StoreCheckRoute>
+                    <Dashboard />
+                  </StoreCheckRoute>
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/store-info" 
+              element={
+                <ProtectedRoute>
+                  <StoreCheckRoute>
+                    <Dashboard />
+                  </StoreCheckRoute>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/appearance" 
+              element={
+                <ProtectedRoute>
+                  <StoreCheckRoute>
+                    <Dashboard />
+                  </StoreCheckRoute>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/system-settings" 
+              element={
+                <ProtectedRoute>
+                  <StoreCheckRoute>
+                    <Dashboard />
+                  </StoreCheckRoute>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/subscription" 
+              element={
+                <ProtectedRoute>
+                  <StoreCheckRoute>
+                    <Dashboard />
+                  </StoreCheckRoute>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/user-management" 
+              element={
+                <ProtectedRoute>
+                  <StoreCheckRoute>
+                    <Dashboard />
+                  </StoreCheckRoute>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/security" 
+              element={
+                <ProtectedRoute>
+                  <StoreCheckRoute>
+                    <Dashboard />
+                  </StoreCheckRoute>
+                </ProtectedRoute>
+              } 
+            />
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
@@ -292,4 +457,3 @@ const App = () => (
 );
 
 export default App;
-

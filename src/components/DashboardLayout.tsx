@@ -1,3 +1,4 @@
+
 import React, { ReactNode, useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase, getStoreData } from "@/integrations/supabase/client";
@@ -6,7 +7,11 @@ import { toast } from "sonner";
 import { 
   LogOut, Settings, ShoppingBag, Home, Package, BarChart, Users, Menu, X, Shield, 
   ChevronRight, Zap, Bell, Tag, CreditCard, Store, Percent, Crown, Layers, 
-  LayoutDashboard, Star, Mail, MailQuestion, MessageSquare, PieChart, DollarSign
+  LayoutDashboard, Star, Mail, MailQuestion, MessageSquare, PieChart, DollarSign,
+  Truck, ClipboardList, Wallet, Receipt, Banknote, Activity, TrendingUp,
+  Inbox, CalendarRange, Table, FileText, Image, LineChart, Wrench, Gift, 
+  Database, ExternalLink, UserCog, HeartHandshake, ShieldCheck, BadgeDollarSign,
+  CircleDollarSign, GaugeCircle, ListChecks, BookOpenCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -117,10 +122,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
   const mainNavigation = [
     {
-      name: 'الرئيسية',
+      name: 'لوحة التحكم',
       href: '/dashboard',
       icon: LayoutDashboard,
-      description: 'نظرة عامة على المتجر والإحصائيات'
+      description: 'نظرة عامة على المبيعات والإحصائيات'
     }, 
     {
       name: 'الطلبات',
@@ -138,16 +143,22 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       name: 'العملاء',
       href: '/customers',
       icon: Users,
-      description: 'إدارة قاعدة العملاء والتواصل معهم'
+      description: 'إدارة قاعدة العملاء والولاء'
     }
   ];
   
   const marketingSalesNavigation = [
     {
-      name: 'كوبونات وتسويق',
-      href: '/marketing',
+      name: 'العروض والخصومات',
+      href: '/promotions',
       icon: Percent,
-      description: 'إدارة العروض والحملات التسويقية'
+      description: 'إدارة العروض الخاصة والتخفيضات'
+    },
+    {
+      name: 'كوبونات الخصم',
+      href: '/coupons',
+      icon: Gift,
+      description: 'إنشاء وإدارة كوبونات الخصم'
     },
     {
       name: 'الفئات',
@@ -156,55 +167,109 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       description: 'تنظيم المنتجات في فئات وتصنيفات'
     },
     {
-      name: 'نظام الدفع',
+      name: 'المدفوعات',
       href: '/payment',
       icon: CreditCard,
       description: 'إعدادات طرق الدفع والمعاملات المالية'
+    },
+    {
+      name: 'الشحن والتوصيل',
+      href: '/shipping',
+      icon: Truck,
+      description: 'إدارة خيارات الشحن وأسعار التوصيل'
     }
   ];
   
   const analyticsNavigation = [
     {
-      name: 'التقارير',
-      href: '/reports',
+      name: 'تقارير المبيعات',
+      href: '/sales-reports',
       icon: BarChart,
-      description: 'تحليل أداء المتجر والمبيعات'
+      description: 'تحليل أداء المبيعات والإيرادات'
     },
     {
-      name: 'الإحصائيات',
-      href: '/analytics',
+      name: 'أداء المنتجات',
+      href: '/product-analytics',
+      icon: LineChart,
+      description: 'إحصائيات حول أداء المنتجات'
+    },
+    {
+      name: 'تحليل العملاء',
+      href: '/customer-analytics',
       icon: PieChart,
-      description: 'إحصائيات متقدمة عن المتجر'
+      description: 'بيانات عن سلوك العملاء والمشتريات'
+    },
+    {
+      name: 'التدفق المالي',
+      href: '/financial',
+      icon: TrendingUp,
+      description: 'تقارير الإيرادات والمصروفات'
     }
   ];
   
   const communicationNavigation = [
     {
-      name: 'الرسائل',
-      href: '/messages',
-      icon: MessageSquare,
-      description: 'التواصل مع العملاء'
+      name: 'صندوق الوارد',
+      href: '/inbox',
+      icon: Inbox,
+      description: 'الرسائل الواردة من العملاء'
     },
     {
-      name: 'الاستفسارات',
-      href: '/inquiries',
+      name: 'استفسارات المنتجات',
+      href: '/product-inquiries',
       icon: MailQuestion,
-      description: 'الرد على استفسارات العملاء'
+      description: 'الرد على استفسارات حول المنتجات'
+    },
+    {
+      name: 'الدعم الفني',
+      href: '/support',
+      icon: HeartHandshake,
+      description: 'تذاكر وطلبات الدعم الفني'
+    },
+    {
+      name: 'التقييمات',
+      href: '/reviews',
+      icon: Star,
+      description: 'تقييمات العملاء والمراجعات'
     }
   ];
   
   const settingsNavigation = [
     {
-      name: 'المتجر',
-      href: '/store',
+      name: 'معلومات المتجر',
+      href: '/store-info',
       icon: Store,
-      description: 'معلومات المتجر الأساسية والتخصيص'
+      description: 'البيانات الأساسية للمتجر وشعاره'
     },
     {
-      name: 'الإعدادات',
-      href: '/settings',
-      icon: Settings,
-      description: 'إعدادات الحساب وتفضيلات النظام'
+      name: 'تخصيص الواجهة',
+      href: '/appearance',
+      icon: Image,
+      description: 'تخصيص مظهر المتجر والألوان والقوالب'
+    },
+    {
+      name: 'إعدادات النظام',
+      href: '/system-settings',
+      icon: Wrench,
+      description: 'إعدادات النظام والوظائف المتقدمة'
+    },
+    {
+      name: 'الاشتراك والباقة',
+      href: '/subscription',
+      icon: BadgeDollarSign,
+      description: 'تفاصيل الاشتراك وخيارات الترقية'
+    },
+    {
+      name: 'إدارة المستخدمين',
+      href: '/user-management',
+      icon: UserCog,
+      description: 'إضافة وإدارة فريق العمل والصلاحيات'
+    },
+    {
+      name: 'الأمان والخصوصية',
+      href: '/security',
+      icon: ShieldCheck,
+      description: 'إعدادات الأمان وحماية البيانات'
     }
   ];
 
@@ -344,7 +409,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               
               <SidebarGroup>
                 <div className="px-3 py-2 mt-2">
-                  <h4 className="text-xs font-medium text-gray-500 mb-2">التواصل</h4>
+                  <h4 className="text-xs font-medium text-gray-500 mb-2">التواصل والدعم</h4>
                 </div>
                 <SidebarMenu>
                   {communicationNavigation.map(item => {
@@ -460,10 +525,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </span>
           </Link>
           
-          <Link to="/settings" className="mobile-nav-item">
-            <Settings size={20} className={location.pathname === '/settings' ? "text-primary-600" : "text-gray-500"} />
-            <span className={cn("mobile-nav-label", location.pathname === '/settings' ? "text-primary-600" : "text-gray-500")}>
-              الإعدادات
+          <Link to="/inbox" className="mobile-nav-item">
+            <Inbox size={20} className={location.pathname === '/inbox' ? "text-primary-600" : "text-gray-500"} />
+            <span className={cn("mobile-nav-label", location.pathname === '/inbox' ? "text-primary-600" : "text-gray-500")}>
+              الرسائل
             </span>
           </Link>
         </div>}
