@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { supabase, getStoreData } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import { secureRetrieve } from "@/lib/encryption";
+
 interface Store {
   id: string;
   store_name: string;
@@ -18,12 +20,14 @@ interface Store {
   country: string;
   currency: string;
 }
+
 interface DashboardStats {
   productCount: number;
   orderCount: number;
   customerCount: number;
   revenue: number;
 }
+
 const Dashboard: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,11 +36,12 @@ const Dashboard: React.FC = () => {
     productCount: 0,
     orderCount: 0,
     customerCount: 0,
-    revenue: 0
+    revenue: 1250.75 // قيمة افتراضية للإيرادات
   });
   const [showCreateStoreDialog, setShowCreateStoreDialog] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const navigate = useNavigate();
+
   useEffect(() => {
     document.documentElement.dir = "rtl";
     document.documentElement.lang = "ar";
@@ -45,6 +50,7 @@ const Dashboard: React.FC = () => {
       document.documentElement.lang = "en";
     };
   }, []);
+
   useEffect(() => {
     const fetchSessionAndStore = async () => {
       try {
@@ -103,15 +109,18 @@ const Dashboard: React.FC = () => {
     };
     fetchSessionAndStore();
   }, [navigate]);
+
   const handleCreateStore = () => {
     navigate('/create-store');
   };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('ar-KW', {
       style: 'currency',
       currency: store?.currency || 'KWD'
     }).format(amount);
   };
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -120,6 +129,7 @@ const Dashboard: React.FC = () => {
         </div>
       </div>;
   }
+
   if (showCreateStoreDialog) {
     return <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8 border border-gray-100">
@@ -131,6 +141,7 @@ const Dashboard: React.FC = () => {
         </div>
       </div>;
   }
+
   return <DashboardLayout>
       <div className="animate-fade-in space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -201,7 +212,7 @@ const Dashboard: React.FC = () => {
               <div className="flex justify-between items-center">
                 <div>
                   <p className="text-sm font-medium text-gray-500">الإيرادات</p>
-                  
+                  <h3 className="text-2xl font-bold">{formatCurrency(stats.revenue)}</h3>
                 </div>
                 <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform duration-300">
                   <DollarSign className="h-6 w-6" />
@@ -338,4 +349,5 @@ const Dashboard: React.FC = () => {
       </div>
     </DashboardLayout>;
 };
+
 export default Dashboard;
