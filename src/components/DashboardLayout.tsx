@@ -1,9 +1,10 @@
+
 import React, { ReactNode, useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase, getStoreData } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import { LogOut, Settings, ShoppingBag, Home, Package, BarChart, Users, Menu, X, Shield, ChevronRight, Zap, Bell, Tag, CreditCard, Store, Percent, Crown } from "lucide-react";
+import { LogOut, Settings, ShoppingBag, Home, Package, BarChart, Users, Menu, X, Shield, ChevronRight, Zap, Bell, Tag, CreditCard, Store, Percent, Crown, Layers, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { secureStore, secureRetrieve, secureRemove } from "@/lib/encryption";
@@ -111,43 +112,60 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       </div>;
   }
 
-  const navigation = [{
-    name: 'الرئيسية',
-    href: '/dashboard',
-    icon: Home
-  }, {
-    name: 'الطلبات',
-    href: '/orders',
-    icon: ShoppingBag
-  }, {
-    name: 'المنتجات',
-    href: '/products',
-    icon: Package
-  }, {
-    name: 'العملاء',
-    href: '/customers',
-    icon: Users
-  }, {
-    name: 'الفئات',
-    href: '/categories',
-    icon: Tag
-  }, {
-    name: 'كيبونات وتسويق',
-    href: '/marketing',
-    icon: Percent
-  }, {
-    name: 'نظام الدفع',
-    href: '/payment',
-    icon: CreditCard
-  }, {
-    name: 'المتجر',
-    href: '/store',
-    icon: Store
-  }, {
-    name: 'الإعدادات',
-    href: '/settings',
-    icon: Settings
-  }];
+  // Reorganize navigation items into logical groups
+  const mainNavigation = [
+    {
+      name: 'الرئيسية',
+      href: '/dashboard',
+      icon: LayoutDashboard 
+    }, 
+    {
+      name: 'الطلبات',
+      href: '/orders',
+      icon: ShoppingBag
+    },
+    {
+      name: 'المنتجات',
+      href: '/products',
+      icon: Package
+    },
+    {
+      name: 'العملاء',
+      href: '/customers',
+      icon: Users
+    }
+  ];
+  
+  const marketingSalesNavigation = [
+    {
+      name: 'الفئات',
+      href: '/categories',
+      icon: Layers
+    },
+    {
+      name: 'كيبونات وتسويق',
+      href: '/marketing',
+      icon: Percent
+    },
+    {
+      name: 'نظام الدفع',
+      href: '/payment',
+      icon: CreditCard
+    }
+  ];
+  
+  const settingsNavigation = [
+    {
+      name: 'المتجر',
+      href: '/store',
+      icon: Store
+    },
+    {
+      name: 'الإعدادات',
+      href: '/settings',
+      icon: Settings
+    }
+  ];
 
   return <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 rtl">
       <SidebarProvider defaultExpanded={!isMobile}>
@@ -235,19 +253,54 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </SidebarHeader>
             
             <SidebarContent>
+              {/* Main Navigation Group */}
               <SidebarGroup>
                 <div className="px-3 py-2">
                   <h4 className="text-xs font-medium text-gray-500 mb-2">القائمة الرئيسية</h4>
                 </div>
                 <SidebarMenu>
-                  {navigation.map(item => {
-                  const isActive = location.pathname === item.href;
-                  return <SidebarMenuItem key={item.name}>
-                        <SidebarMenuLink href={item.href} icon={item.icon} active={isActive}>
-                          {item.name}
-                        </SidebarMenuLink>
-                      </SidebarMenuItem>;
-                })}
+                  {mainNavigation.map(item => {
+                    const isActive = location.pathname === item.href;
+                    return <SidebarMenuItem key={item.name}>
+                          <SidebarMenuLink href={item.href} icon={item.icon} active={isActive}>
+                            {item.name}
+                          </SidebarMenuLink>
+                        </SidebarMenuItem>;
+                  })}
+                </SidebarMenu>
+              </SidebarGroup>
+              
+              {/* Marketing & Sales Group */}
+              <SidebarGroup>
+                <div className="px-3 py-2 mt-2">
+                  <h4 className="text-xs font-medium text-gray-500 mb-2">التسويق والمبيعات</h4>
+                </div>
+                <SidebarMenu>
+                  {marketingSalesNavigation.map(item => {
+                    const isActive = location.pathname === item.href;
+                    return <SidebarMenuItem key={item.name}>
+                          <SidebarMenuLink href={item.href} icon={item.icon} active={isActive}>
+                            {item.name}
+                          </SidebarMenuLink>
+                        </SidebarMenuItem>;
+                  })}
+                </SidebarMenu>
+              </SidebarGroup>
+              
+              {/* Settings Group */}
+              <SidebarGroup>
+                <div className="px-3 py-2 mt-2">
+                  <h4 className="text-xs font-medium text-gray-500 mb-2">الإعدادات والإدارة</h4>
+                </div>
+                <SidebarMenu>
+                  {settingsNavigation.map(item => {
+                    const isActive = location.pathname === item.href;
+                    return <SidebarMenuItem key={item.name}>
+                          <SidebarMenuLink href={item.href} icon={item.icon} active={isActive}>
+                            {item.name}
+                          </SidebarMenuLink>
+                        </SidebarMenuItem>;
+                  })}
                 </SidebarMenu>
               </SidebarGroup>
             </SidebarContent>
@@ -316,15 +369,27 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       </SidebarProvider>
       
       {isMobile && <div className="mobile-nav bg-white shadow-lg border-t border-gray-100 rounded-t-xl">
-          {navigation.slice(0, 3).map(item => {
-        const isActive = location.pathname === item.href;
-        return <Link key={item.name} to={item.href} className="mobile-nav-item">
-                <item.icon size={20} className={isActive ? "text-primary-600" : "text-gray-500"} />
-                <span className={cn("mobile-nav-label", isActive ? "text-primary-600" : "text-gray-500")}>
-                  {item.name}
-                </span>
-              </Link>;
-      })}
+          {/* Update mobile nav to include the most important actions */}
+          <Link to="/dashboard" className="mobile-nav-item">
+            <LayoutDashboard size={20} className={location.pathname === '/dashboard' ? "text-primary-600" : "text-gray-500"} />
+            <span className={cn("mobile-nav-label", location.pathname === '/dashboard' ? "text-primary-600" : "text-gray-500")}>
+              الرئيسية
+            </span>
+          </Link>
+          
+          <Link to="/orders" className="mobile-nav-item">
+            <ShoppingBag size={20} className={location.pathname === '/orders' ? "text-primary-600" : "text-gray-500"} />
+            <span className={cn("mobile-nav-label", location.pathname === '/orders' ? "text-primary-600" : "text-gray-500")}>
+              الطلبات
+            </span>
+          </Link>
+          
+          <Link to="/products" className="mobile-nav-item">
+            <Package size={20} className={location.pathname === '/products' ? "text-primary-600" : "text-gray-500"} />
+            <span className={cn("mobile-nav-label", location.pathname === '/products' ? "text-primary-600" : "text-gray-500")}>
+              المنتجات
+            </span>
+          </Link>
           
           <Link to="/settings" className="mobile-nav-item">
             <Settings size={20} className={location.pathname === '/settings' ? "text-primary-600" : "text-gray-500"} />
@@ -332,11 +397,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               الإعدادات
             </span>
           </Link>
-          
-          <button onClick={handleLogout} className="mobile-nav-item">
-            <LogOut size={20} className="text-gray-500" />
-            <span className="mobile-nav-label">خروج</span>
-          </button>
         </div>}
 
       <div className="fixed bottom-20 left-4 md:bottom-8 z-50">
