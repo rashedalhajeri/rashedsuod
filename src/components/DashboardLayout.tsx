@@ -1,4 +1,3 @@
-
 import React, { ReactNode, useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase, getStoreData } from "@/integrations/supabase/client";
@@ -129,19 +128,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     }, 
     {
       name: 'الطلبات',
-      href: '/orders',
+      href: '/dashboard/orders',
       icon: ShoppingBag,
-      description: 'إدارة طلبات العملاء وتتبع الشحنات'
+      description: 'إدارة طلبات العملاء وت��بع الشحنات'
     },
     {
       name: 'المنتجات',
-      href: '/products',
+      href: '/dashboard/products',
       icon: Package,
       description: 'إدارة منتجات المتجر والمخزون'
     },
     {
       name: 'العملاء',
-      href: '/customers',
+      href: '/dashboard/customers',
       icon: Users,
       description: 'إدارة قاعدة العملاء والولاء'
     }
@@ -150,31 +149,31 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const marketingSalesNavigation = [
     {
       name: 'العروض والخصومات',
-      href: '/promotions',
+      href: '/dashboard/promotions',
       icon: Percent,
       description: 'إدارة العروض الخاصة والتخفيضات'
     },
     {
       name: 'كوبونات الخصم',
-      href: '/coupons',
+      href: '/dashboard/coupons',
       icon: Gift,
       description: 'إنشاء وإدارة كوبونات الخصم'
     },
     {
       name: 'الفئات',
-      href: '/categories',
+      href: '/dashboard/categories',
       icon: Layers,
       description: 'تنظيم المنتجات في فئات وتصنيفات'
     },
     {
       name: 'المدفوعات',
-      href: '/payment',
+      href: '/dashboard/payment',
       icon: CreditCard,
       description: 'إعدادات طرق الدفع والمعاملات المالية'
     },
     {
       name: 'الشحن والتوصيل',
-      href: '/shipping',
+      href: '/dashboard/shipping',
       icon: Truck,
       description: 'إدارة خيارات الشحن وأسعار التوصيل'
     }
@@ -183,25 +182,25 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const analyticsNavigation = [
     {
       name: 'تقارير المبيعات',
-      href: '/sales-reports',
+      href: '/dashboard/sales-reports',
       icon: BarChart,
       description: 'تحليل أداء المبيعات والإيرادات'
     },
     {
       name: 'أداء المنتجات',
-      href: '/product-analytics',
+      href: '/dashboard/product-analytics',
       icon: LineChart,
       description: 'إحصائيات حول أداء المنتجات'
     },
     {
       name: 'تحليل العملاء',
-      href: '/customer-analytics',
+      href: '/dashboard/customer-analytics',
       icon: PieChart,
       description: 'بيانات عن سلوك العملاء والمشتريات'
     },
     {
       name: 'التدفق المالي',
-      href: '/financial',
+      href: '/dashboard/financial',
       icon: TrendingUp,
       description: 'تقارير الإيرادات والمصروفات'
     }
@@ -210,25 +209,25 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const communicationNavigation = [
     {
       name: 'صندوق الوارد',
-      href: '/inbox',
+      href: '/dashboard/inbox',
       icon: Inbox,
       description: 'الرسائل الواردة من العملاء'
     },
     {
       name: 'استفسارات المنتجات',
-      href: '/product-inquiries',
+      href: '/dashboard/product-inquiries',
       icon: MailQuestion,
       description: 'الرد على استفسارات حول المنتجات'
     },
     {
       name: 'الدعم الفني',
-      href: '/support',
+      href: '/dashboard/support',
       icon: HeartHandshake,
       description: 'تذاكر وطلبات الدعم الفني'
     },
     {
       name: 'التقييمات',
-      href: '/reviews',
+      href: '/dashboard/reviews',
       icon: Star,
       description: 'تقييمات العملاء والمراجعات'
     }
@@ -237,37 +236,37 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const settingsNavigation = [
     {
       name: 'معلومات المتجر',
-      href: '/store-info',
+      href: '/dashboard/store-info',
       icon: Store,
       description: 'البيانات الأساسية للمتجر وشعاره'
     },
     {
       name: 'تخصيص الواجهة',
-      href: '/appearance',
+      href: '/dashboard/appearance',
       icon: Image,
       description: 'تخصيص مظهر المتجر والألوان والقوالب'
     },
     {
       name: 'إعدادات النظام',
-      href: '/system-settings',
+      href: '/dashboard/system-settings',
       icon: Wrench,
       description: 'إعدادات النظام والوظائف المتقدمة'
     },
     {
       name: 'الاشتراك والباقة',
-      href: '/subscription',
+      href: '/dashboard/subscription',
       icon: BadgeDollarSign,
       description: 'تفاصيل الاشتراك وخيارات الترقية'
     },
     {
       name: 'إدارة المستخدمين',
-      href: '/user-management',
+      href: '/dashboard/user-management',
       icon: UserCog,
       description: 'إضافة وإدارة فريق العمل والصلاحيات'
     },
     {
       name: 'الأمان والخصوصية',
-      href: '/security',
+      href: '/dashboard/security',
       icon: ShieldCheck,
       description: 'إعدادات الأمان وحماية البيانات'
     }
@@ -511,23 +510,23 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </span>
           </Link>
           
-          <Link to="/orders" className="mobile-nav-item">
-            <ShoppingBag size={20} className={location.pathname === '/orders' ? "text-primary-600" : "text-gray-500"} />
-            <span className={cn("mobile-nav-label", location.pathname === '/orders' ? "text-primary-600" : "text-gray-500")}>
+          <Link to="/dashboard/orders" className="mobile-nav-item">
+            <ShoppingBag size={20} className={location.pathname === '/dashboard/orders' ? "text-primary-600" : "text-gray-500"} />
+            <span className={cn("mobile-nav-label", location.pathname === '/dashboard/orders' ? "text-primary-600" : "text-gray-500")}>
               الطلبات
             </span>
           </Link>
           
-          <Link to="/products" className="mobile-nav-item">
-            <Package size={20} className={location.pathname === '/products' ? "text-primary-600" : "text-gray-500"} />
-            <span className={cn("mobile-nav-label", location.pathname === '/products' ? "text-primary-600" : "text-gray-500")}>
+          <Link to="/dashboard/products" className="mobile-nav-item">
+            <Package size={20} className={location.pathname === '/dashboard/products' ? "text-primary-600" : "text-gray-500"} />
+            <span className={cn("mobile-nav-label", location.pathname === '/dashboard/products' ? "text-primary-600" : "text-gray-500")}>
               المنتجات
             </span>
           </Link>
           
-          <Link to="/inbox" className="mobile-nav-item">
-            <Inbox size={20} className={location.pathname === '/inbox' ? "text-primary-600" : "text-gray-500"} />
-            <span className={cn("mobile-nav-label", location.pathname === '/inbox' ? "text-primary-600" : "text-gray-500")}>
+          <Link to="/dashboard/inbox" className="mobile-nav-item">
+            <Inbox size={20} className={location.pathname === '/dashboard/inbox' ? "text-primary-600" : "text-gray-500"} />
+            <span className={cn("mobile-nav-label", location.pathname === '/dashboard/inbox' ? "text-primary-600" : "text-gray-500")}>
               الرسائل
             </span>
           </Link>
