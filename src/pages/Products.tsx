@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,7 +15,6 @@ const Products = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   
-  // Mock products data
   const mockProducts = Array(12).fill(0).map((_, i) => ({
     id: `prod-${i + 1}`,
     name: `منتج تجريبي ${i + 1}`,
@@ -38,11 +36,9 @@ const Products = () => {
   
   const handleBulkAction = (action: string) => {
     console.log(`Performing ${action} on`, selectedProducts);
-    // Reset selection after action
     setSelectedProducts([]);
   };
 
-  // Add necessary functions for ProductBulkActions
   const handleDeleteSelected = async () => {
     console.log("Deleting selected products:", selectedProducts);
     setSelectedProducts([]);
@@ -61,7 +57,6 @@ const Products = () => {
     return Promise.resolve();
   };
 
-  // Mock categories
   const mockCategories = [
     { id: "cat1", name: "ملابس" },
     { id: "cat2", name: "إلكترونيات" },
@@ -76,7 +71,6 @@ const Products = () => {
     console.log("Add new product");
   };
   
-  // Updated handler functions for ProductFilters
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
   };
@@ -92,6 +86,13 @@ const Products = () => {
     
     return matchesSearch && matchesCategory;
   });
+
+  const filtersData = {
+    categoryId: categoryFilter === "all" ? null : categoryFilter,
+    priceRange: [0, 1000] as [number, number],
+    inStock: null,
+    sortBy: 'newest'
+  };
 
   return (
     <div className="space-y-6">
@@ -134,8 +135,16 @@ const Products = () => {
         <CardContent>
           <div className="mb-6">
             <ProductFilters 
+              categories={mockCategories}
+              searchQuery={searchQuery}
               onSearchChange={handleSearchChange}
-              onCategoryChange={handleCategoryFilterChange}
+              filters={filtersData}
+              onFilterChange={(filters) => {
+                if (filters.categoryId !== filtersData.categoryId) {
+                  setCategoryFilter(filters.categoryId || "all");
+                }
+              }}
+              maxPrice={1000}
             />
           </div>
           
