@@ -220,19 +220,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             />
             
             <SidebarContent>
-              <div className="mb-4">
-                <div className="relative">
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
-                    <Search className="h-4 w-4" />
-                  </div>
-                  <Input 
-                    type="search" 
-                    placeholder="البحث..." 
-                    className="w-full pr-10 border-none bg-gray-100/80 focus:ring-primary-500 text-sm placeholder:text-gray-400 rounded-full h-9"
-                  />
-                </div>
-              </div>
-              
               <SidebarGroup>
                 <div className="px-3 py-2">
                   <h4 className="text-xs font-medium text-gray-500 mb-2">القائمة الرئيسية</h4>
