@@ -48,6 +48,15 @@ export const signInWithGoogle = async () => {
   });
 };
 
+export const signInWithApple = async () => {
+  return await supabase.auth.signInWithOAuth({
+    provider: 'apple',
+    options: {
+      redirectTo: window.location.origin,
+    }
+  });
+};
+
 export const resetPassword = async (email: string) => {
   return await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${window.location.origin}/reset-password`,
