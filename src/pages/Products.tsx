@@ -12,7 +12,11 @@ import {
   Check,
   ChevronRight,
   Loader2,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Filter,
+  Tag,
+  LayoutGrid,
+  List
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,7 +38,19 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import DashboardLayout from "@/components/DashboardLayout";
+import { ProductCard } from "@/components/product/ProductCard";
+import { ProductForm } from "@/components/product/ProductForm";
+import { ProductFilter } from "@/components/product/ProductFilter";
+import { ProductEmptyState } from "@/components/product/ProductEmptyState";
 
 interface Product {
   id: string;
@@ -45,6 +61,7 @@ interface Product {
   image_url?: string | null;
   stock_quantity?: number | null;
   created_at: string;
+  category?: string | null;
 }
 
 interface Store {
@@ -62,15 +79,13 @@ const Products: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [newProduct, setNewProduct] = useState({
-    name: "",
-    description: "",
-    price: "",
-    image_url: "",
-    stock_quantity: ""
-  });
   const [storeId, setStoreId] = useState<string | null>(null);
   const [store, setStore] = useState<Store | null>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [categories, setCategories] = useState<string[]>([
+    "ملابس", "إلكترونيات", "منزل", "طعام", "رياضة", "أخرى"
+  ]);
   const navigate = useNavigate();
 
   // Check for auth state and fetch products data
@@ -138,22 +153,7 @@ const Products: React.FC = () => {
     fetchSessionAndProducts();
   }, [navigate]);
 
-  const resetNewProductForm = () => {
-    setNewProduct({
-      name: "",
-      description: "",
-      price: "",
-      image_url: "",
-      stock_quantity: ""
-    });
-  };
-
-  const handleAddProduct = async () => {
-    if (!newProduct.name || !newProduct.price) {
-      toast.error("يرجى تعبئة الحقول المطلوبة");
-      return;
-    }
-
+  const handleAddProduct = async (productData: Omit<Product, 'id' | 'created_at' | 'store_id'>) => {
     if (!storeId) {
       toast.error("لم يتم العثور على معرف المتجر");
       return;
@@ -163,7 +163,7 @@ const Products: React.FC = () => {
       setIsSubmitting(true);
       
       // Validate price is a valid number
-      const price = parseFloat(newProduct.price);
+      const price = parseFloat(String(productData.price));
       if (isNaN(price) || price < 0) {
         toast.error("يرجى إدخال سعر صحيح");
         return;
@@ -174,12 +174,13 @@ const Products: React.FC = () => {
         .from('products')
         .insert([
           { 
-            name: newProduct.name,
-            description: newProduct.description || null,
+            name: productData.name,
+            description: productData.description || null,
             price: price,
-            image_url: newProduct.image_url || null,
-            stock_quantity: newProduct.stock_quantity ? parseInt(newProduct.stock_quantity) : null,
-            store_id: storeId
+            image_url: productData.image_url || null,
+            stock_quantity: productData.stock_quantity || null,
+            store_id: storeId,
+            category: productData.category || "أخرى"
           }
         ])
         .select();
@@ -191,7 +192,6 @@ const Products: React.FC = () => {
       if (data && data.length > 0) {
         // Update products list - add at the beginning for better UX
         setProducts([...data, ...products]);
-        resetNewProductForm();
         setIsAddProductOpen(false);
         toast.success("تم إضافة المنتج بنجاح");
       }
@@ -203,10 +203,15 @@ const Products: React.FC = () => {
     }
   };
 
-  const filteredProducts = products.filter(product => 
-    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (product.description?.toLowerCase() || "").includes(searchQuery.toLowerCase())
-  );
+  const filteredProducts = products
+    .filter(product => 
+      (activeFilter ? product.category === activeFilter : true) &&
+      (searchQuery ? 
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (product.description?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+        : true
+      )
+    );
 
   const formatCurrency = (price: number) => {
     return new Intl.NumberFormat('ar-KW', { 
@@ -215,59 +220,104 @@ const Products: React.FC = () => {
     }).format(price);
   };
 
-  const renderEmptyState = () => (
-    <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-      <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-      <h3 className="text-lg font-medium text-gray-800 mb-2">لا توجد منتجات</h3>
-      <p className="text-gray-600 mb-4">لم تقم بإضافة أي منتجات بعد. أضف منتجك الأول الآن!</p>
-      <Button 
-        onClick={() => setIsAddProductOpen(true)}
-        className="bg-primary-600 hover:bg-primary-700"
-      >
-        <Plus className="h-4 w-4 mr-2" />
-        إضافة منتج جديد
-      </Button>
-    </div>
-  );
-
   return (
     <DashboardLayout>
-      <div className="p-8">
-        <div className="flex justify-between items-center mb-6">
+      <div className="p-4 md:p-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">إدارة المنتجات</h1>
             <p className="text-gray-600">أضف وعدل منتجات متجرك</p>
           </div>
-          <Button 
-            onClick={() => setIsAddProductOpen(true)}
-            className="bg-primary-600 hover:bg-primary-700"
-            disabled={isLoading}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            إضافة منتج جديد
-          </Button>
+          
+          <div className="flex gap-2 w-full md:w-auto">
+            <Button 
+              onClick={() => setIsAddProductOpen(true)}
+              className="bg-primary-600 hover:bg-primary-700 flex-grow md:flex-grow-0"
+              disabled={isLoading}
+            >
+              <Plus className="h-4 w-4 ml-2" />
+              إضافة منتج جديد
+            </Button>
+          </div>
         </div>
 
+        {/* Search and Filter Controls */}
         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-          <div className="relative">
-            <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <Input
-              className="pl-10 pr-12 py-2"
-              placeholder="ابحث عن منتج..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            {searchQuery && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 h-6 w-6" 
-                onClick={() => setSearchQuery("")}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-grow">
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Input
+                className="pl-10 pr-12 py-2"
+                placeholder="ابحث عن منتج..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 h-6 w-6" 
+                  onClick={() => setSearchQuery("")}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            
+            <div className="flex gap-2">
+              <Select value={activeFilter || ""} onValueChange={(value) => setActiveFilter(value || null)}>
+                <SelectTrigger className="w-[180px]">
+                  <div className="flex items-center gap-2">
+                    <Filter className="h-4 w-4" />
+                    <span>{activeFilter || "جميع التصنيفات"}</span>
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">جميع التصنيفات</SelectItem>
+                  {categories.map(category => (
+                    <SelectItem key={category} value={category}>{category}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <div className="border rounded-md flex">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className={`h-10 ${viewMode === "grid" ? "bg-gray-100" : ""}`}
+                  onClick={() => setViewMode("grid")}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className={`h-10 ${viewMode === "list" ? "bg-gray-100" : ""}`}
+                  onClick={() => setViewMode("list")}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </div>
+          
+          {activeFilter && (
+            <div className="mt-3 flex items-center">
+              <span className="text-sm text-gray-500 ml-2">التصنيف النشط:</span>
+              <div className="flex items-center gap-1 bg-primary-50 text-primary-700 px-2 py-1 rounded-full text-sm">
+                <Tag className="h-3 w-3" />
+                {activeFilter}
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-4 w-4 hover:bg-primary-100" 
+                  onClick={() => setActiveFilter(null)}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         {isLoading ? (
@@ -276,74 +326,169 @@ const Products: React.FC = () => {
             <p className="text-lg text-gray-600">جاري تحميل المنتجات...</p>
           </div>
         ) : filteredProducts.length === 0 ? (
-          searchQuery ? (
+          searchQuery || activeFilter ? (
             <div className="bg-white rounded-lg shadow-sm p-8 text-center">
               <Search className="h-12 w-12 mx-auto text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-800 mb-2">لم يتم العثور على منتجات</h3>
-              <p className="text-gray-600 mb-4">لم نتمكن من العثور على أي منتجات تطابق "{searchQuery}"</p>
+              <p className="text-gray-600 mb-4">
+                {searchQuery && `لم نتمكن من العثور على أي منتجات تطابق "${searchQuery}"`}
+                {activeFilter && !searchQuery && `لم نتمكن من العثور على منتجات في تصنيف "${activeFilter}"`}
+                {activeFilter && searchQuery && ` في تصنيف "${activeFilter}"`}
+              </p>
               <Button 
                 variant="outline"
-                onClick={() => setSearchQuery("")}
+                onClick={() => {
+                  setSearchQuery("");
+                  setActiveFilter(null);
+                }}
               >
                 عرض جميع المنتجات
               </Button>
             </div>
-          ) : renderEmptyState()
+          ) : (
+            <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+              <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-800 mb-2">لا توجد منتجات</h3>
+              <p className="text-gray-600 mb-4">لم تقم بإضافة أي منتجات بعد. أضف منتجك الأول الآن!</p>
+              <Button 
+                onClick={() => setIsAddProductOpen(true)}
+                className="bg-primary-600 hover:bg-primary-700"
+              >
+                <Plus className="h-4 w-4 ml-2" />
+                إضافة منتج جديد
+              </Button>
+            </div>
+          )
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map((product) => (
-              <Card key={product.id} className="overflow-hidden hover:shadow-md transition-shadow">
-                <div className="h-48 bg-gray-100 relative">
-                  {product.image_url ? (
-                    <img 
-                      src={product.image_url} 
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        // Handle image loading error
-                        const target = e.target as HTMLImageElement;
-                        target.onerror = null;
-                        target.src = 'https://via.placeholder.com/300x150?text=صورة+غير+متوفرة';
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <ImageIcon className="h-12 w-12 text-gray-400" />
-                    </div>
-                  )}
-                </div>
-                <CardHeader>
-                  <CardTitle>{product.name}</CardTitle>
-                  <CardDescription className="line-clamp-2">{product.description || "لا يوجد وصف"}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex justify-between">
-                    <span className="font-bold text-lg">{formatCurrency(product.price)}</span>
-                    {product.stock_quantity !== null && (
-                      <span className="text-sm text-gray-600">
-                        المخزون: {product.stock_quantity}
-                      </span>
+          viewMode === "grid" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProducts.map((product) => (
+                <Card key={product.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                  <div className="h-48 bg-gray-100 relative">
+                    {product.image_url ? (
+                      <img 
+                        src={product.image_url} 
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // Handle image loading error
+                          const target = e.target as HTMLImageElement;
+                          target.onerror = null;
+                          target.src = 'https://via.placeholder.com/300x150?text=صورة+غير+متوفرة';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ImageIcon className="h-12 w-12 text-gray-400" />
+                      </div>
+                    )}
+                    {product.category && (
+                      <div className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                        <Tag className="h-3 w-3" />
+                        {product.category}
+                      </div>
                     )}
                   </div>
-                </CardContent>
-                <CardFooter className="bg-gray-50 border-t">
-                  <Button 
-                    variant="ghost" 
-                    className="w-full text-primary-600 hover:text-primary-700 hover:bg-gray-100"
-                    onClick={() => navigate(`/products/${product.id}`)}
-                  >
-                    عرض التفاصيل
-                    <ChevronRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
+                  <CardHeader>
+                    <CardTitle>{product.name}</CardTitle>
+                    <CardDescription className="line-clamp-2">{product.description || "لا يوجد وصف"}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-between">
+                      <span className="font-bold text-lg">{formatCurrency(product.price)}</span>
+                      {product.stock_quantity !== null && (
+                        <span className={`text-sm ${product.stock_quantity > 10 ? 'text-green-600' : product.stock_quantity > 0 ? 'text-orange-600' : 'text-red-600'}`}>
+                          المخزون: {product.stock_quantity}
+                        </span>
+                      )}
+                    </div>
+                  </CardContent>
+                  <CardFooter className="bg-gray-50 border-t">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full text-primary-600 hover:text-primary-700 hover:bg-gray-100"
+                      onClick={() => navigate(`/products/${product.id}`)}
+                    >
+                      عرض التفاصيل
+                      <ChevronRight className="h-4 w-4 mr-2" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+              <div className="border-b px-4 py-3 bg-gray-50 font-medium">
+                <div className="grid grid-cols-12 gap-4">
+                  <div className="col-span-6">المنتج</div>
+                  <div className="col-span-2 text-center">السعر</div>
+                  <div className="col-span-2 text-center">المخزون</div>
+                  <div className="col-span-2 text-center">الإجراءات</div>
+                </div>
+              </div>
+              {filteredProducts.map((product) => (
+                <div key={product.id} className="border-b last:border-0 px-4 py-3 hover:bg-gray-50 transition-colors">
+                  <div className="grid grid-cols-12 gap-4 items-center">
+                    <div className="col-span-6 flex items-center gap-3">
+                      <div className="h-12 w-12 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
+                        {product.image_url ? (
+                          <img
+                            src={product.image_url}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.onerror = null;
+                              target.src = 'https://via.placeholder.com/48?text=صورة';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <ImageIcon className="h-6 w-6 text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <div className="font-medium">{product.name}</div>
+                        <div className="text-xs text-gray-500 flex items-center gap-1">
+                          <Tag className="h-3 w-3" />
+                          {product.category || "غير مصنف"}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-span-2 text-center font-medium">
+                      {formatCurrency(product.price)}
+                    </div>
+                    <div className="col-span-2 text-center">
+                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                        product.stock_quantity === null ? 'bg-gray-100 text-gray-600' :
+                        product.stock_quantity > 10 ? 'bg-green-100 text-green-800' : 
+                        product.stock_quantity > 0 ? 'bg-orange-100 text-orange-800' : 
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {product.stock_quantity === null ? 'غير محدد' : product.stock_quantity}
+                      </span>
+                    </div>
+                    <div className="col-span-2 text-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-primary-600"
+                        onClick={() => navigate(`/products/${product.id}`)}
+                      >
+                        عرض
+                        <ChevronRight className="h-3 w-3 mr-1" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
         )}
 
         {/* Add Product Dialog */}
         <Dialog open={isAddProductOpen} onOpenChange={(open) => {
-          if (!open) resetNewProductForm();
           setIsAddProductOpen(open);
         }}>
           <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
@@ -360,9 +505,22 @@ const Products: React.FC = () => {
                 <Input
                   id="name"
                   placeholder="أدخل اسم المنتج"
-                  value={newProduct.name}
-                  onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
+                  onChange={(e) => {}}
                 />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="category">التصنيف</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="اختر تصنيف" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map(category => (
+                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               
               <div className="space-y-2">
@@ -371,8 +529,6 @@ const Products: React.FC = () => {
                   id="description"
                   placeholder="أدخل وصف المنتج"
                   rows={3}
-                  value={newProduct.description}
-                  onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
                 />
               </div>
               
@@ -384,8 +540,6 @@ const Products: React.FC = () => {
                   type="number"
                   step="0.01"
                   min="0"
-                  value={newProduct.price}
-                  onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
                 />
               </div>
               
@@ -396,8 +550,6 @@ const Products: React.FC = () => {
                   placeholder="أدخل كمية المخزون"
                   type="number"
                   min="0"
-                  value={newProduct.stock_quantity}
-                  onChange={(e) => setNewProduct({...newProduct, stock_quantity: e.target.value})}
                 />
               </div>
               
@@ -406,8 +558,6 @@ const Products: React.FC = () => {
                 <Input
                   id="image"
                   placeholder="أدخل رابط صورة المنتج"
-                  value={newProduct.image_url}
-                  onChange={(e) => setNewProduct({...newProduct, image_url: e.target.value})}
                 />
                 <p className="text-xs text-gray-500">ادخل رابط صورة المنتج الخاص بك. يفضل صور بحجم 300×300 بكسل.</p>
               </div>
@@ -418,30 +568,28 @@ const Products: React.FC = () => {
                 type="button"
                 variant="outline"
                 onClick={() => {
-                  resetNewProductForm();
                   setIsAddProductOpen(false);
                 }}
                 className="mb-2 sm:mb-0"
                 disabled={isSubmitting}
               >
-                <X className="h-4 w-4 mr-2" />
+                <X className="h-4 w-4 ml-2" />
                 إلغاء
               </Button>
               
               <Button 
                 type="button" 
-                onClick={handleAddProduct}
-                disabled={isSubmitting || !newProduct.name || !newProduct.price}
+                disabled={isSubmitting}
                 className="bg-primary-600 hover:bg-primary-700"
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="h-4 w-4 ml-2 animate-spin" />
                     جاري الإضافة...
                   </>
                 ) : (
                   <>
-                    <Check className="h-4 w-4 mr-2" />
+                    <Check className="h-4 w-4 ml-2" />
                     إضافة المنتج
                   </>
                 )}
