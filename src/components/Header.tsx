@@ -1,11 +1,14 @@
 
 import React, { useState, useEffect } from "react";
-import { Menu, X, ChevronDown, LogIn, UserPlus, CheckCircle2, XCircle, LogOut, User } from "lucide-react";
+import { Menu, X, ChevronDown, LogIn, UserPlus, CheckCircle2, XCircle, LogOut, User, Store, Bell, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Session } from "@supabase/supabase-js";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 interface HeaderProps {
   session: Session | null;
@@ -18,6 +21,7 @@ const Header: React.FC<HeaderProps> = ({ session, onLogout }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [language, setLanguage] = useState("ar"); // 'ar' for Arabic, 'en' for English
   const [hasStore, setHasStore] = useState<boolean | null>(null);
+  const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -85,131 +89,195 @@ const Header: React.FC<HeaderProps> = ({ session, onLogout }) => {
   
   return (
     <>
-      <header className={cn("fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out px-6 md:px-10 py-4", isScrolled ? "bg-white/80 backdrop-blur-lg shadow-sm" : "bg-transparent")}>
+      <header 
+        className={cn(
+          "fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out px-4 md:px-8 py-3",
+          isScrolled 
+            ? "bg-white/90 backdrop-blur-md shadow-sm" 
+            : "bg-transparent"
+        )}
+      >
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-3xl font-bold text-primary-600">Linok</span>
-            <span className="text-xl font-medium text-gray-600">.me</span>
+          {/* Logo Section */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">Linok</span>
+            <span className="text-lg md:text-xl font-medium text-gray-700">.me</span>
           </div>
           
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-gray-800 hover:text-primary-500 transition-colors">
-              {language === "ar" ? "المميزات" : "Features"}
-            </a>
-            <a href="#pricing" className="text-gray-800 hover:text-primary-500 transition-colors">
-              {language === "ar" ? "الأسعار" : "Pricing"}
-            </a>
-            
-            <a href="#contact" className="text-gray-800 hover:text-primary-500 transition-colors">
-              {language === "ar" ? "تواصل معنا" : "Contact"}
-            </a>
-            
-            <button onClick={toggleLanguage} className="flex items-center text-gray-600 hover:text-primary-500 transition-colors">
-              {language === "ar" ? "English" : "العربية"}
-              <ChevronDown className="h-4 w-4 ml-1" />
-            </button>
-            
-            {session ? (
-              <>
-                <button 
-                  onClick={handleDashboardClick} 
-                  className="flex items-center gap-2 text-gray-800 hover:text-primary-500 transition-colors"
-                >
-                  <User size={16} />
-                  {language === "ar" ? "حسابي" : "My Account"}
-                </button>
-                
-                <button 
-                  onClick={handleLogout} 
-                  className="btn-primary flex items-center gap-2"
-                >
-                  <LogOut size={16} />
-                  {language === "ar" ? "تسجيل الخروج" : "Log Out"}
-                </button>
-              </>
+          <nav className="hidden md:flex items-center space-x-6">
+            {showSearch ? (
+              <div className="relative w-60 ml-6">
+                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input 
+                  placeholder={language === "ar" ? "ابحث هنا..." : "Search..."}
+                  className="pr-9 rounded-full border-gray-200 focus-visible:ring-primary-500" 
+                  autoFocus
+                  onBlur={() => setShowSearch(false)}
+                />
+              </div>
             ) : (
               <>
-                <button 
-                  onClick={handleLogin} 
-                  className="btn-primary flex items-center gap-2"
+                <a href="#features" className="text-gray-700 hover:text-primary-600 transition-colors font-medium">
+                  {language === "ar" ? "المميزات" : "Features"}
+                </a>
+                <a href="#pricing" className="text-gray-700 hover:text-primary-600 transition-colors font-medium">
+                  {language === "ar" ? "الأسعار" : "Pricing"}
+                </a>
+                <a href="#contact" className="text-gray-700 hover:text-primary-600 transition-colors font-medium">
+                  {language === "ar" ? "تواصل معنا" : "Contact"}
+                </a>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="text-gray-600 hover:text-primary-600 hover:bg-gray-100/80"
+                  onClick={() => setShowSearch(true)}
                 >
-                  <LogIn size={16} />
-                  {language === "ar" ? "تسجيل الدخول" : "Log In"}
-                </button>
-                
-                <button 
-                  onClick={() => navigate("/auth")} 
-                  className="px-6 py-3 bg-white text-gray-800 rounded-full font-semibold border border-gray-300 
-                    shadow-sm hover:shadow-md transition-all duration-300 hover:translate-y-[-2px] flex items-center gap-2"
-                >
-                  <UserPlus size={16} />
-                  {language === "ar" ? "إنشاء حساب" : "Sign Up"}
-                </button>
+                  <Search className="h-4 w-4" />
+                </Button>
               </>
+            )}
+            
+            <Button 
+              variant="ghost" 
+              onClick={toggleLanguage} 
+              className="flex items-center text-gray-600 hover:text-primary-600 hover:bg-gray-100/80 font-medium"
+            >
+              {language === "ar" ? "English" : "العربية"}
+              <ChevronDown className="h-4 w-4 mr-0 ml-1" />
+            </Button>
+            
+            {session ? (
+              <div className="flex items-center space-x-2">
+                <Button 
+                  variant="ghost"
+                  size="icon"
+                  className="text-gray-600 hover:text-primary-600 hover:bg-gray-100/80 relative"
+                >
+                  <Bell className="h-4 w-4" />
+                  <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center">2</Badge>
+                </Button>
+                
+                <Button 
+                  variant="ghost"
+                  onClick={handleDashboardClick} 
+                  className="flex items-center gap-2 text-gray-700 hover:text-primary-600 hover:bg-gray-100/80 font-medium"
+                >
+                  <Store size={16} />
+                  {language === "ar" ? "متجري" : "My Store"}
+                </Button>
+                
+                <Button 
+                  onClick={handleLogout} 
+                  variant="outline"
+                  className="border-primary-500 text-primary-600 hover:bg-primary-50 font-medium"
+                >
+                  <LogOut size={16} className="ml-1" />
+                  {language === "ar" ? "تسجيل الخروج" : "Log Out"}
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-3">
+                <Button 
+                  variant="ghost"
+                  onClick={handleLogin} 
+                  className="text-gray-700 hover:text-primary-600 hover:bg-gray-100/80 font-medium"
+                >
+                  <LogIn size={16} className="ml-1" />
+                  {language === "ar" ? "تسجيل الدخول" : "Log In"}
+                </Button>
+                
+                <Button 
+                  onClick={() => navigate("/auth")} 
+                  className="bg-primary-500 hover:bg-primary-600 text-white font-medium transition-all"
+                >
+                  <UserPlus size={16} className="ml-1" />
+                  {language === "ar" ? "إنشاء حساب" : "Sign Up"}
+                </Button>
+              </div>
             )}
           </nav>
           
           {/* Mobile Menu Button */}
-          <button className="md:hidden text-gray-800" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            className="md:hidden text-gray-800" 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
         </div>
         
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="absolute top-full left-0 right-0 bg-white shadow-lg p-6 md:hidden flex flex-col space-y-4 animate-slide-down">
-            <a href="#features" className="text-gray-800 hover:text-primary-500 transition-colors">
+          <div className="absolute top-full left-0 right-0 bg-white shadow-lg p-4 md:hidden flex flex-col space-y-3 animate-slide-down rounded-b-xl border-t border-gray-100">
+            <div className="relative mb-2">
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input 
+                placeholder={language === "ar" ? "ابحث هنا..." : "Search..."}
+                className="pr-9 rounded-lg border-gray-200" 
+              />
+            </div>
+            
+            <a href="#features" className="text-gray-700 hover:text-primary-600 transition-colors p-2 rounded-md hover:bg-gray-50">
               {language === "ar" ? "المميزات" : "Features"}
             </a>
-            <a href="#pricing" className="text-gray-800 hover:text-primary-500 transition-colors">
+            <a href="#pricing" className="text-gray-700 hover:text-primary-600 transition-colors p-2 rounded-md hover:bg-gray-50">
               {language === "ar" ? "الأسعار" : "Pricing"}
             </a>
-            <a href="#contact" className="text-gray-800 hover:text-primary-500 transition-colors">
+            <a href="#contact" className="text-gray-700 hover:text-primary-600 transition-colors p-2 rounded-md hover:bg-gray-50">
               {language === "ar" ? "تواصل معنا" : "Contact"}
             </a>
             
-            <button onClick={toggleLanguage} className="flex items-center text-gray-600 hover:text-primary-500 transition-colors">
+            <Button 
+              variant="ghost" 
+              onClick={toggleLanguage} 
+              className="flex items-center text-gray-600 hover:text-primary-600 hover:bg-gray-50 transition-colors justify-start p-2"
+            >
               {language === "ar" ? "English" : "العربية"}
               <ChevronDown className="h-4 w-4 ml-1" />
-            </button>
+            </Button>
+            
+            <div className="h-px w-full bg-gray-100 my-2"></div>
             
             {session ? (
               <>
-                <button 
+                <Button 
+                  variant="ghost"
                   onClick={handleDashboardClick} 
-                  className="flex items-center gap-2 justify-center text-gray-800 hover:text-primary-500 transition-colors"
+                  className="flex items-center gap-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 transition-colors justify-start p-2"
                 >
-                  <User size={16} />
-                  {language === "ar" ? "حسابي" : "My Account"}
-                </button>
+                  <Store size={16} />
+                  {language === "ar" ? "متجري" : "My Store"}
+                </Button>
                 
-                <button 
+                <Button 
                   onClick={handleLogout} 
-                  className="btn-primary text-center flex items-center gap-2 justify-center"
+                  className="bg-primary-500 hover:bg-primary-600 text-white w-full justify-center mt-2"
                 >
-                  <LogOut size={16} />
+                  <LogOut size={16} className="ml-1" />
                   {language === "ar" ? "تسجيل الخروج" : "Log Out"}
-                </button>
+                </Button>
               </>
             ) : (
               <>
-                <button 
+                <Button 
+                  variant="ghost"
                   onClick={handleLogin} 
-                  className="btn-primary text-center flex items-center gap-2 justify-center"
+                  className="flex items-center gap-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 transition-colors justify-start p-2"
                 >
                   <LogIn size={16} />
                   {language === "ar" ? "تسجيل الدخول" : "Log In"}
-                </button>
+                </Button>
                 
-                <button 
+                <Button 
                   onClick={() => navigate("/auth")} 
-                  className="px-6 py-3 bg-white text-gray-800 rounded-full font-semibold border border-gray-300 
-                    shadow-sm hover:shadow-md transition-all duration-300 hover:translate-y-[-2px] text-center flex items-center gap-2 justify-center"
+                  className="bg-primary-500 hover:bg-primary-600 text-white w-full justify-center mt-2"
                 >
-                  <UserPlus size={16} />
+                  <UserPlus size={16} className="ml-1" />
                   {language === "ar" ? "إنشاء حساب" : "Sign Up"}
-                </button>
+                </Button>
               </>
             )}
           </div>
