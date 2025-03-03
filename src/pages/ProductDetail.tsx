@@ -13,7 +13,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
-import { Save } from "@/components/ui/save";
+import Save from "@/components/ui/save";
 
 const ProductDetail: React.FC = () => {
   const { productId } = useParams<{ productId: string }>();

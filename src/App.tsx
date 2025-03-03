@@ -14,6 +14,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import CreateStore from "./pages/CreateStore";
 import NotFound from "./pages/NotFound";
+import ProductDetail from "./pages/ProductDetail";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -159,6 +160,16 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <CreateStore />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Product Details Route */}
+            <Route 
+              path="/products/:productId" 
+              element={
+                <ProtectedRoute>
+                  <ProductDetail />
                 </ProtectedRoute>
               } 
             />
