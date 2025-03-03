@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +6,7 @@ import useStoreData, { getCurrencyFormatter } from "@/hooks/use-store-data";
 import { secureRetrieve } from "@/lib/encryption";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import DashboardLayout from "@/layouts/DashboardLayout";
 
 // Import components
 import WelcomeSection from "@/features/dashboard/components/WelcomeSection";
@@ -16,7 +16,6 @@ import RecentOrders from "@/features/dashboard/components/RecentOrders";
 import RecentProducts from "@/features/dashboard/components/RecentProducts";
 import LoadingState from "@/components/ui/loading-state";
 import ErrorState from "@/components/ui/error-state";
-import Sidebar from "@/features/dashboard/components/Sidebar";
 
 // Mock data for demonstration
 const mockSalesData = [
@@ -155,117 +154,111 @@ const Dashboard: React.FC = () => {
   const isBasicPlan = subscriptionStatus === "basic";
   
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50 rtl">
-      <Sidebar />
+    <DashboardLayout>
+      {/* Welcome Section */}
+      <WelcomeSection 
+        storeName={storeData?.store_name || "متجرك"} 
+        ownerName={userName}
+        newOrdersCount={7}
+        lowStockCount={5}
+      />
       
-      <main className="flex-1 overflow-x-hidden overflow-y-auto py-4 mr-[80px]">
-        <div className="px-6 space-y-6 max-w-7xl mx-auto">
-          {/* Welcome Section */}
-          <WelcomeSection 
-            storeName={storeData?.store_name || "متجرك"} 
-            ownerName={userName}
-            newOrdersCount={7}
-            lowStockCount={5}
-          />
-          
-          {/* Subscription Alert for Basic Plan */}
-          {isBasicPlan && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5" />
-              <div className="flex-1">
-                <h4 className="font-medium text-amber-800">أنت تستخدم الباقة الأساسية</h4>
-                <p className="text-sm text-amber-700 mt-1">
-                  قم بترقية متجرك إلى الباقة الاحترافية للحصول على المزيد من المميزات المتقدمة
-                </p>
-                <div className="mt-2">
-                  <Button asChild size="sm" variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-100">
-                    <Link to="/dashboard/settings">ترقية الباقة</Link>
-                  </Button>
-                </div>
-              </div>
+      {/* Subscription Alert for Basic Plan */}
+      {isBasicPlan && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5" />
+          <div className="flex-1">
+            <h4 className="font-medium text-amber-800">أنت تستخدم الباقة الأساسية</h4>
+            <p className="text-sm text-amber-700 mt-1">
+              قم بترقية متجرك إلى الباقة الاحترافية للحصول على المزيد من المميزات المتقدمة
+            </p>
+            <div className="mt-2">
+              <Button asChild size="sm" variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-100">
+                <Link to="/dashboard/settings">ترقية الباقة</Link>
+              </Button>
             </div>
-          )}
-          
-          {/* Stats Cards */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <StatsCard 
-              title="المنتجات"
-              value={statsData.products.toString()}
-              trend={{ value: 12, isPositive: true }}
-              icon={<Package className="h-5 w-5" />}
-              iconClassName="bg-blue-100 text-blue-600"
-            />
-            <StatsCard 
-              title="الطلبات"
-              value={statsData.orders.toString()}
-              trend={{ value: 8, isPositive: true }}
-              icon={<ShoppingBag className="h-5 w-5" />}
-              iconClassName="bg-orange-100 text-orange-600"
-            />
-            <StatsCard 
-              title="العملاء"
-              value={statsData.customers.toString()}
-              trend={{ value: 5, isPositive: true }}
-              icon={<Users className="h-5 w-5" />}
-              iconClassName="bg-green-100 text-green-600"
-            />
-            <StatsCard 
-              title="الإيرادات"
-              value={formatCurrency(statsData.revenue)}
-              trend={{ value: 14, isPositive: true }}
-              icon={<DollarSign className="h-5 w-5" />}
-              iconClassName="bg-purple-100 text-purple-600"
-            />
-          </div>
-          
-          {/* Sales Chart */}
-          <SalesChart 
-            data={mockSalesData}
-            currency={storeData?.currency || "SAR"}
-          />
-          
-          {/* Quick Actions */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button asChild variant="outline" className="h-auto py-4 border-gray-200 hover:border-primary-200 hover:bg-primary-50">
-              <Link to="/dashboard/products/new" className="flex flex-col items-center gap-2">
-                <Package className="h-6 w-6 text-primary-500" />
-                <span>إضافة منتج</span>
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="h-auto py-4 border-gray-200 hover:border-primary-200 hover:bg-primary-50">
-              <Link to="/dashboard/categories" className="flex flex-col items-center gap-2">
-                <Tags className="h-6 w-6 text-primary-500" />
-                <span>إدارة التصنيفات</span>
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="h-auto py-4 border-gray-200 hover:border-primary-200 hover:bg-primary-50">
-              <Link to="/dashboard/orders" className="flex flex-col items-center gap-2">
-                <ShoppingBag className="h-6 w-6 text-primary-500" />
-                <span>تتبع الطلبات</span>
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="h-auto py-4 border-gray-200 hover:border-primary-200 hover:bg-primary-50">
-              <Link to="/dashboard/settings" className="flex flex-col items-center gap-2">
-                <Settings className="h-6 w-6 text-primary-500" />
-                <span>إعدادات المتجر</span>
-              </Link>
-            </Button>
-          </div>
-          
-          {/* Activity Summary Section */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <RecentOrders 
-              orders={mockRecentOrders}
-            />
-            
-            <RecentProducts 
-              products={mockRecentProducts}
-              currency={storeData?.currency || "SAR"}
-            />
           </div>
         </div>
-      </main>
-    </div>
+      )}
+      
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatsCard 
+          title="المنتجات"
+          value={statsData.products.toString()}
+          trend={{ value: 12, isPositive: true }}
+          icon={<Package className="h-5 w-5" />}
+          iconClassName="bg-blue-100 text-blue-600"
+        />
+        <StatsCard 
+          title="الطلبات"
+          value={statsData.orders.toString()}
+          trend={{ value: 8, isPositive: true }}
+          icon={<ShoppingBag className="h-5 w-5" />}
+          iconClassName="bg-orange-100 text-orange-600"
+        />
+        <StatsCard 
+          title="العملاء"
+          value={statsData.customers.toString()}
+          trend={{ value: 5, isPositive: true }}
+          icon={<Users className="h-5 w-5" />}
+          iconClassName="bg-green-100 text-green-600"
+        />
+        <StatsCard 
+          title="الإيرادات"
+          value={formatCurrency(statsData.revenue)}
+          trend={{ value: 14, isPositive: true }}
+          icon={<DollarSign className="h-5 w-5" />}
+          iconClassName="bg-purple-100 text-purple-600"
+        />
+      </div>
+      
+      {/* Sales Chart */}
+      <SalesChart 
+        data={mockSalesData}
+        currency={storeData?.currency || "SAR"}
+      />
+      
+      {/* Quick Actions */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Button asChild variant="outline" className="h-auto py-4 border-gray-200 hover:border-primary-200 hover:bg-primary-50">
+          <Link to="/dashboard/products/new" className="flex flex-col items-center gap-2">
+            <Package className="h-6 w-6 text-primary-500" />
+            <span>إضافة منتج</span>
+          </Link>
+        </Button>
+        <Button asChild variant="outline" className="h-auto py-4 border-gray-200 hover:border-primary-200 hover:bg-primary-50">
+          <Link to="/dashboard/categories" className="flex flex-col items-center gap-2">
+            <Tags className="h-6 w-6 text-primary-500" />
+            <span>إدارة التصنيفات</span>
+          </Link>
+        </Button>
+        <Button asChild variant="outline" className="h-auto py-4 border-gray-200 hover:border-primary-200 hover:bg-primary-50">
+          <Link to="/dashboard/orders" className="flex flex-col items-center gap-2">
+            <ShoppingBag className="h-6 w-6 text-primary-500" />
+            <span>تتبع الطلبات</span>
+          </Link>
+        </Button>
+        <Button asChild variant="outline" className="h-auto py-4 border-gray-200 hover:border-primary-200 hover:bg-primary-50">
+          <Link to="/dashboard/settings" className="flex flex-col items-center gap-2">
+            <Settings className="h-6 w-6 text-primary-500" />
+            <span>إعدادات المتجر</span>
+          </Link>
+        </Button>
+      </div>
+      
+      {/* Activity Summary Section */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <RecentOrders 
+          orders={mockRecentOrders}
+        />
+        
+        <RecentProducts 
+          products={mockRecentProducts}
+          currency={storeData?.currency || "SAR"}
+        />
+      </div>
+    </DashboardLayout>
   );
 };
 
