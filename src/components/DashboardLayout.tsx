@@ -243,13 +243,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </SidebarContent>
             
             <SidebarFooter>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-gray-500">النسخة 1.0.0</span>
-                <button onClick={handleLogout} className="text-xs text-red-500 hover:text-red-600 flex items-center gap-1">
-                  <LogOut className="h-3 w-3" />
-                  <span>تسجيل الخروج</span>
-                </button>
-              </div>
+              
               
               <div className="bg-gradient-to-r from-primary-50 to-blue-50 p-3 rounded-lg border border-primary-100">
                 <div className="flex items-center gap-2 mb-2">
