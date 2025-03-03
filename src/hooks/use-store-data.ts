@@ -43,51 +43,6 @@ export const useStoreData = () => {
   });
 };
 
-// Hook لجلب التصنيفات
-export const useCategories = (storeId: string | undefined) => {
-  const fetchCategories = async () => {
-    if (!storeId) {
-      return [];
-    }
-    
-    try {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('store_id', storeId)
-        .order('display_order', { ascending: true });
-        
-      if (error) {
-        throw error;
-      }
-      
-      // إضافة عدد المنتجات وحقول إضافية
-      return data.map(category => ({
-        ...category,
-        product_count: Math.floor(Math.random() * 50), // بيانات وهمية
-        parent_id: category.parent_id || null,
-        is_active: category.is_active !== undefined ? category.is_active : true
-      }));
-    } catch (error) {
-      console.error("خطأ في جلب التصنيفات:", error);
-      throw new Error("فشل في جلب التصنيفات");
-    }
-  };
-
-  return useQuery({
-    queryKey: ['categories', storeId],
-    queryFn: fetchCategories,
-    enabled: !!storeId,
-    staleTime: 1000 * 60, // دقيقة واحدة
-    meta: {
-      onError: (error: Error) => {
-        console.error("خطأ في جلب التصنيفات:", error);
-        toast.error("حدث خطأ في جلب التصنيفات");
-      }
-    }
-  });
-};
-
 // دالة مساعدة لتنسيق العملة بناءً على عملة المتجر
 export const getCurrencyFormatter = (currency: string = 'SAR') => {
   return (price: number) => {
