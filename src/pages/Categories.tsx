@@ -11,7 +11,7 @@ import CategoryList from "@/components/category/CategoryList";
 import CategoryEmptyState from "@/components/category/CategoryEmptyState";
 import CategoryForm from "@/components/category/CategoryForm";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Category } from "@/types/category";
+import { Category, CategoryFormData } from "@/types/category";
 import { supabase } from "@/integrations/supabase/client";
 import { useStoreData, useCategories } from "@/hooks/use-store-data";
 import LoadingState from "@/components/ui/loading-state";
@@ -54,7 +54,7 @@ const Categories: React.FC = () => {
 
   // إضافة تصنيف جديد
   const addCategoryMutation = useMutation({
-    mutationFn: async (category: Category) => {
+    mutationFn: async (category: CategoryFormData) => {
       if (!storeData?.id) {
         throw new Error("معرف المتجر غير موجود");
       }
@@ -89,7 +89,7 @@ const Categories: React.FC = () => {
 
   // تحديث تصنيف
   const updateCategoryMutation = useMutation({
-    mutationFn: async (category: Category) => {
+    mutationFn: async (category: CategoryFormData & { id: string }) => {
       const { data, error } = await supabase
         .from('categories')
         .update({
@@ -153,8 +153,8 @@ const Categories: React.FC = () => {
   );
 
   // إضافة تصنيف جديد
-  const handleAddCategory = (category: Category) => {
-    addCategoryMutation.mutate(category);
+  const handleAddCategory = async (formData: CategoryFormData): Promise<void> => {
+    await addCategoryMutation.mutateAsync(formData);
   };
 
   // تعديل تصنيف
@@ -171,8 +171,13 @@ const Categories: React.FC = () => {
   };
 
   // تحديث تصنيف
-  const handleUpdateCategory = (updatedCategory: Category) => {
-    updateCategoryMutation.mutate(updatedCategory);
+  const handleUpdateCategory = async (formData: CategoryFormData): Promise<void> => {
+    if (editingCategory?.id) {
+      await updateCategoryMutation.mutateAsync({
+        ...formData,
+        id: editingCategory.id
+      });
+    }
   };
 
   // مشاهدة منتجات تصنيف معين
@@ -261,7 +266,7 @@ const Categories: React.FC = () => {
           
           <CardContent>
             {filteredCategories.length === 0 ? (
-              <CategoryEmptyState onAdd={() => {
+              <CategoryEmptyState onCreateCategory={() => {
                 setEditingCategory(defaultCategory);
                 setIsDialogOpen(true);
               }} />
@@ -286,7 +291,7 @@ const Categories: React.FC = () => {
           </DialogTitle>
           <CategoryForm
             initialData={editingCategory || defaultCategory}
-            categories={categories.filter(cat => !cat.parent_id && (editingCategory?.id !== cat.id))}
+            categories={categories.filter(cat => cat.parent_id === null && (editingCategory?.id !== cat.id))}
             onSubmit={editingCategory?.id && editingCategory.id !== "" ? handleUpdateCategory : handleAddCategory}
             onCancel={handleDialogClose}
           />

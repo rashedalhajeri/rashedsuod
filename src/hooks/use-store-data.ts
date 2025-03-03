@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { secureRetrieve } from "@/lib/encryption";
+import { toast } from "sonner";
 
 // Hook لجلب بيانات المتجر
 export const useStoreData = () => {
@@ -33,6 +34,12 @@ export const useStoreData = () => {
     queryFn: fetchStoreData,
     staleTime: 1000 * 60 * 5, // 5 دقائق
     retry: 1,
+    meta: {
+      onError: (error: Error) => {
+        console.error("خطأ في جلب بيانات المتجر:", error);
+        toast.error("حدث خطأ في جلب بيانات المتجر");
+      }
+    }
   });
 };
 
@@ -70,6 +77,12 @@ export const useCategories = (storeId: string | undefined) => {
     queryFn: fetchCategories,
     enabled: !!storeId,
     staleTime: 1000 * 60, // دقيقة واحدة
+    meta: {
+      onError: (error: Error) => {
+        console.error("خطأ في جلب التصنيفات:", error);
+        toast.error("حدث خطأ في جلب التصنيفات");
+      }
+    }
   });
 };
 

@@ -14,48 +14,61 @@ const formSchema = z.object({
   name: z.string().min(2, { message: "يجب أن يكون اسم القسم حرفين على الأقل" }).max(50, { message: "اسم القسم طويل جداً" }),
   description: z.string().max(500, { message: "الوصف طويل جداً" }).optional(),
   display_order: z.number().int().optional().nullable(),
+  parent_id: z.string().optional().nullable(),
+  is_active: z.boolean().optional(),
 });
 
 export interface CategoryFormProps {
-  category?: Category | null;
+  initialData: Category;
+  categories: Category[];
   onSubmit: (data: CategoryFormData) => Promise<void>;
   onCancel: () => void;
-  isSubmitting: boolean;
 }
 
 const CategoryForm: React.FC<CategoryFormProps> = ({
-  category,
+  initialData,
+  categories,
   onSubmit,
   onCancel,
-  isSubmitting
 }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const form = useForm<CategoryFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: category?.name || "",
-      description: category?.description || "",
-      display_order: category?.display_order || null,
+      name: initialData?.name || "",
+      description: initialData?.description || "",
+      display_order: initialData?.display_order || null,
+      parent_id: initialData?.parent_id || null,
+      is_active: initialData?.is_active !== undefined ? initialData.is_active : true
     },
   });
 
   useEffect(() => {
-    if (category) {
+    if (initialData) {
       form.reset({
-        name: category.name || "",
-        description: category.description || "",
-        display_order: category.display_order || null,
+        name: initialData.name || "",
+        description: initialData.description || "",
+        display_order: initialData.display_order || null,
+        parent_id: initialData.parent_id || null,
+        is_active: initialData.is_active !== undefined ? initialData.is_active : true
       });
     }
-  }, [category, form]);
+  }, [initialData, form]);
 
   const handleSubmit = async (data: CategoryFormData) => {
-    await onSubmit(data);
+    setIsSubmitting(true);
+    try {
+      await onSubmit(data);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
       <h3 className="text-lg font-medium mb-4 text-gray-900">
-        {category ? "تعديل القسم" : "إنشاء قسم جديد"}
+        {initialData.id ? "تعديل القسم" : "إنشاء قسم جديد"}
       </h3>
       
       <Form {...form}>
@@ -103,13 +116,60 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
                     type="number" 
                     placeholder="ترتيب العرض (اختياري)" 
                     {...field}
-                    value={field.value || ""}
+                    value={field.value === null ? "" : field.value}
                     onChange={(e) => {
                       const value = e.target.value === "" ? null : parseInt(e.target.value);
                       field.onChange(value);
                     }}
                   />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          {categories.length > 0 && (
+            <FormField
+              control={form.control}
+              name="parent_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>القسم الأب</FormLabel>
+                  <FormControl>
+                    <select
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      {...field}
+                      value={field.value || ""}
+                      onChange={(e) => field.onChange(e.target.value === "" ? null : e.target.value)}
+                    >
+                      <option value="">لا يوجد قسم أب</option>
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+          
+          <FormField
+            control={form.control}
+            name="is_active"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center gap-2 space-y-0">
+                <FormControl>
+                  <input
+                    type="checkbox"
+                    checked={field.value}
+                    onChange={field.onChange}
+                    className="h-4 w-4 border-gray-300 rounded"
+                  />
+                </FormControl>
+                <FormLabel className="font-normal">تفعيل القسم</FormLabel>
                 <FormMessage />
               </FormItem>
             )}

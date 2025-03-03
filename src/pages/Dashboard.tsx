@@ -15,6 +15,7 @@ import RecentOrders from "@/features/dashboard/components/RecentOrders";
 import RecentProducts from "@/features/dashboard/components/RecentProducts";
 import SalesChart from "@/features/dashboard/components/SalesChart";
 import WelcomeSection from "@/features/dashboard/components/WelcomeSection";
+import LoadingState from "@/components/ui/loading-state";
 
 // Mock data
 const mockSalesData = [
@@ -130,10 +131,6 @@ const Dashboard: React.FC = () => {
     queryFn: fetchStoreData,
     staleTime: 1000 * 60 * 5, // 5 دقائق
     retry: 1,
-    onError: (error) => {
-      console.error("خطأ في جلب بيانات المتجر:", error);
-      toast.error("حدث خطأ في جلب بيانات المتجر");
-    }
   });
   
   // بيانات الإحصائيات
@@ -159,12 +156,7 @@ const Dashboard: React.FC = () => {
   };
   
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-full py-12">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
-        <span className="mr-3 text-primary">جاري تحميل البيانات...</span>
-      </div>
-    );
+    return <LoadingState message="جاري تحميل البيانات..." />;
   }
   
   if (error) {
@@ -194,7 +186,7 @@ const Dashboard: React.FC = () => {
       {/* Welcome Section */}
       <WelcomeSection 
         storeName={storeData?.store_name || "متجرك"} 
-        ownerName={storeData?.owner || "المدير"} 
+        ownerName={storeData?.store_name || "المدير"} 
         newOrdersCount={7}
         lowStockCount={5}
       />
