@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,7 +15,6 @@ import CreateStore from "./pages/CreateStore";
 import Auth from "./pages/Auth";
 import { secureRetrieve, secureStore, secureRemove } from "./lib/encryption";
 import { Session } from "@supabase/supabase-js";
-import DashboardLayout from "./components/DashboardLayout";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -190,18 +190,6 @@ const StoreCheckRoute = ({ children }: { children: React.ReactNode }) => {
   return hasStore ? <>{children}</> : <Navigate to="/create-store" />;
 };
 
-const DashboardRoutes = () => {
-  return (
-    <ProtectedRoute>
-      <StoreCheckRoute>
-        <DashboardLayout>
-          <Outlet />
-        </DashboardLayout>
-      </StoreCheckRoute>
-    </ProtectedRoute>
-  );
-};
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -219,34 +207,29 @@ const App = () => (
               </ProtectedRoute>
             } />
             
-            <Route path="/dashboard" element={<DashboardRoutes />}>
-              <Route index element={<Dashboard />} />
-              <Route path="products" element={<Products />} />
-              <Route path="orders" element={<Orders />} />
-              <Route path="customers" element={<Dashboard />} />
-              <Route path="promotions" element={<Dashboard />} />
-              <Route path="coupons" element={<Dashboard />} />
-              <Route path="categories" element={<Dashboard />} />
-              <Route path="payment" element={<Dashboard />} />
-              <Route path="shipping" element={<Dashboard />} />
-              <Route path="sales-reports" element={<Dashboard />} />
-              <Route path="product-analytics" element={<Dashboard />} />
-              <Route path="customer-analytics" element={<Dashboard />} />
-              <Route path="financial" element={<Dashboard />} />
-              <Route path="inbox" element={<Dashboard />} />
-              <Route path="product-inquiries" element={<Dashboard />} />
-              <Route path="support" element={<Dashboard />} />
-              <Route path="reviews" element={<Dashboard />} />
-              <Route path="store-info" element={<Dashboard />} />
-              <Route path="appearance" element={<Dashboard />} />
-              <Route path="system-settings" element={<Dashboard />} />
-              <Route path="subscription" element={<Dashboard />} />
-              <Route path="user-management" element={<Dashboard />} />
-              <Route path="security" element={<Dashboard />} />
-            </Route>
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <Dashboard />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
             
-            <Route path="/products" element={<Navigate to="/dashboard/products" replace />} />
-            <Route path="/orders" element={<Navigate to="/dashboard/orders" replace />} />
+            <Route path="/products" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <Products />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/orders" element={
+              <ProtectedRoute>
+                <StoreCheckRoute>
+                  <Orders />
+                </StoreCheckRoute>
+              </ProtectedRoute>
+            } />
             
             <Route path="*" element={<NotFound />} />
           </Routes>
