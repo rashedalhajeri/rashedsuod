@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 interface OrderFiltersProps {
   onSearchChange: (value: string) => void;
   onStatusChange: (value: string) => void;
-  onDateRangeChange: (value: string) => void;
+  onDateRangeChange: (value: any) => void;
 }
 
 export function OrderFilters({ onSearchChange, onStatusChange, onDateRangeChange }: OrderFiltersProps) {
@@ -69,7 +69,7 @@ export function OrderFilters({ onSearchChange, onStatusChange, onDateRangeChange
     
     // Handle date range changes
     if (dateRange.from) {
-      onDateRangeChange(dateRange.from.toISOString());
+      onDateRangeChange(dateRange);
     }
     
     // Handle search term

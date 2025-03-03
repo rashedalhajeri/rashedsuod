@@ -28,6 +28,16 @@ const Orders = () => {
   const handleDateRangeChange = (value: any) => {
     setDateRange(value);
   };
+  
+  // Handler for OrderFilters' searchChange
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+  };
+
+  // Function to handle opening order details
+  const handleOpenOrderDetails = (orderId: string) => {
+    console.log("Opening order details for:", orderId);
+  };
 
   return (
     <div className="space-y-6">
@@ -51,7 +61,6 @@ const Orders = () => {
       >
         <OrderStats 
           totalOrders={mockData.totalOrders}
-          newOrders={mockData.newOrders}
           processingOrders={mockData.processingOrders}
           shippedOrders={mockData.shippedOrders}
           completedOrders={mockData.completedOrders}
@@ -67,7 +76,7 @@ const Orders = () => {
         </CardHeader>
         <CardContent>
           <OrderFilters 
-            onSearch={setSearchQuery} 
+            onSearchChange={handleSearchChange} 
             onDateRangeChange={handleDateRangeChange}
             onStatusChange={setStatusFilter}
           />
@@ -82,37 +91,41 @@ const Orders = () => {
             
             <TabsContent value="all">
               <OrderList 
-                status="all" 
                 searchQuery={searchQuery}
-                dateRange={dateRange}
                 statusFilter={statusFilter}
+                dateRangeFilter=""
+                onOpenDetails={handleOpenOrderDetails}
+                currency="SAR"
               />
             </TabsContent>
             
             <TabsContent value="processing">
               <OrderList 
-                status="processing" 
                 searchQuery={searchQuery}
-                dateRange={dateRange}
-                statusFilter={statusFilter}
+                statusFilter="processing"
+                dateRangeFilter=""
+                onOpenDetails={handleOpenOrderDetails}
+                currency="SAR"
               />
             </TabsContent>
             
             <TabsContent value="completed">
               <OrderList 
-                status="completed" 
                 searchQuery={searchQuery}
-                dateRange={dateRange}
-                statusFilter={statusFilter}
+                statusFilter="completed"
+                dateRangeFilter=""
+                onOpenDetails={handleOpenOrderDetails}
+                currency="SAR"
               />
             </TabsContent>
             
             <TabsContent value="cancelled">
               <OrderList 
-                status="cancelled" 
                 searchQuery={searchQuery}
-                dateRange={dateRange}
-                statusFilter={statusFilter}
+                statusFilter="cancelled"
+                dateRangeFilter=""
+                onOpenDetails={handleOpenOrderDetails}
+                currency="SAR"
               />
             </TabsContent>
           </Tabs>

@@ -1,591 +1,251 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import React from 'react';
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { 
-  Dialog,
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle,
-  DialogTrigger
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { toast } from "@/components/ui/use-toast";
-import { Avatar } from "@/components/ui/avatar";
-import { TimelineItem } from "./TimelineItem";
-import { 
-  CircleDollarSign, 
-  Truck, 
-  Package, 
-  ClipboardCheck, 
-  UserRound, 
-  MapPin, 
-  Phone, 
-  Mail, 
-  CalendarClock, 
-  AlertCircle, 
-  CheckCircle2, 
-  XCircle, 
-  ArrowUpDown, 
-  FileText, 
-  Copy, 
-  Printer, 
-  MoreHorizontal, 
-  Clock, 
-  Send 
-} from "lucide-react";
-import { Save } from "lucide-react";
+import { format } from "date-fns";
+import { ar } from 'date-fns/locale';
+import { ShoppingBag, Truck, CreditCard, Package, CheckCheck, X } from 'lucide-react';
 
-type OrderDetailsProps = {
+// Define the order status types for TypeScript
+type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
+
+interface OrderDetailsProps {
   orderId: string;
-  onClose: () => void;
+  orderDate: string;
+  customer: {
+    name: string;
+    email: string;
+    phone: string;
+  };
+  shippingAddress: {
+    address: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  items: Array<{
+    id: string;
+    name: string;
+    price: number;
+    quantity: number;
+    image?: string;
+    options?: string[];
+  }>;
+  paymentMethod: string;
+  status: OrderStatus;
+  total: number;
+  shippingCost: number;
+  tax: number;
+  discount: number;
+  notes?: string;
+  trackingNumber?: string;
+  estimatedDelivery?: string;
+  currencySymbol?: string;
+}
+
+const statusColors: Record<OrderStatus, string> = {
+  pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  processing: "bg-blue-100 text-blue-800 border-blue-200",
+  shipped: "bg-indigo-100 text-indigo-800 border-indigo-200",
+  delivered: "bg-green-100 text-green-800 border-green-200",
+  cancelled: "bg-red-100 text-red-800 border-red-200",
+  refunded: "bg-pink-100 text-pink-800 border-pink-200"
 };
 
-const mockOrder = {
-  id: "ORDER-12345",
-  customer: "أحمد محمد",
-  customerEmail: "ahmed.mohamed@example.com",
-  customerPhone: "0555555555",
-  shippingAddress: "الرياض، المملكة العربية السعودية",
-  billingAddress: "الرياض، المملكة العربية السعودية",
-  status: "processing",
-  date: "2024-07-15T12:00:00.000Z",
-  total: 540,
-  paymentMethod: "Apple Pay",
-  shippingMethod: "DHL",
-  trackingNumber: "1234567890",
-  notes: "يرجى التعامل مع هذا الطلب بعناية",
-  items: [
-    { id: "PROD-001", name: "تيشيرت أبيض", quantity: 2, price: 90 },
-    { id: "PROD-002", name: "بنطلون جينز", quantity: 1, price: 180 },
-    { id: "PROD-003", name: "حذاء رياضي", quantity: 1, price: 180 },
-  ],
-  timeline: [
-    {
-      id: "TIMELINE-001",
-      status: "pending",
-      date: "2024-07-15T12:00:00.000Z",
-      description: "تم إنشاء الطلب",
-    },
-    {
-      id: "TIMELINE-002",
-      status: "processing",
-      date: "2024-07-16T09:00:00.000Z",
-      description: "تم تأكيد الطلب وجاري تجهيزه",
-    },
-    {
-      id: "TIMELINE-003",
-      status: "shipped",
-      date: "2024-07-17T14:00:00.000Z",
-      description: "تم شحن الطلب",
-    },
-  ],
+const statusIcons: Record<OrderStatus, React.ComponentType> = {
+  pending: ShoppingBag as React.ComponentType,
+  processing: Package as React.ComponentType,
+  shipped: Truck as React.ComponentType,
+  delivered: CheckCheck as React.ComponentType,
+  cancelled: X as React.ComponentType,
+  refunded: CreditCard as React.ComponentType
 };
 
-const statusOptions = [
-  { value: "pending", label: "قيد الانتظار" },
-  { value: "processing", label: "قيد المعالجة" },
-  { value: "shipped", label: "تم الشحن" },
-  { value: "delivered", label: "تم التسليم" },
-  { value: "cancelled", label: "ملغي" },
-  { value: "refunded", label: "مسترجع" },
-];
+const statusTranslations: Record<OrderStatus, string> = {
+  pending: "قيد الانتظار",
+  processing: "قيد المعالجة",
+  shipped: "تم الشحن",
+  delivered: "تم التوصيل",
+  cancelled: "ملغي",
+  refunded: "مسترجع"
+};
 
-const OrderDetails = ({ orderId, onClose }: OrderDetailsProps) => {
-  const [activeTab, setActiveTab] = useState("overview");
+const formatCurrency = (amount: number, currencySymbol: string = "ر.س") => {
+  return `${amount.toFixed(2)} ${currencySymbol}`;
+};
+
+export function OrderDetails({
+  orderId,
+  orderDate,
+  customer,
+  shippingAddress,
+  items,
+  paymentMethod,
+  status,
+  total,
+  shippingCost,
+  tax,
+  discount,
+  notes,
+  trackingNumber,
+  estimatedDelivery,
+  currencySymbol = "ر.س"
+}: OrderDetailsProps) {
+  const formattedDate = () => {
+    try {
+      // Parse the string date to a Date object
+      const date = new Date(orderDate);
+      return format(date, "d MMMM yyyy", { locale: ar });
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return orderDate; // Return the original date string if there's an error
+    }
+  };
+
+  const StatusIcon = statusIcons[status] || ShoppingBag;
 
   return (
-    <div className="flex h-full flex-col gap-4 p-6">
-      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-        <CardTitle className="text-2xl font-bold">
-          تفاصيل الطلب: {orderId}
-        </CardTitle>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <ArrowUpDown className="mr-2 h-4 w-4" />
-            تعديل
-          </Button>
-          <Button variant="outline" size="sm">
-            <FileText className="mr-2 h-4 w-4" />
-            إنشاء فاتورة
-          </Button>
-          <Button variant="outline" size="sm">
-            <Copy className="mr-2 h-4 w-4" />
-            نسخ
-          </Button>
-          <Button variant="outline" size="sm">
-            <Printer className="mr-2 h-4 w-4" />
-            طباعة
-          </Button>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
+    <div className="space-y-4">
+      <div className="flex items-center space-x-4 space-x-reverse">
+        <StatusIcon className={`h-6 w-6 ${statusColors[status]}`} />
+        <h3 className="text-lg font-semibold">الطلب رقم: {orderId}</h3>
+        <Badge variant="outline" className={`border ${statusColors[status]}`}>
+          {statusTranslations[status]}
+        </Badge>
+      </div>
+
+      <Separator />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <h4 className="text-sm font-semibold">معلومات العميل</h4>
+          <p>الاسم: {customer.name}</p>
+          <p>البريد الإلكتروني: {customer.email}</p>
+          <p>رقم الهاتف: {customer.phone}</p>
         </div>
-      </CardHeader>
+
+        <div>
+          <h4 className="text-sm font-semibold">عنوان الشحن</h4>
+          <p>{shippingAddress.address}</p>
+          <p>{shippingAddress.city}, {shippingAddress.state} {shippingAddress.zipCode}</p>
+          <p>{shippingAddress.country}</p>
+        </div>
+      </div>
+
       <Separator />
-      <CardContent className="overflow-hidden">
-        <Tabs defaultValue="overview" className="space-y-4" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
-            <TabsTrigger value="timeline">الجدول الزمني</TabsTrigger>
-            <TabsTrigger value="notes">ملاحظات</TabsTrigger>
-            <TabsTrigger value="invoice">الفاتورة</TabsTrigger>
-          </TabsList>
-          <TabsContent value="overview" className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold">
-                    معلومات العميل
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <UserRound className="h-4 w-4 text-muted-foreground" />
-                    <span>{mockOrder.customer}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <a
-                      href={`mailto:${mockOrder.customerEmail}`}
-                      className="text-primary underline-offset-4 hover:underline"
-                    >
-                      {mockOrder.customerEmail}
-                    </a>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <a
-                      href={`tel:${mockOrder.customerPhone}`}
-                      className="text-primary underline-offset-4 hover:underline"
-                    >
-                      {mockOrder.customerPhone}
-                    </a>
-                  </div>
-                </CardContent>
-              </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold">
-                    معلومات الشحن
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span>{mockOrder.shippingAddress}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Truck className="h-4 w-4 text-muted-foreground" />
-                    <span>{mockOrder.shippingMethod}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Package className="h-4 w-4 text-muted-foreground" />
-                    <span>{mockOrder.trackingNumber}</span>
-                  </div>
-                </CardContent>
-              </Card>
+      <div>
+        <h4 className="text-sm font-semibold">تفاصيل الطلب</h4>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>المنتج</TableHead>
+              <TableHead>السعر</TableHead>
+              <TableHead>الكمية</TableHead>
+              <TableHead>الإجمالي</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {items.map((item) => (
+              <TableRow key={item.id}>
+                <TableCell>{item.name}</TableCell>
+                <TableCell>{formatCurrency(item.price, currencySymbol)}</TableCell>
+                <TableCell>{item.quantity}</TableCell>
+                <TableCell>{formatCurrency(item.price * item.quantity, currencySymbol)}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold">
-                    معلومات الدفع
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <CircleDollarSign className="h-4 w-4 text-muted-foreground" />
-                    <span>{mockOrder.paymentMethod}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CalendarClock className="h-4 w-4 text-muted-foreground" />
-                    <span>
-                      {new Date(mockOrder.date).toLocaleDateString("ar-SA", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <ClipboardCheck className="h-4 w-4 text-muted-foreground" />
-                    <span>
-                      المجموع: {mockOrder.total} ر.س
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
+      <Separator />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <h4 className="text-sm font-semibold">معلومات الدفع</h4>
+          <p>طريقة الدفع: {paymentMethod}</p>
+          <p>تاريخ الطلب: {formattedDate()}</p>
+        </div>
+
+        <div>
+          <h4 className="text-sm font-semibold">ملخص الفاتورة</h4>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span>المجموع:</span>
+              <span>{formatCurrency(total, currencySymbol)}</span>
             </div>
+            <div className="flex justify-between">
+              <span>تكلفة الشحن:</span>
+              <span>{formatCurrency(shippingCost, currencySymbol)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>الضريبة:</span>
+              <span>{formatCurrency(tax, currencySymbol)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>الخصم:</span>
+              <span>{formatCurrency(discount, currencySymbol)}</span>
+            </div>
+            <Separator />
+            <div className="flex justify-between font-semibold">
+              <span>الإجمالي:</span>
+              <span>{formatCurrency(total + shippingCost + tax - discount, currencySymbol)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold">
-                  حالة الطلب
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <Badge variant="secondary">
-                    {
-                      statusOptions.find(
-                        (option) => option.value === mockOrder.status
-                      )?.label
-                    }
-                  </Badge>
-                  <UpdateStatusDialog orderId={orderId} />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold">
-                  عناصر الطلب
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-[300px] w-full">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="p-2 text-right font-medium">المنتج</th>
-                        <th className="p-2 text-right font-medium">الكمية</th>
-                        <th className="p-2 text-right font-medium">السعر</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {mockOrder.items.map((item) => (
-                        <tr key={item.id} className="border-b">
-                          <td className="p-2">{item.name}</td>
-                          <td className="p-2">{item.quantity}</td>
-                          <td className="p-2">{item.price} ر.س</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="timeline">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold">
-                  الجدول الزمني للطلب
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-[450px] w-full">
-                  <div className="relative">
-                    <div className="absolute left-4 top-0 h-full w-0.5 bg-border" />
-                    {mockOrder.timeline.map((item, index) => (
-                      <TimelineItem 
-                        key={item.id} 
-                        title={item.status}
-                        date={new Date(item.date)}
-                        description={item.description}
-                        icon={getStatusIcon(item.status)}
-                        isLast={index === mockOrder.timeline.length - 1} 
-                      />
-                    ))}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="notes">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold">
-                  ملاحظات الطلب
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  {mockOrder.notes}
-                </p>
-                <OrderNoteDialog orderId={orderId} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="invoice">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold">
-                  معاينة الفاتورة
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-sm text-muted-foreground">
-                  <p>
-                    سيتم إضافة معاينة الفاتورة هنا قريبًا.
-                  </p>
-                </div>
-                <PrintInvoiceDialog />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
       <Separator />
-      <CardFooter className="flex justify-end gap-2">
-        <CancelOrderDialog orderId={orderId} />
-        <RefundOrderDialog orderId={orderId} />
-        <Button onClick={onClose}>إغلاق</Button>
-      </CardFooter>
+
+      <div>
+        <h4 className="text-sm font-semibold">ملاحظات</h4>
+        <p>{notes || "لا توجد ملاحظات"}</p>
+      </div>
+
+      {trackingNumber && estimatedDelivery && (
+        <>
+          <Separator />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h4 className="text-sm font-semibold">معلومات الشحن</h4>
+              <p>رقم التتبع: {trackingNumber}</p>
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold">تاريخ التسليم المتوقع</h4>
+              <p>{estimatedDelivery}</p>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
-};
-
-function getStatusIcon(status: string) {
-  switch (status) {
-    case "pending":
-      return Clock;
-    case "processing":
-      return AlertCircle;
-    case "shipped":
-      return Truck;
-    case "delivered":
-      return CheckCircle2;
-    case "cancelled":
-      return XCircle;
-    case "refunded":
-      return CircleDollarSign;
-    default:
-      return Package;
-  }
 }
 
-export function OrderNoteDialog({ orderId }: { orderId: string }) {
-  const [open, setOpen] = useState(false);
-  const [note, setNote] = useState("");
+// Dummy Table Components
+const Table = ({ children }: { children: React.ReactNode }) => (
+  <div className="overflow-x-auto">
+    <table className="min-w-full">{children}</table>
+  </div>
+);
 
-  const handleSaveNote = () => {
-    toast({
-      title: "تم حفظ الملاحظة",
-      description: "تم حفظ ملاحظة الطلب بنجاح",
-    });
-    setOpen(false);
-  };
+const TableHeader = ({ children }: { children: React.ReactNode }) => (
+  <thead>
+    <TableRow>{children}</TableRow>
+  </thead>
+);
 
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="mt-4">
-          <Clock className="mr-2 h-4 w-4" />
-          تعديل الملاحظة
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>تعديل ملاحظة الطلب</DialogTitle>
-          <DialogDescription>
-            أضف ملاحظة إضافية لهذا الطلب
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="note" className="text-right">
-              الملاحظة
-            </Label>
-            <Textarea
-              id="note"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              className="col-span-3"
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button type="button" onClick={handleSaveNote}>
-            <Save className="mr-2 h-4 w-4" />
-            حفظ
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
+const TableBody = ({ children }: { children: React.ReactNode }) => (
+  <tbody>{children}</tbody>
+);
 
-export function PrintInvoiceDialog() {
-  const [open, setOpen] = useState(false);
+const TableRow = ({ children }: { children: React.ReactNode }) => (
+  <tr className="border-b border-gray-200">{children}</tr>
+);
 
-  const handlePrintInvoice = () => {
-    toast({
-      title: "طباعة الفاتورة",
-      description: "جاري طباعة الفاتورة",
-    });
-    setOpen(false);
-  };
+const TableHead = ({ children }: { children: React.ReactNode }) => (
+  <th className="py-2 px-4 text-left font-semibold text-gray-700">{children}</th>
+);
 
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="mt-4">
-          <Printer className="mr-2 h-4 w-4" />
-          طباعة الفاتورة
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>طباعة الفاتورة</DialogTitle>
-          <DialogDescription>
-            هل أنت متأكد أنك تريد طباعة الفاتورة؟
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button type="button" onClick={handlePrintInvoice}>
-            طباعة
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-export function CancelOrderDialog({ orderId }: { orderId: string }) {
-  const [open, setOpen] = useState(false);
-
-  const handleCancelOrder = () => {
-    toast({
-      title: "تم إلغاء الطلب",
-      description: "تم إلغاء الطلب بنجاح",
-    });
-    setOpen(false);
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="destructive">
-          <XCircle className="mr-2 h-4 w-4" />
-          إلغاء الطلب
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>إلغاء الطلب</DialogTitle>
-          <DialogDescription>
-            هل أنت متأكد أنك تريد إلغاء هذا الطلب؟
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button type="button" onClick={handleCancelOrder}>
-            إلغاء
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-export function RefundOrderDialog({ orderId }: { orderId: string }) {
-  const [open, setOpen] = useState(false);
-
-  const handleRefundOrder = () => {
-    toast({
-      title: "تم استرجاع المبلغ",
-      description: "تم استرجاع المبلغ للعميل بنجاح",
-    });
-    setOpen(false);
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">
-          <CircleDollarSign className="mr-2 h-4 w-4" />
-          استرجاع المبلغ
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>استرجاع المبلغ</DialogTitle>
-          <DialogDescription>
-            هل أنت متأكد أنك تريد استرجاع المبلغ لهذا الطلب؟
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button type="button" onClick={handleRefundOrder}>
-            استرجاع
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-export function UpdateStatusDialog({ orderId }: { orderId: string }) {
-  const [open, setOpen] = useState(false);
-  const [status, setStatus] = useState(mockOrder.status);
-
-  const handleUpdateStatus = () => {
-    toast({
-      title: "تم تحديث الحالة",
-      description: "تم تحديث حالة الطلب بنجاح",
-    });
-    mockOrder.status = status;
-    setOpen(false);
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">
-          <AlertCircle className="mr-2 h-4 w-4" />
-          تحديث الحالة
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>تحديث حالة الطلب</DialogTitle>
-          <DialogDescription>
-            اختر الحالة الجديدة لهذا الطلب
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="status" className="text-right">
-              الحالة
-            </Label>
-            <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="اختر الحالة" />
-              </SelectTrigger>
-              <SelectContent>
-                {statusOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button type="button" onClick={handleUpdateStatus}>
-            <Send className="mr-2 h-4 w-4" />
-            تحديث
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-export default OrderDetails;
+const TableCell = ({ children }: { children: React.ReactNode }) => (
+  <td className="py-2 px-4 text-gray-600">{children}</td>
+);

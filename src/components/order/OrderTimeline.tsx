@@ -1,111 +1,84 @@
-
 import React from "react";
-import { motion } from "framer-motion";
-import { TimelineItem } from "./TimelineItem";
-import { Package, Truck, CheckCircle, AlertCircle, CreditCard } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { CalendarDays, CheckCircle, Circle, Clock, Package, Truck } from "lucide-react";
+import { format } from "date-fns";
+import { ar } from "date-fns/locale";
 
-interface Order {
-  id: string;
+interface TimelineEvent {
   status: string;
-  createdAt: Date;
-  updatedAt: Date;
-  customer: {
-    name: string;
-    email: string;
-  };
-  total: number;
-  items: number;
+  date: string;
+  description: string;
 }
 
 interface OrderTimelineProps {
-  order: Order;
+  events: TimelineEvent[];
+  orderId: string;
 }
 
-export function OrderTimeline({ order }: OrderTimelineProps) {
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2
-      }
+const statusColors = {
+  pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  processing: "bg-blue-100 text-blue-800 border-blue-200",
+  shipped: "bg-indigo-100 text-indigo-800 border-indigo-200",
+  delivered: "bg-green-100 text-green-800 border-green-200",
+  cancelled: "bg-red-100 text-red-800 border-red-200",
+  refunded: "bg-pink-100 text-pink-800 border-pink-200"
+};
+
+const statusIcons = {
+  pending: Clock,
+  processing: Package,
+  shipped: Truck,
+  delivered: CheckCircle,
+  cancelled: CalendarDays,
+  refunded: CalendarDays
+};
+
+const statusTranslations = {
+  pending: "قيد الانتظار",
+  processing: "قيد المعالجة",
+  shipped: "تم الشحن",
+  delivered: "تم التوصيل",
+  cancelled: "ملغي",
+  refunded: "مسترجع"
+};
+
+export function OrderTimeline({ events, orderId }: OrderTimelineProps) {
+  const formatTimelineDate = (dateStr: string) => {
+    try {
+      const date = new Date(dateStr);
+      return format(date, "d MMMM yyyy", { locale: ar });
+    } catch (error) {
+      console.error("Error formatting timeline date:", error);
+      return dateStr; // Return the original string if there's an error
     }
   };
-
-  const item = {
-    hidden: { x: -20, opacity: 0 },
-    show: { x: 0, opacity: 1 }
-  };
-
-  const getTimelineEvents = () => {
-    const events = [
-      {
-        title: "تم استلام الطلب",
-        date: order.createdAt,
-        description: `تم استلام طلب من ${order.customer.name} بقيمة ${order.total.toFixed(2)} ريال`,
-        icon: Package
-      }
-    ];
-
-    if (order.status === "processing" || order.status === "shipped" || order.status === "delivered") {
-      events.push({
-        title: "قيد المعالجة",
-        date: new Date(order.createdAt.getTime() + 1000 * 60 * 60 * 2), // 2 hours after order
-        description: "تم تأكيد الطلب وهو الآن قيد المعالجة",
-        icon: CreditCard
-      });
-    }
-
-    if (order.status === "shipped" || order.status === "delivered") {
-      events.push({
-        title: "تم الشحن",
-        date: new Date(order.createdAt.getTime() + 1000 * 60 * 60 * 24), // 1 day after order
-        description: "تم شحن الطلب وهو الآن في الطريق",
-        icon: Truck
-      });
-    }
-
-    if (order.status === "delivered") {
-      events.push({
-        title: "تم التسليم",
-        date: new Date(order.createdAt.getTime() + 1000 * 60 * 60 * 24 * 3), // 3 days after order
-        description: "تم تسليم الطلب بنجاح",
-        icon: CheckCircle
-      });
-    }
-
-    if (order.status === "cancelled") {
-      events.push({
-        title: "تم إلغاء الطلب",
-        date: order.updatedAt,
-        description: "تم إلغاء الطلب",
-        icon: AlertCircle
-      });
-    }
-
-    return events;
-  };
-
-  const timelineEvents = getTimelineEvents();
 
   return (
-    <motion.div
-      variants={container}
-      initial="hidden"
-      animate="show"
-      className="space-y-2 py-2"
-    >
-      {timelineEvents.map((event, index) => (
-        <motion.div key={index} variants={item}>
-          <TimelineItem
-            title={event.title}
-            date={event.date}
-            description={event.description}
-            icon={event.icon}
-            isLast={index === timelineEvents.length - 1}
-          />
-        </motion.div>
-      ))}
-    </motion.div>
+    <div className="relative">
+      <div className="absolute left-4 top-4 bottom-4 w-[2px] bg-gray-200"></div>
+      <ul className="space-y-6">
+        {events.map((event, index) => {
+          const StatusIcon = statusIcons[event.status as keyof typeof statusIcons] || CalendarDays;
+          return (
+            <li key={index} className="ml-8">
+              <div className="flex items-center space-x-3 space-x-reverse">
+                <div className="flex-shrink-0">
+                  <StatusIcon className="h-5 w-5 text-gray-500" />
+                </div>
+                <time className="text-sm font-normal leading-none text-gray-500">
+                  {formatTimelineDate(event.date)}
+                </time>
+              </div>
+              <div className="mt-2 space-y-3">
+                <Badge variant="outline" className={`inline-flex items-center border ${statusColors[event.status as keyof typeof statusColors]}`}>
+                  {statusTranslations[event.status as keyof typeof statusTranslations]}
+                </Badge>
+                <p className="text-base font-semibold text-gray-900">{event.description}</p>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }

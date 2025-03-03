@@ -76,6 +76,15 @@ const Products = () => {
     console.log("Add new product");
   };
   
+  // Updated handler functions for ProductFilters
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+  };
+  
+  const handleCategoryFilterChange = (value: string) => {
+    setCategoryFilter(value);
+  };
+  
   const filteredProducts = mockProducts.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                          (product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -125,8 +134,8 @@ const Products = () => {
         <CardContent>
           <div className="mb-6">
             <ProductFilters 
-              onSearch={setSearchQuery}
-              onCategoryChange={setCategoryFilter}
+              onSearchChange={handleSearchChange}
+              onCategoryChange={handleCategoryFilterChange}
             />
           </div>
           
