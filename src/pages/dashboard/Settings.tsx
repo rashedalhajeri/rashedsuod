@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import SubscriptionPlans from "@/features/dashboard/components/SubscriptionPlans";
 import { Separator } from "@/components/ui/separator";
-import { UserCircle, Store, CreditCard, Bell, Shield } from "lucide-react";
+import { UserCircle, Store, CreditCard, Bell, Shield, Globe, Truck, FileText } from "lucide-react";
 import Sidebar from "@/features/dashboard/components/Sidebar";
 
 const Settings: React.FC = () => {
@@ -39,7 +39,7 @@ const Settings: React.FC = () => {
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 rtl">
       <Sidebar />
-      <main className="flex-1 overflow-x-hidden overflow-y-auto ml-0 md:ml-[80px] rtl:mr-0 rtl:md:mr-[80px]">
+      <main className="flex-1 overflow-x-hidden overflow-y-auto mr-[80px]">
         <div className="container mx-auto p-6">
           <div className="mb-6">
             <h1 className="text-2xl font-bold mb-2">إعدادات المتجر</h1>
@@ -47,7 +47,7 @@ const Settings: React.FC = () => {
           </div>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid grid-cols-2 md:grid-cols-5 gap-2 bg-gray-100 p-1 mb-8">
+            <TabsList className="grid grid-cols-2 md:grid-cols-8 gap-2 bg-gray-100 p-1 mb-8">
               <TabsTrigger value="general" className="flex gap-2 items-center">
                 <Store className="h-4 w-4" />
                 <span className="hidden md:inline">عام</span>
@@ -55,6 +55,18 @@ const Settings: React.FC = () => {
               <TabsTrigger value="profile" className="flex gap-2 items-center">
                 <UserCircle className="h-4 w-4" />
                 <span className="hidden md:inline">الملف الشخصي</span>
+              </TabsTrigger>
+              <TabsTrigger value="domain" className="flex gap-2 items-center">
+                <Globe className="h-4 w-4" />
+                <span className="hidden md:inline">النطاق</span>
+              </TabsTrigger>
+              <TabsTrigger value="shipping" className="flex gap-2 items-center">
+                <Truck className="h-4 w-4" />
+                <span className="hidden md:inline">الشحن</span>
+              </TabsTrigger>
+              <TabsTrigger value="legal" className="flex gap-2 items-center">
+                <FileText className="h-4 w-4" />
+                <span className="hidden md:inline">القانونية</span>
               </TabsTrigger>
               <TabsTrigger value="billing" className="flex gap-2 items-center">
                 <CreditCard className="h-4 w-4" />
@@ -172,6 +184,136 @@ const Settings: React.FC = () => {
                     
                     <div className="flex justify-end">
                       <Button onClick={() => toast.success("تم حفظ الملف الشخصي بنجاح")}>
+                        حفظ التغييرات
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="domain">
+              <Card>
+                <CardHeader>
+                  <CardTitle>إعدادات النطاق</CardTitle>
+                  <CardDescription>
+                    قم بتخصيص نطاق متجرك أو إضافة نطاق مخصص
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <Label>النطاق الحالي</Label>
+                      <div className="flex items-center">
+                        <div className="px-4 py-2 bg-gray-100 border border-gray-200 rounded-md flex-1">
+                          <span className="font-medium">{storeUrl || "your-store"}.linok.me</span>
+                        </div>
+                        <Button variant="outline" className="mr-2">نسخ</Button>
+                      </div>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="text-base font-medium mb-2">إضافة نطاق مخصص</h4>
+                        <p className="text-sm text-gray-500 mb-4">
+                          متوفر فقط للباقة الاحترافية. قم بترقية باقتك لإضافة نطاق مخصص.
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="custom-domain">النطاق المخصص</Label>
+                        <div className="flex">
+                          <Input
+                            id="custom-domain"
+                            placeholder="www.example.com"
+                            disabled={currentPlan === "basic"}
+                            className={currentPlan === "basic" ? "bg-gray-100" : ""}
+                          />
+                          <Button className="mr-2" disabled={currentPlan === "basic"}>إضافة</Button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {currentPlan === "basic" && (
+                      <div className="mt-4">
+                        <Button variant="outline" asChild>
+                          <a href="/dashboard/settings?tab=billing">ترقية للباقة الاحترافية</a>
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="shipping">
+              <Card>
+                <CardHeader>
+                  <CardTitle>خيارات الشحن</CardTitle>
+                  <CardDescription>
+                    قم بإعداد طرق الشحن ومناطق التوصيل
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">تفعيل الشحن</h4>
+                        <p className="text-sm text-gray-500">السماح بشحن المنتجات للعملاء</p>
+                      </div>
+                      <Switch defaultChecked />
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">الشحن المجاني</h4>
+                        <p className="text-sm text-gray-500">تفعيل الشحن المجاني للطلبات التي تتجاوز مبلغ معين</p>
+                      </div>
+                      <Switch />
+                    </div>
+                    
+                    <div className="flex justify-end">
+                      <Button onClick={() => toast.success("تم حفظ إعدادات الشحن بنجاح")}>
+                        حفظ التغييرات
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="legal">
+              <Card>
+                <CardHeader>
+                  <CardTitle>المستندات القانونية</CardTitle>
+                  <CardDescription>
+                    إعداد شروط الاستخدام وسياسة الخصوصية
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <Label>شروط الاستخدام</Label>
+                      <textarea
+                        className="w-full border border-gray-200 rounded-md px-3 py-2 min-h-32"
+                        placeholder="أدخل شروط الاستخدام الخاصة بمتجرك..."
+                      ></textarea>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>سياسة الخصوصية</Label>
+                      <textarea
+                        className="w-full border border-gray-200 rounded-md px-3 py-2 min-h-32"
+                        placeholder="أدخل سياسة الخصوصية الخاصة بمتجرك..."
+                      ></textarea>
+                    </div>
+                    
+                    <div className="flex justify-end">
+                      <Button onClick={() => toast.success("تم حفظ المستندات القانونية بنجاح")}>
                         حفظ التغييرات
                       </Button>
                     </div>

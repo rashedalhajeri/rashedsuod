@@ -17,6 +17,10 @@ import {
   LogOut,
   BarChart3,
   Menu,
+  Layers,
+  FileText,
+  MessageSquare,
+  HelpCircle,
 } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useContext } from "react";
@@ -96,6 +100,8 @@ const Sidebar: React.FC = () => {
     { path: "/dashboard/customers", icon: <Users size={20} />, label: "العملاء" },
     { path: "/dashboard/payments", icon: <CreditCard size={20} />, label: "المدفوعات" },
     { path: "/dashboard/reports", icon: <BarChart3 size={20} />, label: "التقارير" },
+    { path: "/dashboard/coupons", icon: <FileText size={20} />, label: "الكوبونات" },
+    { path: "/dashboard/support", icon: <MessageSquare size={20} />, label: "الدعم" },
     { path: "/dashboard/settings", icon: <Settings size={20} />, label: "الإعدادات" },
   ];
 
@@ -112,7 +118,7 @@ const Sidebar: React.FC = () => {
     <>
       {/* Mobile Menu Button - Always Visible on Mobile */}
       {isMobile && (
-        <div className="fixed top-4 right-4 z-50">
+        <div className="fixed top-4 left-4 z-50">
           <Button
             variant="outline"
             size="icon"
@@ -127,7 +133,7 @@ const Sidebar: React.FC = () => {
       {/* Sidebar - Responsive */}
       <motion.div
         className={cn(
-          "fixed top-0 right-0 h-screen bg-white shadow-md z-40 transition-all overflow-hidden rtl",
+          "fixed top-0 right-0 h-screen bg-white shadow-md z-40 overflow-hidden rtl",
           isMobile ? "border-none" : "border-l border-gray-200",
           isMobile && !isMobileOpen ? "-right-80" : "right-0"
         )}
@@ -174,6 +180,27 @@ const Sidebar: React.FC = () => {
               />
             ))}
           </div>
+
+          {/* Help Section */}
+          {!isCollapsed && (
+            <div className="p-4 mx-2 mb-4 bg-primary-50 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <HelpCircle size={18} className="text-primary-500" />
+                <span className="font-medium text-primary-700">بحاجة للمساعدة؟</span>
+              </div>
+              <p className="text-xs text-gray-600 mb-2">
+                يمكنك الاطلاع على مركز المساعدة أو التواصل مع فريق الدعم
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full text-xs border-primary-200 text-primary-700 hover:bg-primary-100"
+                asChild
+              >
+                <Link to="/dashboard/support">مركز المساعدة</Link>
+              </Button>
+            </div>
+          )}
 
           {/* Sidebar Footer */}
           <div className="p-4 border-t border-gray-200">
