@@ -160,7 +160,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 rtl">
-      {/* هيدر للهاتف المحمول فقط */}
       {isMobile && (
         <header className="fixed top-0 left-0 right-0 z-40 glass-nav shadow-sm">
           <div className="mx-auto">
@@ -221,7 +220,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             />
             
             <SidebarContent>
-              {/* مربع البحث */}
               <div className="mb-4">
                 <div className="relative">
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
