@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import PromotionAlert from "@/features/dashboard/components/PromotionAlert";
 import PaymentMethodItem from "@/features/dashboard/components/PaymentMethodItem";
 import ShippingMethodForm from "@/features/dashboard/components/ShippingMethodForm";
+import { useStoreData } from "@/hooks/use-store-data";
 
 type TabsType = 'general' | 'payment' | 'shipping' | 'integrations' | 'billing';
 
@@ -29,12 +31,40 @@ const Settings = () => {
   const searchParams = new URLSearchParams(location.search);
   const [activeTab, setActiveTab] = useState<TabsType>((searchParams.get("tab") as TabsType) || "general");
   
+  // استخدام useStoreData لجلب بيانات المتجر
+  const { data: storeData, isLoading, error } = useStoreData();
+  
+  // قيم الإدخال من بيانات المتجر
+  const [storeValues, setStoreValues] = useState({
+    storeName: "",
+    email: "",
+    phone: "",
+    address: "",
+    currency: "",
+    language: "العربية" // ثابت حاليًا
+  });
+  
+  // تحديث القيم عند استرجاع بيانات المتجر
   useEffect(() => {
-    const tabParam = searchParams.get("tab") as TabsType;
-    if (tabParam && tabParam !== activeTab) {
-      setActiveTab(tabParam);
+    if (storeData) {
+      setStoreValues({
+        storeName: storeData.store_name || "",
+        email: "", // يمكن إضافته لاحقًا في قاعدة البيانات إذا لزم الأمر
+        phone: storeData.phone_number || "",
+        address: "", // يمكن إضافته لاحقًا في قاعدة البيانات إذا لزم الأمر
+        currency: storeData.currency || "SAR",
+        language: "العربية" // ثابت حاليًا
+      });
     }
-  }, [location.search]);
+  }, [storeData]);
+  
+  useEffect(() => {
+    // عند تحميل الصفحة، تحقق من وجود علامة التبويب في URL وقم بتعيينها كعلامة التبويب النشطة
+    const tabFromUrl = searchParams.get("tab") as TabsType;
+    if (tabFromUrl) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [searchParams]);
   
   const handleTabChange = (tab: TabsType) => {
     setActiveTab(tab);
@@ -42,11 +72,29 @@ const Settings = () => {
     navigate({ pathname: location.pathname, search: searchParams.toString() });
   };
   
-  // مثال لنوع الباقة الحالية - في التطبيق الحقيقي ستأتي من الخادم
-  const subscriptionType: "free" | "basic" | "premium" = "free";
-  const isPaidPlan = subscriptionType !== "free";
+  // خطأ تحميل بيانات المتجر
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="p-4 text-center">
+          <p className="text-red-500">حدث خطأ في تحميل بيانات المتجر. يرجى المحاولة مرة أخرى.</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
   
-  // حالة لطرق الدفع والشحن
+  // جاري تحميل بيانات المتجر
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="p-4 text-center">
+          <p>جاري تحميل بيانات المتجر...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+  
+  // حالة طرق الدفع والشحن
   const [paymentMethods, setPaymentMethods] = useState({
     "cash-on-delivery": true,
     "credit-card": false,
@@ -81,13 +129,36 @@ const Settings = () => {
     toast.success(checked ? "تم تفعيل طريقة الشحن بنجاح" : "تم تعطيل طريقة الشحن");
   };
   
-  useEffect(() => {
-    // عند تحميل الصفحة، تحقق من وجود علامة التبويب في URL وقم بتعيينها كعلامة التبويب النشطة
-    const tabFromUrl = searchParams.get("tab") as TabsType;
-    if (tabFromUrl) {
-      setActiveTab(tabFromUrl);
+  // حفظ التغييرات
+  const handleSaveGeneralSettings = async () => {
+    try {
+      if (!storeData?.id) {
+        toast.error("لم يتم العثور على معرف المتجر");
+        return;
+      }
+      
+      const { error } = await supabase
+        .from('stores')
+        .update({
+          store_name: storeValues.storeName,
+          phone_number: storeValues.phone
+        })
+        .eq('id', storeData.id);
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast.success("تم حفظ التغييرات بنجاح");
+    } catch (error) {
+      console.error("خطأ في حفظ التغييرات:", error);
+      toast.error("حدث خطأ في حفظ التغييرات");
     }
-  }, [searchParams]);
+  };
+  
+  // مثال لنوع الباقة الحالية - نأخذها من بيانات المتجر الفعلية
+  const subscriptionType = storeData?.subscription_plan || "free";
+  const isPaidPlan = subscriptionType !== "free";
   
   return (
     <DashboardLayout>
@@ -115,7 +186,12 @@ const Settings = () => {
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
                       <Label htmlFor="store-name">اسم المتجر</Label>
-                      <Input id="store-name" defaultValue="Linok Store" className="mt-1" />
+                      <Input 
+                        id="store-name" 
+                        value={storeValues.storeName} 
+                        onChange={(e) => setStoreValues({...storeValues, storeName: e.target.value})}
+                        className="mt-1" 
+                      />
                     </div>
                     <div>
                       <Label htmlFor="store-logo">شعار المتجر</Label>
@@ -124,7 +200,11 @@ const Settings = () => {
                   </div>
                   <div>
                     <Label htmlFor="store-description">وصف المتجر</Label>
-                    <Textarea id="store-description" defaultValue="متجر Linok هو متجر تجريبي لبيع المنتجات عبر الإنترنت" className="mt-1 resize-none" />
+                    <Textarea 
+                      id="store-description" 
+                      defaultValue={`متجر ${storeValues.storeName || storeData?.store_name} الإلكتروني`} 
+                      className="mt-1 resize-none" 
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -138,16 +218,33 @@ const Settings = () => {
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
                       <Label htmlFor="store-email">البريد الإلكتروني</Label>
-                      <Input type="email" id="store-email" defaultValue="info@linok.me" className="mt-1" />
+                      <Input 
+                        type="email" 
+                        id="store-email" 
+                        value={storeValues.email} 
+                        onChange={(e) => setStoreValues({...storeValues, email: e.target.value})}
+                        className="mt-1" 
+                      />
                     </div>
                     <div>
                       <Label htmlFor="store-phone">رقم الهاتف</Label>
-                      <Input type="tel" id="store-phone" defaultValue="+966500000000" className="mt-1 dir-ltr" />
+                      <Input 
+                        type="tel" 
+                        id="store-phone" 
+                        value={storeValues.phone} 
+                        onChange={(e) => setStoreValues({...storeValues, phone: e.target.value})}
+                        className="mt-1 dir-ltr" 
+                      />
                     </div>
                   </div>
                   <div>
                     <Label htmlFor="store-address">العنوان</Label>
-                    <Input id="store-address" defaultValue="الرياض، المملكة العربية السعودية" className="mt-1" />
+                    <Input 
+                      id="store-address" 
+                      value={storeValues.address} 
+                      onChange={(e) => setStoreValues({...storeValues, address: e.target.value})}
+                      className="mt-1" 
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -161,17 +258,27 @@ const Settings = () => {
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
                       <Label htmlFor="store-currency">العملة</Label>
-                      <Input id="store-currency" defaultValue="SAR" className="mt-1" disabled />
+                      <Input 
+                        id="store-currency" 
+                        value={storeValues.currency} 
+                        className="mt-1" 
+                        disabled 
+                      />
                     </div>
                     <div>
                       <Label htmlFor="store-language">اللغة</Label>
-                      <Input id="store-language" defaultValue="العربية" className="mt-1" disabled />
+                      <Input 
+                        id="store-language" 
+                        value={storeValues.language} 
+                        className="mt-1" 
+                        disabled 
+                      />
                     </div>
                   </div>
                 </CardContent>
               </Card>
               
-              <Button>حفظ التغييرات</Button>
+              <Button onClick={handleSaveGeneralSettings}>حفظ التغييرات</Button>
             </div>
           </TabsContent>
           
