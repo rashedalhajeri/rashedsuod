@@ -131,13 +131,21 @@ const Auth = () => {
       const storeName = email.split('@')[0];
       const domainName = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
       
-      // Register user with Supabase
+      // Add subscription data with free plan as default
+      const subscriptionStartDate = new Date();
+      const subscriptionEndDate = new Date();
+      subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1); // Free plan valid for 1 month
+      
+      // Register user with Supabase including subscription data
       const { data, error } = await signUpWithEmail(
         email,
         password,
         {
           store_name: storeName,
-          domain_name: domainName
+          domain_name: domainName,
+          subscription_plan: "free",
+          subscription_start_date: subscriptionStartDate.toISOString(),
+          subscription_end_date: subscriptionEndDate.toISOString()
         }
       );
       
@@ -145,7 +153,7 @@ const Auth = () => {
         throw error;
       }
       
-      // Insert store data into the stores table
+      // Insert store data into the stores table with subscription info
       if (data.user) {
         const { error: storeError } = await supabase
           .from('stores')
@@ -154,7 +162,10 @@ const Auth = () => {
               user_id: data.user.id,
               store_name: storeName,
               domain_name: domainName,
-              phone_number: ""
+              phone_number: "",
+              subscription_plan: "free",
+              subscription_start_date: subscriptionStartDate.toISOString(),
+              subscription_end_date: subscriptionEndDate.toISOString()
             }
           ]);
         

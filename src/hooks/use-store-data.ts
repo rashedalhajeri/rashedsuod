@@ -15,7 +15,9 @@ type StoreData = {
   currency: string;
   created_at: string;
   updated_at: string;
-  subscription_plan: "basic" | "premium"; // Add this property
+  subscription_plan: "free" | "basic" | "premium"; // Include free plan
+  subscription_start_date?: string;
+  subscription_end_date?: string;
 };
 
 // Hook for fetching store data
@@ -43,10 +45,16 @@ export const useStoreData = () => {
       throw new Error("فشل في جلب بيانات المتجر");
     }
     
-    // Add subscription_plan with a default value since it doesn't exist in the database yet
+    // Get user metadata for subscription info if not in store data
+    const { data: userData } = await supabase.auth.getUser();
+    const userMetadata = userData?.user?.user_metadata;
+    
+    // Default to free plan if no subscription info is found
     return {
       ...data,
-      subscription_plan: "basic" as "basic" | "premium" // Default to basic plan
+      subscription_plan: data.subscription_plan || userMetadata?.subscription_plan || "free" as "free" | "basic" | "premium",
+      subscription_start_date: data.subscription_start_date || userMetadata?.subscription_start_date,
+      subscription_end_date: data.subscription_end_date || userMetadata?.subscription_end_date
     } as StoreData;
   };
   
@@ -96,6 +104,31 @@ export const getCurrencyFormatter = (currency: string = 'SAR') => {
       currency: currencyCode
     }).format(price);
   };
+};
+
+// Helper function to check if a subscription is valid
+export const isSubscriptionValid = (endDate?: string): boolean => {
+  if (!endDate) return false;
+  
+  const now = new Date();
+  const subscriptionEnd = new Date(endDate);
+  
+  return subscriptionEnd > now;
+};
+
+// Helper function to get remaining days in subscription
+export const getRemainingDays = (endDate?: string): number => {
+  if (!endDate) return 0;
+  
+  const now = new Date();
+  const subscriptionEnd = new Date(endDate);
+  
+  // If subscription has expired, return 0
+  if (subscriptionEnd <= now) return 0;
+  
+  // Calculate difference in days
+  const diffTime = subscriptionEnd.getTime() - now.getTime();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };
 
 export default useStoreData;
