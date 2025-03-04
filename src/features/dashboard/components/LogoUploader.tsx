@@ -1,9 +1,11 @@
+
 import React, { useState, useRef } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { Upload, X, Image } from "lucide-react";
+import { Upload, X, Image, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface LogoUploaderProps {
   logoUrl: string | null;
@@ -111,19 +113,24 @@ const LogoUploader: React.FC<LogoUploaderProps> = ({
   return (
     <div className="mt-1">
       {logoUrl ? (
-        <div className="relative rounded-md overflow-hidden border border-gray-200">
+        <motion.div 
+          className="relative rounded-md overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-all aspect-square w-16 h-16 mx-auto"
+          whileHover={{ scale: 1.05 }}
+          transition={{ duration: 0.2 }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-tr from-purple-50 to-white opacity-70 z-0" />
           <img 
             src={logoUrl} 
             alt="شعار المتجر" 
-            className="w-12 h-12 object-contain bg-white p-1 mx-auto"
+            className="w-12 h-12 object-contain bg-white/80 p-1 mx-auto my-2 relative z-10 rounded"
           />
-          <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-40 transition-all flex items-center justify-center opacity-0 hover:opacity-100">
+          <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all flex items-center justify-center opacity-0 hover:opacity-100 z-20">
             <div className="flex gap-1">
               <Button 
                 size="sm" 
                 variant="secondary" 
                 onClick={handleClick}
-                className="bg-white text-black hover:bg-gray-100 text-xs h-6 px-2"
+                className="bg-white text-purple-700 hover:bg-purple-50 text-xs h-5 px-2 shadow-sm border border-purple-100"
               >
                 <Upload className="h-2 w-2 ml-1" />
                 تغيير
@@ -132,19 +139,24 @@ const LogoUploader: React.FC<LogoUploaderProps> = ({
                 size="sm" 
                 variant="destructive" 
                 onClick={handleRemoveLogo}
-                className="text-xs h-6 px-2"
+                className="text-xs h-5 px-2 shadow-sm"
               >
                 <X className="h-2 w-2 ml-1" />
                 حذف
               </Button>
             </div>
           </div>
-        </div>
+        </motion.div>
       ) : (
-        <div
+        <motion.div
+          initial={{ opacity: 0.8 }}
+          animate={{ opacity: 1 }}
+          whileHover={{ scale: 1.03 }}
           className={cn(
-            "border-2 border-dashed rounded-md p-2 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50 transition-colors w-full aspect-square max-w-[120px] mx-auto",
-            isDragging ? "border-primary bg-primary-50" : "border-gray-300",
+            "border-2 border-dashed rounded-lg p-2 flex flex-col items-center justify-center text-center cursor-pointer transition-all w-full aspect-square max-w-[100px] mx-auto",
+            isDragging 
+              ? "border-purple-400 bg-purple-50 shadow-md" 
+              : "border-gray-300 hover:border-purple-300 hover:bg-purple-50/50",
             isUploading && "opacity-70 pointer-events-none"
           )}
           onClick={handleClick}
@@ -152,28 +164,34 @@ const LogoUploader: React.FC<LogoUploaderProps> = ({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          <Image className="h-6 w-6 text-gray-400 mb-1" />
-          <p className="text-xs font-medium mb-1">
-            اسحب وأفلت ملف الشعار هنا أو انقر للاختيار
+          <div className="relative">
+            <div className="absolute -inset-1 rounded-full bg-purple-100 opacity-50 blur-sm"></div>
+            <Star className="h-5 w-5 text-purple-500 relative" />
+          </div>
+          <p className="text-[10px] font-medium mb-1 mt-1 text-purple-700">
+            شعار المتجر
           </p>
-          <p className="text-[10px] text-gray-500 mb-1">
-            PNG, JPG, SVG, GIF حتى 2 ميغابايت
+          <p className="text-[8px] text-gray-500 mb-1">
+            PNG, JPG حتى 2 ميغابايت
           </p>
           {isUploading ? (
-            <div className="mt-1 text-xs text-primary-600">جاري الرفع...</div>
+            <div className="mt-1 text-[10px] text-purple-600 flex items-center">
+              <div className="h-2 w-2 rounded-full bg-purple-400 mr-1 animate-pulse"></div>
+              جاري الرفع...
+            </div>
           ) : (
             <Button 
               size="sm" 
-              variant="secondary"
+              variant="outline"
               type="button"
               onClick={handleClick}
-              className="text-xs h-6 px-2 py-0"
+              className="text-[8px] h-5 px-2 py-0 mt-1 border-purple-200 text-purple-700 hover:bg-purple-100 hover:text-purple-800"
             >
               <Upload className="h-2 w-2 ml-1" />
               اختيار ملف
             </Button>
           )}
-        </div>
+        </motion.div>
       )}
       
       <input
