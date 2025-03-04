@@ -242,7 +242,7 @@ const Settings: React.FC = () => {
         <TabsContent value="domain">
           <Card>
             <CardHeader>
-              <CardTitle>إعدادات النطاق</CardTitle>
+              <CardTitle>إعدادات ال��طاق</CardTitle>
               <CardDescription>
                 قم بتخصيص نطاق متجرك أو إضافة نطاق مخصص
               </CardDescription>
