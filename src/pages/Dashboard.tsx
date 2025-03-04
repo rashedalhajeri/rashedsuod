@@ -1,4 +1,3 @@
-
 import React from "react";
 import useStoreData, { getCurrencyFormatter } from "@/hooks/use-store-data";
 import { secureRetrieve } from "@/lib/encryption";
@@ -9,12 +8,17 @@ import ErrorState from "@/components/ui/error-state";
 
 // Import components
 import WelcomeSection from "@/features/dashboard/components/WelcomeSection";
-import SalesChart from "@/features/dashboard/components/SalesChart";
-import PromotionAlert from "@/features/dashboard/components/PromotionAlert";
 import DashboardStats from "@/features/dashboard/components/DashboardStats";
 import QuickActions from "@/features/dashboard/components/QuickActions";
 import ActivitySummary from "@/features/dashboard/components/ActivitySummary";
 import { Order, OrderStatus } from "@/types/orders";
+
+// Import new enhanced components
+import NotificationCenter from "@/features/dashboard/components/NotificationCenter";
+import AdvancedStats from "@/features/dashboard/components/AdvancedStats";
+import EnhancedSalesChart from "@/features/dashboard/components/EnhancedSalesChart";
+import InventoryTracker from "@/features/dashboard/components/InventoryTracker";
+import PromotionAlert from "@/features/dashboard/components/PromotionAlert";
 
 // بيانات المبيعات للعرض
 const mockSalesData = [
@@ -127,6 +131,65 @@ const mockRecentProducts = [
   }
 ];
 
+// إضافة حالة المخزون للمنتجات
+const mockEnhancedProducts = [
+  {
+    id: "prod-1",
+    name: "قميص أنيق",
+    thumbnail: null,
+    price: 120,
+    stock: 25,
+    stockThreshold: 10,
+    initialStock: 50,
+    category: "ملابس رجالية",
+    status: 'in_stock' as 'in_stock' | 'low_stock' | 'out_of_stock'
+  },
+  {
+    id: "prod-2",
+    name: "سماعات بلوتوث",
+    thumbnail: null,
+    price: 350,
+    stock: 8,
+    stockThreshold: 10,
+    initialStock: 30,
+    category: "إلكترونيات",
+    status: 'low_stock' as 'in_stock' | 'low_stock' | 'out_of_stock'
+  },
+  {
+    id: "prod-3",
+    name: "حذاء رياضي",
+    thumbnail: null,
+    price: 210,
+    stock: 0,
+    stockThreshold: 5,
+    initialStock: 25,
+    category: "أحذية",
+    status: 'out_of_stock' as 'in_stock' | 'low_stock' | 'out_of_stock'
+  },
+  {
+    id: "prod-4",
+    name: "ساعة ذكية",
+    thumbnail: null,
+    price: 499,
+    stock: 4,
+    stockThreshold: 5,
+    initialStock: 20,
+    category: "إلكترونيات",
+    status: 'low_stock' as 'in_stock' | 'low_stock' | 'out_of_stock'
+  },
+  {
+    id: "prod-5",
+    name: "حقيبة ظهر",
+    thumbnail: null,
+    price: 150,
+    stock: 2,
+    stockThreshold: 3,
+    initialStock: 15,
+    category: "إكسسوارات",
+    status: 'low_stock' as 'in_stock' | 'low_stock' | 'out_of_stock'
+  }
+];
+
 // Dashboard Page
 const Dashboard: React.FC = () => {
   // Fetch store data using the custom hook
@@ -177,36 +240,52 @@ const Dashboard: React.FC = () => {
     customers: 35,
     revenue: 8425
   };
+
+  // Advanced stats data
+  const advancedStatsData = {
+    revenue: 8425,
+    orderCount: 128,
+    conversionRate: 3.7,
+    avgOrderValue: 65.8,
+    lowStockCount: mockEnhancedProducts.filter(p => p.status !== 'in_stock').length
+  };
   
   // Subscription plan status - use basic as default
   const subscriptionPlan = storeData?.subscription_plan || "basic";
   
   return (
     <DashboardLayout>
-      {/* Welcome Section */}
-      <WelcomeSection 
-        storeName={storeData?.store_name || "متجرك"} 
-        ownerName={userName}
-        newOrdersCount={7}
-        lowStockCount={5}
-      />
+      <div className="flex justify-between items-center mb-4">
+        {/* Welcome Section */}
+        <WelcomeSection 
+          storeName={storeData?.store_name || "متجرك"} 
+          ownerName={userName}
+          newOrdersCount={7}
+          lowStockCount={5}
+        />
+        
+        {/* Notification Center */}
+        <div className="flex items-center gap-2">
+          <NotificationCenter />
+        </div>
+      </div>
       
       {/* Subscription Alert for Basic Plan */}
       <PromotionAlert type={subscriptionPlan} />
       
-      {/* Stats Cards */}
-      <DashboardStats 
-        products={statsData.products}
-        orders={statsData.orders}
-        customers={statsData.customers}
-        revenue={statsData.revenue}
+      {/* Advanced Stats Cards */}
+      <AdvancedStats 
+        revenue={advancedStatsData.revenue}
+        orderCount={advancedStatsData.orderCount}
+        conversionRate={advancedStatsData.conversionRate}
+        avgOrderValue={advancedStatsData.avgOrderValue}
+        lowStockCount={advancedStatsData.lowStockCount}
         formatCurrency={formatCurrency}
       />
       
-      {/* Sales Chart */}
+      {/* Enhanced Sales Chart */}
       <div className="mb-6">
-        <SalesChart 
-          data={mockSalesData}
+        <EnhancedSalesChart 
           currency={storeData?.currency || "SAR"}
         />
       </div>
@@ -214,12 +293,33 @@ const Dashboard: React.FC = () => {
       {/* Quick Actions */}
       <QuickActions />
       
-      {/* Activity Summary Section */}
-      <ActivitySummary 
-        orders={mockRecentOrders}
-        products={mockRecentProducts}
-        currency={storeData?.currency || "SAR"}
-      />
+      {/* Two-column layout for Inventory and Activity */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* Inventory Tracking */}
+        <InventoryTracker 
+          products={mockEnhancedProducts}
+          currency={storeData?.currency || "SAR"}
+          formatCurrency={formatCurrency}
+        />
+        
+        {/* Activity Summary Section */}
+        <ActivitySummary 
+          orders={mockRecentOrders}
+          products={mockRecentProducts}
+          currency={storeData?.currency || "SAR"}
+        />
+      </div>
+      
+      {/* Legacy Stats - can be removed or kept for compatibility */}
+      <div className="hidden">
+        <DashboardStats 
+          products={statsData.products}
+          orders={statsData.orders}
+          customers={statsData.customers}
+          revenue={statsData.revenue}
+          formatCurrency={formatCurrency}
+        />
+      </div>
     </DashboardLayout>
   );
 };
