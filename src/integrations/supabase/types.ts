@@ -161,6 +161,7 @@ export type Database = {
           currency: string
           domain_name: string
           id: string
+          logo_url: string | null
           phone_number: string
           store_name: string
           subscription_end_date: string | null
@@ -175,6 +176,7 @@ export type Database = {
           currency?: string
           domain_name: string
           id?: string
+          logo_url?: string | null
           phone_number: string
           store_name: string
           subscription_end_date?: string | null
@@ -189,6 +191,7 @@ export type Database = {
           currency?: string
           domain_name?: string
           id?: string
+          logo_url?: string | null
           phone_number?: string
           store_name?: string
           subscription_end_date?: string | null

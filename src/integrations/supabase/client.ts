@@ -255,3 +255,24 @@ export const deleteProduct = async (productId: string) => {
     return { success: false, error };
   }
 };
+
+// Helper function to update store logo
+export const updateStoreLogo = async (storeId: string, logoUrl: string | null) => {
+  try {
+    const { data, error } = await supabase
+      .from('stores')
+      .update({ logo_url: logoUrl })
+      .eq('id', storeId)
+      .select();
+      
+    if (error) {
+      console.error("Error updating store logo:", error);
+      return { data: null, error };
+    }
+    
+    return { data, error: null };
+  } catch (error) {
+    console.error("Error in updateStoreLogo function:", error);
+    return { data: null, error };
+  }
+};
