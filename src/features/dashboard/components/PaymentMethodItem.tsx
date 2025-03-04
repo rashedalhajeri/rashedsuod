@@ -2,10 +2,10 @@
 import React from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { CreditCard, Wallet } from "lucide-react";
+import { CreditCard, Wallet, HelpCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { HelpCircle } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface PaymentMethodItemProps {
   id: string;
@@ -53,10 +53,17 @@ const PaymentMethodItem: React.FC<PaymentMethodItemProps> = ({
   additionalContent
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-4 rounded-lg border hover:border-primary/20 hover:bg-gray-50/50 transition-colors">
+    <motion.div 
+      initial={{ opacity: 0.8, y: 5 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className={`flex flex-col sm:flex-row sm:items-center justify-between bg-white p-4 rounded-lg border ${checked ? 'border-primary/50 shadow-sm bg-primary/5' : 'hover:border-primary/20 hover:bg-gray-50/50'} transition-all duration-300`}
+    >
       <div className="space-y-1 mb-3 sm:mb-0">
         <div className="flex items-center">
-          {icon}
+          <div className={`${checked ? 'text-primary-600' : 'text-gray-500'} transition-colors duration-300 mr-2`}>
+            {icon}
+          </div>
           <Label htmlFor={id} className="text-base font-medium mr-1">{title}</Label>
           <SettingTooltip content={tooltipContent} />
         </div>
@@ -64,7 +71,7 @@ const PaymentMethodItem: React.FC<PaymentMethodItemProps> = ({
         {badges.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 mt-2 mr-7">
             {badges.map((badge, index) => (
-              <div key={index} className={`h-7 px-2 py-1 ${badge.color} rounded text-xs`}>
+              <div key={index} className={`h-7 px-2 py-1 ${badge.color} rounded text-xs flex items-center justify-center`}>
                 {badge.text}
               </div>
             ))}
@@ -88,18 +95,18 @@ const PaymentMethodItem: React.FC<PaymentMethodItemProps> = ({
             disabled={disabled}
             activeColor={color}
           />
-          <Label htmlFor={id} className="mr-2 text-sm font-medium text-gray-600">
+          <Label htmlFor={id} className={`mr-2 text-sm font-medium ${checked ? 'text-primary-600' : 'text-gray-600'}`}>
             {checked ? "مفعل" : "معطل"}
           </Label>
         </div>
       </div>
 
       {additionalContent && (
-        <div className="mt-3 w-full">
-          {additionalContent}
+        <div className={`mt-3 w-full overflow-hidden transition-all duration-300 ${checked ? 'max-h-96' : 'max-h-0'}`}>
+          {checked && additionalContent}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };
 
