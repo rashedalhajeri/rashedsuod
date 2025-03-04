@@ -26,6 +26,7 @@ const PaymentStat: React.FC<PaymentStatProps> = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
       className="bg-white rounded-lg border border-gray-200 p-5 hover:shadow-md transition-all"
+      dir="rtl"
     >
       <div className="flex justify-between items-start">
         <div>
@@ -35,8 +36,8 @@ const PaymentStat: React.FC<PaymentStatProps> = ({
           {trend && (
             <p className={`text-xs flex items-center mt-2 ${trend.isPositive ? 'text-green-600' : 'text-red-600'}`}>
               {trend.isPositive ? 
-                <TrendingUp className="h-3 w-3 mr-1" /> : 
-                <TrendingDown className="h-3 w-3 mr-1" />
+                <TrendingUp className="h-3 w-3 ml-1" /> : 
+                <TrendingDown className="h-3 w-3 ml-1" />
               }
               <span>{trend.value}% {trend.isPositive ? 'زيادة' : 'انخفاض'}</span>
             </p>
@@ -63,7 +64,7 @@ const PaymentStats: React.FC = () => {
   };
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6" dir="rtl">
       <PaymentStat 
         title="إجمالي الإيرادات"
         value={formatCurrency(stats.totalRevenue)}

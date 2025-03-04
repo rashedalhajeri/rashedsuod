@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -130,7 +131,7 @@ const CustomerListItem: React.FC<{
       onClick={() => onViewDetails(customer)}
     >
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4 space-x-reverse">
+        <div className="flex items-center space-x-4 rtl:space-x-reverse">
           <Avatar className="h-10 w-10 border">
             <AvatarImage src={customer.avatar || ""} />
             <AvatarFallback className="bg-primary-50 text-primary-700">
@@ -177,7 +178,7 @@ const CustomerDetails: React.FC<{
   };
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 rtl">
       <div className="flex flex-col items-center space-y-4">
         <Avatar className="h-20 w-20 border">
           <AvatarImage src={customer.avatar || ""} />
@@ -191,7 +192,7 @@ const CustomerDetails: React.FC<{
         </div>
       </div>
       
-      <Tabs defaultValue="info">
+      <Tabs defaultValue="info" dir="rtl">
         <TabsList className="grid grid-cols-3 w-full">
           <TabsTrigger value="info">معلومات العميل</TabsTrigger>
           <TabsTrigger value="orders">الطلبات</TabsTrigger>
@@ -316,11 +317,11 @@ const Customers: React.FC = () => {
   
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 rtl">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">إدارة العملاء</h1>
           <Button variant="outline" className="gap-2" onClick={handleExportCustomers}>
-            <Download className="h-4 w-4" />
+            <Download className="h-4 w-4 ml-1" />
             <span>تصدير العملاء</span>
           </Button>
         </div>
@@ -341,12 +342,12 @@ const Customers: React.FC = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="w-full gap-2">
-                  <Filter className="h-4 w-4" />
+                  <Filter className="h-4 w-4 ml-1" />
                   <span>تصفية النتائج</span>
-                  <ChevronDown className="h-4 w-4 mr-2" />
+                  <ChevronDown className="h-4 w-4 mr-auto" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" dir="rtl">
                 <DropdownMenuLabel>تصفية حسب الحالة</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setStatusFilter("all")}>
@@ -366,7 +367,7 @@ const Customers: React.FC = () => {
           </div>
         </div>
         
-        <Card>
+        <Card className="rtl">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg font-medium flex items-center">
               <Users className="h-4 w-4 inline-block ml-2" />
@@ -415,7 +416,7 @@ const Customers: React.FC = () => {
       </div>
       
       <Dialog open={!!selectedCustomer} onOpenChange={(open) => !open && setSelectedCustomer(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl rtl">
           <DialogHeader>
             <DialogTitle>تفاصيل العميل</DialogTitle>
             <DialogDescription>

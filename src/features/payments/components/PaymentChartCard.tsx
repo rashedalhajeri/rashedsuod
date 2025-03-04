@@ -45,7 +45,7 @@ const PaymentChartCard: React.FC = () => {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-3 border border-gray-200 shadow-md rounded-md">
+        <div className="bg-white p-3 border border-gray-200 shadow-md rounded-md" dir="rtl">
           <p className="font-medium text-sm">{label}</p>
           <p className="text-primary-600 font-bold">
             {formatCurrency(payload[0].value)}
@@ -62,6 +62,7 @@ const PaymentChartCard: React.FC = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
+      dir="rtl"
     >
       <Card>
         <CardHeader className="pb-2">
@@ -80,15 +81,20 @@ const PaymentChartCard: React.FC = () => {
             <TabsContent value="daily">
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={dailyData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="name" />
+                  <BarChart data={dailyData} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                     <YAxis 
+                      dataKey="name" 
+                      type="category"
+                      width={60}
+                      tick={{ textAnchor: 'end' }}
+                    />
+                    <XAxis 
+                      type="number"
                       tickFormatter={(value) => `${value}`}
-                      width={50}
                     />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="value" fill="#9b87f5" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="value" fill="#9b87f5" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -97,15 +103,20 @@ const PaymentChartCard: React.FC = () => {
             <TabsContent value="weekly">
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={weeklyData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="name" />
+                  <BarChart data={weeklyData} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                     <YAxis 
+                      dataKey="name" 
+                      type="category"
+                      width={60}
+                      tick={{ textAnchor: 'end' }}
+                    />
+                    <XAxis 
+                      type="number"
                       tickFormatter={(value) => `${value}`}
-                      width={50}
                     />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="value" fill="#9b87f5" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="value" fill="#9b87f5" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -114,15 +125,20 @@ const PaymentChartCard: React.FC = () => {
             <TabsContent value="monthly">
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={monthlyData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="name" />
+                  <BarChart data={monthlyData} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                     <YAxis 
+                      dataKey="name" 
+                      type="category"
+                      width={60}
+                      tick={{ textAnchor: 'end' }}
+                    />
+                    <XAxis 
+                      type="number"
                       tickFormatter={(value) => `${value}`}
-                      width={50}
                     />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="value" fill="#9b87f5" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="value" fill="#9b87f5" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

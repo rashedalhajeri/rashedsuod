@@ -14,6 +14,7 @@ const PaymentFilters: React.FC = () => {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
+      dir="rtl"
     >
       <Card className="bg-white shadow-sm">
         <CardContent className="pt-4">
@@ -58,7 +59,7 @@ const PaymentFilters: React.FC = () => {
             
             <div className="flex gap-2 items-end">
               <Button className="flex-1 gap-1">
-                <Filter className="h-4 w-4" />
+                <Filter className="h-4 w-4 ml-1" />
                 <span>تطبيق الفلتر</span>
               </Button>
               <Button variant="outline" size="icon">

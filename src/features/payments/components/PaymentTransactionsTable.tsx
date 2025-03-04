@@ -78,28 +78,28 @@ const PaymentTransactionsTable: React.FC = () => {
       case "successful":
         return (
           <Badge className="bg-green-100 text-green-800 border-green-200 hover:bg-green-200 transition-colors">
-            <Check className="h-3 w-3 mr-1" />
+            <Check className="h-3 w-3 ml-1" />
             <span>ناجحة</span>
           </Badge>
         );
       case "pending":
         return (
           <Badge className="bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-200 transition-colors">
-            <Clock className="h-3 w-3 mr-1" />
+            <Clock className="h-3 w-3 ml-1" />
             <span>معلقة</span>
           </Badge>
         );
       case "failed":
         return (
           <Badge className="bg-red-100 text-red-800 border-red-200 hover:bg-red-200 transition-colors">
-            <X className="h-3 w-3 mr-1" />
+            <X className="h-3 w-3 ml-1" />
             <span>فاشلة</span>
           </Badge>
         );
       case "refunded":
         return (
           <Badge className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200 transition-colors">
-            <AlertCircle className="h-3 w-3 mr-1" />
+            <AlertCircle className="h-3 w-3 ml-1" />
             <span>مستردة</span>
           </Badge>
         );
@@ -118,7 +118,7 @@ const PaymentTransactionsTable: React.FC = () => {
   };
   
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden" dir="rtl">
       <div className="overflow-x-auto">
         <Table>
           <TableCaption>آخر المعاملات المالية</TableCaption>
