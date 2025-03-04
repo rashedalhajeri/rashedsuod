@@ -131,4 +131,9 @@ export const getRemainingDays = (endDate?: string): number => {
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };
 
+// Helper function to check if plan is a paid plan (basic or premium)
+export const isPaidPlan = (plan?: "free" | "basic" | "premium"): boolean => {
+  return plan === "basic" || plan === "premium";
+};
+
 export default useStoreData;
