@@ -135,7 +135,7 @@ const AdvancedStats: React.FC<AdvancedStatsProps> = ({
                       (stat.current / stat.target) >= 1 ? "bg-green-100" : "bg-gray-100"
                     )}
                     indicatorClassName={
-                      (stat.current / stat.target) >= 1 ? "bg-green-500" : `${stat.color}`
+                      (stat.current / stat.target) >= 1 ? "bg-green-500" : stat.color
                     }
                   />
                 </div>
