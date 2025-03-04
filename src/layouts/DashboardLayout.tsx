@@ -2,8 +2,9 @@
 import React, { ReactNode } from "react";
 import Sidebar from "@/features/dashboard/components/Sidebar";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
+import useStoreData from "@/hooks/use-store-data";
+import OrderNotifications from "@/features/orders/components/OrderNotifications";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -11,10 +12,14 @@ interface DashboardLayoutProps {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const { data: storeData } = useStoreData();
   
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 rtl">
       <Sidebar />
+      
+      {/* إضافة مكون الإشعارات إذا كان المتجر موجودًا */}
+      {storeData?.id && <OrderNotifications storeId={storeData.id} />}
       
       <motion.main 
         className="flex-1 overflow-x-hidden overflow-y-auto py-4 px-0 md:mr-[250px] mr-[80px] transition-all duration-300"

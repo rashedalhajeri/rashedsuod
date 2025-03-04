@@ -1,1 +1,125 @@
+
 project_id = "kbvxdntjyatvcpaxkmrj"
+
+[api]
+# Port to use for the API URL.
+port = 54321
+# Schemas to expose in your API. Tables, views and stored procedures in this schema will get API
+# endpoints. public and storage are always included.
+schemas = ["public", "storage", "extensions"]
+# Extra schemas to add to the search_path of every request.
+extra_search_path = ["public", "extensions"]
+# Maximum rows returns from a view, table, or stored procedure. Limits payload size for accidental
+# or malicious requests.
+max_rows = 1000
+
+[db]
+# Port to use for the local database URL.
+port = 54322
+# The database major version to use. This has to be the same as your remote database's. Run `SHOW
+# server_version;` on the remote database to check.
+major_version = 15
+
+[studio]
+# Port to use for Supabase Studio.
+port = 54323
+
+# Email testing server. Not required for production.
+[inbucket]
+# Port to use for the email testing server web interface.
+port = 54324
+smtp_port = 54325
+pop3_port = 54326
+
+[storage]
+# The maximum file size allowed (e.g. "5MB", "500KB").
+file_size_limit = "50MiB"
+
+[auth]
+# The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
+# in emails.
+site_url = "http://localhost:3000"
+# A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
+additional_redirect_urls = ["https://localhost:3000"]
+# How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
+jwt_expiry = 3600
+# Allow/disallow new user signups to your project.
+enable_signup = true
+
+[auth.email]
+# Allow/disallow new user signups via email to your project.
+enable_signup = true
+# If enabled, a user will be required to confirm any email change on both the old, and new email
+# addresses. If disabled, only the new email is required to confirm.
+double_confirm_changes = true
+# If enabled, users need to confirm their email address before signing in.
+enable_confirmations = false
+
+# Use a custom SMTP server for sending emails. Uses Inbucket by default. Only works for local
+# development.
+[auth.email.smtp]
+host = "smtp.gmail.com"
+port = 465
+user = "admin@example.com"
+password = "admin"
+sender_name = ""
+
+[auth.sms]
+# Allow/disallow new user signups via SMS to your project.
+enable_signup = true
+# If enabled, users need to confirm their phone number before signing in.
+enable_confirmations = false
+
+# Use a custom Twilio account for sending SMS messages. Uses fake data by default.
+# Only works for local development.
+[auth.sms.twilio]
+account_sid = ""
+message_service_sid = ""
+auth_token = ""
+
+# Use a custom external OAuth provider.
+# Supabase provides a number of built-in providers: https://supabase.com/docs/guides/auth#providers
+[auth.external.apple]
+enabled = false
+client_id = ""
+secret = ""
+# Overrides the default auth redirectUrl.
+redirect_uri = ""
+# For apple oauth, the url to get the refresh token from, used for token refresh
+url = ""
+
+[auth.external.google]
+enabled = false
+client_id = ""
+secret = ""
+# Overrides the default auth redirectUrl.
+redirect_uri = ""
+# The URL to get the authorization code from, used for the code exchange
+url = ""
+
+[analytics]
+enabled = false
+port = 54327
+vector_port = 54328
+
+# Configure one of the supported vendors below.
+[analytics.presets]
+preset = "none"
+
+# Options:
+#   none - No default metrics collected. This is the default preset.
+#   metabase - Open-source analytics platform.
+#   plausible - Privacy-focused metrics.
+#   clickhouse - Self-hosted analytics platform.
+#   fathom - Privacy-focused metrics.
+#   umami - Privacy-focused metrics.
+#   growthbook - Open-source feature flagging and experimentation platform.
+#   matomo - Privacy-focused metrics.
+#   posthog - Hybrid product + marketing analytics platform.
+
+# Self-hosting analytics?
+# Configure the credentials for the analytics database.
+[analytics.presets.clickhouse]
+url = ""
+user = ""
+password = ""
