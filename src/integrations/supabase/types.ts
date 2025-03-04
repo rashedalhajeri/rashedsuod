@@ -163,6 +163,9 @@ export type Database = {
           id: string
           phone_number: string
           store_name: string
+          subscription_end_date: string | null
+          subscription_plan: string
+          subscription_start_date: string | null
           updated_at: string
           user_id: string
         }
@@ -174,6 +177,9 @@ export type Database = {
           id?: string
           phone_number: string
           store_name: string
+          subscription_end_date?: string | null
+          subscription_plan?: string
+          subscription_start_date?: string | null
           updated_at?: string
           user_id: string
         }
@@ -185,6 +191,9 @@ export type Database = {
           id?: string
           phone_number?: string
           store_name?: string
+          subscription_end_date?: string | null
+          subscription_plan?: string
+          subscription_start_date?: string | null
           updated_at?: string
           user_id?: string
         }

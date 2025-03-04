@@ -108,14 +108,6 @@ export const getStoreData = async (userId: string) => {
       return { data: null, error };
     }
     
-    // Add subscription plan data if it doesn't exist in the database yet
-    const userData = await getCurrentUser();
-    const userMetadata = userData?.user_metadata;
-    
-    if (data && !data.subscription_plan) {
-      data.subscription_plan = userMetadata?.subscription_plan || "free";
-    }
-    
     return { data, error: null };
   } catch (error) {
     console.error("Error in getStoreData function:", error);
