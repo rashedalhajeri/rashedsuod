@@ -6,15 +6,22 @@ import { cn } from "@/lib/utils";
 
 interface SaveButtonProps {
   isSaving: boolean;
-  onClick: () => Promise<void>;
+  onClick?: () => Promise<void>;
   className?: string;
+  type?: "button" | "submit" | "reset";
 }
 
-const SaveButton: React.FC<SaveButtonProps> = ({ isSaving, onClick, className }) => {
+const SaveButton: React.FC<SaveButtonProps> = ({ 
+  isSaving, 
+  onClick, 
+  className,
+  type = "button"
+}) => {
   return (
     <Button 
       onClick={onClick} 
       disabled={isSaving}
+      type={type}
       className={cn("flex items-center gap-2", className)}
     >
       <Save className="h-4 w-4" />

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/layouts/DashboardLayout";
@@ -70,6 +69,7 @@ const NewOrder: React.FC = () => {
     
     try {
       setSaving(true);
+      // Pass the storeData.id directly instead of using a separate orderData.store_id
       const result = await createOrder(storeData.id, orderData);
       
       if (result) {
