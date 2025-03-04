@@ -1,28 +1,43 @@
 
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import DashboardLayout from "@/layouts/DashboardLayout";
+import React, { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { createOrder } from "@/services/order-service";
-import useStoreData from "@/hooks/use-store-data";
 import SaveButton from "@/components/ui/save-button";
-import { ArrowLeft } from "lucide-react";
 import { Order } from "@/types/orders";
 
-const NewOrder: React.FC = () => {
-  const navigate = useNavigate();
+interface NewOrderModalProps {
+  storeId: string;
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+const NewOrderModal: React.FC<NewOrderModalProps> = ({
+  storeId,
+  isOpen,
+  onClose,
+  onSuccess
+}) => {
   const { toast } = useToast();
-  const { data: storeData } = useStoreData();
   const [saving, setSaving] = useState(false);
   
+  // إنشاء رقم طلب فريد بتنسيق ORD-{STORE_PREFIX}-{RANDOM_NUMBER}
+  const generateOrderNumber = () => {
+    const storePrefix = storeId.substring(0, 3).toUpperCase();
+    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    const timestamp = Date.now().toString().slice(-4);
+    return `ORD-${storePrefix}-${random}${timestamp}`;
+  };
+  
   const [orderData, setOrderData] = useState({
-    order_number: `ORD-${Date.now().toString().slice(-6)}`,
+    order_number: generateOrderNumber(),
     customer_name: "",
     customer_email: "",
     customer_phone: "",
@@ -32,6 +47,16 @@ const NewOrder: React.FC = () => {
     total: 0,
     notes: ""
   });
+
+  // إعادة إنشاء رقم الطلب عند فتح النافذة المنبثقة
+  useEffect(() => {
+    if (isOpen) {
+      setOrderData(prev => ({
+        ...prev,
+        order_number: generateOrderNumber()
+      }));
+    }
+  }, [isOpen, storeId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -51,7 +76,7 @@ const NewOrder: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!storeData?.id) {
+    if (!storeId) {
       toast({
         title: "خطأ",
         description: "لم يتم العثور على بيانات المتجر",
@@ -72,20 +97,21 @@ const NewOrder: React.FC = () => {
     try {
       setSaving(true);
       
-      // Create a complete order object including store_id
+      // إنشاء كائن الطلب الكامل بما في ذلك معرف المتجر
       const completeOrderData: Omit<Order, "id" | "created_at" | "updated_at"> = {
         ...orderData,
-        store_id: storeData.id
+        store_id: storeId
       };
       
-      const result = await createOrder(storeData.id, completeOrderData);
+      const result = await createOrder(storeId, completeOrderData);
       
       if (result) {
         toast({
           title: "تم بنجاح",
           description: "تم إنشاء الطلب بنجاح",
         });
-        navigate("/dashboard/orders");
+        onSuccess();
+        onClose();
       }
     } catch (error) {
       console.error("Error creating order:", error);
@@ -100,44 +126,34 @@ const NewOrder: React.FC = () => {
   };
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">إضافة طلب جديد</h1>
-            <p className="text-muted-foreground">
-              أدخل تفاصيل الطلب الجديد
-            </p>
-          </div>
-          <Button 
-            variant="outline" 
-            onClick={() => navigate("/dashboard/orders")}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            العودة للطلبات
-          </Button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold">إضافة طلب جديد</DialogTitle>
+          <DialogDescription>
+            أدخل تفاصيل الطلب الجديد
+          </DialogDescription>
+        </DialogHeader>
         
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="space-y-6 mt-4">
           <div className="grid gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>معلومات الطلب</CardTitle>
                 <CardDescription>
-                  ادخل المعلومات الأساسية للطلب
+                  معلومات أساسية عن الطلب
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="order_number">رقم الطلب</Label>
+                    <Label htmlFor="order_number">رقم الطلب (تلقائي)</Label>
                     <Input
                       id="order_number"
                       name="order_number"
                       value={orderData.order_number}
-                      onChange={handleInputChange}
-                      placeholder="رقم الطلب"
+                      readOnly
+                      className="bg-muted"
                     />
                   </div>
                   
@@ -160,36 +176,38 @@ const NewOrder: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="payment_method">طريقة الدفع</Label>
-                  <Select
-                    value={orderData.payment_method}
-                    onValueChange={(value) => handleSelectChange("payment_method", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="اختر طريقة الدفع" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cash">الدفع عند الاستلام</SelectItem>
-                      <SelectItem value="credit_card">بطاقة ائتمان</SelectItem>
-                      <SelectItem value="bank_transfer">تحويل بنكي</SelectItem>
-                      <SelectItem value="online_payment">دفع إلكتروني</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="payment_method">طريقة الدفع</Label>
+                    <Select
+                      value={orderData.payment_method}
+                      onValueChange={(value) => handleSelectChange("payment_method", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="اختر طريقة الدفع" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cash">الدفع عند الاستلام</SelectItem>
+                        <SelectItem value="credit_card">بطاقة ائتمان</SelectItem>
+                        <SelectItem value="bank_transfer">تحويل بنكي</SelectItem>
+                        <SelectItem value="online_payment">دفع إلكتروني</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="total">إجمالي المبلغ</Label>
-                  <Input
-                    id="total"
-                    name="total"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={orderData.total}
-                    onChange={handleInputChange}
-                    placeholder="إجمالي المبلغ"
-                  />
+                  <div className="space-y-2">
+                    <Label htmlFor="total">إجمالي المبلغ</Label>
+                    <Input
+                      id="total"
+                      name="total"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={orderData.total}
+                      onChange={handleInputChange}
+                      placeholder="إجمالي المبلغ"
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -198,7 +216,7 @@ const NewOrder: React.FC = () => {
               <CardHeader>
                 <CardTitle>معلومات العميل</CardTitle>
                 <CardDescription>
-                  ادخل بيانات العميل وعنوان الشحن
+                  بيانات العميل وعنوان الشحن
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -264,15 +282,26 @@ const NewOrder: React.FC = () => {
                   />
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-end">
-                <SaveButton isSaving={saving} type="submit" />
-              </CardFooter>
             </Card>
+            
+            <div className="flex justify-end space-x-2 rtl:space-x-reverse">
+              <Button 
+                variant="outline" 
+                type="button"
+                onClick={onClose}
+              >
+                إلغاء
+              </Button>
+              <SaveButton 
+                isSaving={saving}
+                type="submit"
+              />
+            </div>
           </div>
         </form>
-      </div>
-    </DashboardLayout>
+      </DialogContent>
+    </Dialog>
   );
 };
 
-export default NewOrder;
+export default NewOrderModal;

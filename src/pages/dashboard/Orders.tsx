@@ -6,6 +6,7 @@ import OrdersList from "@/features/orders/components/OrdersList";
 import OrderDetailsModal from "@/features/orders/components/OrderDetailsModal";
 import OrderStats from "@/features/orders/components/OrderStats";
 import OrderEmptyState from "@/features/orders/components/OrderEmptyState";
+import NewOrderModal from "@/features/orders/components/NewOrderModal";
 import {
   fetchOrders,
   fetchOrderDetails,
@@ -50,6 +51,9 @@ const OrdersPage: React.FC = () => {
   // حالة تأكيد الحذف
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  
+  // حالة إضافة طلب جديد (النافذة المنبثقة)
+  const [isAddingOrder, setIsAddingOrder] = useState(false);
 
   // استعلام البيانات - إحصائيات الطلبات
   const { 
@@ -181,6 +185,13 @@ const OrdersPage: React.FC = () => {
     toast.success("تم تحديث البيانات");
   };
   
+  // معالجة إضافة طلب جديد بنجاح
+  const handleOrderAdded = () => {
+    refetch();
+    refetchStats();
+    toast.success("تم إضافة الطلب بنجاح");
+  };
+  
   // إجمالي عدد الصفحات
   const totalPages = Math.ceil((ordersData?.totalCount || 0) / pageSize);
   
@@ -223,13 +234,11 @@ const OrdersPage: React.FC = () => {
             <Button
               variant="default"
               size="sm"
-              asChild
+              onClick={() => setIsAddingOrder(true)}
               className="flex items-center gap-2"
             >
-              <a href="/dashboard/orders/new">
-                <Plus className="h-4 w-4" />
-                طلب جديد
-              </a>
+              <Plus className="h-4 w-4" />
+              طلب جديد
             </Button>
           </div>
         </div>
@@ -353,6 +362,14 @@ const OrdersPage: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* موديل إضافة طلب جديد */}
+      <NewOrderModal
+        storeId={storeId}
+        isOpen={isAddingOrder}
+        onClose={() => setIsAddingOrder(false)}
+        onSuccess={handleOrderAdded}
+      />
     </DashboardLayout>
   );
 };
