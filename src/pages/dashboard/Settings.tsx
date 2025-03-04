@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import SubscriptionPlans from "@/features/dashboard/components/SubscriptionPlans";
 import { Separator } from "@/components/ui/separator";
-import { Store, CreditCard, Bell, Shield, Globe, Truck, FileText, ChevronLeft, ChevronRight, Wallet, Calendar, Clock, Info, HelpCircle } from "lucide-react";
+import { Store, CreditCard, Bell, Shield, Globe, Truck, FileText, ChevronLeft, ChevronRight, Wallet, Calendar, Clock, Info, HelpCircle, Package, MapPin, Checkbox, Textarea } from "lucide-react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
@@ -324,7 +324,7 @@ const Settings: React.FC = () => {
                   <div>
                     <h4 className="text-base font-medium mb-2">إضافة نطاق مخصص</h4>
                     <p className="text-sm text-gray-500 mb-4">
-                      متوفر فقط للباقة الاحترافية. قم بترقية باقتك لإضافة نطاق مخصص.
+                      متوفر فقط للب��قة الاحترافية. قم بترقية باقتك لإضافة نطاق مخصص.
                     </p>
                   </div>
                   
@@ -621,73 +621,165 @@ const Settings: React.FC = () => {
                 ضبط إعدادات الشحن بشكل صحيح يساعد في تحسين تجربة العملاء ويقلل من الأسئلة حول التوصيل والتسليم.
               </QuickTip>
               
+              {currentPlan === "free" && <PromotionAlert type="free" section="shipping" />}
+              
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center">
-                      <h4 className="font-medium">تفعيل الشحن</h4>
-                      <SettingTooltip content="تفعيل خيارات ا��شحن والتوصيل للعملاء" />
-                    </div>
-                    <p className="text-sm text-gray-500">السماح بشحن المنتجات للعملاء</p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                
-                <Separator />
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center">
-                      <h4 className="font-medium">الشحن المجاني</h4>
-                      <SettingTooltip content="توفير شحن مجاني للطلبات التي تتجاوز مبلغ معين" />
-                    </div>
-                    <p className="text-sm text-gray-500">تفعيل الشحن المجاني للطلبات التي تتجاوز مبلغ معين</p>
-                  </div>
-                  <Switch />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                  <div className="space-y-2">
-                    <div className="flex items-center">
-                      <Label htmlFor="free-shipping-threshold">الحد الأدنى للشحن المجاني</Label>
-                      <SettingTooltip content="المبلغ الذي يجب أن يتجاوزه الطلب للحصول على شحن مجاني" />
-                    </div>
-                    <Input
-                      id="free-shipping-threshold"
-                      type="number"
-                      placeholder="50"
-                      disabled
-                    />
-                    <p className="text-xs text-gray-500">أدخل 0 لتفعيل الشحن المجاني لجميع الطلبات</p>
-                  </div>
+                <div className="grid gap-6">
+                  <PaymentMethodItem 
+                    id="standard-shipping"
+                    title="الشحن القياسي"
+                    description="خدمة التوصيل الأساسية للعملاء بسعر ثابت"
+                    checked={true}
+                    onCheckedChange={() => {}}
+                    icon={<Truck className="h-5 w-5 text-gray-500 ml-2" />}
+                    color="bg-green-500"
+                    isPaidPlan={true}
+                    tooltipContent="خدمة الشحن الأساسية المتاحة لجميع الباقات"
+                    additionalContent={
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 pr-9">
+                        <div className="space-y-2">
+                          <div className="flex items-center">
+                            <Label htmlFor="shipping-cost">تكلفة الشحن</Label>
+                            <SettingTooltip content="سعر الشحن الذي سيتم تطبيقه على الطلبات" />
+                          </div>
+                          <Input
+                            id="shipping-cost"
+                            type="number"
+                            placeholder="5"
+                            defaultValue="5"
+                          />
+                          <p className="text-xs text-gray-500">أدخل القيمة بالدينار الكويتي</p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center">
+                            <Label htmlFor="shipping-days">مدة التوصيل (أيام)</Label>
+                            <SettingTooltip content="متوسط وقت التوصيل المتوقع بالأيام" />
+                          </div>
+                          <Input
+                            id="shipping-days"
+                            type="number"
+                            placeholder="3"
+                            defaultValue="3"
+                          />
+                          <p className="text-xs text-gray-500">عدد الأيام المتوقعة للتوصيل</p>
+                        </div>
+                      </div>
+                    }
+                  />
                   
-                  <div className="space-y-2">
-                    <div className="flex items-center">
-                      <Label htmlFor="shipping-cost">تكلفة الشحن العادي</Label>
-                      <SettingTooltip content="تكلفة الشحن الافتراضية للطلبات التي لا تؤهل للشحن المجاني" />
-                    </div>
-                    <Input
-                      id="shipping-cost"
-                      type="number"
-                      placeholder="5"
-                    />
-                  </div>
+                  <PaymentMethodItem 
+                    id="free-shipping"
+                    title="الشحن المجاني"
+                    description="توفير شحن مجاني للطلبات التي تتجاوز مبلغ معين"
+                    checked={false}
+                    onCheckedChange={() => {}}
+                    icon={<Package className="h-5 w-5 text-blue-500 ml-2" />}
+                    color="bg-blue-500"
+                    isPaidPlan={isPaid}
+                    disabled={!isPaid}
+                    tooltipContent="تفعيل خدمة الشحن المجاني عند تجاوز مبلغ معين"
+                    additionalContent={
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 pr-9">
+                        <div className="space-y-2">
+                          <div className="flex items-center">
+                            <Label htmlFor="free-shipping-threshold">الحد الأدنى للشحن المجاني</Label>
+                            <SettingTooltip content="المبلغ الذي يجب أن يتجاوزه الطلب للحصول على شحن مجاني" />
+                          </div>
+                          <Input
+                            id="free-shipping-threshold"
+                            type="number"
+                            placeholder="50"
+                            disabled={!isPaid}
+                            className={!isPaid ? "bg-gray-100" : ""}
+                          />
+                          <p className="text-xs text-gray-500">أدخل 0 لتفعيل الشحن المجاني لجميع الطلبات</p>
+                        </div>
+                      </div>
+                    }
+                  />
+                  
+                  <PaymentMethodItem 
+                    id="linok-delivery"
+                    title="توصيل Linok"
+                    description="استخدام خدمة التوصيل الخاصة بمنصة Linok لإدارة الشحنات"
+                    checked={false}
+                    onCheckedChange={() => {}}
+                    icon={<Truck className="h-5 w-5 text-purple-500 ml-2" />}
+                    color="bg-purple-500"
+                    isPaidPlan={isPaid}
+                    disabled={!isPaid || currentPlan !== "premium"}
+                    tooltipContent="خدمة توصيل مدارة بواسطة فريق Linok (متاحة فقط للباقة الاحترافية)"
+                    badges={currentPlan === "premium" ? [
+                      { text: "متاح للباقة الاحترافية فقط", color: "bg-purple-50 text-purple-600" }
+                    ] : []}
+                    additionalContent={
+                      currentPlan === "premium" ? (
+                        <div className="bg-purple-50 p-4 rounded-lg border border-purple-100 mt-4 pr-9">
+                          <h3 className="text-sm font-medium text-purple-800 mb-3">تفاصيل خدمة توصيل Linok</h3>
+                          <p className="text-sm text-purple-700 mb-4">
+                            هذه الخدمة تتيح إرسال طلبات العملاء مباشرة إلى فريق التوصيل الخاص بمنصة Linok. سيقوم فريق Linok بإدارة عملية التوصيل وتتبع الشحنات ومتابعتها مع العملاء.
+                          </p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-3">
+                              <div className="flex items-center">
+                                <Checkbox id="delivery-notifications" />
+                                <label htmlFor="delivery-notifications" className="text-sm text-purple-700 mr-2">
+                                  إرسال إشعارات للعملاء عند تحديث حالة الشحنة
+                                </label>
+                              </div>
+                              <div className="flex items-center">
+                                <Checkbox id="delivery-tracking" />
+                                <label htmlFor="delivery-tracking" className="text-sm text-purple-700 mr-2">
+                                  تفعيل تتبع الشحنات للعملاء
+                                </label>
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="delivery-note" className="text-sm text-purple-700">ملاحظات إضافية لفريق التوصيل</Label>
+                              <Textarea 
+                                id="delivery-note"
+                                placeholder="أدخل أي تعليمات خاصة لفريق التوصيل"
+                                className="border-purple-200 focus:border-purple-400"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ) : null
+                    }
+                  />
+                  
+                  <PaymentMethodItem 
+                    id="custom-shipping-zones"
+                    title="مناطق توصيل مخصصة"
+                    description="تحديد مناطق توصيل مختلفة مع أسعار مخصصة لكل منطقة"
+                    checked={false}
+                    onCheckedChange={() => {}}
+                    icon={<MapPin className="h-5 w-5 text-green-600 ml-2" />}
+                    color="bg-green-600"
+                    isPaidPlan={currentPlan === "premium"}
+                    disabled={currentPlan !== "premium"}
+                    tooltipContent="إضافة مناطق شحن متعددة مع أسعار مختلفة لكل منطقة (متاح فقط للباقة الاحترافية)"
+                    badges={currentPlan === "premium" ? [
+                      { text: "متاح للباقة الاحترافية فقط", color: "bg-green-50 text-green-600" }
+                    ] : []}
+                  />
                 </div>
                 
-                <div className="bg-amber-50 p-4 rounded-lg border border-amber-100 mt-4">
-                  <h3 className="flex items-center text-sm font-medium text-amber-800 mb-2">
-                    <Info className="h-4 w-4 mr-1" />
-                    إعدادات الشحن المتقدمة
-                  </h3>
-                  <p className="text-sm text-amber-700 mb-2">
-                    يمكنك إضافة مناطق شحن متعددة وتحديد أسعار مختلفة لكل منطقة في الباقة الاحترافية.
-                  </p>
-                  {currentPlan !== "premium" && (
-                    <Button variant="outline" size="sm" className="mt-2" asChild>
-                      <a href="/dashboard/settings?tab=billing">ترقية للباقة الاحترافية</a>
+                {currentPlan !== "premium" && (
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-lg border border-blue-100 mt-6">
+                    <h3 className="text-base font-semibold text-blue-800 mb-2 flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-blue-500" />
+                      ترقية للوصول لجميع ميزات الشحن المتقدمة
+                    </h3>
+                    <p className="text-sm text-blue-700 mb-4">
+                      قم بترقية متجرك للباقة الاحترافية للحصول على ميزات شحن متقدمة مثل خدمة توصيل Linok ومناطق التوصيل المخصصة
+                    </p>
+                    <Button variant="default" className="bg-blue-600 hover:bg-blue-700" asChild>
+                      <a href="/dashboard/settings?tab=billing">ترقية الآن</a>
                     </Button>
-                  )}
-                </div>
+                  </div>
+                )}
                 
                 <div className="flex justify-end">
                   <Button onClick={() => toast.success("تم حفظ إعدادات الشحن بنجاح")}>
@@ -894,7 +986,7 @@ const Settings: React.FC = () => {
             </CardHeader>
             <CardContent>
               <QuickTip>
-                ضبط الإشعارات يساعدك على البقاء على اطلاع بأحدث التطورات في متجرك دون إزعاج غير ضروري.
+                ضبط الإشعارات يساعدك ع��ى البقاء على اطلاع بأحدث التطورات في متجرك دون إزعاج غير ضروري.
               </QuickTip>
               
               <div className="space-y-6">

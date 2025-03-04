@@ -22,6 +22,7 @@ interface PaymentMethodItemProps {
     text: string;
     color: string;
   }>;
+  additionalContent?: React.ReactNode;
 }
 
 const SettingTooltip = ({ content }: { content: string }) => (
@@ -48,7 +49,8 @@ const PaymentMethodItem: React.FC<PaymentMethodItemProps> = ({
   icon,
   color,
   tooltipContent,
-  badges = []
+  badges = [],
+  additionalContent
 }) => {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-4 rounded-lg border hover:border-primary/20 hover:bg-gray-50/50 transition-colors">
@@ -73,7 +75,7 @@ const PaymentMethodItem: React.FC<PaymentMethodItemProps> = ({
       </div>
       
       <div className="flex flex-col items-end gap-2 sm:min-w-28">
-        {!isPaidPlan && id !== "cash-on-delivery" && (
+        {!isPaidPlan && id !== "cash-on-delivery" && id !== "standard-shipping" && (
           <Badge variant="outline" className="text-xs bg-gray-50 text-gray-500 border-gray-200">
             الباقات المدفوعة فقط
           </Badge>
@@ -91,6 +93,12 @@ const PaymentMethodItem: React.FC<PaymentMethodItemProps> = ({
           </Label>
         </div>
       </div>
+
+      {additionalContent && (
+        <div className="mt-3 w-full">
+          {additionalContent}
+        </div>
+      )}
     </div>
   );
 };
