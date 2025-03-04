@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import SubscriptionPlans from "@/features/dashboard/components/SubscriptionPlans";
 import { Separator } from "@/components/ui/separator";
-import { UserCircle, Store, CreditCard, Bell, Shield, Globe, Truck, FileText, ChevronLeft, ChevronRight, Wallet, Check, X, Calendar, Clock } from "lucide-react";
+import { Store, CreditCard, Bell, Shield, Globe, Truck, FileText, ChevronLeft, ChevronRight, Wallet, Calendar, Clock } from "lucide-react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 
 const Settings: React.FC = () => {
@@ -76,10 +76,6 @@ const Settings: React.FC = () => {
               <TabsTrigger value="general" className="flex gap-2 items-center">
                 <Store className="h-4 w-4" />
                 <span className="inline">عام</span>
-              </TabsTrigger>
-              <TabsTrigger value="profile" className="flex gap-2 items-center">
-                <UserCircle className="h-4 w-4" />
-                <span className="inline">الملف الشخصي</span>
               </TabsTrigger>
               <TabsTrigger value="domain" className="flex gap-2 items-center">
                 <Globe className="h-4 w-4" />
@@ -198,51 +194,10 @@ const Settings: React.FC = () => {
           </Card>
         </TabsContent>
         
-        <TabsContent value="profile">
-          <Card>
-            <CardHeader>
-              <CardTitle>معلومات الملف الشخصي</CardTitle>
-              <CardDescription>
-                قم بتعديل معلومات الملف الشخصي الخاص بك
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="full-name">الاسم الكامل</Label>
-                    <Input
-                      id="full-name"
-                      placeholder="الاسم الكامل"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email-address">البريد الإلكتروني</Label>
-                    <Input
-                      id="email-address"
-                      type="email"
-                      placeholder="email@example.com"
-                    />
-                  </div>
-                </div>
-                
-                <Separator className="my-6" />
-                
-                <div className="flex justify-end">
-                  <Button onClick={() => toast.success("تم حفظ الملف الشخصي بنجاح")}>
-                    حفظ التغييرات
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
         <TabsContent value="domain">
           <Card>
             <CardHeader>
-              <CardTitle>إعدادات ال��طاق</CardTitle>
+              <CardTitle>إعدادات ا����طاق</CardTitle>
               <CardDescription>
                 قم بتخصيص نطاق متجرك أو إضافة نطاق مخصص
               </CardDescription>
