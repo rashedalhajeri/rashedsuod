@@ -1,5 +1,4 @@
-
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,18 +13,36 @@ import { Separator } from "@/components/ui/separator";
 import { Store, CreditCard, Bell, Shield, Globe, Truck, FileText, ChevronLeft, ChevronRight, Wallet, Calendar, Clock, Info, HelpCircle } from "lucide-react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { supabase } from "@/integrations/supabase/client";
 
 const Settings: React.FC = () => {
-  const { data: storeData, isLoading } = useStoreData();
+  const { data: storeData, isLoading, refetch } = useStoreData();
   const [activeTab, setActiveTab] = useState("general");
   const tabsListRef = useRef<HTMLDivElement>(null);
   
   const currentPlan = storeData?.subscription_plan || "free";
 
-  const [storeName, setStoreName] = useState(storeData?.store_name || "");
-  const [storeUrl, setStoreUrl] = useState(storeData?.domain_name || "");
+  useEffect(() => {
+    if (storeData) {
+      setStoreName(storeData.store_name || "");
+      setStoreUrl(storeData.domain_name || "");
+      setPhoneNumber(storeData.phone_number || "");
+      
+      const getUserEmail = async () => {
+        const { data } = await supabase.auth.getUser();
+        if (data?.user?.email) {
+          setEmail(data.user.email);
+        }
+      };
+      
+      getUserEmail();
+    }
+  }, [storeData]);
+  
+  const [storeName, setStoreName] = useState("");
+  const [storeUrl, setStoreUrl] = useState("");
   const [email, setEmail] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState(storeData?.phone_number || "");
+  const [phoneNumber, setPhoneNumber] = useState("");
   
   const [cashOnDelivery, setCashOnDelivery] = useState(true);
   const [myFatoorah, setMyFatoorah] = useState(false);
@@ -36,8 +53,30 @@ const Settings: React.FC = () => {
   const [orderNotifications, setOrderNotifications] = useState(true);
   const [marketingEmails, setMarketingEmails] = useState(false);
   
-  const handleSaveSettings = () => {
-    toast.success("تم حفظ الإعدادات بنجاح");
+  const handleSaveSettings = async () => {
+    try {
+      if (!storeData?.id) {
+        toast.error("لم يتم العثور على معرف المتجر");
+        return;
+      }
+      
+      const { error } = await supabase
+        .from('stores')
+        .update({
+          store_name: storeName
+        })
+        .eq('id', storeData.id);
+        
+      if (error) {
+        throw error;
+      }
+      
+      toast.success("تم حفظ الإعدادات بنجاح");
+      refetch();
+    } catch (error) {
+      console.error("خطأ في حفظ الإعدادات:", error);
+      toast.error("حدث خطأ أثناء حفظ الإعدادات");
+    }
   };
 
   const scrollLeft = () => {
@@ -52,7 +91,6 @@ const Settings: React.FC = () => {
     }
   };
 
-  // دالة مساعدة لعرض نصائح سريعة
   const QuickTip = ({ children }: { children: React.ReactNode }) => (
     <div className="bg-blue-50 border border-blue-100 rounded-md p-3 flex items-start gap-2 mt-4 mb-2">
       <Info className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
@@ -60,7 +98,6 @@ const Settings: React.FC = () => {
     </div>
   );
 
-  // مكون للتوجيهات السريعة
   const SettingTooltip = ({ content }: { content: string }) => (
     <TooltipProvider>
       <Tooltip>
@@ -163,7 +200,7 @@ const Settings: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <QuickTip>
-                يمكنك البدء بملء هذه المعلومات الأساسية لمتجرك. سيتم عرض هذه المعلومات للعملاء عند زيارة متجرك.
+                هذه المعلومات الأساسية لمتجرك تم جلبها من بيانات المتجر. يمكنك تعديل اسم المتجر فقط، بينما يظهر رابط المتجر للقراءة فقط.
               </QuickTip>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -183,14 +220,14 @@ const Settings: React.FC = () => {
                 <div className="space-y-2">
                   <div className="flex items-center">
                     <Label htmlFor="store-url">رابط المتجر</Label>
-                    <SettingTooltip content="الرابط الذي سيستخدمه العملاء للوصول إلى متجرك" />
+                    <SettingTooltip content="الرابط الذي سيستخدمه العملاء للوصول إلى متجرك (للقراءة فقط)" />
                   </div>
                   <div className="flex">
                     <Input
                       id="store-url"
                       value={storeUrl}
-                      onChange={(e) => setStoreUrl(e.target.value)}
-                      className="rounded-r-none"
+                      readOnly
+                      className="rounded-r-none bg-gray-100"
                       placeholder="رابط-المتجر"
                     />
                     <div className="bg-gray-100 border border-r-0 border-gray-200 text-gray-500 px-3 py-2 text-sm flex items-center rounded-l-md">
@@ -202,13 +239,14 @@ const Settings: React.FC = () => {
                 <div className="space-y-2">
                   <div className="flex items-center">
                     <Label htmlFor="store-email">البريد الإلكتروني</Label>
-                    <SettingTooltip content="سيتم استخدام هذا البريد الإلكتروني للتواصل مع العملاء وإرسال إشعارات الطلبات" />
+                    <SettingTooltip content="البريد الإلكتروني المرتبط بحسابك (للقراءة فقط)" />
                   </div>
                   <Input
                     id="store-email"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    readOnly
+                    className="bg-gray-100"
                     placeholder="email@example.com"
                   />
                 </div>
@@ -221,7 +259,8 @@ const Settings: React.FC = () => {
                   <Input
                     id="store-phone"
                     value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    readOnly
+                    className="bg-gray-100"
                     placeholder="+965 XXXXXXXX"
                   />
                 </div>
@@ -243,12 +282,12 @@ const Settings: React.FC = () => {
             <CardHeader>
               <CardTitle>إعدادات النطاق</CardTitle>
               <CardDescription>
-                قم بتخصيص نطاق متجرك أو إضافة نطاق مخصص
+                عرض معلومات نطاق متجرك أو إضافة نطاق مخصص
               </CardDescription>
             </CardHeader>
             <CardContent>
               <QuickTip>
-                النطاق هو عنوان متجرك على الإنترنت. يمكنك استخدام النطاق الافتراضي أو إضافة نطاق مخصص خاص بك (متاح في الباقة الاحترافية).
+                النطاق هو عنوان متجرك على الإنترنت. يظهر النطاق الافتراضي لمتجرك أدناه. يمكنك إضافة نطاق مخصص في الباقة الاحترافية.
               </QuickTip>
               
               <div className="space-y-6">
@@ -261,7 +300,16 @@ const Settings: React.FC = () => {
                     <div className="px-4 py-2 bg-gray-100 border border-gray-200 rounded-md flex-1">
                       <span className="font-medium">{storeUrl || "your-store"}.linok.me</span>
                     </div>
-                    <Button variant="outline" className="mr-2">نسخ</Button>
+                    <Button 
+                      variant="outline" 
+                      className="mr-2"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${storeUrl}.linok.me`);
+                        toast.success("تم نسخ الرابط بنجاح");
+                      }}
+                    >
+                      نسخ
+                    </Button>
                   </div>
                 </div>
                 
@@ -425,7 +473,7 @@ const Settings: React.FC = () => {
                     قم بترقية متجرك للباقة الاحترافية للحصول على خيارات دفع متقدمة مثل ماي فاتورة وتابي وباي بال
                   </p>
                   <Button variant="default" className="bg-blue-600 hover:bg-blue-700" asChild>
-                    <a href="/dashboard/settings?tab=billing">ترقية الآن</a>
+                    <a href="/dashboard/settings?tab=billing">تر��ية الآن</a>
                   </Button>
                 </div>
               )}
@@ -549,7 +597,7 @@ const Settings: React.FC = () => {
                   <div>
                     <div className="flex items-center">
                       <h4 className="font-medium">تفعيل الشحن</h4>
-                      <SettingTooltip content="تفعيل خيارات الشحن والتوصيل للعملاء" />
+                      <SettingTooltip content="تفعيل خيارات ا��شحن والتوصيل للعملاء" />
                     </div>
                     <p className="text-sm text-gray-500">السماح بشحن المنتجات للعملاء</p>
                   </div>
