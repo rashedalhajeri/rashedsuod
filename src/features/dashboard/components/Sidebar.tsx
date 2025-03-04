@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, ShoppingBag, Package, Tags, Users, CreditCard, Settings, ChevronLeft, ChevronRight, LogOut, Menu, FileText, MessageSquare, HelpCircle } from "lucide-react";
+import { LayoutDashboard, ShoppingBag, Package, Tags, Users, CreditCard, Settings, ChevronLeft, ChevronRight, LogOut, Menu, FileText } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useContext } from "react";
 import { AuthContext } from "@/App";
@@ -100,11 +100,6 @@ const Sidebar: React.FC = () => {
       path: "/dashboard/coupons",
       icon: <FileText size={20} />,
       label: "الكوبونات"
-    },
-    {
-      path: "/dashboard/support",
-      icon: <MessageSquare size={20} />,
-      label: "الدعم"
     },
     {
       path: "/dashboard/settings",
