@@ -2,6 +2,8 @@
 import React, { ReactNode } from "react";
 import Sidebar from "@/features/dashboard/components/Sidebar";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { Card } from "@/components/ui/card";
+import { motion } from "framer-motion";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -14,11 +16,22 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     <div className="flex h-screen overflow-hidden bg-gray-50 rtl">
       <Sidebar />
       
-      <main className="flex-1 overflow-x-hidden overflow-y-auto py-4 px-0 md:mr-[250px] mr-[80px] transition-all duration-300">
+      <motion.main 
+        className="flex-1 overflow-x-hidden overflow-y-auto py-4 px-0 md:mr-[250px] mr-[80px] transition-all duration-300"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
         <div className="container py-4 px-6 max-w-7xl mx-auto">
-          {children}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1 }}
+          >
+            {children}
+          </motion.div>
         </div>
-      </main>
+      </motion.main>
     </div>
   );
 };
