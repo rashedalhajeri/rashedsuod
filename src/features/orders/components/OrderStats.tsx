@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShoppingBag, Box, TruckIcon, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
+import { ShoppingBag, Box, TruckIcon, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -26,17 +26,17 @@ const OrderStats: React.FC<OrderStatsProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <Card className="animate-pulse border-primary-100">
-        <CardHeader className="pb-2 border-b">
+      <Card className="animate-pulse">
+        <CardHeader className="pb-2">
           <CardTitle className="text-lg font-medium">
             <div className="h-6 w-32 bg-gray-200 rounded"></div>
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-4">
+        <CardContent>
           <div className="grid grid-cols-5 gap-4">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="text-center">
-                <div className="h-16 w-16 bg-gray-200 rounded-full mx-auto"></div>
+                <div className="h-12 w-12 bg-gray-200 rounded-full mx-auto"></div>
                 <div className="h-3 w-16 bg-gray-200 rounded mx-auto mt-2"></div>
                 <div className="h-5 w-6 bg-gray-200 rounded mx-auto mt-1"></div>
               </div>
@@ -97,20 +97,14 @@ const OrderStats: React.FC<OrderStatsProps> = ({
   ];
   
   return (
-    <Card className="border-primary-100 h-full">
-      <CardHeader className="pb-2 border-b flex flex-row items-center justify-between">
+    <Card className="border-primary-100">
+      <CardHeader className="pb-2">
         <CardTitle className="text-lg font-medium flex items-center">
-          <ShoppingBag className="h-5 w-5 inline-block ml-2 text-primary-500" />
+          <ShoppingBag className="h-5 w-5 inline-block ml-2" />
           إحصائيات الطلبات
         </CardTitle>
-        <Button variant="ghost" size="sm" asChild className="text-primary-500 hover:text-primary-600 transition-colors">
-          <Link to="/dashboard/orders" className="flex items-center gap-1 text-sm font-normal">
-            التفاصيل
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </Button>
       </CardHeader>
-      <CardContent className="pt-4">
+      <CardContent>
         <div className="grid grid-cols-5 gap-4">
           {statsItems.map((item, index) => (
             <motion.div 
@@ -126,13 +120,9 @@ const OrderStats: React.FC<OrderStatsProps> = ({
                   <div className={cn(
                     "h-16 w-16 rounded-full flex items-center justify-center mx-auto transition-colors duration-200",
                     item.bgColor,
-                    item.hoverBgColor,
-                    "border",
-                    item.bgColor === "bg-gray-100" ? "border-gray-200" : ""
+                    item.hoverBgColor
                   )}>
-                    {React.cloneElement(item.icon, { 
-                      className: cn("h-8 w-8 transition-transform duration-200 group-hover:scale-110", item.textColor) 
-                    })}
+                    {React.cloneElement(item.icon, { className: cn("h-8 w-8 transition-transform duration-200 group-hover:scale-110", item.textColor) })}
                   </div>
                   <p className="text-sm text-gray-500 mt-2">{item.label}</p>
                   <p className={cn("text-xl font-bold transition-all duration-200 group-hover:scale-110", item.textColor)}>

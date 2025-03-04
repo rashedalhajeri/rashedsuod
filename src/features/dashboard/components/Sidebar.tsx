@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -6,23 +7,12 @@ import { Button } from "@/components/ui/button";
 import { 
   LayoutDashboard, ShoppingBag, Package, Tags, Users, 
   CreditCard, Settings, ChevronLeft, ChevronRight, LogOut, 
-  BarChart3, Menu, FileText, MessageSquare, HelpCircle, 
-  ChevronDown, Home, Star, AlertTriangle, Info
+  BarChart3, Menu, FileText, MessageSquare, HelpCircle 
 } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useContext } from "react";
 import { AuthContext } from "@/App";
-import { 
-  AlertDialog, 
-  AlertDialogAction, 
-  AlertDialogCancel, 
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
-  AlertDialogTitle, 
-  AlertDialogTrigger 
-} from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface SidebarLinkProps {
   to: string;
@@ -31,14 +21,6 @@ interface SidebarLinkProps {
   isActive: boolean;
   isCollapsed: boolean;
   onClick?: () => void;
-  badge?: number;
-}
-
-interface SidebarSectionProps {
-  title: string;
-  children: React.ReactNode;
-  isCollapsed: boolean;
-  defaultOpen?: boolean;
 }
 
 const SidebarLink: React.FC<SidebarLinkProps> = ({
@@ -47,8 +29,7 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({
   label,
   isActive,
   isCollapsed,
-  onClick,
-  badge
+  onClick
 }) => {
   return (
     <Link 
@@ -56,69 +37,16 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({
       className={cn(
         "flex items-center gap-3 py-3 px-4 rounded-lg transition-all duration-200", 
         isActive 
-          ? "bg-primary-100 text-primary-700 font-medium" 
-          : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
+          ? "bg-primary-100 text-primary-700" 
+          : "text-gray-600 hover:bg-gray-100"
       )} 
       onClick={onClick}
     >
       <div className={cn("min-w-6 flex items-center justify-center", isActive && "text-primary-600")}>
         {icon}
       </div>
-      {!isCollapsed && (
-        <>
-          <span className="font-medium flex-1">{label}</span>
-          {badge !== undefined && badge > 0 && (
-            <div className="bg-primary-100 text-primary-700 rounded-full px-2 py-0.5 text-xs font-semibold">
-              {badge}
-            </div>
-          )}
-        </>
-      )}
-      {isCollapsed && badge !== undefined && badge > 0 && (
-        <div className="absolute -top-1 -right-1 bg-primary-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
-          {badge}
-        </div>
-      )}
+      {!isCollapsed && <span className="font-medium">{label}</span>}
     </Link>
-  );
-};
-
-const SidebarSection: React.FC<SidebarSectionProps> = ({ 
-  title, 
-  children, 
-  isCollapsed,
-  defaultOpen = true 
-}) => {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-
-  if (isCollapsed) {
-    return (
-      <div className="mb-2">
-        {React.Children.map(children, (child) => child)}
-      </div>
-    );
-  }
-
-  return (
-    <div className="mb-4">
-      <button 
-        className="flex items-center justify-between w-full py-2 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        {title}
-        <ChevronDown 
-          className={cn(
-            "h-4 w-4 transition-transform", 
-            isOpen ? "" : "-rotate-90"
-          )} 
-        />
-      </button>
-      {isOpen && (
-        <div className="mt-1 space-y-1">
-          {children}
-        </div>
-      )}
-    </div>
   );
 };
 
@@ -144,15 +72,25 @@ const Sidebar: React.FC = () => {
   };
 
   const getIsActive = (path: string) => {
-    if (path === "/dashboard" && location.pathname === "/dashboard") {
-      return true;
-    }
-    return location.pathname.startsWith(path) && path !== "/dashboard";
+    return location.pathname === path;
   };
 
   const handleLogout = async () => {
     await signOut();
   };
+
+  const sidebarLinks = [
+    { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "لوحة التحكم" },
+    { path: "/dashboard/orders", icon: <ShoppingBag size={20} />, label: "الطلبات" },
+    { path: "/dashboard/products", icon: <Package size={20} />, label: "المنتجات" },
+    { path: "/dashboard/categories", icon: <Tags size={20} />, label: "التصنيفات" },
+    { path: "/dashboard/customers", icon: <Users size={20} />, label: "العملاء" },
+    { path: "/dashboard/payments", icon: <CreditCard size={20} />, label: "المدفوعات" },
+    { path: "/dashboard/reports", icon: <BarChart3 size={20} />, label: "التقارير" },
+    { path: "/dashboard/coupons", icon: <FileText size={20} />, label: "الكوبونات" },
+    { path: "/dashboard/support", icon: <MessageSquare size={20} />, label: "الدعم" },
+    { path: "/dashboard/settings", icon: <Settings size={20} />, label: "الإعدادات" },
+  ];
 
   const sidebarVariants = {
     expanded: {
@@ -195,7 +133,7 @@ const Sidebar: React.FC = () => {
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
               {!isCollapsed && (
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
                   <span className="text-xl font-bold text-primary-500">Linok</span>
                   <span className="text-sm font-medium text-gray-500">.me</span>
                 </div>
@@ -212,131 +150,18 @@ const Sidebar: React.FC = () => {
           </div>
 
           {/* Navigation Links */}
-          <div className="flex-1 py-4 px-2 space-y-1 overflow-y-auto custom-scrollbar">
-            {/* Main Section */}
-            <SidebarSection title="الرئيسية" isCollapsed={isCollapsed}>
+          <div className="flex-1 py-6 px-2 space-y-1 overflow-y-auto">
+            {sidebarLinks.map(link => (
               <SidebarLink 
-                to="/dashboard" 
-                icon={<LayoutDashboard size={20} />} 
-                label="لوحة التحكم" 
-                isActive={getIsActive("/dashboard") && location.pathname === "/dashboard"} 
+                key={link.path} 
+                to={link.path} 
+                icon={link.icon} 
+                label={link.label} 
+                isActive={getIsActive(link.path)} 
                 isCollapsed={isCollapsed} 
                 onClick={closeMobileMenu} 
               />
-              <SidebarLink 
-                to="/" 
-                icon={<Home size={20} />} 
-                label="الموقع الرئيسي" 
-                isActive={false} 
-                isCollapsed={isCollapsed} 
-                onClick={closeMobileMenu} 
-              />
-            </SidebarSection>
-            
-            {/* Store Section */}
-            <SidebarSection title="المتجر" isCollapsed={isCollapsed}>
-              <SidebarLink 
-                to="/dashboard/orders" 
-                icon={<ShoppingBag size={20} />} 
-                label="الطلبات" 
-                isActive={getIsActive("/dashboard/orders")} 
-                isCollapsed={isCollapsed} 
-                onClick={closeMobileMenu} 
-                badge={3}
-              />
-              <SidebarLink 
-                to="/dashboard/products" 
-                icon={<Package size={20} />} 
-                label="المنتجات" 
-                isActive={getIsActive("/dashboard/products")} 
-                isCollapsed={isCollapsed} 
-                onClick={closeMobileMenu} 
-              />
-              <SidebarLink 
-                to="/dashboard/categories" 
-                icon={<Tags size={20} />} 
-                label="التصنيفات" 
-                isActive={getIsActive("/dashboard/categories")} 
-                isCollapsed={isCollapsed} 
-                onClick={closeMobileMenu} 
-              />
-              <SidebarLink 
-                to="/dashboard/customers" 
-                icon={<Users size={20} />} 
-                label="العملاء" 
-                isActive={getIsActive("/dashboard/customers")} 
-                isCollapsed={isCollapsed} 
-                onClick={closeMobileMenu} 
-              />
-            </SidebarSection>
-            
-            {/* Finance Section */}
-            <SidebarSection title="المالية" isCollapsed={isCollapsed}>
-              <SidebarLink 
-                to="/dashboard/payments" 
-                icon={<CreditCard size={20} />} 
-                label="المدفوعات" 
-                isActive={getIsActive("/dashboard/payments")} 
-                isCollapsed={isCollapsed} 
-                onClick={closeMobileMenu} 
-              />
-              <SidebarLink 
-                to="/dashboard/reports" 
-                icon={<BarChart3 size={20} />} 
-                label="التقارير" 
-                isActive={getIsActive("/dashboard/reports")} 
-                isCollapsed={isCollapsed} 
-                onClick={closeMobileMenu} 
-              />
-              <SidebarLink 
-                to="/dashboard/coupons" 
-                icon={<FileText size={20} />} 
-                label="الكوبونات" 
-                isActive={getIsActive("/dashboard/coupons")} 
-                isCollapsed={isCollapsed} 
-                onClick={closeMobileMenu} 
-              />
-            </SidebarSection>
-            
-            {/* Other Section */}
-            <SidebarSection title="أخرى" isCollapsed={isCollapsed}>
-              <SidebarLink 
-                to="/dashboard/support" 
-                icon={<MessageSquare size={20} />} 
-                label="الدعم" 
-                isActive={getIsActive("/dashboard/support")} 
-                isCollapsed={isCollapsed} 
-                onClick={closeMobileMenu} 
-              />
-              <SidebarLink 
-                to="/dashboard/settings" 
-                icon={<Settings size={20} />} 
-                label="الإعدادات" 
-                isActive={getIsActive("/dashboard/settings")} 
-                isCollapsed={isCollapsed} 
-                onClick={closeMobileMenu} 
-              />
-            </SidebarSection>
-
-            {/* Admin Section - Conditionally Rendered */}
-            {/* <SidebarSection title="إدارة" isCollapsed={isCollapsed} defaultOpen={false}>
-              <SidebarLink 
-                to="/dashboard/admin/users" 
-                icon={<Users size={20} />} 
-                label="المستخدمين" 
-                isActive={getIsActive("/dashboard/admin/users")} 
-                isCollapsed={isCollapsed} 
-                onClick={closeMobileMenu} 
-              />
-              <SidebarLink 
-                to="/dashboard/admin/settings" 
-                icon={<Settings size={20} />} 
-                label="إعدادات النظام" 
-                isActive={getIsActive("/dashboard/admin/settings")} 
-                isCollapsed={isCollapsed} 
-                onClick={closeMobileMenu} 
-              />
-            </SidebarSection> */}
+            ))}
           </div>
 
           {/* Help Section - Optional */}
