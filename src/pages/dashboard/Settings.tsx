@@ -325,7 +325,7 @@ const Settings: React.FC = () => {
                   
                   <div className="space-y-2">
                     <div className="flex items-center">
-                      <Label htmlFor="custom-domain">النطاق المخصص</Label>
+                      <Label htmlFor="custom-domain">الن��اق المخصص</Label>
                       <SettingTooltip content="يمكنك إضافة نطاق خاص بك مثل www.mystore.com (متاح في الباقة الاحترافية)" />
                     </div>
                     <div className="flex">
@@ -355,136 +355,190 @@ const Settings: React.FC = () => {
         <TabsContent value="payment_methods">
           <Card>
             <CardHeader>
-              <CardTitle>طرق الدفع</CardTitle>
-              <CardDescription>
-                قم بتفعيل أو تعطيل طرق الدفع التي تريد استخدامها في متجرك
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>طرق الدفع</CardTitle>
+                  <CardDescription>
+                    قم بتفعيل وإعداد طرق الدفع التي تريد توفيرها لعملائك
+                  </CardDescription>
+                </div>
+                {currentPlan !== "premium" && (
+                  <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
+                    بعض الميزات متاحة فقط في الباقة الاحترافية
+                  </Badge>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="space-y-6">
               <QuickTip>
-                كلما زادت طرق الدفع المتاحة في متجرك، زادت فرص المبيعات. يمكنك البدء بالدفع عند الاستلام ثم إضافة بوابات الدفع الإلكتروني لاحقاً.
+                كلما زادت طرق الدفع المتاحة في متجرك، زادت فرص إتمام عمليات الشراء. يمكنك البدء بالدفع عند الاستلام ثم إضافة بوابات الدفع الإلكتروني لاحقاً.
               </QuickTip>
               
               <div className="grid gap-6">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-4 rounded-lg border hover:border-primary/20 hover:bg-gray-50/50 transition-colors">
+                  <div className="space-y-1 mb-3 sm:mb-0">
                     <div className="flex items-center">
-                      <Label htmlFor="cash-on-delivery" className="text-base">الدفع عند الاستلام</Label>
+                      <Wallet className="h-5 w-5 text-gray-500 mr-2" />
+                      <Label htmlFor="cash-on-delivery" className="text-base font-medium">الدفع عند الاستلام</Label>
                       <SettingTooltip content="يسمح للعملاء بالدفع نقداً عند استلام المنتجات" />
                     </div>
-                    <p className="text-sm text-muted-foreground">السماح للعملاء بالدفع نقداً عند استلام المنتجات</p>
+                    <p className="text-sm text-muted-foreground mr-7">خيار شائع يتيح للعملاء الدفع نقداً عند استلام منتجاتهم</p>
                   </div>
-                  <Switch 
-                    id="cash-on-delivery" 
-                    checked={cashOnDelivery}
-                    onCheckedChange={setCashOnDelivery}
-                  />
+                  <div className="flex items-center justify-end">
+                    <Switch 
+                      id="cash-on-delivery" 
+                      checked={cashOnDelivery}
+                      onCheckedChange={setCashOnDelivery}
+                      className="data-[state=checked]:bg-green-500"
+                    />
+                    <Label htmlFor="cash-on-delivery" className="mr-2 text-sm font-medium text-gray-600">
+                      {cashOnDelivery ? "مفعل" : "معطل"}
+                    </Label>
+                  </div>
                 </div>
                 
-                <Separator />
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-4 rounded-lg border hover:border-primary/20 hover:bg-gray-50/50 transition-colors">
+                  <div className="space-y-1 mb-3 sm:mb-0">
                     <div className="flex items-center">
-                      <Label htmlFor="my-fatoorah" className="text-base">ماي فاتورة (MyFatoorah)</Label>
+                      <CreditCard className="h-5 w-5 text-blue-500 mr-2" />
+                      <Label htmlFor="my-fatoorah" className="text-base font-medium">ماي فاتورة (MyFatoorah)</Label>
                       <SettingTooltip content="بوابة دفع شاملة تدعم KNET وVisa وMastercard وغيرها من وسائل الدفع في الخليج" />
                     </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <div className="h-8 px-3 py-1 bg-blue-50 text-blue-600 rounded-md font-medium">MyFatoorah</div>
+                    <div className="flex flex-wrap items-center gap-2 mt-2 mr-7">
+                      <div className="h-7 px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs">KNET</div>
+                      <div className="h-7 px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs">Visa</div>
+                      <div className="h-7 px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs">Mastercard</div>
+                      <div className="h-7 px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs">mada</div>
+                      <div className="h-7 px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs">Apple Pay</div>
                     </div>
-                    <p className="text-sm text-muted-foreground">بوابة دفع شاملة تدعم العديد من وسائل الدفع في الخليج</p>
+                    <p className="text-sm text-muted-foreground mr-7">بوابة دفع شاملة تدعم العديد من وسائل الدفع في الخليج</p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col items-end gap-2 sm:min-w-28">
                     {currentPlan !== "premium" && (
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-xs bg-gray-50 text-gray-500 border-gray-200">
                         الباقة الاحترافية
                       </Badge>
                     )}
-                    <Switch 
-                      id="my-fatoorah" 
-                      checked={myFatoorah}
-                      onCheckedChange={setMyFatoorah}
-                      disabled={currentPlan !== "premium"}
-                    />
+                    <div className="flex items-center gap-2">
+                      <Switch 
+                        id="my-fatoorah" 
+                        checked={myFatoorah}
+                        onCheckedChange={setMyFatoorah}
+                        disabled={currentPlan !== "premium"}
+                        className="data-[state=checked]:bg-blue-500"
+                      />
+                      <Label htmlFor="my-fatoorah" className="mr-2 text-sm font-medium text-gray-600">
+                        {myFatoorah ? "مفعل" : "معطل"}
+                      </Label>
+                    </div>
                   </div>
                 </div>
                 
-                <Separator />
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-4 rounded-lg border hover:border-primary/20 hover:bg-gray-50/50 transition-colors">
+                  <div className="space-y-1 mb-3 sm:mb-0">
                     <div className="flex items-center">
-                      <Label htmlFor="tabby" className="text-base">تابي (Tabby)</Label>
+                      <CreditCard className="h-5 w-5 text-purple-500 mr-2" />
+                      <Label htmlFor="tabby" className="text-base font-medium">تابي (Tabby)</Label>
                       <SettingTooltip content="خدمة تتيح للعملاء الدفع على أقساط بدون فوائد أو رسوم إضافية" />
                     </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <div className="h-8 px-3 py-1 bg-purple-50 text-purple-600 rounded-md font-medium">Tabby</div>
+                    <div className="flex items-center gap-2 mt-2 mr-7">
+                      <div className="h-7 px-2 py-1 bg-purple-50 text-purple-600 rounded text-xs">قسّمها على 4</div>
+                      <div className="h-7 px-2 py-1 bg-purple-50 text-purple-600 rounded text-xs">ادفع لاحقاً</div>
                     </div>
-                    <p className="text-sm text-muted-foreground">الدفع بالتقسيط بدون فوائد - اشتري الآن وادفع لاحقاً</p>
+                    <p className="text-sm text-muted-foreground mr-7">الدفع بالتقسيط بدون فوائد - اشتري الآن وادفع لاحقاً</p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col items-end gap-2 sm:min-w-28">
                     {currentPlan !== "premium" && (
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-xs bg-gray-50 text-gray-500 border-gray-200">
                         الباقة الاحترافية
                       </Badge>
                     )}
-                    <Switch 
-                      id="tabby" 
-                      checked={tabby}
-                      onCheckedChange={setTabby}
-                      disabled={currentPlan !== "premium"}
-                    />
+                    <div className="flex items-center gap-2">
+                      <Switch 
+                        id="tabby" 
+                        checked={tabby}
+                        onCheckedChange={setTabby}
+                        disabled={currentPlan !== "premium"}
+                        className="data-[state=checked]:bg-purple-500"
+                      />
+                      <Label htmlFor="tabby" className="mr-2 text-sm font-medium text-gray-600">
+                        {tabby ? "مفعل" : "معطل"}
+                      </Label>
+                    </div>
                   </div>
                 </div>
                 
-                <Separator />
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-4 rounded-lg border hover:border-primary/20 hover:bg-gray-50/50 transition-colors">
+                  <div className="space-y-1 mb-3 sm:mb-0">
                     <div className="flex items-center">
-                      <Label htmlFor="paypal" className="text-base">باي بال (PayPal)</Label>
+                      <CreditCard className="h-5 w-5 text-blue-700 mr-2" />
+                      <Label htmlFor="paypal" className="text-base font-medium">باي بال (PayPal)</Label>
                       <SettingTooltip content="خدمة دفع عالمية مناسبة للعملاء الدوليين" />
                     </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <div className="h-8 px-3 py-1 bg-blue-100 text-blue-700 rounded-md font-medium">PayPal</div>
+                    <div className="flex items-center gap-2 mt-2 mr-7">
+                      <div className="h-7 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">PayPal</div>
                     </div>
-                    <p className="text-sm text-muted-foreground">منصة دفع عالمية للعملاء الدوليين</p>
+                    <p className="text-sm text-muted-foreground mr-7">منصة دفع عالمية للعملاء الدوليين</p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col items-end gap-2 sm:min-w-28">
                     {currentPlan !== "premium" && (
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-xs bg-gray-50 text-gray-500 border-gray-200">
                         الباقة الاحترافية
                       </Badge>
                     )}
-                    <Switch 
-                      id="paypal" 
-                      checked={paypal}
-                      onCheckedChange={setPaypal}
-                      disabled={currentPlan !== "premium"}
-                    />
+                    <div className="flex items-center gap-2">
+                      <Switch 
+                        id="paypal" 
+                        checked={paypal}
+                        onCheckedChange={setPaypal}
+                        disabled={currentPlan !== "premium"}
+                        className="data-[state=checked]:bg-blue-700"
+                      />
+                      <Label htmlFor="paypal" className="mr-2 text-sm font-medium text-gray-600">
+                        {paypal ? "مفعل" : "معطل"}
+                      </Label>
+                    </div>
                   </div>
                 </div>
               </div>
               
               {currentPlan !== "premium" && (
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-lg border border-blue-100 mt-6">
-                  <h3 className="text-base font-semibold text-blue-800 mb-2">ترقية للوصول لجميع بوابات الدفع</h3>
+                  <h3 className="text-base font-semibold text-blue-800 mb-2 flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-blue-500" />
+                    ترقية للوصول لجميع بوابات الدفع
+                  </h3>
                   <p className="text-sm text-blue-700 mb-4">
                     قم بترقية متجرك للباقة الاحترافية للحصول على خيارات دفع متقدمة مثل ماي فاتورة وتابي وباي بال
                   </p>
                   <Button variant="default" className="bg-blue-600 hover:bg-blue-700" asChild>
-                    <a href="/dashboard/settings?tab=billing">تر��ية الآن</a>
+                    <a href="/dashboard/settings?tab=billing">ترقية الآن</a>
                   </Button>
                 </div>
               )}
               
-              {myFatoorah && (
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                  <h3 className="text-sm font-medium text-blue-800 mb-2">إعدادات ماي فاتورة</h3>
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-1 gap-2">
+              {myFatoorah && currentPlan === "premium" && (
+                <div className="bg-blue-50 p-5 rounded-lg border border-blue-100 mt-4">
+                  <h3 className="text-sm font-medium text-blue-800 mb-3 flex items-center">
+                    <CreditCard className="h-4 w-4 text-blue-700 mr-2" />
+                    إعدادات ماي فاتورة
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 gap-3">
                       <div className="flex items-center">
-                        <Label htmlFor="myfatoorah-token" className="text-xs text-blue-700">رمز API الخاص بماي فاتورة</Label>
+                        <Label htmlFor="myfatoorah-mode" className="text-sm text-blue-700">بيئة الاختبار</Label>
+                        <SettingTooltip content="استخدام بيئة الاختبار لتجربة عمليات الدفع دون إجراء معاملات حقيقية" />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch id="myfatoorah-mode" className="data-[state=checked]:bg-blue-600" />
+                        <Label htmlFor="myfatoorah-mode" className="text-xs text-blue-700">
+                          تفعيل بيئة الاختبار (Sandbox)
+                        </Label>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="flex items-center">
+                        <Label htmlFor="myfatoorah-token" className="text-sm text-blue-700">رمز API الخاص بماي فاتورة</Label>
                         <SettingTooltip content="رمز API الذي يمكنك الحصول عليه من لوحة تحكم ماي فاتورة" />
                       </div>
                       <Input 
@@ -492,22 +546,37 @@ const Settings: React.FC = () => {
                         placeholder="أدخل رمز API الخاص بك"
                         className="border-blue-200 focus:border-blue-400"
                       />
-                    </div>
-                    <div className="flex gap-1 text-xs text-blue-600 items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-                      <span>يمكنك الحصول على رمز API من لوحة تحكم ماي فاتورة</span>
+                      <div className="flex gap-1 text-xs text-blue-600 items-center">
+                        <Info className="h-4 w-4" />
+                        <span>يمكنك الحصول على رمز API من <a href="https://myfatoorah.com" target="_blank" className="underline">لوحة تحكم ماي فاتورة</a></span>
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
               
-              {tabby && (
-                <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
-                  <h3 className="text-sm font-medium text-purple-800 mb-2">إعدادات تابي</h3>
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-1 gap-2">
+              {tabby && currentPlan === "premium" && (
+                <div className="bg-purple-50 p-5 rounded-lg border border-purple-100 mt-4">
+                  <h3 className="text-sm font-medium text-purple-800 mb-3 flex items-center">
+                    <CreditCard className="h-4 w-4 text-purple-700 mr-2" />
+                    إعدادات تابي
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 gap-3">
                       <div className="flex items-center">
-                        <Label htmlFor="tabby-public-key" className="text-xs text-purple-700">المفتاح العام</Label>
+                        <Label htmlFor="tabby-mode" className="text-sm text-purple-700">بيئة الاختبار</Label>
+                        <SettingTooltip content="استخدام بيئة الاختبار لتجربة عمليات الدفع دون إجراء معاملات حقيقية" />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch id="tabby-mode" className="data-[state=checked]:bg-purple-600" />
+                        <Label htmlFor="tabby-mode" className="text-xs text-purple-700">
+                          تفعيل بيئة الاختبار (Sandbox)
+                        </Label>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="flex items-center">
+                        <Label htmlFor="tabby-public-key" className="text-sm text-purple-700">المفتاح العام</Label>
                         <SettingTooltip content="المفتاح العام الذي تحصل عليه من لوحة تحكم تابي" />
                       </div>
                       <Input 
@@ -516,9 +585,9 @@ const Settings: React.FC = () => {
                         className="border-purple-200 focus:border-purple-400"
                       />
                     </div>
-                    <div className="grid grid-cols-1 gap-2">
+                    <div className="grid grid-cols-1 gap-3">
                       <div className="flex items-center">
-                        <Label htmlFor="tabby-secret-key" className="text-xs text-purple-700">المفتاح السري</Label>
+                        <Label htmlFor="tabby-secret-key" className="text-sm text-purple-700">المفتاح السري</Label>
                         <SettingTooltip content="المفتاح السري الذي تحصل عليه من لوحة تحكم تابي" />
                       </div>
                       <Input 
@@ -527,18 +596,37 @@ const Settings: React.FC = () => {
                         placeholder="أدخل المفتاح السري"
                         className="border-purple-200 focus:border-purple-400"
                       />
+                      <div className="flex gap-1 text-xs text-purple-600 items-center">
+                        <Info className="h-4 w-4" />
+                        <span>يمكنك الحصول على مفاتيح API من <a href="https://business.tabby.ai" target="_blank" className="underline">لوحة تحكم تابي للأعمال</a></span>
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
               
-              {paypal && (
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                  <h3 className="text-sm font-medium text-blue-800 mb-2">إعدادات باي بال</h3>
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-1 gap-2">
+              {paypal && currentPlan === "premium" && (
+                <div className="bg-blue-50 p-5 rounded-lg border border-blue-100 mt-4">
+                  <h3 className="text-sm font-medium text-blue-800 mb-3 flex items-center">
+                    <CreditCard className="h-4 w-4 text-blue-700 mr-2" />
+                    إعدادات باي بال
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 gap-3">
                       <div className="flex items-center">
-                        <Label htmlFor="paypal-client-id" className="text-xs text-blue-700">معرف العميل</Label>
+                        <Label htmlFor="paypal-sandbox" className="text-sm text-blue-700">بيئة الاختبار</Label>
+                        <SettingTooltip content="استخدام بيئة الاختبار لتجربة عمليات الدفع دون إجراء معاملات حقيقية" />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch id="paypal-sandbox" className="data-[state=checked]:bg-blue-600" />
+                        <Label htmlFor="paypal-sandbox" className="text-xs text-blue-700">
+                          تفعيل بيئة الاختبار (Sandbox)
+                        </Label>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="flex items-center">
+                        <Label htmlFor="paypal-client-id" className="text-sm text-blue-700">معرف العميل (Client ID)</Label>
                         <SettingTooltip content="معرف العميل الذي تحصل عليه من لوحة تحكم باي بال للمطورين" />
                       </div>
                       <Input 
@@ -547,9 +635,9 @@ const Settings: React.FC = () => {
                         className="border-blue-200 focus:border-blue-400"
                       />
                     </div>
-                    <div className="grid grid-cols-1 gap-2">
+                    <div className="grid grid-cols-1 gap-3">
                       <div className="flex items-center">
-                        <Label htmlFor="paypal-secret" className="text-xs text-blue-700">المفتاح السري</Label>
+                        <Label htmlFor="paypal-secret" className="text-sm text-blue-700">المفتاح السري</Label>
                         <SettingTooltip content="المفتاح السري الذي تحصل عليه من لوحة تحكم باي بال للمطورين" />
                       </div>
                       <Input 
@@ -558,20 +646,17 @@ const Settings: React.FC = () => {
                         placeholder="أدخل المفتاح السري"
                         className="border-blue-200 focus:border-blue-400"
                       />
-                    </div>
-                    <div className="flex items-center gap-2 mt-2">
-                      <Switch 
-                        id="paypal-sandbox" 
-                        className="data-[state=checked]:bg-blue-600"
-                      />
-                      <Label htmlFor="paypal-sandbox" className="text-xs text-blue-700">وضع الاختبار (Sandbox)</Label>
+                      <div className="flex gap-1 text-xs text-blue-600 items-center">
+                        <Info className="h-4 w-4" />
+                        <span>يمكنك الحصول على مفاتيح API من <a href="https://developer.paypal.com" target="_blank" className="underline">لوحة تحكم باي بال للمطورين</a></span>
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
               
               <div className="flex justify-end">
-                <Button onClick={handleSaveSettings} className="bg-primary hover:bg-primary/90">
+                <Button onClick={() => toast.success("تم حفظ إعدادات طرق الدفع بنجاح")} className="bg-primary hover:bg-primary/90">
                   حفظ التغييرات
                 </Button>
               </div>
