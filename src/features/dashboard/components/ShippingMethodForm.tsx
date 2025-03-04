@@ -1,7 +1,6 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,12 +12,18 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Truck, MapPin, Clock, Info } from "lucide-react";
+import { useState } from "react";
 
 interface ShippingMethodFormProps {
   isPaidPlan: boolean;
 }
 
 const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) => {
+  const [freeShipping, setFreeShipping] = useState(false);
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState(200);
+  const [shippingCost, setShippingCost] = useState(15);
+  const [estimatedDelivery, setEstimatedDelivery] = useState("3-5");
+  
   return (
     <div className="space-y-6 py-2 animate-fade-in">
       {/* توصيل قياسي */}
@@ -33,35 +38,40 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
             </div>
             
             <div className="grid gap-5 sm:grid-cols-2">
-              <FormItem>
-                <FormLabel className="text-gray-700">تكلفة التوصيل (ريال)</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="15" dir="ltr" />
-                </FormControl>
-                <FormDescription className="text-xs">
+              <div className="space-y-2">
+                <Label className="text-gray-700">تكلفة التوصيل (ريال)</Label>
+                <Input 
+                  type="number" 
+                  placeholder="15" 
+                  dir="ltr" 
+                  value={shippingCost}
+                  onChange={(e) => setShippingCost(Number(e.target.value))}
+                />
+                <p className="text-xs text-gray-500">
                   تكلفة التوصيل الأساسية للطلبات
-                </FormDescription>
-              </FormItem>
+                </p>
+              </div>
               
-              <FormItem>
-                <FormLabel className="text-gray-700">مدة التوصيل المقدرة</FormLabel>
+              <div className="space-y-2">
+                <Label className="text-gray-700">مدة التوصيل المقدرة</Label>
                 <div className="flex items-center gap-2">
-                  <FormControl>
-                    <Select defaultValue="3-5">
-                      <SelectTrigger>
-                        <SelectValue placeholder="اختر مدة التوصيل" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1-2">1-2 أيام عمل</SelectItem>
-                        <SelectItem value="2-3">2-3 أيام عمل</SelectItem>
-                        <SelectItem value="3-5">3-5 أيام عمل</SelectItem>
-                        <SelectItem value="5-7">5-7 أيام عمل</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
+                  <Select 
+                    value={estimatedDelivery}
+                    onValueChange={setEstimatedDelivery}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="اختر مدة التوصيل" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1-2">1-2 أيام عمل</SelectItem>
+                      <SelectItem value="2-3">2-3 أيام عمل</SelectItem>
+                      <SelectItem value="3-5">3-5 أيام عمل</SelectItem>
+                      <SelectItem value="5-7">5-7 أيام عمل</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <Clock className="h-4 w-4 text-gray-400" />
                 </div>
-              </FormItem>
+              </div>
             </div>
             
             <Separator className="my-4" />
@@ -72,22 +82,36 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
                   <Label className="text-gray-700">التوصيل المجاني</Label>
                   <p className="text-xs text-gray-500 mt-1">تفعيل التوصيل المجاني للطلبات التي تتجاوز مبلغ معين</p>
                 </div>
-                <Switch />
+                <Switch 
+                  checked={freeShipping}
+                  onCheckedChange={setFreeShipping}
+                />
               </div>
               
-              <FormItem>
-                <FormLabel className="text-gray-700">الحد الأدنى للتوصيل المجاني (ريال)</FormLabel>
+              <div className="space-y-2">
+                <Label className="text-gray-700">الحد الأدنى للتوصيل المجاني (ريال)</Label>
                 <div className="space-y-3">
-                  <FormControl>
-                    <Slider defaultValue={[200]} max={500} step={10} />
-                  </FormControl>
+                  <Slider 
+                    value={[freeShippingThreshold]} 
+                    max={500} 
+                    step={10} 
+                    onValueChange={(val) => setFreeShippingThreshold(val[0])}
+                    disabled={!freeShipping}
+                  />
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-gray-500">0 ريال</span>
-                    <Input type="number" value="200" className="w-20 h-8 text-sm text-center" dir="ltr" />
+                    <Input 
+                      type="number" 
+                      value={freeShippingThreshold} 
+                      onChange={(e) => setFreeShippingThreshold(Number(e.target.value))}
+                      className="w-20 h-8 text-sm text-center" 
+                      dir="ltr"
+                      disabled={!freeShipping}
+                    />
                     <span className="text-xs text-gray-500">500 ريال</span>
                   </div>
                 </div>
-              </FormItem>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -108,10 +132,10 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
               </div>
             </div>
             
-            <FormItem className="flex flex-col gap-2">
-              <FormDescription className="text-sm text-gray-600">
+            <div className="space-y-2">
+              <p className="text-sm text-gray-600">
                 عند تفعيل هذه الخدمة، ستتمكن من استخدام خدمات توصيل Linok المتاحة في العديد من المدن بالمملكة. سيتم تحويل الطلبات مباشرة إلى نظام توصيل Linok.
-              </FormDescription>
+              </p>
               
               <div className="flex flex-col gap-3 mt-2">
                 <div className="flex items-start gap-2">
@@ -127,9 +151,9 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
                   <div className="text-sm text-gray-700">توصيل الطلب إلى عميلك بسرعة واحترافية</div>
                 </div>
               </div>
-            </FormItem>
+            </div>
             
-            <FormItem>
+            <div>
               <div className="bg-primary-50 p-3 rounded-md">
                 <RadioGroup defaultValue="standard">
                   <div className="flex items-start space-x-2 space-x-reverse mb-3">
@@ -159,7 +183,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
                   </div>
                 </RadioGroup>
               </div>
-            </FormItem>
+            </div>
             
             <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-amber-800 text-sm">
               <span className="font-medium">ملاحظة: </span>
@@ -181,48 +205,42 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
                 </div>
               </div>
               
-              <FormItem>
-                <FormDescription className="text-sm text-gray-600">
+              <div>
+                <p className="text-sm text-gray-600">
                   حدد مناطق توصيل مختلفة وأسعار توصيل مخصصة لكل منطقة
-                </FormDescription>
+                </p>
                 
                 <div className="border rounded-md p-4 mt-3 space-y-4">
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <FormItem>
-                      <FormLabel className="text-gray-700">المنطقة</FormLabel>
-                      <FormControl>
-                        <Select defaultValue="riyadh">
-                          <SelectTrigger>
-                            <SelectValue placeholder="اختر المنطقة" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="riyadh">الرياض</SelectItem>
-                            <SelectItem value="jeddah">جدة</SelectItem>
-                            <SelectItem value="dammam">الدمام</SelectItem>
-                            <SelectItem value="custom">منطقة مخصصة</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                    </FormItem>
+                    <div className="space-y-2">
+                      <Label className="text-gray-700">المنطقة</Label>
+                      <Select defaultValue="riyadh">
+                        <SelectTrigger>
+                          <SelectValue placeholder="اختر المنطقة" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="riyadh">الرياض</SelectItem>
+                          <SelectItem value="jeddah">جدة</SelectItem>
+                          <SelectItem value="dammam">الدمام</SelectItem>
+                          <SelectItem value="custom">منطقة مخصصة</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                     
-                    <FormItem>
-                      <FormLabel className="text-gray-700">تكلفة التوصيل (ريال)</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="25" dir="ltr" />
-                      </FormControl>
-                    </FormItem>
+                    <div className="space-y-2">
+                      <Label className="text-gray-700">تكلفة التوصيل (ريال)</Label>
+                      <Input type="number" placeholder="25" dir="ltr" />
+                    </div>
                   </div>
                   
-                  <FormItem>
-                    <FormLabel className="text-gray-700">تفاصيل المنطقة (اختياري)</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="أضف تفاصيل حول المنطقة أو ملاحظات خاصة بالتوصيل في هذه المنطقة"
-                        className="resize-none"
-                        rows={2}
-                      />
-                    </FormControl>
-                  </FormItem>
+                  <div className="space-y-2">
+                    <Label className="text-gray-700">تفاصيل المنطقة (اختياري)</Label>
+                    <Textarea 
+                      placeholder="أضف تفاصيل حول المنطقة أو ملاحظات خاصة بالتوصيل في هذه المنطقة"
+                      className="resize-none"
+                      rows={2}
+                    />
+                  </div>
                   
                   <div className="flex justify-end">
                     <Button variant="outline" size="sm" className="ml-2">إلغاء</Button>
@@ -235,7 +253,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
                     إضافة منطقة توصيل جديدة +
                   </Button>
                 </div>
-              </FormItem>
+              </div>
             </div>
           </CardContent>
         </Card>
