@@ -3,11 +3,12 @@ import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, ShoppingBag, Package, Tags, Users, CreditCard, Settings, ChevronLeft, ChevronRight, LogOut, BarChart3, Menu, FileText, MessageSquare, HelpCircle } from "lucide-react";
+import { LayoutDashboard, ShoppingBag, Package, Tags, Users, CreditCard, Settings, ChevronLeft, ChevronRight, LogOut, Menu, FileText, MessageSquare, HelpCircle } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useContext } from "react";
 import { AuthContext } from "@/App";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+
 interface SidebarLinkProps {
   to: string;
   icon: React.ReactNode;
@@ -16,6 +17,7 @@ interface SidebarLinkProps {
   isCollapsed: boolean;
   onClick?: () => void;
 }
+
 const SidebarLink: React.FC<SidebarLinkProps> = ({
   to,
   icon,
@@ -31,6 +33,7 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({
       {!isCollapsed && <span className="font-medium">{label}</span>}
     </Link>;
 };
+
 const Sidebar: React.FC = () => {
   const location = useLocation();
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -39,64 +42,77 @@ const Sidebar: React.FC = () => {
   const {
     signOut
   } = useContext(AuthContext);
+
   const handleToggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
+
   const handleMobileToggle = () => {
     setIsMobileOpen(!isMobileOpen);
   };
+
   const closeMobileMenu = () => {
     if (isMobile) {
       setIsMobileOpen(false);
     }
   };
+
   const getIsActive = (path: string) => {
     return location.pathname === path;
   };
+
   const handleLogout = async () => {
     await signOut();
   };
-  const sidebarLinks = [{
-    path: "/dashboard",
-    icon: <LayoutDashboard size={20} />,
-    label: "لوحة التحكم"
-  }, {
-    path: "/dashboard/orders",
-    icon: <ShoppingBag size={20} />,
-    label: "الطلبات"
-  }, {
-    path: "/dashboard/products",
-    icon: <Package size={20} />,
-    label: "المنتجات"
-  }, {
-    path: "/dashboard/categories",
-    icon: <Tags size={20} />,
-    label: "التصنيفات"
-  }, {
-    path: "/dashboard/customers",
-    icon: <Users size={20} />,
-    label: "العملاء"
-  }, {
-    path: "/dashboard/payments",
-    icon: <CreditCard size={20} />,
-    label: "المدفوعات"
-  }, {
-    path: "/dashboard/reports",
-    icon: <BarChart3 size={20} />,
-    label: "التقارير"
-  }, {
-    path: "/dashboard/coupons",
-    icon: <FileText size={20} />,
-    label: "الكوبونات"
-  }, {
-    path: "/dashboard/support",
-    icon: <MessageSquare size={20} />,
-    label: "الدعم"
-  }, {
-    path: "/dashboard/settings",
-    icon: <Settings size={20} />,
-    label: "الإعدادات"
-  }];
+
+  const sidebarLinks = [
+    {
+      path: "/dashboard",
+      icon: <LayoutDashboard size={20} />,
+      label: "لوحة التحكم"
+    },
+    {
+      path: "/dashboard/orders",
+      icon: <ShoppingBag size={20} />,
+      label: "الطلبات"
+    },
+    {
+      path: "/dashboard/products",
+      icon: <Package size={20} />,
+      label: "المنتجات"
+    },
+    {
+      path: "/dashboard/categories",
+      icon: <Tags size={20} />,
+      label: "التصنيفات"
+    },
+    {
+      path: "/dashboard/customers",
+      icon: <Users size={20} />,
+      label: "العملاء"
+    },
+    {
+      path: "/dashboard/payments",
+      icon: <CreditCard size={20} />,
+      label: "المدفوعات"
+    },
+    {
+      path: "/dashboard/coupons",
+      icon: <FileText size={20} />,
+      label: "الكوبونات"
+    },
+    {
+      path: "/dashboard/support",
+      icon: <MessageSquare size={20} />,
+      label: "الدعم"
+    },
+    {
+      path: "/dashboard/settings",
+      icon: <Settings size={20} />,
+      label: "الإعدادات"
+    }
+  ];
+
   const sidebarVariants = {
     expanded: {
       width: 250
@@ -105,43 +121,78 @@ const Sidebar: React.FC = () => {
       width: 80
     }
   };
-  return <>
-      {/* Mobile Menu Button - Always Visible on Mobile */}
-      {isMobile && <div className="fixed top-4 left-4 z-50">
-          <Button variant="outline" size="icon" className="rounded-full shadow-md bg-white" onClick={handleMobileToggle}>
+
+  return (
+    <>
+      {isMobile && (
+        <div className="fixed top-4 left-4 z-50">
+          <Button
+            variant="outline"
+            size="icon"
+            className="rounded-full shadow-md bg-white"
+            onClick={handleMobileToggle}
+          >
             <Menu size={20} />
           </Button>
-        </div>}
+        </div>
+      )}
 
-      {/* Sidebar - Responsive */}
-      <motion.div className={cn("fixed top-0 right-0 h-screen bg-white shadow-md z-40 overflow-hidden rtl flex flex-col", isMobile ? "border-none" : "border-l border-gray-200", isMobile && !isMobileOpen ? "-right-80" : "right-0")} initial={isCollapsed ? "collapsed" : "expanded"} animate={isCollapsed ? "collapsed" : "expanded"} variants={sidebarVariants}>
+      <motion.div
+        className={cn(
+          "fixed top-0 right-0 h-screen bg-white shadow-md z-40 overflow-hidden rtl flex flex-col",
+          isMobile ? "border-none" : "border-l border-gray-200",
+          isMobile && !isMobileOpen ? "-right-80" : "right-0"
+        )}
+        initial={isCollapsed ? "collapsed" : "expanded"}
+        animate={isCollapsed ? "collapsed" : "expanded"}
+        variants={sidebarVariants}
+      >
         <div className="flex flex-col h-full">
-          {/* Sidebar Header */}
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              {!isCollapsed && <div className="flex items-center gap-2">
+              {!isCollapsed && (
+                <div className="flex items-center gap-2">
                   <span className="text-xl font-bold text-primary-500">Linok</span>
                   <span className="text-sm font-medium text-gray-500">.me</span>
-                </div>}
-              <Button variant="ghost" size="icon" className="rounded-full" onClick={handleToggleSidebar}>
+                </div>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full"
+                onClick={handleToggleSidebar}
+              >
                 {isCollapsed ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
               </Button>
             </div>
           </div>
 
-          {/* Navigation Links */}
           <div className="flex-1 py-6 px-2 space-y-1 overflow-y-auto">
-            {sidebarLinks.map(link => <SidebarLink key={link.path} to={link.path} icon={link.icon} label={link.label} isActive={getIsActive(link.path)} isCollapsed={isCollapsed} onClick={closeMobileMenu} />)}
+            {sidebarLinks.map(link => (
+              <SidebarLink
+                key={link.path}
+                to={link.path}
+                icon={link.icon}
+                label={link.label}
+                isActive={getIsActive(link.path)}
+                isCollapsed={isCollapsed}
+                onClick={closeMobileMenu}
+              />
+            ))}
           </div>
 
-          {/* Help Section - Optional */}
           {!isCollapsed}
 
-          {/* Sidebar Footer with Logout */}
           <div className="p-4 border-t border-gray-200">
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="ghost" className={cn("w-full justify-start text-red-600 hover:bg-red-50 hover:text-red-700", isCollapsed && "justify-center px-2")}>
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "w-full justify-start text-red-600 hover:bg-red-50 hover:text-red-700",
+                    isCollapsed && "justify-center px-2"
+                  )}
+                >
                   <LogOut size={18} className="mr-2" />
                   {!isCollapsed && <span>تسجيل الخروج</span>}
                 </Button>
@@ -164,6 +215,8 @@ const Sidebar: React.FC = () => {
           </div>
         </div>
       </motion.div>
-    </>;
+    </>
+  );
 };
+
 export default Sidebar;

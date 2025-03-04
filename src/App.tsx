@@ -24,7 +24,6 @@ import Categories from "./pages/dashboard/Categories";
 import Customers from "./pages/dashboard/Customers";
 import Payments from "./pages/dashboard/Payments";
 import Coupons from "./pages/dashboard/Coupons";
-import Reports from "./pages/dashboard/Reports";
 import Support from "./pages/dashboard/Support";
 import Settings from "./pages/dashboard/Settings";
 
@@ -284,15 +283,6 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Coupons />
-                </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="/dashboard/reports"
-              element={
-                <ProtectedRoute>
-                  <Reports />
                 </ProtectedRoute>
               }
             />
