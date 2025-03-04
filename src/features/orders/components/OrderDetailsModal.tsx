@@ -5,11 +5,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { 
-  Box, TruckIcon, CheckCircle2, XCircle 
+  Box, TruckIcon, CheckCircle2, XCircle, CalendarIcon, User, Mail, Phone, MapPin, CreditCard, FileText
 } from "lucide-react";
 import { Order, OrderStatus } from "@/types/orders";
 import { getCurrencyFormatter } from "@/hooks/use-store-data";
 import OrderStatusBadge from "./OrderStatusBadge";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface OrderDetailsModalProps {
   order: Order | null;
@@ -46,148 +48,281 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       return dateString;
     }
   };
+
+  // حساب إجمالي الطلب من العناصر إذا كانت متوفرة
+  const calculateOrderTotal = () => {
+    if (order.items && order.items.length > 0) {
+      return order.items.reduce((total, item) => total + item.total_price, 0);
+    }
+    return order.total;
+  };
+  
+  // تخطيط المعلومات للعرض
+  const infoItems = [
+    {
+      label: "رقم الطلب",
+      value: `#${order.order_number}`,
+      icon: <FileText className="h-4 w-4 text-gray-500" />
+    },
+    {
+      label: "تاريخ الطلب",
+      value: formatDate(order.created_at),
+      icon: <CalendarIcon className="h-4 w-4 text-gray-500" />
+    },
+    {
+      label: "العميل",
+      value: order.customer_name,
+      icon: <User className="h-4 w-4 text-gray-500" />
+    },
+    {
+      label: "البريد الإلكتروني",
+      value: order.customer_email || "غير متوفر",
+      icon: <Mail className="h-4 w-4 text-gray-500" />
+    },
+    {
+      label: "رقم الهاتف",
+      value: order.customer_phone || "غير متوفر",
+      icon: <Phone className="h-4 w-4 text-gray-500" />
+    },
+    {
+      label: "طريقة الدفع",
+      value: order.payment_method,
+      icon: <CreditCard className="h-4 w-4 text-gray-500" />
+    },
+    {
+      label: "عنوان الشحن",
+      value: order.shipping_address,
+      icon: <MapPin className="h-4 w-4 text-gray-500" />
+    }
+  ];
+
+  // تكوين أزرار تغيير الحالة
+  const statusButtons = [
+    {
+      status: "processing" as OrderStatus,
+      label: "قيد المعالجة",
+      icon: <Box className="h-4 w-4 ml-2" />,
+      className: "text-blue-600 border-blue-200 hover:bg-blue-50"
+    },
+    {
+      status: "shipped" as OrderStatus,
+      label: "تم الشحن",
+      icon: <TruckIcon className="h-4 w-4 ml-2" />,
+      className: "text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+    },
+    {
+      status: "delivered" as OrderStatus,
+      label: "تم التوصيل",
+      icon: <CheckCircle2 className="h-4 w-4 ml-2" />,
+      className: "text-green-600 border-green-200 hover:bg-green-50"
+    },
+    {
+      status: "cancelled" as OrderStatus,
+      label: "ملغي",
+      icon: <XCircle className="h-4 w-4 ml-2" />,
+      className: "text-red-600 border-red-200 hover:bg-red-50"
+    }
+  ];
   
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>تفاصيل الطلب #{order.order_number}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2 text-xl">
+            <span>تفاصيل الطلب #{order.order_number}</span>
+            <OrderStatusBadge status={order.status} />
+          </DialogTitle>
           <DialogDescription>
-            تفاصيل الطلب وحالته ومنتجاته
+            عرض كافة تفاصيل الطلب والمنتجات المطلوبة
           </DialogDescription>
         </DialogHeader>
         
         <div className="mt-4 space-y-6">
           {/* معلومات الطلب */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <h4 className="text-sm font-medium text-gray-500">رقم الطلب</h4>
-              <p>#{order.order_number}</p>
-            </div>
-            <div>
-              <h4 className="text-sm font-medium text-gray-500">تاريخ الطلب</h4>
-              <p>{formatDate(order.created_at)}</p>
-            </div>
-            <div>
-              <h4 className="text-sm font-medium text-gray-500">العميل</h4>
-              <p>{order.customer_name}</p>
-            </div>
-            <div>
-              <h4 className="text-sm font-medium text-gray-500">الحالة</h4>
-              <OrderStatusBadge status={order.status} />
-            </div>
+          <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+            <h3 className="font-medium mb-3 text-gray-700 flex items-center gap-2">
+              <User className="h-4 w-4" />
+              معلومات الطلب
+            </h3>
             
-            {order.customer_email && (
-              <div>
-                <h4 className="text-sm font-medium text-gray-500">البريد الإلكتروني</h4>
-                <p>{order.customer_email}</p>
-              </div>
-            )}
-            
-            {order.customer_phone && (
-              <div>
-                <h4 className="text-sm font-medium text-gray-500">رقم الهاتف</h4>
-                <p>{order.customer_phone}</p>
-              </div>
-            )}
-            
-            <div className="col-span-2">
-              <h4 className="text-sm font-medium text-gray-500">طريقة الدفع</h4>
-              <p>{order.payment_method}</p>
-            </div>
-            
-            <div className="col-span-2">
-              <h4 className="text-sm font-medium text-gray-500">عنوان الشحن</h4>
-              <p>{order.shipping_address}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6">
+              {infoItems.map((item, idx) => (
+                <div key={idx} className="flex items-start gap-2">
+                  {item.icon}
+                  <div>
+                    <p className="text-xs text-gray-500">{item.label}</p>
+                    <p className="text-sm font-medium">{item.value}</p>
+                  </div>
+                </div>
+              ))}
             </div>
             
             {order.notes && (
-              <div className="col-span-2">
-                <h4 className="text-sm font-medium text-gray-500">ملاحظات</h4>
-                <p>{order.notes}</p>
+              <div className="mt-4 pt-3 border-t border-gray-200">
+                <p className="text-xs text-gray-500">ملاحظات</p>
+                <p className="text-sm mt-1 bg-white p-2 rounded border border-gray-200">{order.notes}</p>
               </div>
             )}
           </div>
           
           {/* منتجات الطلب */}
           <div>
-            <h4 className="text-base font-medium mb-2">المنتجات</h4>
-            <div className="border rounded-md">
+            <h3 className="font-medium mb-3 text-gray-700 flex items-center gap-2">
+              <ShoppingBag className="h-4 w-4" />
+              المنتجات
+            </h3>
+            
+            <div className="border rounded-md overflow-hidden">
               {order.items && order.items.length > 0 ? (
-                order.items.map((item, index) => (
-                  <div key={index} className="flex justify-between p-3 border-b last:border-b-0">
-                    <div>
-                      <p className="font-medium">{item.product_name}</p>
-                      <p className="text-sm text-gray-500">الكمية: {item.quantity}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">{formatCurrency(item.unit_price)}</p>
-                      <p className="text-sm text-gray-500">
-                        الإجمالي: {formatCurrency(item.total_price)}
-                      </p>
-                    </div>
+                <>
+                  <div className="grid grid-cols-12 bg-gray-50 py-2 px-3 text-xs font-medium text-gray-500 border-b">
+                    <div className="col-span-6">المنتج</div>
+                    <div className="col-span-2 text-center">السعر</div>
+                    <div className="col-span-2 text-center">الكمية</div>
+                    <div className="col-span-2 text-center">الإجمالي</div>
                   </div>
-                ))
+                  
+                  {order.items.map((item, index) => (
+                    <motion.div 
+                      key={index} 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="grid grid-cols-12 py-3 px-3 border-b last:border-b-0 items-center"
+                    >
+                      <div className="col-span-6 font-medium">{item.product_name}</div>
+                      <div className="col-span-2 text-center">{formatCurrency(item.unit_price)}</div>
+                      <div className="col-span-2 text-center">{item.quantity}</div>
+                      <div className="col-span-2 text-center font-medium">{formatCurrency(item.total_price)}</div>
+                    </motion.div>
+                  ))}
+                  
+                  <div className="flex justify-between p-3 bg-gray-50 font-medium border-t">
+                    <p>المجموع</p>
+                    <p>{formatCurrency(calculateOrderTotal())}</p>
+                  </div>
+                </>
               ) : (
                 <div className="p-3 text-center text-gray-500">
                   لا توجد تفاصيل للمنتجات
                 </div>
               )}
-              
-              <div className="flex justify-between p-3 bg-gray-50 font-medium">
-                <p>المجموع</p>
-                <p>{formatCurrency(order.total)}</p>
-              </div>
             </div>
           </div>
           
           {/* أزرار تغيير الحالة */}
           <div>
-            <h4 className="text-base font-medium mb-2">تحديث الحالة</h4>
+            <h3 className="font-medium mb-3 text-gray-700 flex items-center gap-2">
+              <RefreshCw className="h-4 w-4" />
+              تحديث الحالة
+            </h3>
+            
             <div className="flex flex-wrap gap-2">
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="text-blue-600 border-blue-200 hover:bg-blue-50"
-                onClick={() => handleStatusChange("processing")}
-              >
-                <Box className="h-4 w-4 ml-2" />
-                قيد المعالجة
-              </Button>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
-                onClick={() => handleStatusChange("shipped")}
-              >
-                <TruckIcon className="h-4 w-4 ml-2" />
-                تم الشحن
-              </Button>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="text-green-600 border-green-200 hover:bg-green-50"
-                onClick={() => handleStatusChange("delivered")}
-              >
-                <CheckCircle2 className="h-4 w-4 ml-2" />
-                تم التوصيل
-              </Button>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="text-red-600 border-red-200 hover:bg-red-50"
-                onClick={() => handleStatusChange("cancelled")}
-              >
-                <XCircle className="h-4 w-4 ml-2" />
-                ملغي
-              </Button>
+              {statusButtons.map((btn) => (
+                <Button 
+                  key={btn.status}
+                  size="sm" 
+                  variant="outline" 
+                  className={cn(
+                    btn.className,
+                    order.status === btn.status && "ring-2 ring-offset-1",
+                    order.status === btn.status && btn.status === "processing" && "ring-blue-400",
+                    order.status === btn.status && btn.status === "shipped" && "ring-indigo-400",
+                    order.status === btn.status && btn.status === "delivered" && "ring-green-400",
+                    order.status === btn.status && btn.status === "cancelled" && "ring-red-400"
+                  )}
+                  onClick={() => handleStatusChange(btn.status)}
+                  disabled={order.status === btn.status}
+                >
+                  {btn.icon}
+                  {btn.label}
+                  {order.status === btn.status && (
+                    <span className="mr-1 bg-white/80 px-1 py-0.5 rounded-sm text-[10px]">الحالة الحالية</span>
+                  )}
+                </Button>
+              ))}
+            </div>
+          </div>
+          
+          {/* تسلسل وقت الحالات */}
+          <div className="border-t pt-4 mt-4">
+            <h3 className="font-medium mb-3 text-gray-700 flex items-center gap-2">
+              <History className="h-4 w-4" />
+              تاريخ الطلب
+            </h3>
+            
+            <div className="relative">
+              <div className="absolute top-0 bottom-0 right-4 w-0.5 bg-gray-200"></div>
+              
+              <div className="relative pr-10 mb-3">
+                <div className="absolute right-1 top-1 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                  <Check className="h-3 w-3 text-green-600" />
+                </div>
+                <div className="bg-gray-50 rounded p-2 mr-2">
+                  <p className="text-sm font-medium">تم إنشاء الطلب</p>
+                  <p className="text-xs text-gray-500">{formatDate(order.created_at)}</p>
+                </div>
+              </div>
+              
+              {order.status !== "processing" && (
+                <div className="relative pr-10 mb-3">
+                  <div className="absolute right-1 top-1 w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center">
+                    <Box className="h-3 w-3 text-blue-600" />
+                  </div>
+                  <div className="bg-gray-50 rounded p-2 mr-2">
+                    <p className="text-sm font-medium">قيد المعالجة</p>
+                    <p className="text-xs text-gray-500">{formatDate(order.updated_at)}</p>
+                  </div>
+                </div>
+              )}
+              
+              {(order.status === "shipped" || order.status === "delivered") && (
+                <div className="relative pr-10 mb-3">
+                  <div className="absolute right-1 top-1 w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center">
+                    <TruckIcon className="h-3 w-3 text-indigo-600" />
+                  </div>
+                  <div className="bg-gray-50 rounded p-2 mr-2">
+                    <p className="text-sm font-medium">تم الشحن</p>
+                    <p className="text-xs text-gray-500">{formatDate(order.updated_at)}</p>
+                  </div>
+                </div>
+              )}
+              
+              {order.status === "delivered" && (
+                <div className="relative pr-10 mb-3">
+                  <div className="absolute right-1 top-1 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                    <CheckCircle2 className="h-3 w-3 text-green-600" />
+                  </div>
+                  <div className="bg-gray-50 rounded p-2 mr-2">
+                    <p className="text-sm font-medium">تم التوصيل</p>
+                    <p className="text-xs text-gray-500">{formatDate(order.updated_at)}</p>
+                  </div>
+                </div>
+              )}
+              
+              {order.status === "cancelled" && (
+                <div className="relative pr-10">
+                  <div className="absolute right-1 top-1 w-6 h-6 rounded-full bg-red-100 flex items-center justify-center">
+                    <XCircle className="h-3 w-3 text-red-600" />
+                  </div>
+                  <div className="bg-gray-50 rounded p-2 mr-2">
+                    <p className="text-sm font-medium">تم الإلغاء</p>
+                    <p className="text-xs text-gray-500">{formatDate(order.updated_at)}</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
         
-        <DialogFooter>
+        <DialogFooter className="mt-6">
           <Button variant="outline" onClick={onClose}>
             إغلاق
+          </Button>
+          <Button variant="default" asChild>
+            <a href={`/dashboard/orders/edit/${order.id}`}>
+              تعديل الطلب
+            </a>
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -196,3 +331,6 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 };
 
 export default OrderDetailsModal;
+
+// استيراد الأيقونات المستخدمة لاحقًا في الكود
+import { ShoppingBag, RefreshCw, Check, History } from "lucide-react";

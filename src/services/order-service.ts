@@ -38,7 +38,7 @@ export const fetchOrders = async (
 
     // إضافة البحث إذا كان هناك كلمة بحث
     if (searchQuery) {
-      query = query.or(`order_number.ilike.%${searchQuery}%,customer_name.ilike.%${searchQuery}%,customer_email.ilike.%${searchQuery}%`);
+      query = query.or(`order_number.ilike.%${searchQuery}%,customer_name.ilike.%${searchQuery}%,customer_email.ilike.%${searchQuery}%,customer_phone.ilike.%${searchQuery}%`);
     }
 
     // إضافة الترتيب والصفحات
@@ -50,6 +50,8 @@ export const fetchOrders = async (
       .range(from, to);
 
     if (error) throw error;
+
+    console.log("Fetched orders:", data);
 
     return { 
       orders: data as Order[], 
@@ -91,7 +93,7 @@ export const fetchOrderDetails = async (orderId: string) => {
     // تحويل بيانات العناصر للتنسيق المطلوب
     const items = itemsData.map(item => ({
       ...item,
-      product_name: item.products?.name
+      product_name: item.products?.name || "منتج محذوف"
     }));
 
     return {
@@ -117,7 +119,14 @@ export const updateOrderStatus = async (orderId: string, status: OrderStatus) =>
 
     if (error) throw error;
 
-    toast.success(`تم تحديث حالة الطلب بنجاح`);
+    const statusNames = {
+      processing: "قيد المعالجة",
+      shipped: "تم الشحن",
+      delivered: "تم التوصيل",
+      cancelled: "ملغي"
+    };
+
+    toast.success(`تم تحديث حالة الطلب إلى ${statusNames[status]}`);
     return data as Order;
   } catch (error) {
     console.error("Error updating order status:", error);
@@ -171,6 +180,15 @@ export const addOrderItems = async (orderItems: Omit<OrderItem, 'id' | 'created_
 // حذف طلب
 export const deleteOrder = async (orderId: string) => {
   try {
+    // أولاً نحذف عناصر الطلب
+    const { error: itemsError } = await supabase
+      .from('order_items')
+      .delete()
+      .eq('order_id', orderId);
+
+    if (itemsError) throw itemsError;
+
+    // ثم نحذف الطلب نفسه
     const { error } = await supabase
       .from('orders')
       .delete()
@@ -205,6 +223,7 @@ export const fetchOrderStats = async (storeId: string) => {
       cancelled: data.filter(order => order.status === 'cancelled').length
     };
 
+    console.log("Order stats:", stats);
     return stats;
   } catch (error) {
     console.error("Error fetching order stats:", error);
