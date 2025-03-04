@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/layouts/DashboardLayout";
@@ -12,6 +13,7 @@ import { createOrder } from "@/services/order-service";
 import useStoreData from "@/hooks/use-store-data";
 import SaveButton from "@/components/ui/save-button";
 import { ArrowLeft } from "lucide-react";
+import { Order } from "@/types/orders";
 
 const NewOrder: React.FC = () => {
   const navigate = useNavigate();
@@ -69,8 +71,14 @@ const NewOrder: React.FC = () => {
     
     try {
       setSaving(true);
-      // Pass the storeData.id directly instead of using a separate orderData.store_id
-      const result = await createOrder(storeData.id, orderData);
+      
+      // Create a complete order object including store_id
+      const completeOrderData: Omit<Order, "id" | "created_at" | "updated_at"> = {
+        ...orderData,
+        store_id: storeData.id
+      };
+      
+      const result = await createOrder(storeData.id, completeOrderData);
       
       if (result) {
         toast({
