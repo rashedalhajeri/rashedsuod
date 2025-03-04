@@ -27,11 +27,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <div className="container py-4 px-6 max-w-7xl mx-auto">
+        <div className="container py-4 px-4 md:px-6 max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
+            className="h-full"
           >
             {children}
           </motion.div>
