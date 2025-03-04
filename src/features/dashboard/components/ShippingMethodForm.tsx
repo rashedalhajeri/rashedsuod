@@ -20,9 +20,9 @@ interface ShippingMethodFormProps {
 
 const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) => {
   const [freeShipping, setFreeShipping] = useState(false);
-  const [freeShippingThreshold, setFreeShippingThreshold] = useState(200);
-  const [shippingCost, setShippingCost] = useState(15);
-  const [estimatedDelivery, setEstimatedDelivery] = useState("3-5");
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState(20);
+  const [shippingCost, setShippingCost] = useState(2);
+  const [estimatedDelivery, setEstimatedDelivery] = useState("1-2");
   
   return (
     <div className="space-y-6 py-2 animate-fade-in">
@@ -39,16 +39,16 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
             
             <div className="grid gap-5 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label className="text-gray-700">تكلفة التوصيل (ريال)</Label>
+                <Label className="text-gray-700">تكلفة التوصيل (د.ك)</Label>
                 <Input 
                   type="number" 
-                  placeholder="15" 
+                  placeholder="2" 
                   dir="ltr" 
                   value={shippingCost}
                   onChange={(e) => setShippingCost(Number(e.target.value))}
                 />
                 <p className="text-xs text-gray-500">
-                  تكلفة التوصيل الأساسية للطلبات
+                  تكلفة التوصيل الأساسية للطلبات في الكويت
                 </p>
               </div>
               
@@ -65,8 +65,8 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
                     <SelectContent>
                       <SelectItem value="1-2">1-2 أيام عمل</SelectItem>
                       <SelectItem value="2-3">2-3 أيام عمل</SelectItem>
-                      <SelectItem value="3-5">3-5 أيام عمل</SelectItem>
-                      <SelectItem value="5-7">5-7 أيام عمل</SelectItem>
+                      <SelectItem value="same-day">توصيل في نفس اليوم</SelectItem>
+                      <SelectItem value="express">توصيل سريع (3-6 ساعات)</SelectItem>
                     </SelectContent>
                   </Select>
                   <Clock className="h-4 w-4 text-gray-400" />
@@ -89,17 +89,17 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
               </div>
               
               <div className="space-y-2">
-                <Label className="text-gray-700">الحد الأدنى للتوصيل المجاني (ريال)</Label>
+                <Label className="text-gray-700">الحد الأدنى للتوصيل المجاني (د.ك)</Label>
                 <div className="space-y-3">
                   <Slider 
                     value={[freeShippingThreshold]} 
-                    max={500} 
-                    step={10} 
+                    max={50} 
+                    step={1} 
                     onValueChange={(val) => setFreeShippingThreshold(val[0])}
                     disabled={!freeShipping}
                   />
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">0 ريال</span>
+                    <span className="text-xs text-gray-500">0 د.ك</span>
                     <Input 
                       type="number" 
                       value={freeShippingThreshold} 
@@ -108,7 +108,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
                       dir="ltr"
                       disabled={!freeShipping}
                     />
-                    <span className="text-xs text-gray-500">500 ريال</span>
+                    <span className="text-xs text-gray-500">50 د.ك</span>
                   </div>
                 </div>
               </div>
@@ -117,24 +117,24 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
         </CardContent>
       </Card>
       
-      {/* نظام توصيل Linok */}
+      {/* نظام توصيل تاليفري */}
       <Card className="border-primary/10 bg-white">
         <CardContent className="pt-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="h-5 w-5 flex items-center justify-center font-bold text-primary-600">L</div>
-                <h3 className="text-md font-semibold">توصيل Linok</h3>
+                <div className="h-5 w-5 flex items-center justify-center font-bold text-primary-600">T</div>
+                <h3 className="text-md font-semibold">توصيل تاليفري</h3>
               </div>
               <div className="flex items-center">
                 <Info className="h-4 w-4 text-gray-400 mr-1" />
-                <span className="text-xs text-gray-500">متاح للمتاجر في المدن الرئيسية</span>
+                <span className="text-xs text-gray-500">متاح للمتاجر في جميع مناطق الكويت</span>
               </div>
             </div>
             
             <div className="space-y-2">
               <p className="text-sm text-gray-600">
-                عند تفعيل هذه الخدمة، ستتمكن من استخدام خدمات توصيل Linok المتاحة في العديد من المدن بالمملكة. سيتم تحويل الطلبات مباشرة إلى نظام توصيل Linok.
+                عند تفعيل هذه الخدمة، ستتمكن من استخدام خدمات توصيل تاليفري المتاحة في جميع مناطق الكويت. سيتم تحويل الطلبات مباشرة إلى نظام توصيل تاليفري.
               </p>
               
               <div className="flex flex-col gap-3 mt-2">
@@ -144,7 +144,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
                 </div>
                 <div className="flex items-start gap-2">
                   <div className="h-5 w-5 flex items-center justify-center rounded-full bg-primary-100 text-primary-600 mt-0.5">2</div>
-                  <div className="text-sm text-gray-700">تجهيز الطلب من خلال فريق Linok</div>
+                  <div className="text-sm text-gray-700">تجهيز الطلب من خلال فريق تاليفري</div>
                 </div>
                 <div className="flex items-start gap-2">
                   <div className="h-5 w-5 flex items-center justify-center rounded-full bg-primary-100 text-primary-600 mt-0.5">3</div>
@@ -161,7 +161,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
                     <div className="grid gap-1.5 mr-2">
                       <Label htmlFor="standard" className="text-sm font-medium">الخدمة القياسية</Label>
                       <p className="text-xs text-gray-500">
-                        توصيل خلال 3-5 أيام عمل (15 ريال)
+                        توصيل خلال 2-3 ساعات (2 د.ك)
                       </p>
                     </div>
                   </div>
@@ -177,7 +177,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
                         )}
                       </div>
                       <p className="text-xs text-gray-500">
-                        توصيل خلال 24 ساعة (30 ريال)
+                        توصيل خلال ساعة واحدة (3 د.ك)
                       </p>
                     </div>
                   </div>
@@ -187,7 +187,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
             
             <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-amber-800 text-sm">
               <span className="font-medium">ملاحظة: </span>
-              سيتم فتح حساب خاص بالمتجر على منصة Linok للتوصيل. وسيتم التواصل معك من قبل فريق Linok لإكمال الإعداد.
+              سيتم فتح حساب خاص بالمتجر على منصة تاليفري للتوصيل. وسيتم التواصل معك من قبل فريق تاليفري لإكمال الإعداد.
             </div>
           </div>
         </CardContent>
@@ -207,29 +207,32 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
               
               <div>
                 <p className="text-sm text-gray-600">
-                  حدد مناطق توصيل مختلفة وأسعار توصيل مخصصة لكل منطقة
+                  حدد مناطق توصيل مختلفة وأسعار توصيل مخصصة لكل منطقة في الكويت
                 </p>
                 
                 <div className="border rounded-md p-4 mt-3 space-y-4">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label className="text-gray-700">المنطقة</Label>
-                      <Select defaultValue="riyadh">
+                      <Select defaultValue="hawalli">
                         <SelectTrigger>
                           <SelectValue placeholder="اختر المنطقة" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="riyadh">الرياض</SelectItem>
-                          <SelectItem value="jeddah">جدة</SelectItem>
-                          <SelectItem value="dammam">الدمام</SelectItem>
+                          <SelectItem value="hawalli">حولي</SelectItem>
+                          <SelectItem value="salmiya">السالمية</SelectItem>
+                          <SelectItem value="kuwait-city">مدينة الكويت</SelectItem>
+                          <SelectItem value="farwaniya">الفروانية</SelectItem>
+                          <SelectItem value="jahra">الجهراء</SelectItem>
+                          <SelectItem value="ahmadi">الأحمدي</SelectItem>
                           <SelectItem value="custom">منطقة مخصصة</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     
                     <div className="space-y-2">
-                      <Label className="text-gray-700">تكلفة التوصيل (ريال)</Label>
-                      <Input type="number" placeholder="25" dir="ltr" />
+                      <Label className="text-gray-700">تكلفة التوصيل (د.ك)</Label>
+                      <Input type="number" placeholder="1.5" dir="ltr" />
                     </div>
                   </div>
                   
