@@ -14,6 +14,7 @@ import PromotionAlert from "@/features/dashboard/components/PromotionAlert";
 import DashboardStats from "@/features/dashboard/components/DashboardStats";
 import QuickActions from "@/features/dashboard/components/QuickActions";
 import ActivitySummary from "@/features/dashboard/components/ActivitySummary";
+import { Order, OrderStatus } from "@/types/orders";
 
 // بيانات المبيعات للعرض
 const mockSalesData = [
@@ -27,17 +28,19 @@ const mockSalesData = [
 ];
 
 // بيانات الطلبات المحاكاة
-const mockRecentOrders = [
+const mockRecentOrders: Order[] = [
   {
     id: "ord-1",
     order_number: "10001",
     store_id: "store-1",
     customer_name: "أحمد محمد",
     customer_email: "ahmed@example.com",
+    customer_phone: undefined,
     shipping_address: "الرياض، السعودية",
     payment_method: "نقد عند الاستلام",
-    status: "delivered",
+    status: "delivered" as OrderStatus,
     total: 255.99,
+    notes: undefined,
     created_at: "2023-07-22T10:00:00Z",
     updated_at: "2023-07-22T10:30:00Z"
   },
@@ -47,10 +50,12 @@ const mockRecentOrders = [
     store_id: "store-1",
     customer_name: "سارة عبدالله",
     customer_email: "sara@example.com",
+    customer_phone: undefined,
     shipping_address: "جدة، السعودية",
     payment_method: "بطاقة ائتمان",
-    status: "processing",
+    status: "processing" as OrderStatus,
     total: 189.50,
+    notes: undefined,
     created_at: "2023-07-21T14:20:00Z",
     updated_at: "2023-07-21T14:25:00Z"
   },
@@ -60,10 +65,12 @@ const mockRecentOrders = [
     store_id: "store-1",
     customer_name: "محمد أحمد",
     customer_email: "mohammad@example.com",
+    customer_phone: undefined,
     shipping_address: "الدمام، السعودية",
     payment_method: "تحويل بنكي",
-    status: "processing",
+    status: "processing" as OrderStatus,
     total: 340.00,
+    notes: undefined,
     created_at: "2023-07-20T09:15:00Z",
     updated_at: "2023-07-20T09:15:00Z"
   },
@@ -73,15 +80,18 @@ const mockRecentOrders = [
     store_id: "store-1",
     customer_name: "نورة خالد",
     customer_email: "noura@example.com",
+    customer_phone: undefined,
     shipping_address: "المدينة، السعودية",
     payment_method: "نقد عند الاستلام",
-    status: "shipped",
+    status: "shipped" as OrderStatus,
     total: 129.99,
+    notes: undefined,
     created_at: "2023-07-19T16:45:00Z",
     updated_at: "2023-07-19T17:00:00Z"
   }
 ];
 
+// بيانات المنتجات المحاكاة
 const mockRecentProducts = [
   {
     id: "prod-1",
