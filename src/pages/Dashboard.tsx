@@ -19,7 +19,7 @@ import RecentProducts from "@/features/dashboard/components/RecentProducts";
 import LoadingState from "@/components/ui/loading-state";
 import ErrorState from "@/components/ui/error-state";
 
-// Mock data for demonstration
+// بيانات المبيعات للعرض
 const mockSalesData = [
   { name: "يناير", value: 1500 },
   { name: "فبراير", value: 2500 },
@@ -188,7 +188,7 @@ const Dashboard: React.FC = () => {
       
       {/* Subscription Alert for Basic Plan */}
       {isBasicPlan && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5" />
           <div className="flex-1">
             <h4 className="font-medium text-amber-800">أنت تستخدم الباقة الأساسية</h4>
@@ -204,8 +204,8 @@ const Dashboard: React.FC = () => {
         </div>
       )}
       
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stats Cards - in grid with 2 cards per row on mobile */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
         <StatsCard 
           title="المنتجات"
           value={statsData.products.toString()}
@@ -237,40 +237,42 @@ const Dashboard: React.FC = () => {
       </div>
       
       {/* Sales Chart */}
-      <SalesChart 
-        data={mockSalesData}
-        currency={storeData?.currency || "SAR"}
-      />
+      <div className="mb-6">
+        <SalesChart 
+          data={mockSalesData}
+          currency={storeData?.currency || "SAR"}
+        />
+      </div>
       
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Button asChild variant="outline" className="h-auto py-4 border-gray-200 hover:border-primary-200 hover:bg-primary-50">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <Button asChild variant="outline" className="h-auto py-3 border-gray-200 hover:border-primary-200 hover:bg-primary-50">
           <Link to="/dashboard/products/new" className="flex flex-col items-center gap-2">
-            <Package className="h-6 w-6 text-primary-500" />
-            <span>إضافة منتج</span>
+            <Package className="h-5 w-5 md:h-6 md:w-6 text-primary-500" />
+            <span className="text-xs md:text-sm">إضافة منتج</span>
           </Link>
         </Button>
-        <Button asChild variant="outline" className="h-auto py-4 border-gray-200 hover:border-primary-200 hover:bg-primary-50">
+        <Button asChild variant="outline" className="h-auto py-3 border-gray-200 hover:border-primary-200 hover:bg-primary-50">
           <Link to="/dashboard/categories" className="flex flex-col items-center gap-2">
-            <Tags className="h-6 w-6 text-primary-500" />
-            <span>إدارة التصنيفات</span>
+            <Tags className="h-5 w-5 md:h-6 md:w-6 text-primary-500" />
+            <span className="text-xs md:text-sm">إدارة التصنيفات</span>
           </Link>
         </Button>
-        <Button asChild variant="outline" className="h-auto py-4 border-gray-200 hover:border-primary-200 hover:bg-primary-50">
+        <Button asChild variant="outline" className="h-auto py-3 border-gray-200 hover:border-primary-200 hover:bg-primary-50">
           <Link to="/dashboard/orders" className="flex flex-col items-center gap-2">
-            <ShoppingBag className="h-6 w-6 text-primary-500" />
-            <span>تتبع الطلبات</span>
+            <ShoppingBag className="h-5 w-5 md:h-6 md:w-6 text-primary-500" />
+            <span className="text-xs md:text-sm">تتبع الطلبات</span>
           </Link>
         </Button>
-        <Button asChild variant="outline" className="h-auto py-4 border-gray-200 hover:border-primary-200 hover:bg-primary-50">
+        <Button asChild variant="outline" className="h-auto py-3 border-gray-200 hover:border-primary-200 hover:bg-primary-50">
           <Link to="/dashboard/settings" className="flex flex-col items-center gap-2">
-            <Settings className="h-6 w-6 text-primary-500" />
-            <span>إعدادات المتجر</span>
+            <Settings className="h-5 w-5 md:h-6 md:w-6 text-primary-500" />
+            <span className="text-xs md:text-sm">إعدادات المتجر</span>
           </Link>
         </Button>
       </div>
       
-      {/* Activity Summary Section */}
+      {/* Activity Summary Section - Cards on mobile (1 per row), 2 columns on larger screens */}
       <div className="grid gap-4 md:grid-cols-2">
         <RecentOrders 
           orders={mockRecentOrders}

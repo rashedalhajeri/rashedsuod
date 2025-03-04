@@ -28,13 +28,14 @@ const StatsCard: React.FC<StatsCardProps> = ({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
+      className="w-full card-hover"
     >
-      <Card className="hover:border-primary-200 transition-colors">
-        <CardContent className="p-6">
+      <Card className="hover:border-primary-200 transition-colors h-full">
+        <CardContent className="p-4 md:p-6">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
-              <h4 className="text-2xl font-bold">{value}</h4>
+              <h4 className="text-xl md:text-2xl font-bold">{value}</h4>
               
               {trend && (
                 <div className="flex items-center mt-2">

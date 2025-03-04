@@ -22,12 +22,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       {storeData?.id && <OrderNotifications storeId={storeData.id} />}
       
       <motion.main 
-        className="flex-1 overflow-x-hidden overflow-y-auto py-4 px-0 md:mr-[250px] mr-[80px] transition-all duration-300"
+        className="flex-1 overflow-x-hidden overflow-y-auto py-2 px-0 md:mr-[250px] mr-[80px] transition-all duration-300"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <div className="container py-4 px-4 md:px-6 max-w-7xl mx-auto">
+        <div className="container py-2 px-3 md:px-6 max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

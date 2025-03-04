@@ -35,14 +35,14 @@ const RecentProducts: React.FC<RecentProductsProps> = ({
   const formatCurrency = getCurrencyFormatter(currency);
   
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-lg font-medium">
           <Package className="h-4 w-4 inline-block ml-2" />
           أحدث المنتجات
         </CardTitle>
         <Button variant="ghost" size="sm" asChild>
-          <Link to="/dashboard/products" className="text-sm text-muted-foreground">
+          <Link to="/dashboard/products" className="text-sm text-muted-foreground flex items-center gap-1">
             عرض الكل
             <ArrowRight className="h-4 w-4 mr-1" />
           </Link>
@@ -54,11 +54,11 @@ const RecentProducts: React.FC<RecentProductsProps> = ({
             <p className="text-muted-foreground">لا توجد منتجات حديثة</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {products.map((product) => (
               <div 
                 key={product.id} 
-                className="flex justify-between items-center p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                className="flex justify-between items-center p-3 rounded-lg border hover:bg-muted/50 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center overflow-hidden">
@@ -85,7 +85,7 @@ const RecentProducts: React.FC<RecentProductsProps> = ({
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col items-end gap-1">
                   <Badge 
                     variant="outline" 
                     className={getStockColor(product.stock)}

@@ -29,7 +29,7 @@ const RecentOrders: React.FC<RecentOrdersProps> = ({ orders }) => {
   };
   
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-lg font-medium">آخر الطلبات</CardTitle>
         <Button variant="ghost" size="sm" asChild>
@@ -41,12 +41,12 @@ const RecentOrders: React.FC<RecentOrdersProps> = ({ orders }) => {
       </CardHeader>
       <CardContent>
         {orders.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {orders.map((order) => (
               <Link 
                 key={order.id} 
                 to={`/dashboard/orders?view=${order.id}`}
-                className="flex items-center justify-between gap-4 rounded-lg border p-3 hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-between gap-2 rounded-lg border p-3 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <div className="h-9 w-9 rounded-full bg-primary-50 flex items-center justify-center">
