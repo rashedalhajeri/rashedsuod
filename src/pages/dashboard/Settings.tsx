@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +10,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import SubscriptionPlans from "@/features/dashboard/components/SubscriptionPlans";
 import { Separator } from "@/components/ui/separator";
-import { UserCircle, Store, CreditCard, Bell, Shield, Globe, Truck, FileText, ChevronLeft, ChevronRight } from "lucide-react";
+import { UserCircle, Store, CreditCard, Bell, Shield, Globe, Truck, FileText, ChevronLeft, ChevronRight, Wallet } from "lucide-react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 
 const Settings: React.FC = () => {
@@ -27,6 +26,14 @@ const Settings: React.FC = () => {
   const [storeUrl, setStoreUrl] = useState(storeData?.domain_name || "");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState(storeData?.phone_number || "");
+  
+  // Payment method settings
+  const [cashOnDelivery, setCashOnDelivery] = useState(true);
+  const [creditCard, setCreditCard] = useState(false);
+  const [bankTransfer, setBankTransfer] = useState(false);
+  const [knet, setKnet] = useState(false);
+  const [mada, setMada] = useState(false);
+  const [benefitPay, setBenefitPay] = useState(false);
   
   // Notification settings
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -83,6 +90,10 @@ const Settings: React.FC = () => {
               <TabsTrigger value="domain" className="flex gap-2 items-center">
                 <Globe className="h-4 w-4" />
                 <span className="inline">النطاق</span>
+              </TabsTrigger>
+              <TabsTrigger value="payment_methods" className="flex gap-2 items-center">
+                <Wallet className="h-4 w-4" />
+                <span className="inline">طرق الدفع</span>
               </TabsTrigger>
               <TabsTrigger value="shipping" className="flex gap-2 items-center">
                 <Truck className="h-4 w-4" />
@@ -286,6 +297,150 @@ const Settings: React.FC = () => {
                     </Button>
                   </div>
                 )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="payment_methods">
+          <Card>
+            <CardHeader>
+              <CardTitle>طرق الدفع</CardTitle>
+              <CardDescription>
+                قم بتفعيل أو تعطيل طرق الدفع التي تريد استخدامها في متجرك
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="cash-on-delivery" className="text-base">الدفع عند الاستلام</Label>
+                    <p className="text-sm text-muted-foreground">السماح للعملاء بالدفع نقداً عند استلام المنتجات</p>
+                  </div>
+                  <Switch 
+                    id="cash-on-delivery" 
+                    checked={cashOnDelivery}
+                    onCheckedChange={setCashOnDelivery}
+                  />
+                </div>
+                
+                <Separator />
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="credit-card" className="text-base">بطاقات الائتمان</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <img src="/payment-icons/visa-master.png" alt="Visa/Mastercard" className="h-8" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">السماح للعملاء بالدفع ببطاقات الائتمان (Visa/Mastercard)</p>
+                  </div>
+                  <Switch 
+                    id="credit-card" 
+                    checked={creditCard}
+                    onCheckedChange={setCreditCard}
+                  />
+                </div>
+                
+                <Separator />
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="bank-transfer" className="text-base">التحويل البنكي</Label>
+                    <p className="text-sm text-muted-foreground">السماح للعملاء بالدفع عن طريق التحويل البنكي</p>
+                  </div>
+                  <Switch 
+                    id="bank-transfer" 
+                    checked={bankTransfer}
+                    onCheckedChange={setBankTransfer}
+                  />
+                </div>
+                
+                <Separator />
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="knet" className="text-base">كي نت (KNET)</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <img src="/payment-icons/knet.png" alt="KNET" className="h-8" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">السماح للعملاء بالدفع عبر بوابة كي نت (الكويت)</p>
+                  </div>
+                  <Switch 
+                    id="knet" 
+                    checked={knet}
+                    onCheckedChange={setKnet}
+                    disabled={currentPlan === "basic"}
+                  />
+                  {currentPlan === "basic" && (
+                    <Badge variant="outline" className="mr-2 text-xs">
+                      الباقة الاحترافية
+                    </Badge>
+                  )}
+                </div>
+                
+                <Separator />
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="mada" className="text-base">مدى (Mada)</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <img src="/payment-icons/mada.png" alt="Mada" className="h-8" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">السماح للعملاء بالدفع عبر بطاقات مدى (السعودية)</p>
+                  </div>
+                  <Switch 
+                    id="mada" 
+                    checked={mada}
+                    onCheckedChange={setMada}
+                    disabled={currentPlan === "basic"}
+                  />
+                  {currentPlan === "basic" && (
+                    <Badge variant="outline" className="mr-2 text-xs">
+                      الباقة الاحترافية
+                    </Badge>
+                  )}
+                </div>
+                
+                <Separator />
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="benefit-pay" className="text-base">بنفت بي (BenefitPay)</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <img src="/payment-icons/benefit.png" alt="BenefitPay" className="h-8" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">السماح للعملاء بالدفع عبر خدمة بنفت بي (البحرين)</p>
+                  </div>
+                  <Switch 
+                    id="benefit-pay" 
+                    checked={benefitPay}
+                    onCheckedChange={setBenefitPay}
+                    disabled={currentPlan === "basic"}
+                  />
+                  {currentPlan === "basic" && (
+                    <Badge variant="outline" className="mr-2 text-xs">
+                      الباقة الاحترافية
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              
+              {currentPlan === "basic" && (
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mt-6">
+                  <h3 className="text-sm font-medium text-gray-900 mb-2">ترقية للوصول لجميع طرق الدفع</h3>
+                  <p className="text-sm text-gray-500 mb-4">
+                    قم بترقية متجرك للباقة الاحترافية للحصول على خيارات دفع إضافية مثل كي نت (KNET)، مدى، وبنفت بي
+                  </p>
+                  <Button variant="default" asChild>
+                    <a href="/dashboard/settings?tab=billing">ترقية الآن</a>
+                  </Button>
+                </div>
+              )}
+              
+              <div className="flex justify-end">
+                <Button onClick={handleSaveSettings}>
+                  حفظ التغييرات
+                </Button>
               </div>
             </CardContent>
           </Card>
