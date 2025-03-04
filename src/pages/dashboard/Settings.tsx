@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +10,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import SubscriptionPlans from "@/features/dashboard/components/SubscriptionPlans";
 import { Separator } from "@/components/ui/separator";
-import { Store, CreditCard, Bell, Shield, Globe, Truck, FileText, ChevronLeft, ChevronRight, Wallet, Calendar, Clock, Info, HelpCircle, Package, MapPin } from "lucide-react";
+import { Store, CreditCard, Bell, Shield, Globe, Truck, FileText, ChevronLeft, ChevronRight, Wallet, Calendar, Clock, Info, HelpCircle, Package, MapPin, Upload, X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import DashboardLayout from "@/layouts/DashboardLayout";
@@ -21,6 +20,8 @@ import PromotionAlert from "@/features/dashboard/components/PromotionAlert";
 import PaymentMethodItem from "@/features/dashboard/components/PaymentMethodItem";
 import ShippingMethodForm from "@/features/dashboard/components/ShippingMethodForm";
 import useStoreData from "@/hooks/use-store-data";
+import SaveButton from "@/components/ui/save-button";
+import LogoUploader from "@/features/dashboard/components/LogoUploader";
 
 type TabsType = 'general' | 'payment' | 'shipping' | 'integrations' | 'billing';
 
@@ -59,6 +60,12 @@ const Settings = () => {
     "custom-zones": false,
   });
   
+  // حالة حفظ التغييرات
+  const [isSaving, setIsSaving] = useState(false);
+  
+  // حالة شعار المتجر
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  
   // تحديث القيم عند استرجاع بيانات المتجر
   useEffect(() => {
     if (storeData) {
@@ -70,6 +77,11 @@ const Settings = () => {
         currency: storeData.currency || "SAR",
         language: "العربية" // ثابت حاليًا
       });
+      
+      // تحديث شعار المتجر إذا كان موجودًا
+      if (storeData.logo_url) {
+        setLogoUrl(storeData.logo_url);
+      }
     }
   }, [storeData]);
   
@@ -107,9 +119,16 @@ const Settings = () => {
     toast.success(checked ? "تم تفعيل طريقة الشحن بنجاح" : "تم تعطيل طريقة الشحن");
   };
   
+  // تحديث شعار المتجر
+  const handleLogoUpdate = (url: string | null) => {
+    setLogoUrl(url);
+  };
+  
   // حفظ التغييرات
   const handleSaveGeneralSettings = async () => {
     try {
+      setIsSaving(true);
+      
       if (!storeData?.id) {
         toast.error("لم يتم العثور على معرف المتجر");
         return;
@@ -119,7 +138,8 @@ const Settings = () => {
         .from('stores')
         .update({
           store_name: storeValues.storeName,
-          phone_number: storeValues.phone
+          phone_number: storeValues.phone,
+          logo_url: logoUrl
         })
         .eq('id', storeData.id);
       
@@ -131,6 +151,8 @@ const Settings = () => {
     } catch (error) {
       console.error("خطأ في حفظ التغييرات:", error);
       toast.error("حدث خطأ في حفظ التغييرات");
+    } finally {
+      setIsSaving(false);
     }
   };
   
@@ -195,7 +217,11 @@ const Settings = () => {
                     </div>
                     <div>
                       <Label htmlFor="store-logo">شعار المتجر</Label>
-                      <Input type="file" id="store-logo" className="mt-1" />
+                      <LogoUploader 
+                        logoUrl={logoUrl} 
+                        onLogoUpdate={handleLogoUpdate} 
+                        storeId={storeData?.id}
+                      />
                     </div>
                   </div>
                   <div>
@@ -278,7 +304,7 @@ const Settings = () => {
                 </CardContent>
               </Card>
               
-              <Button onClick={handleSaveGeneralSettings}>حفظ التغييرات</Button>
+              <SaveButton onClick={handleSaveGeneralSettings} isSaving={isSaving} />
             </div>
           </TabsContent>
           
