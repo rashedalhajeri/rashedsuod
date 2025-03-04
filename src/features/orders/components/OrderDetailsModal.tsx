@@ -5,7 +5,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { 
-  Clock, Box, TruckIcon, CheckCircle2, XCircle 
+  Box, TruckIcon, CheckCircle2, XCircle 
 } from "lucide-react";
 import { Order, OrderStatus } from "@/types/orders";
 import { getCurrencyFormatter } from "@/hooks/use-store-data";
@@ -145,15 +145,6 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           <div>
             <h4 className="text-base font-medium mb-2">تحديث الحالة</h4>
             <div className="flex flex-wrap gap-2">
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="text-amber-600 border-amber-200 hover:bg-amber-50"
-                onClick={() => handleStatusChange("pending")}
-              >
-                <Clock className="h-4 w-4 ml-2" />
-                قيد الانتظار
-              </Button>
               <Button 
                 size="sm" 
                 variant="outline" 

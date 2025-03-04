@@ -61,7 +61,8 @@ enable_confirmations = false
 host = "smtp.gmail.com"
 port = 465
 user = "admin@example.com"
-password = "admin"
+# Use auth.external.* section instead or set by env var
+# password = "admin"
 sender_name = ""
 
 [auth.sms]
@@ -97,29 +98,8 @@ redirect_uri = ""
 # The URL to get the authorization code from, used for the code exchange
 url = ""
 
+# Instead of using the presets section which causes an error
 [analytics]
 enabled = false
 port = 54327
 vector_port = 54328
-
-# Configure one of the supported vendors below.
-[analytics.presets]
-preset = "none"
-
-# Options:
-#   none - No default metrics collected. This is the default preset.
-#   metabase - Open-source analytics platform.
-#   plausible - Privacy-focused metrics.
-#   clickhouse - Self-hosted analytics platform.
-#   fathom - Privacy-focused metrics.
-#   umami - Privacy-focused metrics.
-#   growthbook - Open-source feature flagging and experimentation platform.
-#   matomo - Privacy-focused metrics.
-#   posthog - Hybrid product + marketing analytics platform.
-
-# Self-hosting analytics?
-# Configure the credentials for the analytics database.
-[analytics.presets.clickhouse]
-url = ""
-user = ""
-password = ""
