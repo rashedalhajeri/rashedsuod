@@ -32,20 +32,17 @@ const Settings = () => {
   const searchParams = new URLSearchParams(location.search);
   const [activeTab, setActiveTab] = useState<TabsType>((searchParams.get("tab") as TabsType) || "general");
   
-  // استخدام useStoreData لجلب بيانات المتجر
   const { data: storeData, isLoading, error } = useStoreData();
   
-  // قيم الإدخال من بيانات المتجر
   const [storeValues, setStoreValues] = useState({
     storeName: "",
     email: "",
     phone: "",
     address: "",
     currency: "",
-    language: "العربية" // ثابت حاليًا
+    language: "العربية"
   });
   
-  // حالة طرق الدفع والشحن - تم نقلها هنا ليتوافق ترتيب الـ hooks
   const [paymentMethods, setPaymentMethods] = useState({
     "cash-on-delivery": true,
     "credit-card": false,
@@ -60,25 +57,21 @@ const Settings = () => {
     "custom-zones": false,
   });
   
-  // حالة حفظ التغييرات
   const [isSaving, setIsSaving] = useState(false);
   
-  // حالة شعار المتجر
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   
-  // تحديث القيم عند استرجاع بيانات المتجر
   useEffect(() => {
     if (storeData) {
       setStoreValues({
         storeName: storeData.store_name || "",
-        email: "", // يمكن إضافته لاحقًا في قاعدة البيانات إذا لزم الأمر
+        email: "",
         phone: storeData.phone_number || "",
-        address: "", // يمكن إضافته لاحقًا في قاعدة البيانات إذا لزم الأمر
+        address: "",
         currency: storeData.currency || "SAR",
-        language: "العربية" // ثابت حاليًا
+        language: "العربية"
       });
       
-      // تحديث شعار المتجر إذا كان موجودًا
       if (storeData.logo_url) {
         setLogoUrl(storeData.logo_url);
       }
@@ -86,7 +79,6 @@ const Settings = () => {
   }, [storeData]);
   
   useEffect(() => {
-    // عند تحميل الصفحة، تحقق من وجود علامة التبويب في URL وقم بتعيينها كعلامة التبويب النشطة
     const tabFromUrl = searchParams.get("tab") as TabsType;
     if (tabFromUrl) {
       setActiveTab(tabFromUrl);
@@ -99,7 +91,6 @@ const Settings = () => {
     navigate({ pathname: location.pathname, search: searchParams.toString() });
   };
   
-  // تحديث حالة طرق الدفع
   const handlePaymentMethodChange = (id: string, checked: boolean) => {
     setPaymentMethods(prev => ({
       ...prev,
@@ -109,7 +100,6 @@ const Settings = () => {
     toast.success(checked ? "تم تفعيل طريقة الدفع بنجاح" : "تم تعطيل طريقة الدفع");
   };
   
-  // تحديث حالة طرق الشحن
   const handleShippingMethodChange = (id: string, checked: boolean) => {
     setShippingMethods(prev => ({
       ...prev,
@@ -119,12 +109,10 @@ const Settings = () => {
     toast.success(checked ? "تم تفعيل طريقة الشحن بنجاح" : "تم تعطيل طريقة الشحن");
   };
   
-  // تحديث شعار المتجر
   const handleLogoUpdate = (url: string | null) => {
     setLogoUrl(url);
   };
   
-  // حفظ التغييرات
   const handleSaveGeneralSettings = async () => {
     try {
       setIsSaving(true);
@@ -156,7 +144,6 @@ const Settings = () => {
     }
   };
   
-  // خطأ تحميل بيانات المتجر
   if (error) {
     return (
       <DashboardLayout>
@@ -167,7 +154,6 @@ const Settings = () => {
     );
   }
   
-  // جاري تحميل بيانات المتجر
   if (isLoading) {
     return (
       <DashboardLayout>
@@ -178,7 +164,6 @@ const Settings = () => {
     );
   }
   
-  // مثال لنوع الباقة الحالية - نأخذها من بيانات المتجر الفعلية
   const subscriptionType = storeData?.subscription_plan || "free";
   const isPaidPlan = subscriptionType !== "free";
   
@@ -196,7 +181,6 @@ const Settings = () => {
             <TabsTrigger value="billing">الباقة</TabsTrigger>
           </TabsList>
           
-          {/* إعدادات عامة */}
           <TabsContent value="general">
             <div className="space-y-4">
               <Card>
@@ -308,7 +292,6 @@ const Settings = () => {
             </div>
           </TabsContent>
           
-          {/* إعدادات الدفع */}
           <TabsContent value="payment">
             <div className="space-y-4">
               <PromotionAlert type={subscriptionType} section="payment" />
@@ -377,7 +360,6 @@ const Settings = () => {
             </div>
           </TabsContent>
           
-          {/* إعدادات الشحن */}
           <TabsContent value="shipping">
             <div className="space-y-4">
               <PromotionAlert type={subscriptionType} section="shipping" />
@@ -414,23 +396,9 @@ const Settings = () => {
                   ]}
                 />
               </div>
-              
-              <Card className="border-dashed border-gray-300 bg-gray-50/50">
-                <CardContent className="p-6 flex flex-col items-center">
-                  <Package className="h-12 w-12 text-gray-400 mb-3" />
-                  <h3 className="text-md font-medium text-gray-700 mb-1">مميزات شحن إضافية قادمة قريبًا</h3>
-                  <p className="text-sm text-gray-500 text-center mb-3">
-                    نعمل على إضافة المزيد من خيارات الشحن والتكامل مع شركات الشحن المحلية والعالمية
-                  </p>
-                  <Button variant="outline" size="sm" className="text-xs">
-                    اقتراح ميزة جديدة
-                  </Button>
-                </CardContent>
-              </Card>
             </div>
           </TabsContent>
           
-          {/* تكاملات */}
           <TabsContent value="integrations">
             <Card>
               <CardHeader>
@@ -450,7 +418,6 @@ const Settings = () => {
             </Card>
           </TabsContent>
           
-          {/* الباقة */}
           <TabsContent value="billing">
             <div className="space-y-6">
               <SubscriptionPlans />
