@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import useStoreData from "@/hooks/use-store-data";
+import useStoreData, { isPaidPlan } from "@/hooks/use-store-data";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import SubscriptionPlans from "@/features/dashboard/components/SubscriptionPlans";
@@ -14,6 +14,8 @@ import { Store, CreditCard, Bell, Shield, Globe, Truck, FileText, ChevronLeft, C
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
+import PaymentMethodItem from "@/features/dashboard/components/PaymentMethodItem";
+import PromotionAlert from "@/features/dashboard/components/PromotionAlert";
 
 const Settings: React.FC = () => {
   const { data: storeData, isLoading, refetch } = useStoreData();
@@ -118,6 +120,8 @@ const Settings: React.FC = () => {
         <h1 className="text-2xl font-bold mb-2">إعدادات المتجر</h1>
         <p className="text-gray-500">قم بتخصيص إعدادات متجرك ومعلومات حسابك</p>
       </div>
+      
+      {currentPlan === "free" && <PromotionAlert type="free" />}
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <div className="relative mb-8">
@@ -376,131 +380,70 @@ const Settings: React.FC = () => {
               </QuickTip>
               
               <div className="grid gap-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-4 rounded-lg border hover:border-primary/20 hover:bg-gray-50/50 transition-colors">
-                  <div className="space-y-1 mb-3 sm:mb-0">
-                    <div className="flex items-center">
-                      <Wallet className="h-5 w-5 text-gray-500 mr-2" />
-                      <Label htmlFor="cash-on-delivery" className="text-base font-medium">الدفع عند الاستلام</Label>
-                      <SettingTooltip content="يسمح للعملاء بالدفع نقداً عند استلام المنتجات" />
-                    </div>
-                    <p className="text-sm text-muted-foreground mr-7">خيار شائع يتيح للعملاء الدفع نقداً عند استلام منتجاتهم</p>
-                  </div>
-                  <div className="flex items-center justify-end">
-                    <Switch 
-                      id="cash-on-delivery" 
-                      checked={cashOnDelivery}
-                      onCheckedChange={setCashOnDelivery}
-                      className="data-[state=checked]:bg-green-500"
-                    />
-                    <Label htmlFor="cash-on-delivery" className="mr-2 text-sm font-medium text-gray-600">
-                      {cashOnDelivery ? "مفعل" : "معطل"}
-                    </Label>
-                  </div>
-                </div>
+                <PaymentMethodItem 
+                  id="cash-on-delivery"
+                  title="الدفع عند الاستلام"
+                  description="خيار شائع يتيح للعملاء الدفع نقداً عند استلام منتجاتهم"
+                  checked={cashOnDelivery}
+                  onCheckedChange={setCashOnDelivery}
+                  icon={<Wallet className="h-5 w-5 text-gray-500 ml-2" />}
+                  color="bg-green-500"
+                  isPaidPlan={isPaid}
+                  tooltipContent="يسمح للعملاء بالدفع نقداً عند استلام المنتجات"
+                />
                 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-4 rounded-lg border hover:border-primary/20 hover:bg-gray-50/50 transition-colors">
-                  <div className="space-y-1 mb-3 sm:mb-0">
-                    <div className="flex items-center">
-                      <CreditCard className="h-5 w-5 text-blue-500 mr-2" />
-                      <Label htmlFor="my-fatoorah" className="text-base font-medium">ماي فاتورة (MyFatoorah)</Label>
-                      <SettingTooltip content="بوابة دفع شاملة تدعم KNET وVisa وMastercard وغيرها من وسائل الدفع في الخليج" />
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 mt-2 mr-7">
-                      <div className="h-7 px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs">KNET</div>
-                      <div className="h-7 px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs">Visa</div>
-                      <div className="h-7 px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs">Mastercard</div>
-                      <div className="h-7 px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs">mada</div>
-                      <div className="h-7 px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs">Apple Pay</div>
-                    </div>
-                    <p className="text-sm text-muted-foreground mr-7">بوابة دفع شاملة تدعم العديد من وسائل الدفع في الخليج</p>
-                  </div>
-                  <div className="flex flex-col items-end gap-2 sm:min-w-28">
-                    {!isPaid && (
-                      <Badge variant="outline" className="text-xs bg-gray-50 text-gray-500 border-gray-200">
-                        الباقات المدفوعة فقط
-                      </Badge>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <Switch 
-                        id="my-fatoorah" 
-                        checked={myFatoorah}
-                        onCheckedChange={setMyFatoorah}
-                        disabled={!isPaid}
-                        className="data-[state=checked]:bg-blue-500"
-                      />
-                      <Label htmlFor="my-fatoorah" className="mr-2 text-sm font-medium text-gray-600">
-                        {myFatoorah ? "مفعل" : "معطل"}
-                      </Label>
-                    </div>
-                  </div>
-                </div>
+                <PaymentMethodItem 
+                  id="my-fatoorah"
+                  title="ماي فاتورة (MyFatoorah)"
+                  description="بوابة دفع شاملة تدعم العديد من وسائل الدفع في الخليج"
+                  checked={myFatoorah}
+                  onCheckedChange={setMyFatoorah}
+                  disabled={!isPaid}
+                  icon={<CreditCard className="h-5 w-5 text-blue-500 ml-2" />}
+                  color="bg-blue-500"
+                  isPaidPlan={isPaid}
+                  tooltipContent="بوابة دفع شاملة تدعم KNET وVisa وMastercard وغيرها من وسائل الدفع في الخليج"
+                  badges={[
+                    { text: "KNET", color: "bg-blue-50 text-blue-600" },
+                    { text: "Visa", color: "bg-blue-50 text-blue-600" },
+                    { text: "Mastercard", color: "bg-blue-50 text-blue-600" },
+                    { text: "mada", color: "bg-blue-50 text-blue-600" },
+                    { text: "Apple Pay", color: "bg-blue-50 text-blue-600" }
+                  ]}
+                />
                 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-4 rounded-lg border hover:border-primary/20 hover:bg-gray-50/50 transition-colors">
-                  <div className="space-y-1 mb-3 sm:mb-0">
-                    <div className="flex items-center">
-                      <CreditCard className="h-5 w-5 text-purple-500 mr-2" />
-                      <Label htmlFor="tabby" className="text-base font-medium">تابي (Tabby)</Label>
-                      <SettingTooltip content="خدمة تتيح للعملاء الدفع على أقساط بدون فوائد أو رسوم إضافية" />
-                    </div>
-                    <div className="flex items-center gap-2 mt-2 mr-7">
-                      <div className="h-7 px-2 py-1 bg-purple-50 text-purple-600 rounded text-xs">قسّمها على 4</div>
-                      <div className="h-7 px-2 py-1 bg-purple-50 text-purple-600 rounded text-xs">ادفع لاحقاً</div>
-                    </div>
-                    <p className="text-sm text-muted-foreground mr-7">الدفع بالتقسيط بدون فوائد - اشتري الآن وادفع لاحقاً</p>
-                  </div>
-                  <div className="flex flex-col items-end gap-2 sm:min-w-28">
-                    {!isPaid && (
-                      <Badge variant="outline" className="text-xs bg-gray-50 text-gray-500 border-gray-200">
-                        الباقات المدفوعة فقط
-                      </Badge>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <Switch 
-                        id="tabby" 
-                        checked={tabby}
-                        onCheckedChange={setTabby}
-                        disabled={!isPaid}
-                        className="data-[state=checked]:bg-purple-500"
-                      />
-                      <Label htmlFor="tabby" className="mr-2 text-sm font-medium text-gray-600">
-                        {tabby ? "مفعل" : "معطل"}
-                      </Label>
-                    </div>
-                  </div>
-                </div>
+                <PaymentMethodItem 
+                  id="tabby"
+                  title="تابي (Tabby)"
+                  description="الدفع بالتقسيط بدون فوائد - اشتري الآن وادفع لاحقاً"
+                  checked={tabby}
+                  onCheckedChange={setTabby}
+                  disabled={!isPaid}
+                  icon={<CreditCard className="h-5 w-5 text-purple-500 ml-2" />}
+                  color="bg-purple-500"
+                  isPaidPlan={isPaid}
+                  tooltipContent="خدمة تتيح للعملاء الدفع على أقساط بدون فوائد أو رسوم إضافية"
+                  badges={[
+                    { text: "قسّمها على 4", color: "bg-purple-50 text-purple-600" },
+                    { text: "ادفع لاحقاً", color: "bg-purple-50 text-purple-600" }
+                  ]}
+                />
                 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-4 rounded-lg border hover:border-primary/20 hover:bg-gray-50/50 transition-colors">
-                  <div className="space-y-1 mb-3 sm:mb-0">
-                    <div className="flex items-center">
-                      <CreditCard className="h-5 w-5 text-blue-700 mr-2" />
-                      <Label htmlFor="paypal" className="text-base font-medium">باي بال (PayPal)</Label>
-                      <SettingTooltip content="خدمة دفع عالمية مناسبة للعملاء الدوليين" />
-                    </div>
-                    <div className="flex items-center gap-2 mt-2 mr-7">
-                      <div className="h-7 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">PayPal</div>
-                    </div>
-                    <p className="text-sm text-muted-foreground mr-7">منصة دفع عالمية للعملاء الدوليين</p>
-                  </div>
-                  <div className="flex flex-col items-end gap-2 sm:min-w-28">
-                    {!isPaid && (
-                      <Badge variant="outline" className="text-xs bg-gray-50 text-gray-500 border-gray-200">
-                        الباقات المدفوعة فقط
-                      </Badge>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <Switch 
-                        id="paypal" 
-                        checked={paypal}
-                        onCheckedChange={setPaypal}
-                        disabled={!isPaid}
-                        className="data-[state=checked]:bg-blue-700"
-                      />
-                      <Label htmlFor="paypal" className="mr-2 text-sm font-medium text-gray-600">
-                        {paypal ? "مفعل" : "معطل"}
-                      </Label>
-                    </div>
-                  </div>
-                </div>
+                <PaymentMethodItem 
+                  id="paypal"
+                  title="باي بال (PayPal)"
+                  description="منصة دفع عالمية للعملاء الدوليين"
+                  checked={paypal}
+                  onCheckedChange={setPaypal}
+                  disabled={!isPaid}
+                  icon={<CreditCard className="h-5 w-5 text-blue-700 ml-2" />}
+                  color="bg-blue-700"
+                  isPaidPlan={isPaid}
+                  tooltipContent="خدمة دفع عالمية مناسبة للعملاء الدوليين"
+                  badges={[
+                    { text: "PayPal", color: "bg-blue-100 text-blue-700" }
+                  ]}
+                />
               </div>
               
               {!isPaid && (
@@ -993,7 +936,7 @@ const Settings: React.FC = () => {
                       <h4 className="font-medium">رسائل تسويقية</h4>
                       <SettingTooltip content="استلام نصائح ومعلومات عن تحسين أداء متجرك" />
                     </div>
-                    <p className="text-sm text-gray-500">استلام تحديثات ونصائح لتطوير متجرك</p>
+                    <p className="text-sm text-gray-500">��ستلام تحديثات ونصائح لتطوير متجرك</p>
                   </div>
                   <Switch
                     checked={marketingEmails}
