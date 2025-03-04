@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { createOrder } from "@/services/order-service";
 import SaveButton from "@/components/ui/save-button";
-import { Order } from "@/types/orders";
+import { Order, OrderStatus } from "@/types/orders";
 
 interface NewOrderModalProps {
   storeId: string;
@@ -43,7 +42,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     customer_phone: "",
     shipping_address: "",
     payment_method: "cash",
-    status: "processing",
+    status: "processing" as OrderStatus,
     total: 0,
     notes: ""
   });
@@ -67,10 +66,17 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    setOrderData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    if (name === "status") {
+      setOrderData(prev => ({
+        ...prev,
+        [name]: value as OrderStatus
+      }));
+    } else {
+      setOrderData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
