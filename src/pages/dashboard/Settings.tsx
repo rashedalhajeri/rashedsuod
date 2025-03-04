@@ -18,16 +18,13 @@ const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState("general");
   const tabsListRef = useRef<HTMLDivElement>(null);
   
-  // Mock current plan
   const currentPlan = "basic";
 
-  // Form states
   const [storeName, setStoreName] = useState(storeData?.store_name || "");
   const [storeUrl, setStoreUrl] = useState(storeData?.domain_name || "");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState(storeData?.phone_number || "");
   
-  // Payment method settings
   const [cashOnDelivery, setCashOnDelivery] = useState(true);
   const [creditCard, setCreditCard] = useState(false);
   const [bankTransfer, setBankTransfer] = useState(false);
@@ -35,7 +32,10 @@ const Settings: React.FC = () => {
   const [mada, setMada] = useState(false);
   const [benefitPay, setBenefitPay] = useState(false);
   
-  // Notification settings
+  const [myFatoorah, setMyFatoorah] = useState(false);
+  const [tabby, setTabby] = useState(false);
+  const [paypal, setPaypal] = useState(false);
+  
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [orderNotifications, setOrderNotifications] = useState(true);
   const [marketingEmails, setMarketingEmails] = useState(false);
@@ -127,7 +127,6 @@ const Settings: React.FC = () => {
           </button>
         </div>
         
-        {/* Replace the style JSX tag with regular CSS */}
         <style dangerouslySetInnerHTML={{
           __html: `
             .hide-scrollbar::-webkit-scrollbar {
@@ -423,22 +422,168 @@ const Settings: React.FC = () => {
                     </Badge>
                   )}
                 </div>
+                
+                <Separator />
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="my-fatoorah" className="text-base">ماي فاتورة (MyFatoorah)</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="h-8 px-2 py-1 bg-blue-50 text-blue-600 rounded font-medium">MyFatoorah</div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">بوابة دفع شاملة تدعم العديد من وسائل الدفع في الخليج</p>
+                  </div>
+                  <Switch 
+                    id="my-fatoorah" 
+                    checked={myFatoorah}
+                    onCheckedChange={setMyFatoorah}
+                    disabled={currentPlan === "basic"}
+                  />
+                  {currentPlan === "basic" && (
+                    <Badge variant="outline" className="mr-2 text-xs">
+                      الباقة الاحترافية
+                    </Badge>
+                  )}
+                </div>
+                
+                <Separator />
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="tabby" className="text-base">تابي (Tabby)</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="h-8 px-2 py-1 bg-purple-50 text-purple-600 rounded font-medium">Tabby</div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">الدفع بالتقسيط بدون فوائد - اشتري الآن وادفع لاحقاً</p>
+                  </div>
+                  <Switch 
+                    id="tabby" 
+                    checked={tabby}
+                    onCheckedChange={setTabby}
+                    disabled={currentPlan === "basic"}
+                  />
+                  {currentPlan === "basic" && (
+                    <Badge variant="outline" className="mr-2 text-xs">
+                      الباقة الاحترافية
+                    </Badge>
+                  )}
+                </div>
+                
+                <Separator />
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="paypal" className="text-base">باي بال (PayPal)</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="h-8 px-2 py-1 bg-blue-100 text-blue-700 rounded font-medium">PayPal</div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">منصة دفع عالمية للعملاء الدوليين</p>
+                  </div>
+                  <Switch 
+                    id="paypal" 
+                    checked={paypal}
+                    onCheckedChange={setPaypal}
+                    disabled={currentPlan === "basic"}
+                  />
+                  {currentPlan === "basic" && (
+                    <Badge variant="outline" className="mr-2 text-xs">
+                      الباقة الاحترافية
+                    </Badge>
+                  )}
+                </div>
               </div>
               
               {currentPlan === "basic" && (
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mt-6">
-                  <h3 className="text-sm font-medium text-gray-900 mb-2">ترقية للوصول لجميع طرق الدفع</h3>
-                  <p className="text-sm text-gray-500 mb-4">
-                    قم بترقية متجرك للباقة الاحترافية للحصول على خيارات دفع إضافية مثل كي نت (KNET)، مدى، وبنفت بي
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-lg border border-blue-100 mt-6">
+                  <h3 className="text-base font-semibold text-blue-800 mb-2">ترقية للوصول لجميع بوابات الدفع</h3>
+                  <p className="text-sm text-blue-700 mb-4">
+                    قم بترقية متجرك للباقة الاحترافية للحصول على خيارات دفع متقدمة مثل ماي فاتورة وتابي وباي بال وكي نت وغيرها
                   </p>
-                  <Button variant="default" asChild>
+                  <Button variant="default" className="bg-blue-600 hover:bg-blue-700" asChild>
                     <a href="/dashboard/settings?tab=billing">ترقية الآن</a>
                   </Button>
                 </div>
               )}
               
+              {myFatoorah && (
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                  <h3 className="text-sm font-medium text-blue-800 mb-2">إعدادات ماي فاتورة</h3>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 gap-2">
+                      <Label htmlFor="myfatoorah-token" className="text-xs text-blue-700">رمز API الخاص بماي فاتورة</Label>
+                      <Input 
+                        id="myfatoorah-token" 
+                        placeholder="أدخل رمز API الخاص بك"
+                        className="border-blue-200 focus:border-blue-400"
+                      />
+                    </div>
+                    <div className="flex gap-1 text-xs text-blue-600 items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                      <span>يمكنك الحصول على رمز API من لوحة تحكم ماي فاتورة</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {tabby && (
+                <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                  <h3 className="text-sm font-medium text-purple-800 mb-2">إعدادات تابي</h3>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 gap-2">
+                      <Label htmlFor="tabby-public-key" className="text-xs text-purple-700">المفتاح العام</Label>
+                      <Input 
+                        id="tabby-public-key" 
+                        placeholder="أدخل المفتاح العام"
+                        className="border-purple-200 focus:border-purple-400"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 gap-2">
+                      <Label htmlFor="tabby-secret-key" className="text-xs text-purple-700">المفتاح السري</Label>
+                      <Input 
+                        id="tabby-secret-key" 
+                        type="password"
+                        placeholder="أدخل المفتاح السري"
+                        className="border-purple-200 focus:border-purple-400"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {paypal && (
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                  <h3 className="text-sm font-medium text-blue-800 mb-2">إعدادات باي بال</h3>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 gap-2">
+                      <Label htmlFor="paypal-client-id" className="text-xs text-blue-700">معرف العميل</Label>
+                      <Input 
+                        id="paypal-client-id" 
+                        placeholder="أدخل معرف العميل"
+                        className="border-blue-200 focus:border-blue-400"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 gap-2">
+                      <Label htmlFor="paypal-secret" className="text-xs text-blue-700">المفتاح السري</Label>
+                      <Input 
+                        id="paypal-secret" 
+                        type="password"
+                        placeholder="أدخل المفتاح السري"
+                        className="border-blue-200 focus:border-blue-400"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Switch 
+                        id="paypal-sandbox" 
+                        className="data-[state=checked]:bg-blue-600"
+                      />
+                      <Label htmlFor="paypal-sandbox" className="text-xs text-blue-700">وضع الاختبار (Sandbox)</Label>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               <div className="flex justify-end">
-                <Button onClick={handleSaveSettings}>
+                <Button onClick={handleSaveSettings} className="bg-primary hover:bg-primary/90">
                   حفظ التغييرات
                 </Button>
               </div>
