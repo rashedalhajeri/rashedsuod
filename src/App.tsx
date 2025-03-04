@@ -7,6 +7,7 @@ import { useEffect, useState, createContext } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { secureRetrieve, secureStore, secureRemove } from "./lib/encryption";
 import { Session } from "@supabase/supabase-js";
+import RealTimeNotifications from "@/features/dashboard/components/RealTimeNotifications";
 
 // Import pages
 import Index from "./pages/Index";
@@ -317,6 +318,16 @@ const App = () => (
             
             <Route path="*" element={<NotFound />} />
           </Routes>
+          
+          {/* تضمين مكون الإشعارات في جميع صفحات اللوحة */}
+          <Route
+            path="/dashboard/*"
+            element={
+              <ProtectedRoute>
+                <RealTimeNotifications />
+              </ProtectedRoute>
+            }
+          />
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
