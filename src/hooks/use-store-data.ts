@@ -1,10 +1,9 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { secureRetrieve } from "@/lib/encryption";
 import { toast } from "sonner";
 
-// Extended store type with subscription_plan
+// Extended store type with subscription_plan and logo_url
 type StoreData = {
   id: string;
   user_id: string;
@@ -18,6 +17,7 @@ type StoreData = {
   subscription_plan: "free" | "basic" | "premium"; // Include free plan
   subscription_start_date?: string;
   subscription_end_date?: string;
+  logo_url?: string | null; // Added logo_url property
 };
 
 // Hook for fetching store data
@@ -54,7 +54,8 @@ export const useStoreData = () => {
       ...data,
       subscription_plan: data.subscription_plan || userMetadata?.subscription_plan || "free" as "free" | "basic" | "premium",
       subscription_start_date: data.subscription_start_date || userMetadata?.subscription_start_date,
-      subscription_end_date: data.subscription_end_date || userMetadata?.subscription_end_date
+      subscription_end_date: data.subscription_end_date || userMetadata?.subscription_end_date,
+      logo_url: data.logo_url || null // Handle logo_url from data
     } as StoreData;
   };
   
