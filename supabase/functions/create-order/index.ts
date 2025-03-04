@@ -71,6 +71,11 @@ serve(async (req: Request) => {
     // استخراج البيانات من الطلب
     const { order, items }: CreateOrderRequest = await req.json();
     
+    // تعيين حالة افتراضية إذا لم تكن موجودة
+    if (!order.status) {
+      order.status = 'processing';
+    }
+    
     // 1. إنشاء الطلب
     const { data: orderData, error: orderError } = await supabaseClient
       .from('orders')

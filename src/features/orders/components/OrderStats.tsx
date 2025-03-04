@@ -1,12 +1,11 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShoppingBag, Clock, Box, TruckIcon, CheckCircle2, XCircle } from "lucide-react";
+import { ShoppingBag, Box, TruckIcon, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface OrderStats {
   total: number;
-  pending: number;
   processing: number;
   shipped: number;
   delivered: number;
@@ -31,8 +30,8 @@ const OrderStats: React.FC<OrderStatsProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
+          <div className="grid grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
               <div key={i} className="text-center">
                 <div className="h-8 w-8 bg-gray-200 rounded-full mx-auto"></div>
                 <div className="h-3 w-16 bg-gray-200 rounded mx-auto mt-2"></div>
@@ -55,14 +54,21 @@ const OrderStats: React.FC<OrderStatsProps> = ({
       textColor: "text-gray-700"
     },
     {
-      label: "قيد التنفيذ",
-      value: stats.pending + stats.processing + stats.shipped,
+      label: "قيد المعالجة",
+      value: stats.processing,
       icon: <Box className="h-5 w-5" />,
-      bgColor: "bg-amber-100",
-      textColor: "text-amber-700"
+      bgColor: "bg-blue-100",
+      textColor: "text-blue-700"
     },
     {
-      label: "مكتمل",
+      label: "تم الشحن",
+      value: stats.shipped,
+      icon: <TruckIcon className="h-5 w-5" />,
+      bgColor: "bg-indigo-100",
+      textColor: "text-indigo-700"
+    },
+    {
+      label: "تم التوصيل",
       value: stats.delivered,
       icon: <CheckCircle2 className="h-5 w-5" />,
       bgColor: "bg-green-100",
@@ -79,7 +85,7 @@ const OrderStats: React.FC<OrderStatsProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           {statsItems.map((item, index) => (
             <div key={index} className="text-center">
               <div className={cn("h-12 w-12 rounded-full flex items-center justify-center mx-auto", item.bgColor)}>

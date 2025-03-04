@@ -133,7 +133,8 @@ export const createOrder = async (storeId: string, orderData: Omit<Order, 'id' |
       .from('orders')
       .insert([{ 
         ...orderData, 
-        store_id: storeId 
+        store_id: storeId,
+        status: orderData.status || 'processing' // تعيين الحالة الافتراضية إلى "قيد المعالجة"
       }])
       .select()
       .single();
@@ -198,11 +199,10 @@ export const fetchOrderStats = async (storeId: string) => {
 
     const stats = {
       total: data.length,
-      pending: data.filter(order => order.status === 'pending').length,
       processing: data.filter(order => order.status === 'processing').length,
       shipped: data.filter(order => order.status === 'shipped').length,
       delivered: data.filter(order => order.status === 'delivered').length,
-      cancelled: data.filter(order => order.status === 'cancelled').length,
+      cancelled: data.filter(order => order.status === 'cancelled').length
     };
 
     return stats;
@@ -210,11 +210,10 @@ export const fetchOrderStats = async (storeId: string) => {
     console.error("Error fetching order stats:", error);
     return {
       total: 0,
-      pending: 0,
       processing: 0,
       shipped: 0,
       delivered: 0,
-      cancelled: 0,
+      cancelled: 0
     };
   }
 };

@@ -133,9 +133,6 @@ const OrdersList: React.FC<OrdersListProps> = ({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => onUpdateStatus(order.id, "pending")}>
-                      تغيير إلى: قيد الانتظار
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => onUpdateStatus(order.id, "processing")}>
                       تغيير إلى: قيد المعالجة
                     </DropdownMenuItem>

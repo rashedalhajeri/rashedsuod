@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -74,11 +75,10 @@ const Orders: React.FC = () => {
     queryFn: () => {
       if (!storeData?.id) return Promise.resolve({
         total: 0,
-        pending: 0,
         processing: 0,
         shipped: 0,
         delivered: 0,
-        cancelled: 0,
+        cancelled: 0
       });
       return fetchOrderStats(storeData.id);
     },
@@ -226,11 +226,10 @@ const Orders: React.FC = () => {
         
         <OrderStats stats={statsData || {
           total: 0,
-          pending: 0,
           processing: 0,
           shipped: 0,
           delivered: 0,
-          cancelled: 0,
+          cancelled: 0
         }} isLoading={isStatsLoading} />
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -255,7 +254,6 @@ const Orders: React.FC = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">جميع الحالات</SelectItem>
-                <SelectItem value="pending">قيد الانتظار</SelectItem>
                 <SelectItem value="processing">قيد المعالجة</SelectItem>
                 <SelectItem value="shipped">تم الشحن</SelectItem>
                 <SelectItem value="delivered">تم التوصيل</SelectItem>
@@ -272,10 +270,11 @@ const Orders: React.FC = () => {
         </div>
         
         <Tabs value={currentTab} onValueChange={(value) => setCurrentTab(value as OrderStatus | "all")} className="w-full">
-          <TabsList className="grid grid-cols-3 mb-4">
+          <TabsList className="grid grid-cols-4 mb-4">
             <TabsTrigger value="all">الكل</TabsTrigger>
-            <TabsTrigger value="pending">قيد التنفيذ</TabsTrigger>
-            <TabsTrigger value="delivered">مكتمل</TabsTrigger>
+            <TabsTrigger value="processing">قيد المعالجة</TabsTrigger>
+            <TabsTrigger value="shipped">تم الشحن</TabsTrigger>
+            <TabsTrigger value="delivered">تم التوصيل</TabsTrigger>
           </TabsList>
           
           <Card>
