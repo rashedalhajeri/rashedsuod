@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import SubscriptionPlans from "@/features/dashboard/components/SubscriptionPlans";
 import { Separator } from "@/components/ui/separator";
-import { UserCircle, Store, CreditCard, Bell, Shield, Globe, Truck, FileText, ChevronLeft, ChevronRight, Wallet } from "lucide-react";
+import { UserCircle, Store, CreditCard, Bell, Shield, Globe, Truck, FileText, ChevronLeft, ChevronRight, Wallet, Check, X, Calendar, Clock } from "lucide-react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 
 const Settings: React.FC = () => {
@@ -564,23 +564,106 @@ const Settings: React.FC = () => {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <div>
-                  <CardTitle>باقة الاشتراك الحالية</CardTitle>
+                  <CardTitle>بطاقة المتجر</CardTitle>
                   <CardDescription>
-                    تفاصيل الباقة الحالية وخيارات الترقية
+                    معلومات المتجر وتفاصيل الاشتراك
                   </CardDescription>
                 </div>
-                <Badge className={currentPlan === "basic" ? "bg-blue-500" : "bg-primary-500"}>
-                  {currentPlan === "basic" ? "الأساسية" : "الاحترافية"}
-                </Badge>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-500 mb-6">
-                أنت مشترك حالياً في الباقة {currentPlan === "basic" ? "الأساسية" : "الاحترافية"} بقيمة {currentPlan === "basic" ? "90" : "150"} د.ك لمدة 6 أشهر.
-                تنتهي صلاحية اشتراكك في 15 مايو 2024.
-              </p>
+              <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-6 rounded-xl border border-blue-100 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Store className="h-5 w-5 text-blue-600" />
+                      <div>
+                        <p className="text-sm text-gray-500">اسم المتجر</p>
+                        <p className="font-medium">{storeData?.store_name || "متجري"}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-5 w-5 text-blue-600" />
+                      <div>
+                        <p className="text-sm text-gray-500">رابط المتجر</p>
+                        <p className="font-medium">{storeData?.domain_name || "my-store"}.linok.me</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-blue-600" />
+                      <div>
+                        <p className="text-sm text-gray-500">البريد الإلكتروني</p>
+                        <p className="font-medium">user@example.com</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="h-5 w-5 text-blue-600" />
+                      <div>
+                        <p className="text-sm text-gray-500">الباقة الحالية</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">
+                            {currentPlan === "basic" ? "الباقة الأساسية" : "الباقة الاحترافية"}
+                          </p>
+                          <Badge className={currentPlan === "basic" ? "bg-blue-500" : "bg-primary-500"}>
+                            {currentPlan === "basic" ? "أساسية" : "احترافية"}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5 text-blue-600" />
+                      <div>
+                        <p className="text-sm text-gray-500">تاريخ انتهاء الاشتراك</p>
+                        <p className="font-medium">15 مايو 2024</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-blue-600" />
+                      <div>
+                        <p className="text-sm text-gray-500">المتبقي على انتهاء الاشتراك</p>
+                        <p className="font-medium">45 يوم</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
               
               <Separator className="my-6" />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="border rounded-lg p-4">
+                  <h3 className="text-base font-medium mb-3">تفعيل الباقة برمز التفعيل</h3>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="activation-code">رمز التفعيل</Label>
+                      <Input
+                        id="activation-code"
+                        placeholder="أدخل رمز التفعيل هنا"
+                      />
+                    </div>
+                    <Button onClick={() => toast.success("تم التحقق من الرمز بنجاح")}>
+                      تفعيل
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="border rounded-lg p-4">
+                  <h3 className="text-base font-medium mb-3">شراء باقة جديدة</h3>
+                  <p className="text-sm text-gray-500 mb-4">
+                    يمكنك ترقية باقتك الحالية أو تجديد الاشتراك من خلال شراء باقة جديدة
+                  </p>
+                  <Button onClick={() => setActiveTab("billing-plans")}>
+                    عرض الباقات المتاحة
+                  </Button>
+                </div>
+              </div>
               
               <SubscriptionPlans />
             </CardContent>
