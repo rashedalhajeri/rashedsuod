@@ -61,8 +61,8 @@ enable_confirmations = false
 host = "smtp.gmail.com"
 port = 465
 user = "admin@example.com"
-# Use auth.external.* section instead or set by env var
-# password = "admin"
+# Add the missing password field here
+pass = "password123"
 sender_name = ""
 
 [auth.sms]
