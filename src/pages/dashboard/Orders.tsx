@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +25,7 @@ import {
 import OrdersList from "@/features/orders/components/OrdersList";
 import OrderDetailsModal from "@/features/orders/components/OrderDetailsModal";
 import OrderStats from "@/features/orders/components/OrderStats";
+import OrderEmptyState from "@/features/orders/components/OrderEmptyState";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,7 +49,6 @@ const Orders: React.FC = () => {
   const { data: storeData, isLoading: isStoreLoading } = useStoreData();
   const { toast } = useToast();
   
-  // جلب الطلبات
   const { 
     data: ordersData, 
     isLoading: isOrdersLoading, 
@@ -66,7 +65,6 @@ const Orders: React.FC = () => {
     enabled: !!storeData?.id,
   });
   
-  // جلب إحصائيات الطلبات
   const { 
     data: statsData, 
     isLoading: isStatsLoading,
@@ -87,20 +85,16 @@ const Orders: React.FC = () => {
     enabled: !!storeData?.id,
   });
   
-  // مراقبة تغيير التاب
   useEffect(() => {
     setStatusFilter(currentTab);
   }, [currentTab]);
   
-  // عرض تفاصيل الطلب
   const handleViewOrderDetails = async (order: Order) => {
     try {
       if (order.items) {
-        // إذا كانت التفاصيل موجودة بالفعل
         setSelectedOrder(order);
         setIsOrderDialogOpen(true);
       } else {
-        // جلب تفاصيل الطلب من قاعدة البيانات
         const orderDetails = await fetchOrderDetails(order.id);
         if (orderDetails) {
           setSelectedOrder(orderDetails);
@@ -123,18 +117,15 @@ const Orders: React.FC = () => {
     }
   };
   
-  // تحديث حالة الطلب
   const handleUpdateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
     try {
       const updatedOrder = await updateOrderStatus(orderId, newStatus);
       
       if (updatedOrder) {
-        // تحديث الطلب المحدد إذا كان مفتوحًا
         if (selectedOrder && selectedOrder.id === orderId) {
           setSelectedOrder(prev => prev ? { ...prev, status: newStatus } : null);
         }
         
-        // تحديث قائمة الطلبات والإحصائيات
         refetchOrders();
         refetchStats();
       }
@@ -148,7 +139,6 @@ const Orders: React.FC = () => {
     }
   };
   
-  // حذف الطلب
   const handleDeleteOrder = async () => {
     if (!orderToDelete) return;
     
@@ -156,11 +146,9 @@ const Orders: React.FC = () => {
       const success = await deleteOrder(orderToDelete);
       
       if (success) {
-        // إغلاق مربع الحوار
         setIsDeleteDialogOpen(false);
         setOrderToDelete(null);
         
-        // تحديث البيانات
         refetchOrders();
         refetchStats();
       }
@@ -174,7 +162,6 @@ const Orders: React.FC = () => {
     }
   };
   
-  // التصدير إلى ملف إكسل
   const handleExportToExcel = () => {
     toast({
       title: "قريبًا",
@@ -182,7 +169,6 @@ const Orders: React.FC = () => {
     });
   };
   
-  // رسالة تحميل البيانات
   if (isStoreLoading) {
     return (
       <DashboardLayout>
@@ -191,7 +177,6 @@ const Orders: React.FC = () => {
     );
   }
   
-  // رسالة الخطأ إذا لم يكن هناك متجر
   if (!storeData) {
     return (
       <DashboardLayout>
@@ -202,6 +187,28 @@ const Orders: React.FC = () => {
             لم نتمكن من تحميل بيانات المتجر. يرجى تحديث الصفحة أو المحاولة لاحقًا.
           </AlertDescription>
         </Alert>
+      </DashboardLayout>
+    );
+  }
+  
+  if (!isOrdersLoading && ordersData?.orders.length === 0 && !searchQuery && statusFilter === "all") {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col gap-6">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <h1 className="text-2xl font-bold">إدارة الطلبات</h1>
+          </div>
+          
+          <OrderEmptyState 
+            message="لا توجد طلبات بعد" 
+            onCreateOrder={() => {
+              toast({
+                title: "قريبًا",
+                description: "سيتم إضافة هذه الميزة قريبًا",
+              });
+            }}
+          />
+        </div>
       </DashboardLayout>
     );
   }
@@ -217,7 +224,6 @@ const Orders: React.FC = () => {
           </Button>
         </div>
         
-        {/* إحصائيات الطلبات */}
         <OrderStats stats={statsData || {
           total: 0,
           pending: 0,
@@ -266,13 +272,10 @@ const Orders: React.FC = () => {
         </div>
         
         <Tabs value={currentTab} onValueChange={(value) => setCurrentTab(value as OrderStatus | "all")} className="w-full">
-          <TabsList className="grid grid-cols-6 mb-4">
+          <TabsList className="grid grid-cols-3 mb-4">
             <TabsTrigger value="all">الكل</TabsTrigger>
-            <TabsTrigger value="pending">قيد الانتظار</TabsTrigger>
-            <TabsTrigger value="processing">قيد المعالجة</TabsTrigger>
-            <TabsTrigger value="shipped">تم الشحن</TabsTrigger>
-            <TabsTrigger value="delivered">تم التوصيل</TabsTrigger>
-            <TabsTrigger value="cancelled">ملغي</TabsTrigger>
+            <TabsTrigger value="pending">قيد التنفيذ</TabsTrigger>
+            <TabsTrigger value="delivered">مكتمل</TabsTrigger>
           </TabsList>
           
           <Card>
@@ -299,7 +302,6 @@ const Orders: React.FC = () => {
         </Tabs>
       </div>
       
-      {/* مربع حوار تفاصيل الطلب */}
       <OrderDetailsModal
         order={selectedOrder}
         isOpen={isOrderDialogOpen}
@@ -307,7 +309,6 @@ const Orders: React.FC = () => {
         onUpdateStatus={handleUpdateOrderStatus}
       />
       
-      {/* مربع حوار تأكيد الحذف */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

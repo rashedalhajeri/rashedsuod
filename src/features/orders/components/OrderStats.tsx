@@ -2,6 +2,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShoppingBag, Clock, Box, TruckIcon, CheckCircle2, XCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface OrderStats {
   total: number;
@@ -30,8 +31,8 @@ const OrderStats: React.FC<OrderStatsProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div className="grid grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
               <div key={i} className="text-center">
                 <div className="h-8 w-8 bg-gray-200 rounded-full mx-auto"></div>
                 <div className="h-3 w-16 bg-gray-200 rounded mx-auto mt-2"></div>
@@ -44,6 +45,31 @@ const OrderStats: React.FC<OrderStatsProps> = ({
     );
   }
   
+  // إنشاء مصفوفة من البيانات للعرض المبسط
+  const statsItems = [
+    {
+      label: "الكل",
+      value: stats.total,
+      icon: <ShoppingBag className="h-5 w-5" />,
+      bgColor: "bg-gray-100",
+      textColor: "text-gray-700"
+    },
+    {
+      label: "قيد التنفيذ",
+      value: stats.pending + stats.processing + stats.shipped,
+      icon: <Box className="h-5 w-5" />,
+      bgColor: "bg-amber-100",
+      textColor: "text-amber-700"
+    },
+    {
+      label: "مكتمل",
+      value: stats.delivered,
+      icon: <CheckCircle2 className="h-5 w-5" />,
+      bgColor: "bg-green-100",
+      textColor: "text-green-700"
+    }
+  ];
+  
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -53,54 +79,16 @@ const OrderStats: React.FC<OrderStatsProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
-          <div className="text-center">
-            <div className="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
-              <ShoppingBag className="h-5 w-5 text-gray-700" />
+        <div className="grid grid-cols-3 gap-4">
+          {statsItems.map((item, index) => (
+            <div key={index} className="text-center">
+              <div className={cn("h-12 w-12 rounded-full flex items-center justify-center mx-auto", item.bgColor)}>
+                {React.cloneElement(item.icon, { className: cn("h-6 w-6", item.textColor) })}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">{item.label}</p>
+              <p className={cn("text-lg font-semibold", item.textColor)}>{item.value}</p>
             </div>
-            <p className="text-xs text-gray-500 mt-1">الإجمالي</p>
-            <p className="text-lg font-semibold">{stats.total}</p>
-          </div>
-          
-          <div className="text-center">
-            <div className="h-10 w-10 bg-amber-100 rounded-full flex items-center justify-center mx-auto">
-              <Clock className="h-5 w-5 text-amber-700" />
-            </div>
-            <p className="text-xs text-gray-500 mt-1">قيد الانتظار</p>
-            <p className="text-lg font-semibold text-amber-700">{stats.pending}</p>
-          </div>
-          
-          <div className="text-center">
-            <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
-              <Box className="h-5 w-5 text-blue-700" />
-            </div>
-            <p className="text-xs text-gray-500 mt-1">قيد المعالجة</p>
-            <p className="text-lg font-semibold text-blue-700">{stats.processing}</p>
-          </div>
-          
-          <div className="text-center">
-            <div className="h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center mx-auto">
-              <TruckIcon className="h-5 w-5 text-indigo-700" />
-            </div>
-            <p className="text-xs text-gray-500 mt-1">تم الشحن</p>
-            <p className="text-lg font-semibold text-indigo-700">{stats.shipped}</p>
-          </div>
-          
-          <div className="text-center">
-            <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle2 className="h-5 w-5 text-green-700" />
-            </div>
-            <p className="text-xs text-gray-500 mt-1">تم التوصيل</p>
-            <p className="text-lg font-semibold text-green-700">{stats.delivered}</p>
-          </div>
-          
-          <div className="text-center">
-            <div className="h-10 w-10 bg-red-100 rounded-full flex items-center justify-center mx-auto">
-              <XCircle className="h-5 w-5 text-red-700" />
-            </div>
-            <p className="text-xs text-gray-500 mt-1">ملغي</p>
-            <p className="text-lg font-semibold text-red-700">{stats.cancelled}</p>
-          </div>
+          ))}
         </div>
       </CardContent>
     </Card>

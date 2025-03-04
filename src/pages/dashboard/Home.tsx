@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +7,7 @@ import { secureRetrieve } from "@/lib/encryption";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/layouts/DashboardLayout";
+import { Order } from "@/types/orders";
 
 // Import components
 import WelcomeSection from "@/features/dashboard/components/WelcomeSection";
@@ -29,38 +29,59 @@ const mockSalesData = [
   { name: "يوليو", value: 3800 },
 ];
 
-const mockRecentOrders = [
+// بيانات الطلبات المحاكاة (متوافقة مع تعريف Order)
+const mockRecentOrders: Order[] = [
   {
     id: "ord-1",
-    orderNumber: "10001",
-    customerName: "أحمد محمد",
-    date: "22 يوليو 2023",
-    status: "delivered" as const,
-    total: 255.99
+    order_number: "10001",
+    store_id: "store-1",
+    customer_name: "أحمد محمد",
+    customer_email: "ahmed@example.com",
+    shipping_address: "الرياض، السعودية",
+    payment_method: "نقد عند الاستلام",
+    status: "delivered",
+    total: 255.99,
+    created_at: "2023-07-22T10:00:00Z",
+    updated_at: "2023-07-22T10:30:00Z"
   },
   {
     id: "ord-2",
-    orderNumber: "10002",
-    customerName: "سارة عبدالله",
-    date: "21 يوليو 2023",
-    status: "processing" as const,
-    total: 189.50
+    order_number: "10002",
+    store_id: "store-1",
+    customer_name: "سارة عبدالله",
+    customer_email: "sara@example.com",
+    shipping_address: "جدة، السعودية",
+    payment_method: "بطاقة ائتمان",
+    status: "processing",
+    total: 189.50,
+    created_at: "2023-07-21T14:20:00Z",
+    updated_at: "2023-07-21T14:25:00Z"
   },
   {
     id: "ord-3",
-    orderNumber: "10003",
-    customerName: "محمد أحمد",
-    date: "20 يوليو 2023",
-    status: "pending" as const,
-    total: 340.00
+    order_number: "10003",
+    store_id: "store-1",
+    customer_name: "محمد أحمد",
+    customer_email: "mohammad@example.com",
+    shipping_address: "الدمام، السعودية",
+    payment_method: "تحويل بنكي",
+    status: "pending",
+    total: 340.00,
+    created_at: "2023-07-20T09:15:00Z",
+    updated_at: "2023-07-20T09:15:00Z"
   },
   {
     id: "ord-4",
-    orderNumber: "10004",
-    customerName: "نورة خالد",
-    date: "19 يوليو 2023",
-    status: "shipped" as const,
-    total: 129.99
+    order_number: "10004",
+    store_id: "store-1",
+    customer_name: "نورة خالد",
+    customer_email: "noura@example.com",
+    shipping_address: "المدينة، السعودية",
+    payment_method: "نقد عند الاستلام",
+    status: "shipped",
+    total: 129.99,
+    created_at: "2023-07-19T16:45:00Z",
+    updated_at: "2023-07-19T17:00:00Z"
   }
 ];
 
