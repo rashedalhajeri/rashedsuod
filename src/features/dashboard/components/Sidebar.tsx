@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, ShoppingBag, Package, Tags, Users, CreditCard, Settings, ChevronLeft, ChevronRight, LogOut, Menu, FileText } from "lucide-react";
+import { LayoutDashboard, ShoppingBag, Package, Tags, Users, CreditCard, Settings, ChevronLeft, ChevronRight, LogOut, Menu, FileText, X } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useContext } from "react";
 import { AuthContext } from "@/App";
@@ -34,26 +35,30 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({
     </Link>;
 };
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  isMobileMenuOpen?: boolean;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
   const location = useLocation();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const {
     signOut
   } = useContext(AuthContext);
+
+  // إعادة تعيين حالة القائمة عند تغيير حجم الشاشة
+  useEffect(() => {
+    setIsCollapsed(isMobile && !isMobileMenuOpen);
+  }, [isMobile, isMobileMenuOpen]);
 
   const handleToggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
 
-  const handleMobileToggle = () => {
-    setIsMobileOpen(!isMobileOpen);
-  };
-
   const closeMobileMenu = () => {
     if (isMobile) {
-      setIsMobileOpen(false);
+      // فقط إغلاق في حال العرض المحمول
     }
   };
 
@@ -114,51 +119,74 @@ const Sidebar: React.FC = () => {
     },
     collapsed: {
       width: 80
+    },
+    mobile: {
+      width: "100%",
+      maxWidth: 280
     }
   };
 
+  // تحديد النمط المناسب للقائمة الجانبية
+  const currentVariant = isMobile 
+    ? "mobile" 
+    : isCollapsed 
+      ? "collapsed" 
+      : "expanded";
+
   return (
-    <>
-      {isMobile && (
-        <div className="fixed top-4 left-4 z-50">
-          <Button
-            variant="outline"
-            size="icon"
-            className="rounded-full shadow-md bg-white"
-            onClick={handleMobileToggle}
-          >
-            <Menu size={20} />
-          </Button>
-        </div>
+    <AnimatePresence>
+      {/* طبقة التعتيم عند فتح القائمة في الجوال */}
+      {isMobile && isMobileMenuOpen && (
+        <motion.div
+          className="fixed inset-0 bg-black/50 z-30"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={closeMobileMenu}
+        />
       )}
 
       <motion.div
         className={cn(
           "fixed top-0 right-0 h-screen bg-white shadow-md z-40 overflow-hidden rtl flex flex-col",
-          isMobile ? "border-none" : "border-l border-gray-200",
-          isMobile && !isMobileOpen ? "-right-80" : "right-0"
+          isMobile ? "border-none" : "border-l border-gray-200"
         )}
-        initial={isCollapsed ? "collapsed" : "expanded"}
-        animate={isCollapsed ? "collapsed" : "expanded"}
+        initial={false}
+        animate={currentVariant}
         variants={sidebarVariants}
+        transition={{ duration: 0.3 }}
+        style={{ 
+          right: isMobile && !isMobileMenuOpen ? "-100%" : 0,
+        }}
       >
         <div className="flex flex-col h-full">
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              {!isCollapsed && (
+              {(!isCollapsed || isMobile) && (
                 <div className="flex items-center gap-2">
                   <span className="text-xl font-bold text-primary-500">Linok</span>
                   <span className="text-sm font-medium text-gray-500">.me</span>
                 </div>
               )}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full"
-                onClick={handleToggleSidebar}
-              >
-                {isCollapsed ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
-              </Button>
+              {isMobile ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full"
+                  onClick={closeMobileMenu}
+                >
+                  <X size={18} />
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full"
+                  onClick={handleToggleSidebar}
+                >
+                  {isCollapsed ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
+                </Button>
+              )}
             </div>
           </div>
 
@@ -170,13 +198,11 @@ const Sidebar: React.FC = () => {
                 icon={link.icon}
                 label={link.label}
                 isActive={getIsActive(link.path)}
-                isCollapsed={isCollapsed}
+                isCollapsed={isCollapsed && !isMobile}
                 onClick={closeMobileMenu}
               />
             ))}
           </div>
-
-          {!isCollapsed}
 
           <div className="p-4 border-t border-gray-200">
             <AlertDialog>
@@ -185,11 +211,11 @@ const Sidebar: React.FC = () => {
                   variant="ghost"
                   className={cn(
                     "w-full justify-start text-red-600 hover:bg-red-50 hover:text-red-700",
-                    isCollapsed && "justify-center px-2"
+                    isCollapsed && !isMobile && "justify-center px-2"
                   )}
                 >
                   <LogOut size={18} className="mr-2" />
-                  {!isCollapsed && <span>تسجيل الخروج</span>}
+                  {(!isCollapsed || isMobile) && <span>تسجيل الخروج</span>}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
@@ -210,7 +236,7 @@ const Sidebar: React.FC = () => {
           </div>
         </div>
       </motion.div>
-    </>
+    </AnimatePresence>
   );
 };
 

@@ -276,3 +276,51 @@
 .ai-assistant-pulse {
   @apply absolute inset-0 rounded-full bg-primary-400 animate-ping opacity-75;
 }
+
+/* تحسينات التجاوب للهواتف المحمولة */
+@media (max-width: 768px) {
+  /* تصغير الهوامش والحشوات في الشاشات الصغيرة */
+  .container {
+    @apply px-3 py-2;
+  }
+  
+  /* تحسين أحجام النصوص */
+  h1 {
+    @apply text-2xl;
+  }
+  
+  h2 {
+    @apply text-xl;
+  }
+  
+  /* تعديل حجم البطاقات وجعلها أكثر تناسقًا */
+  .card {
+    @apply p-3;
+  }
+  
+  /* تعديل الجداول للهواتف المحمولة */
+  table {
+    @apply text-sm;
+  }
+  
+  /* إخفاء بعض الأعمدة في الجداول على الشاشات الصغيرة */
+  .mobile-hidden {
+    @apply hidden;
+  }
+  
+  /* تعديل عناصر الإحصائيات في لوحة التحكم */
+  .dashboard-stat {
+    @apply p-3;
+  }
+  
+  .dashboard-stat-value {
+    @apply text-xl;
+  }
+}
+
+/* تحسينات مخصصة للأجهزة اللوحية */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .tablet-optimized {
+    @apply p-4;
+  }
+}
