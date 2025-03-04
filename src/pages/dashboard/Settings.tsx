@@ -20,7 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import PromotionAlert from "@/features/dashboard/components/PromotionAlert";
 import PaymentMethodItem from "@/features/dashboard/components/PaymentMethodItem";
 import ShippingMethodForm from "@/features/dashboard/components/ShippingMethodForm";
-import { useStoreData } from "@/hooks/use-store-data";
+import useStoreData from "@/hooks/use-store-data";
 
 type TabsType = 'general' | 'payment' | 'shipping' | 'integrations' | 'billing';
 
@@ -42,6 +42,21 @@ const Settings = () => {
     address: "",
     currency: "",
     language: "العربية" // ثابت حاليًا
+  });
+  
+  // حالة طرق الدفع والشحن - تم نقلها هنا ليتوافق ترتيب الـ hooks
+  const [paymentMethods, setPaymentMethods] = useState({
+    "cash-on-delivery": true,
+    "credit-card": false,
+    "apple-pay": false,
+    "mada": false,
+  });
+  
+  const [shippingMethods, setShippingMethods] = useState({
+    "standard-shipping": true,
+    "free-shipping": false,
+    "linok-delivery": false,
+    "custom-zones": false,
   });
   
   // تحديث القيم عند استرجاع بيانات المتجر
@@ -71,43 +86,6 @@ const Settings = () => {
     searchParams.set("tab", tab);
     navigate({ pathname: location.pathname, search: searchParams.toString() });
   };
-  
-  // خطأ تحميل بيانات المتجر
-  if (error) {
-    return (
-      <DashboardLayout>
-        <div className="p-4 text-center">
-          <p className="text-red-500">حدث خطأ في تحميل بيانات المتجر. يرجى المحاولة مرة أخرى.</p>
-        </div>
-      </DashboardLayout>
-    );
-  }
-  
-  // جاري تحميل بيانات المتجر
-  if (isLoading) {
-    return (
-      <DashboardLayout>
-        <div className="p-4 text-center">
-          <p>جاري تحميل بيانات المتجر...</p>
-        </div>
-      </DashboardLayout>
-    );
-  }
-  
-  // حالة طرق الدفع والشحن
-  const [paymentMethods, setPaymentMethods] = useState({
-    "cash-on-delivery": true,
-    "credit-card": false,
-    "apple-pay": false,
-    "mada": false,
-  });
-  
-  const [shippingMethods, setShippingMethods] = useState({
-    "standard-shipping": true,
-    "free-shipping": false,
-    "linok-delivery": false,
-    "custom-zones": false,
-  });
   
   // تحديث حالة طرق الدفع
   const handlePaymentMethodChange = (id: string, checked: boolean) => {
@@ -155,6 +133,28 @@ const Settings = () => {
       toast.error("حدث خطأ في حفظ التغييرات");
     }
   };
+  
+  // خطأ تحميل بيانات المتجر
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="p-4 text-center">
+          <p className="text-red-500">حدث خطأ في تحميل بيانات المتجر. يرجى المحاولة مرة أخرى.</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+  
+  // جاري تحميل بيانات المتجر
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="p-4 text-center">
+          <p>جاري تحميل بيانات المتجر...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
   
   // مثال لنوع الباقة الحالية - نأخذها من بيانات المتجر الفعلية
   const subscriptionType = storeData?.subscription_plan || "free";
