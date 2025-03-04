@@ -115,25 +115,26 @@ const LogoUploader: React.FC<LogoUploaderProps> = ({
           <img 
             src={logoUrl} 
             alt="شعار المتجر" 
-            className="w-full h-24 object-contain bg-white p-2"
+            className="w-full h-16 object-contain bg-white p-1"
           />
           <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-40 transition-all flex items-center justify-center opacity-0 hover:opacity-100">
-            <div className="flex gap-2">
+            <div className="flex gap-1">
               <Button 
                 size="sm" 
                 variant="secondary" 
                 onClick={handleClick}
-                className="bg-white text-black hover:bg-gray-100"
+                className="bg-white text-black hover:bg-gray-100 text-xs h-6 px-2"
               >
-                <Upload className="h-3 w-3 ml-1" />
+                <Upload className="h-2 w-2 ml-1" />
                 تغيير
               </Button>
               <Button 
                 size="sm" 
                 variant="destructive" 
                 onClick={handleRemoveLogo}
+                className="text-xs h-6 px-2"
               >
-                <X className="h-3 w-3 ml-1" />
+                <X className="h-2 w-2 ml-1" />
                 حذف
               </Button>
             </div>
@@ -142,7 +143,7 @@ const LogoUploader: React.FC<LogoUploaderProps> = ({
       ) : (
         <div
           className={cn(
-            "border-2 border-dashed rounded-md p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50 transition-colors",
+            "border-2 border-dashed rounded-md p-2 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50 transition-colors",
             isDragging ? "border-primary bg-primary-50" : "border-gray-300",
             isUploading && "opacity-70 pointer-events-none"
           )}
@@ -151,23 +152,24 @@ const LogoUploader: React.FC<LogoUploaderProps> = ({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          <Image className="h-10 w-10 text-gray-400 mb-2" />
-          <p className="text-sm font-medium mb-1">
+          <Image className="h-6 w-6 text-gray-400 mb-1" />
+          <p className="text-xs font-medium mb-1">
             اسحب وأفلت ملف الشعار هنا أو انقر للاختيار
           </p>
-          <p className="text-xs text-gray-500 mb-2">
+          <p className="text-[10px] text-gray-500 mb-1">
             PNG, JPG, SVG, GIF حتى 2 ميغابايت
           </p>
           {isUploading ? (
-            <div className="mt-2 text-xs text-primary-600">جاري الرفع...</div>
+            <div className="mt-1 text-xs text-primary-600">جاري الرفع...</div>
           ) : (
             <Button 
               size="sm" 
               variant="secondary"
               type="button"
               onClick={handleClick}
+              className="text-xs h-6 px-2 py-0"
             >
-              <Upload className="h-3 w-3 ml-1" />
+              <Upload className="h-2 w-2 ml-1" />
               اختيار ملف
             </Button>
           )}
