@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,15 +11,16 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import SubscriptionPlans from "@/features/dashboard/components/SubscriptionPlans";
 import { Separator } from "@/components/ui/separator";
-import { Store, CreditCard, Bell, Shield, Globe, Truck, FileText, ChevronLeft, ChevronRight, Wallet, Calendar, Clock } from "lucide-react";
+import { Store, CreditCard, Bell, Shield, Globe, Truck, FileText, ChevronLeft, ChevronRight, Wallet, Calendar, Clock, Info, HelpCircle } from "lucide-react";
 import DashboardLayout from "@/layouts/DashboardLayout";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const Settings: React.FC = () => {
   const { data: storeData, isLoading } = useStoreData();
   const [activeTab, setActiveTab] = useState("general");
   const tabsListRef = useRef<HTMLDivElement>(null);
   
-  const currentPlan = "basic";
+  const currentPlan = storeData?.subscription_plan || "free";
 
   const [storeName, setStoreName] = useState(storeData?.store_name || "");
   const [storeUrl, setStoreUrl] = useState(storeData?.domain_name || "");
@@ -49,6 +51,28 @@ const Settings: React.FC = () => {
       tabsListRef.current.scrollBy({ left: 200, behavior: 'smooth' });
     }
   };
+
+  // دالة مساعدة لعرض نصائح سريعة
+  const QuickTip = ({ children }: { children: React.ReactNode }) => (
+    <div className="bg-blue-50 border border-blue-100 rounded-md p-3 flex items-start gap-2 mt-4 mb-2">
+      <Info className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+      <p className="text-sm text-blue-700">{children}</p>
+    </div>
+  );
+
+  // مكون للتوجيهات السريعة
+  const SettingTooltip = ({ content }: { content: string }) => (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <HelpCircle className="h-4 w-4 text-gray-400 cursor-help ml-1" />
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="max-w-60 text-xs">{content}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
 
   return (
     <DashboardLayout>
@@ -128,15 +152,26 @@ const Settings: React.FC = () => {
         <TabsContent value="general">
           <Card>
             <CardHeader>
-              <CardTitle>إعدادات المتجر</CardTitle>
-              <CardDescription>
-                قم بتعديل إعدادات متجرك الأساسية
-              </CardDescription>
+              <div className="flex items-center">
+                <div>
+                  <CardTitle>إعدادات المتجر الأساسية</CardTitle>
+                  <CardDescription>
+                    قم بتعديل المعلومات الأساسية لمتجرك
+                  </CardDescription>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
+              <QuickTip>
+                يمكنك البدء بملء هذه المعلومات الأساسية لمتجرك. سيتم عرض هذه المعلومات للعملاء عند زيارة متجرك.
+              </QuickTip>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="store-name">اسم المتجر</Label>
+                  <div className="flex items-center">
+                    <Label htmlFor="store-name">اسم المتجر</Label>
+                    <SettingTooltip content="هذا هو الاسم الذي سيظهر للعملاء عند زيارة متجرك" />
+                  </div>
                   <Input
                     id="store-name"
                     value={storeName}
@@ -146,7 +181,10 @@ const Settings: React.FC = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="store-url">رابط المتجر</Label>
+                  <div className="flex items-center">
+                    <Label htmlFor="store-url">رابط المتجر</Label>
+                    <SettingTooltip content="الرابط الذي سيستخدمه العملاء للوصول إلى متجرك" />
+                  </div>
                   <div className="flex">
                     <Input
                       id="store-url"
@@ -162,7 +200,10 @@ const Settings: React.FC = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="store-email">البريد الإلكتروني</Label>
+                  <div className="flex items-center">
+                    <Label htmlFor="store-email">البريد الإلكتروني</Label>
+                    <SettingTooltip content="سيتم استخدام هذا البريد الإلكتروني للتواصل مع العملاء وإرسال إشعارات الطلبات" />
+                  </div>
                   <Input
                     id="store-email"
                     type="email"
@@ -173,7 +214,10 @@ const Settings: React.FC = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="store-phone">رقم الهاتف</Label>
+                  <div className="flex items-center">
+                    <Label htmlFor="store-phone">رقم الهاتف</Label>
+                    <SettingTooltip content="رقم هاتف للتواصل مع العملاء وسيظهر في صفحة التواصل" />
+                  </div>
                   <Input
                     id="store-phone"
                     value={phoneNumber}
@@ -197,15 +241,22 @@ const Settings: React.FC = () => {
         <TabsContent value="domain">
           <Card>
             <CardHeader>
-              <CardTitle>إعدادات ا����طاق</CardTitle>
+              <CardTitle>إعدادات النطاق</CardTitle>
               <CardDescription>
                 قم بتخصيص نطاق متجرك أو إضافة نطاق مخصص
               </CardDescription>
             </CardHeader>
             <CardContent>
+              <QuickTip>
+                النطاق هو عنوان متجرك على الإنترنت. يمكنك استخدام النطاق الافتراضي أو إضافة نطاق مخصص خاص بك (متاح في الباقة الاحترافية).
+              </QuickTip>
+              
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <Label>النطاق الحالي</Label>
+                  <div className="flex items-center">
+                    <Label>النطاق الحالي</Label>
+                    <SettingTooltip content="هذا هو الرابط الحالي الذي يمكن للعملاء استخدامه للوصول إلى متجرك" />
+                  </div>
                   <div className="flex items-center">
                     <div className="px-4 py-2 bg-gray-100 border border-gray-200 rounded-md flex-1">
                       <span className="font-medium">{storeUrl || "your-store"}.linok.me</span>
@@ -225,20 +276,23 @@ const Settings: React.FC = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="custom-domain">النطاق المخصص</Label>
+                    <div className="flex items-center">
+                      <Label htmlFor="custom-domain">النطاق المخصص</Label>
+                      <SettingTooltip content="يمكنك إضافة نطاق خاص بك مثل www.mystore.com (متاح في الباقة الاحترافية)" />
+                    </div>
                     <div className="flex">
                       <Input
                         id="custom-domain"
                         placeholder="www.example.com"
-                        disabled={currentPlan === "basic"}
-                        className={currentPlan === "basic" ? "bg-gray-100" : ""}
+                        disabled={currentPlan !== "premium"}
+                        className={currentPlan !== "premium" ? "bg-gray-100" : ""}
                       />
-                      <Button className="mr-2" disabled={currentPlan === "basic"}>إضافة</Button>
+                      <Button className="mr-2" disabled={currentPlan !== "premium"}>إضافة</Button>
                     </div>
                   </div>
                 </div>
                 
-                {currentPlan === "basic" && (
+                {currentPlan !== "premium" && (
                   <div className="mt-4">
                     <Button variant="outline" asChild>
                       <a href="/dashboard/settings?tab=billing">ترقية للباقة الاحترافية</a>
@@ -259,10 +313,17 @@ const Settings: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              <QuickTip>
+                كلما زادت طرق الدفع المتاحة في متجرك، زادت فرص المبيعات. يمكنك البدء بالدفع عند الاستلام ثم إضافة بوابات الدفع الإلكتروني لاحقاً.
+              </QuickTip>
+              
               <div className="grid gap-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="cash-on-delivery" className="text-base">الدفع عند الاستلام</Label>
+                    <div className="flex items-center">
+                      <Label htmlFor="cash-on-delivery" className="text-base">الدفع عند الاستلام</Label>
+                      <SettingTooltip content="يسمح للعملاء بالدفع نقداً عند استلام المنتجات" />
+                    </div>
                     <p className="text-sm text-muted-foreground">السماح للعملاء بالدفع نقداً عند استلام المنتجات</p>
                   </div>
                   <Switch 
@@ -276,73 +337,88 @@ const Settings: React.FC = () => {
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="my-fatoorah" className="text-base">ماي فاتورة (MyFatoorah)</Label>
+                    <div className="flex items-center">
+                      <Label htmlFor="my-fatoorah" className="text-base">ماي فاتورة (MyFatoorah)</Label>
+                      <SettingTooltip content="بوابة دفع شاملة تدعم KNET وVisa وMastercard وغيرها من وسائل الدفع في الخليج" />
+                    </div>
                     <div className="flex items-center gap-2 mt-1">
                       <div className="h-8 px-3 py-1 bg-blue-50 text-blue-600 rounded-md font-medium">MyFatoorah</div>
                     </div>
                     <p className="text-sm text-muted-foreground">بوابة دفع شاملة تدعم العديد من وسائل الدفع في الخليج</p>
                   </div>
-                  <Switch 
-                    id="my-fatoorah" 
-                    checked={myFatoorah}
-                    onCheckedChange={setMyFatoorah}
-                    disabled={currentPlan === "basic"}
-                  />
-                  {currentPlan === "basic" && (
-                    <Badge variant="outline" className="mr-2 text-xs">
-                      الباقة الاحترافية
-                    </Badge>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {currentPlan !== "premium" && (
+                      <Badge variant="outline" className="text-xs">
+                        الباقة الاحترافية
+                      </Badge>
+                    )}
+                    <Switch 
+                      id="my-fatoorah" 
+                      checked={myFatoorah}
+                      onCheckedChange={setMyFatoorah}
+                      disabled={currentPlan !== "premium"}
+                    />
+                  </div>
                 </div>
                 
                 <Separator />
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="tabby" className="text-base">تابي (Tabby)</Label>
+                    <div className="flex items-center">
+                      <Label htmlFor="tabby" className="text-base">تابي (Tabby)</Label>
+                      <SettingTooltip content="خدمة تتيح للعملاء الدفع على أقساط بدون فوائد أو رسوم إضافية" />
+                    </div>
                     <div className="flex items-center gap-2 mt-1">
                       <div className="h-8 px-3 py-1 bg-purple-50 text-purple-600 rounded-md font-medium">Tabby</div>
                     </div>
                     <p className="text-sm text-muted-foreground">الدفع بالتقسيط بدون فوائد - اشتري الآن وادفع لاحقاً</p>
                   </div>
-                  <Switch 
-                    id="tabby" 
-                    checked={tabby}
-                    onCheckedChange={setTabby}
-                    disabled={currentPlan === "basic"}
-                  />
-                  {currentPlan === "basic" && (
-                    <Badge variant="outline" className="mr-2 text-xs">
-                      الباقة الاحترافية
-                    </Badge>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {currentPlan !== "premium" && (
+                      <Badge variant="outline" className="text-xs">
+                        الباقة الاحترافية
+                      </Badge>
+                    )}
+                    <Switch 
+                      id="tabby" 
+                      checked={tabby}
+                      onCheckedChange={setTabby}
+                      disabled={currentPlan !== "premium"}
+                    />
+                  </div>
                 </div>
                 
                 <Separator />
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="paypal" className="text-base">باي بال (PayPal)</Label>
+                    <div className="flex items-center">
+                      <Label htmlFor="paypal" className="text-base">باي بال (PayPal)</Label>
+                      <SettingTooltip content="خدمة دفع عالمية مناسبة للعملاء الدوليين" />
+                    </div>
                     <div className="flex items-center gap-2 mt-1">
                       <div className="h-8 px-3 py-1 bg-blue-100 text-blue-700 rounded-md font-medium">PayPal</div>
                     </div>
                     <p className="text-sm text-muted-foreground">منصة دفع عالمية للعملاء الدوليين</p>
                   </div>
-                  <Switch 
-                    id="paypal" 
-                    checked={paypal}
-                    onCheckedChange={setPaypal}
-                    disabled={currentPlan === "basic"}
-                  />
-                  {currentPlan === "basic" && (
-                    <Badge variant="outline" className="mr-2 text-xs">
-                      الباقة الاحترافية
-                    </Badge>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {currentPlan !== "premium" && (
+                      <Badge variant="outline" className="text-xs">
+                        الباقة الاحترافية
+                      </Badge>
+                    )}
+                    <Switch 
+                      id="paypal" 
+                      checked={paypal}
+                      onCheckedChange={setPaypal}
+                      disabled={currentPlan !== "premium"}
+                    />
+                  </div>
                 </div>
               </div>
               
-              {currentPlan === "basic" && (
+              {currentPlan !== "premium" && (
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-lg border border-blue-100 mt-6">
                   <h3 className="text-base font-semibold text-blue-800 mb-2">ترقية للوصول لجميع بوابات الدفع</h3>
                   <p className="text-sm text-blue-700 mb-4">
@@ -359,7 +435,10 @@ const Settings: React.FC = () => {
                   <h3 className="text-sm font-medium text-blue-800 mb-2">إعدادات ماي فاتورة</h3>
                   <div className="space-y-3">
                     <div className="grid grid-cols-1 gap-2">
-                      <Label htmlFor="myfatoorah-token" className="text-xs text-blue-700">رمز API الخاص بماي فاتورة</Label>
+                      <div className="flex items-center">
+                        <Label htmlFor="myfatoorah-token" className="text-xs text-blue-700">رمز API الخاص بماي فاتورة</Label>
+                        <SettingTooltip content="رمز API الذي يمكنك الحصول عليه من لوحة تحكم ماي فاتورة" />
+                      </div>
                       <Input 
                         id="myfatoorah-token" 
                         placeholder="أدخل رمز API الخاص بك"
@@ -379,7 +458,10 @@ const Settings: React.FC = () => {
                   <h3 className="text-sm font-medium text-purple-800 mb-2">إعدادات تابي</h3>
                   <div className="space-y-3">
                     <div className="grid grid-cols-1 gap-2">
-                      <Label htmlFor="tabby-public-key" className="text-xs text-purple-700">المفتاح العام</Label>
+                      <div className="flex items-center">
+                        <Label htmlFor="tabby-public-key" className="text-xs text-purple-700">المفتاح العام</Label>
+                        <SettingTooltip content="المفتاح العام الذي تحصل عليه من لوحة تحكم تابي" />
+                      </div>
                       <Input 
                         id="tabby-public-key" 
                         placeholder="أدخل المفتاح العام"
@@ -387,7 +469,10 @@ const Settings: React.FC = () => {
                       />
                     </div>
                     <div className="grid grid-cols-1 gap-2">
-                      <Label htmlFor="tabby-secret-key" className="text-xs text-purple-700">المفتاح السري</Label>
+                      <div className="flex items-center">
+                        <Label htmlFor="tabby-secret-key" className="text-xs text-purple-700">المفتاح السري</Label>
+                        <SettingTooltip content="المفتاح السري الذي تحصل عليه من لوحة تحكم تابي" />
+                      </div>
                       <Input 
                         id="tabby-secret-key" 
                         type="password"
@@ -404,7 +489,10 @@ const Settings: React.FC = () => {
                   <h3 className="text-sm font-medium text-blue-800 mb-2">إعدادات باي بال</h3>
                   <div className="space-y-3">
                     <div className="grid grid-cols-1 gap-2">
-                      <Label htmlFor="paypal-client-id" className="text-xs text-blue-700">معرف العميل</Label>
+                      <div className="flex items-center">
+                        <Label htmlFor="paypal-client-id" className="text-xs text-blue-700">معرف العميل</Label>
+                        <SettingTooltip content="معرف العميل الذي تحصل عليه من لوحة تحكم باي بال للمطورين" />
+                      </div>
                       <Input 
                         id="paypal-client-id" 
                         placeholder="أدخل معرف العميل"
@@ -412,7 +500,10 @@ const Settings: React.FC = () => {
                       />
                     </div>
                     <div className="grid grid-cols-1 gap-2">
-                      <Label htmlFor="paypal-secret" className="text-xs text-blue-700">المفتاح السري</Label>
+                      <div className="flex items-center">
+                        <Label htmlFor="paypal-secret" className="text-xs text-blue-700">المفتاح السري</Label>
+                        <SettingTooltip content="المفتاح السري الذي تحصل عليه من لوحة تحكم باي بال للمطورين" />
+                      </div>
                       <Input 
                         id="paypal-secret" 
                         type="password"
@@ -449,10 +540,17 @@ const Settings: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              <QuickTip>
+                ضبط إعدادات الشحن بشكل صحيح يساعد في تحسين تجربة العملاء ويقلل من الأسئلة حول التوصيل والتسليم.
+              </QuickTip>
+              
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-medium">تفعيل الشحن</h4>
+                    <div className="flex items-center">
+                      <h4 className="font-medium">تفعيل الشحن</h4>
+                      <SettingTooltip content="تفعيل خيارات الشحن والتوصيل للعملاء" />
+                    </div>
                     <p className="text-sm text-gray-500">السماح بشحن المنتجات للعملاء</p>
                   </div>
                   <Switch defaultChecked />
@@ -462,10 +560,56 @@ const Settings: React.FC = () => {
                 
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-medium">الشحن المجاني</h4>
+                    <div className="flex items-center">
+                      <h4 className="font-medium">الشحن المجاني</h4>
+                      <SettingTooltip content="توفير شحن مجاني للطلبات التي تتجاوز مبلغ معين" />
+                    </div>
                     <p className="text-sm text-gray-500">تفعيل الشحن المجاني للطلبات التي تتجاوز مبلغ معين</p>
                   </div>
                   <Switch />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                  <div className="space-y-2">
+                    <div className="flex items-center">
+                      <Label htmlFor="free-shipping-threshold">الحد الأدنى للشحن المجاني</Label>
+                      <SettingTooltip content="المبلغ الذي يجب أن يتجاوزه الطلب للحصول على شحن مجاني" />
+                    </div>
+                    <Input
+                      id="free-shipping-threshold"
+                      type="number"
+                      placeholder="50"
+                      disabled
+                    />
+                    <p className="text-xs text-gray-500">أدخل 0 لتفعيل الشحن المجاني لجميع الطلبات</p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center">
+                      <Label htmlFor="shipping-cost">تكلفة الشحن العادي</Label>
+                      <SettingTooltip content="تكلفة الشحن الافتراضية للطلبات التي لا تؤهل للشحن المجاني" />
+                    </div>
+                    <Input
+                      id="shipping-cost"
+                      type="number"
+                      placeholder="5"
+                    />
+                  </div>
+                </div>
+                
+                <div className="bg-amber-50 p-4 rounded-lg border border-amber-100 mt-4">
+                  <h3 className="flex items-center text-sm font-medium text-amber-800 mb-2">
+                    <Info className="h-4 w-4 mr-1" />
+                    إعدادات الشحن المتقدمة
+                  </h3>
+                  <p className="text-sm text-amber-700 mb-2">
+                    يمكنك إضافة مناطق شحن متعددة وتحديد أسعار مختلفة لكل منطقة في الباقة الاحترافية.
+                  </p>
+                  {currentPlan !== "premium" && (
+                    <Button variant="outline" size="sm" className="mt-2" asChild>
+                      <a href="/dashboard/settings?tab=billing">ترقية للباقة الاحترافية</a>
+                    </Button>
+                  )}
                 </div>
                 
                 <div className="flex justify-end">
@@ -487,9 +631,16 @@ const Settings: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              <QuickTip>
+                المستندات القانونية مهمة لحماية متجرك وتحديد العلاقة بينك وبين العملاء. تأكد من تحديثها وفقًا للقوانين المحلية.
+              </QuickTip>
+              
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <Label>شروط الاستخدام</Label>
+                  <div className="flex items-center">
+                    <Label>شروط الاستخدام</Label>
+                    <SettingTooltip content="شروط استخدام المتجر التي يوافق عليها العملاء عند الشراء" />
+                  </div>
                   <textarea
                     className="w-full border border-gray-200 rounded-md px-3 py-2 min-h-32"
                     placeholder="أدخل شروط الاستخدام الخاصة بمتجرك..."
@@ -497,10 +648,24 @@ const Settings: React.FC = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label>سياسة الخصوصية</Label>
+                  <div className="flex items-center">
+                    <Label>سياسة الخصوصية</Label>
+                    <SettingTooltip content="كيفية جمع واستخدام بيانات العملاء في متجرك" />
+                  </div>
                   <textarea
                     className="w-full border border-gray-200 rounded-md px-3 py-2 min-h-32"
                     placeholder="أدخل سياسة الخصوصية الخاصة بمتجرك..."
+                  ></textarea>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center">
+                    <Label>سياسة الإرجاع والاستبدال</Label>
+                    <SettingTooltip content="سياسة إرجاع واستبدال المنتجات في متجرك" />
+                  </div>
+                  <textarea
+                    className="w-full border border-gray-200 rounded-md px-3 py-2 min-h-32"
+                    placeholder="أدخل سياسة الإرجاع والاستبدال الخاصة بمتجرك..."
                   ></textarea>
                 </div>
                 
@@ -527,6 +692,10 @@ const Settings: React.FC = () => {
               </div>
             </CardHeader>
             <CardContent>
+              <QuickTip>
+                باقة الاشتراك تحدد الميزات المتاحة في متجرك. كلما كانت الباقة أعلى، كلما زادت الميزات المتاحة وإمكانيات المتجر.
+              </QuickTip>
+              
               <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-6 rounded-xl border border-blue-100 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
@@ -562,10 +731,16 @@ const Settings: React.FC = () => {
                         <p className="text-sm text-gray-500">الباقة الحالية</p>
                         <div className="flex items-center gap-2">
                           <p className="font-medium">
-                            {currentPlan === "basic" ? "الباقة الأساسية" : "الباقة الاحترافية"}
+                            {currentPlan === "free" ? "الباقة المجانية" : 
+                             currentPlan === "basic" ? "الباقة الأساسية" : 
+                             "الباقة الاحترافية"}
                           </p>
-                          <Badge className={currentPlan === "basic" ? "bg-blue-500" : "bg-primary-500"}>
-                            {currentPlan === "basic" ? "أساسية" : "احترافية"}
+                          <Badge className={currentPlan === "free" ? "bg-gray-500" : 
+                                            currentPlan === "basic" ? "bg-blue-500" : 
+                                            "bg-primary-500"}>
+                            {currentPlan === "free" ? "مجانية" : 
+                             currentPlan === "basic" ? "أساسية" : 
+                             "احترافية"}
                           </Badge>
                         </div>
                       </div>
@@ -575,7 +750,7 @@ const Settings: React.FC = () => {
                       <Calendar className="h-5 w-5 text-blue-600" />
                       <div>
                         <p className="text-sm text-gray-500">تاريخ انتهاء الاشتراك</p>
-                        <p className="font-medium">15 مايو 2024</p>
+                        <p className="font-medium">{storeData?.subscription_end_date ? new Date(storeData.subscription_end_date).toLocaleDateString('ar-SA') : "غير محدد"}</p>
                       </div>
                     </div>
                     
@@ -583,7 +758,11 @@ const Settings: React.FC = () => {
                       <Clock className="h-5 w-5 text-blue-600" />
                       <div>
                         <p className="text-sm text-gray-500">المتبقي على انتهاء الاشتراك</p>
-                        <p className="font-medium">45 يوم</p>
+                        <p className="font-medium">
+                          {storeData?.subscription_end_date ? 
+                            Math.max(0, Math.ceil((new Date(storeData.subscription_end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))) + " يوم" : 
+                            "غير محدد"}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -597,7 +776,10 @@ const Settings: React.FC = () => {
                   <h3 className="text-base font-medium mb-3">تفعيل الباقة برمز التفعيل</h3>
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="activation-code">رمز التفعيل</Label>
+                      <div className="flex items-center">
+                        <Label htmlFor="activation-code">رمز التفعيل</Label>
+                        <SettingTooltip content="رمز التفعيل الذي حصلت عليه عند شراء باقة متجرك" />
+                      </div>
                       <Input
                         id="activation-code"
                         placeholder="أدخل رمز التفعيل هنا"
@@ -634,10 +816,17 @@ const Settings: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              <QuickTip>
+                ضبط الإشعارات يساعدك على البقاء على اطلاع بأحدث التطورات في متجرك دون إزعاج غير ضروري.
+              </QuickTip>
+              
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-medium">إشعارات البريد الإلكتروني</h4>
+                    <div className="flex items-center">
+                      <h4 className="font-medium">إشعارات البريد الإلكتروني</h4>
+                      <SettingTooltip content="استلام إشعارات عبر البريد الإلكتروني عن أنشطة المتجر المختلفة" />
+                    </div>
                     <p className="text-sm text-gray-500">استلام إشعارات عبر البريد الإلكتروني</p>
                   </div>
                   <Switch
@@ -650,7 +839,10 @@ const Settings: React.FC = () => {
                 
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-medium">إشعارات الطلبات الجديدة</h4>
+                    <div className="flex items-center">
+                      <h4 className="font-medium">إشعارات الطلبات الجديدة</h4>
+                      <SettingTooltip content="استلام إشعار فوري عند وصول طلب جديد إلى متجرك" />
+                    </div>
                     <p className="text-sm text-gray-500">استلام إشعار عند وصول طلب جديد</p>
                   </div>
                   <Switch
@@ -663,7 +855,10 @@ const Settings: React.FC = () => {
                 
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-medium">رسائل تسويقية</h4>
+                    <div className="flex items-center">
+                      <h4 className="font-medium">رسائل تسويقية</h4>
+                      <SettingTooltip content="استلام نصائح ومعلومات عن تحسين أداء متجرك" />
+                    </div>
                     <p className="text-sm text-gray-500">استلام تحديثات ونصائح لتطوير متجرك</p>
                   </div>
                   <Switch
@@ -691,10 +886,17 @@ const Settings: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              <QuickTip>
+                الحفاظ على أمان حسابك أمر ضروري لحماية متجرك. قم بتغيير كلمة المرور بانتظام واستخدم كلمات مرور قوية.
+              </QuickTip>
+              
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="current-password">كلمة المرور الحالية</Label>
+                    <div className="flex items-center">
+                      <Label htmlFor="current-password">كلمة المرور الحالية</Label>
+                      <SettingTooltip content="كلمة المرور الحالية لحسابك" />
+                    </div>
                     <Input
                       id="current-password"
                       type="password"
@@ -703,7 +905,10 @@ const Settings: React.FC = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="new-password">كلمة المرور الجديدة</Label>
+                    <div className="flex items-center">
+                      <Label htmlFor="new-password">كلمة المرور الجديدة</Label>
+                      <SettingTooltip content="يجب أن تحتوي على 8 أحرف على الأقل مع أرقام وأحرف خاصة" />
+                    </div>
                     <Input
                       id="new-password"
                       type="password"
@@ -712,7 +917,62 @@ const Settings: React.FC = () => {
                   </div>
                 </div>
                 
+                <div className="space-y-2">
+                  <div className="flex items-center">
+                    <Label htmlFor="confirm-password">تأكيد كلمة المرور الجديدة</Label>
+                    <SettingTooltip content="تأكيد كلمة المرور الجديدة للتحقق من صحتها" />
+                  </div>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    placeholder="••••••••"
+                  />
+                </div>
+                
+                <div className="bg-amber-50 p-4 rounded-lg border border-amber-100 mt-4">
+                  <h3 className="flex items-center text-sm font-medium text-amber-800 mb-2">
+                    <Info className="h-4 w-4 mr-1" />
+                    نصائح لكلمة مرور قوية
+                  </h3>
+                  <ul className="text-sm text-amber-700 list-disc list-inside space-y-1">
+                    <li>استخدم 8 أحرف على الأقل</li>
+                    <li>استخدم مزيجًا من الأحرف الكبيرة والصغيرة</li>
+                    <li>أضف أرقامًا وأحرفًا خاصة (@، #، $، !، إلخ)</li>
+                    <li>تجنب المعلومات الشخصية مثل تاريخ الميلاد</li>
+                  </ul>
+                </div>
+                
                 <Separator className="my-6" />
+                
+                {currentPlan === "premium" && (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">إعدادات الأمان المتقدمة</h3>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center">
+                          <h4 className="font-medium">تفعيل المصادقة الثنائية</h4>
+                          <SettingTooltip content="طبقة إضافية من الأمان تتطلب رمزًا من تطبيق المصادقة أو رسالة نصية" />
+                        </div>
+                        <p className="text-sm text-gray-500">زيادة أمان حسابك باستخدام رمز إضافي عند تسجيل الدخول</p>
+                      </div>
+                      <Switch />
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center">
+                          <h4 className="font-medium">تنبيهات تسجيل الدخول الغريبة</h4>
+                          <SettingTooltip content="تلقي إشعار عند تسجيل الدخول من جهاز أو موقع غير معتاد" />
+                        </div>
+                        <p className="text-sm text-gray-500">تلقي إشعار عند تسجيل الدخول من موقع أو جهاز جديد</p>
+                      </div>
+                      <Switch />
+                    </div>
+                  </div>
+                )}
                 
                 <div className="flex justify-end">
                   <Button onClick={() => toast.success("تم تغيير كلمة المرور بنجاح")}>
