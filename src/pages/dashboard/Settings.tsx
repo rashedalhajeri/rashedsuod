@@ -26,12 +26,6 @@ const Settings: React.FC = () => {
   const [phoneNumber, setPhoneNumber] = useState(storeData?.phone_number || "");
   
   const [cashOnDelivery, setCashOnDelivery] = useState(true);
-  const [creditCard, setCreditCard] = useState(false);
-  const [bankTransfer, setBankTransfer] = useState(false);
-  const [knet, setKnet] = useState(false);
-  const [mada, setMada] = useState(false);
-  const [benefitPay, setBenefitPay] = useState(false);
-  
   const [myFatoorah, setMyFatoorah] = useState(false);
   const [tabby, setTabby] = useState(false);
   const [paypal, setPaypal] = useState(false);
@@ -327,109 +321,9 @@ const Settings: React.FC = () => {
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="credit-card" className="text-base">بطاقات الائتمان</Label>
-                    <div className="flex items-center gap-2 mt-1">
-                      <img src="/payment-icons/visa-master.png" alt="Visa/Mastercard" className="h-8" />
-                    </div>
-                    <p className="text-sm text-muted-foreground">السماح للعملاء بالدفع ببطاقات الائتمان (Visa/Mastercard)</p>
-                  </div>
-                  <Switch 
-                    id="credit-card" 
-                    checked={creditCard}
-                    onCheckedChange={setCreditCard}
-                  />
-                </div>
-                
-                <Separator />
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="bank-transfer" className="text-base">التحويل البنكي</Label>
-                    <p className="text-sm text-muted-foreground">السماح للعملاء بالدفع عن طريق التحويل البنكي</p>
-                  </div>
-                  <Switch 
-                    id="bank-transfer" 
-                    checked={bankTransfer}
-                    onCheckedChange={setBankTransfer}
-                  />
-                </div>
-                
-                <Separator />
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="knet" className="text-base">كي نت (KNET)</Label>
-                    <div className="flex items-center gap-2 mt-1">
-                      <img src="/payment-icons/knet.png" alt="KNET" className="h-8" />
-                    </div>
-                    <p className="text-sm text-muted-foreground">السماح للعملاء بالدفع عبر بوابة كي نت (الكويت)</p>
-                  </div>
-                  <Switch 
-                    id="knet" 
-                    checked={knet}
-                    onCheckedChange={setKnet}
-                    disabled={currentPlan === "basic"}
-                  />
-                  {currentPlan === "basic" && (
-                    <Badge variant="outline" className="mr-2 text-xs">
-                      الباقة الاحترافية
-                    </Badge>
-                  )}
-                </div>
-                
-                <Separator />
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="mada" className="text-base">مدى (Mada)</Label>
-                    <div className="flex items-center gap-2 mt-1">
-                      <img src="/payment-icons/mada.png" alt="Mada" className="h-8" />
-                    </div>
-                    <p className="text-sm text-muted-foreground">السماح للعملاء بالدفع عبر بطاقات مدى (السعودية)</p>
-                  </div>
-                  <Switch 
-                    id="mada" 
-                    checked={mada}
-                    onCheckedChange={setMada}
-                    disabled={currentPlan === "basic"}
-                  />
-                  {currentPlan === "basic" && (
-                    <Badge variant="outline" className="mr-2 text-xs">
-                      الباقة الاحترافية
-                    </Badge>
-                  )}
-                </div>
-                
-                <Separator />
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="benefit-pay" className="text-base">بنفت بي (BenefitPay)</Label>
-                    <div className="flex items-center gap-2 mt-1">
-                      <img src="/payment-icons/benefit.png" alt="BenefitPay" className="h-8" />
-                    </div>
-                    <p className="text-sm text-muted-foreground">السماح للعملاء بالدفع عبر خدمة بنفت بي (البحرين)</p>
-                  </div>
-                  <Switch 
-                    id="benefit-pay" 
-                    checked={benefitPay}
-                    onCheckedChange={setBenefitPay}
-                    disabled={currentPlan === "basic"}
-                  />
-                  {currentPlan === "basic" && (
-                    <Badge variant="outline" className="mr-2 text-xs">
-                      الباقة الاحترافية
-                    </Badge>
-                  )}
-                </div>
-                
-                <Separator />
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
                     <Label htmlFor="my-fatoorah" className="text-base">ماي فاتورة (MyFatoorah)</Label>
                     <div className="flex items-center gap-2 mt-1">
-                      <div className="h-8 px-2 py-1 bg-blue-50 text-blue-600 rounded font-medium">MyFatoorah</div>
+                      <div className="h-8 px-3 py-1 bg-blue-50 text-blue-600 rounded-md font-medium">MyFatoorah</div>
                     </div>
                     <p className="text-sm text-muted-foreground">بوابة دفع شاملة تدعم العديد من وسائل الدفع في الخليج</p>
                   </div>
@@ -452,7 +346,7 @@ const Settings: React.FC = () => {
                   <div className="space-y-0.5">
                     <Label htmlFor="tabby" className="text-base">تابي (Tabby)</Label>
                     <div className="flex items-center gap-2 mt-1">
-                      <div className="h-8 px-2 py-1 bg-purple-50 text-purple-600 rounded font-medium">Tabby</div>
+                      <div className="h-8 px-3 py-1 bg-purple-50 text-purple-600 rounded-md font-medium">Tabby</div>
                     </div>
                     <p className="text-sm text-muted-foreground">الدفع بالتقسيط بدون فوائد - اشتري الآن وادفع لاحقاً</p>
                   </div>
@@ -475,7 +369,7 @@ const Settings: React.FC = () => {
                   <div className="space-y-0.5">
                     <Label htmlFor="paypal" className="text-base">باي بال (PayPal)</Label>
                     <div className="flex items-center gap-2 mt-1">
-                      <div className="h-8 px-2 py-1 bg-blue-100 text-blue-700 rounded font-medium">PayPal</div>
+                      <div className="h-8 px-3 py-1 bg-blue-100 text-blue-700 rounded-md font-medium">PayPal</div>
                     </div>
                     <p className="text-sm text-muted-foreground">منصة دفع عالمية للعملاء الدوليين</p>
                   </div>
@@ -497,7 +391,7 @@ const Settings: React.FC = () => {
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-lg border border-blue-100 mt-6">
                   <h3 className="text-base font-semibold text-blue-800 mb-2">ترقية للوصول لجميع بوابات الدفع</h3>
                   <p className="text-sm text-blue-700 mb-4">
-                    قم بترقية متجرك للباقة الاحترافية للحصول على خيارات دفع متقدمة مثل ماي فاتورة وتابي وباي بال وكي نت وغيرها
+                    قم بترقية متجرك للباقة الاحترافية للحصول على خيارات دفع متقدمة مثل ماي فاتورة وتابي وباي بال
                   </p>
                   <Button variant="default" className="bg-blue-600 hover:bg-blue-700" asChild>
                     <a href="/dashboard/settings?tab=billing">ترقية الآن</a>
