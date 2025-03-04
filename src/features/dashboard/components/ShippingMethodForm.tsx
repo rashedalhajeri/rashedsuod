@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,7 +11,6 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Truck, MapPin, Clock, Info, Package, ChevronDown, ChevronUp } from "lucide-react";
-import { useState } from "react";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -43,7 +41,6 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
     zones: isPaidPlan
   });
 
-  // Toggle section expansion
   const toggleSection = (section: 'standard' | 'talefree' | 'zones') => {
     setExpandedSections({
       ...expandedSections,
@@ -51,7 +48,6 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
     });
   };
 
-  // Add new delivery zone
   const addDeliveryZone = () => {
     const newZone: DeliveryZone = {
       id: Date.now().toString(),
@@ -62,7 +58,6 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
     setDeliveryZones([...deliveryZones, newZone]);
   };
 
-  // Update delivery zone
   const updateDeliveryZone = (id: string, field: keyof DeliveryZone, value: any) => {
     setDeliveryZones(zones => 
       zones.map(zone => 
@@ -71,14 +66,12 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
     );
   };
 
-  // Remove delivery zone
   const removeDeliveryZone = (id: string) => {
     setDeliveryZones(zones => zones.filter(zone => zone.id !== id));
   };
-  
+
   return (
     <div className="space-y-6 py-2 animate-fade-in">
-      {/* توصيل قياسي */}
       <Card className="border-primary/10 bg-white overflow-hidden">
         <div className="bg-gradient-to-r from-primary-50 to-white px-6 py-4 flex items-center justify-between cursor-pointer"
              onClick={() => toggleSection('standard')}>
@@ -198,7 +191,6 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
         )}
       </Card>
       
-      {/* نظام توصيل تاليفري */}
       <Card className="border-primary/10 bg-white overflow-hidden">
         <div className="bg-gradient-to-r from-amber-50 to-white px-6 py-4 flex items-center justify-between cursor-pointer"
              onClick={() => toggleSection('talefree')}>
@@ -305,7 +297,6 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
         )}
       </Card>
       
-      {/* مناطق التوصيل - متاح فقط للباقات المدفوعة */}
       {isPaidPlan && (
         <Card className="border-primary/10 bg-white overflow-hidden">
           <div className="bg-gradient-to-r from-green-50 to-white px-6 py-4 flex items-center justify-between cursor-pointer"
