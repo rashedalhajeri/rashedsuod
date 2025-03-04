@@ -1,6 +1,10 @@
 
 import React, { useState, useEffect } from "react";
-import { Menu, X, ChevronDown, LogIn, UserPlus, CheckCircle2, XCircle, LogOut, User, LayoutDashboard, Bell, Search } from "lucide-react";
+import { 
+  Menu, X, ChevronDown, LogIn, UserPlus, 
+  CheckCircle2, XCircle, LogOut, User, 
+  LayoutDashboard, Bell, Search 
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +30,7 @@ const Header: React.FC<HeaderProps> = ({
   const [hasStore, setHasStore] = useState<boolean | null>(null);
   const [showSearch, setShowSearch] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,10 +42,12 @@ const Header: React.FC<HeaderProps> = ({
     const checkUserStore = async () => {
       if (session) {
         try {
-          const {
-            data,
-            error
-          } = await supabase.from('stores').select('id').eq('user_id', session.user.id).maybeSingle();
+          const { data, error } = await supabase
+            .from('stores')
+            .select('id')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+            
           if (error) throw error;
           setHasStore(!!data);
         } catch (error) {
@@ -51,6 +58,7 @@ const Header: React.FC<HeaderProps> = ({
         setHasStore(null);
       }
     };
+    
     checkUserStore();
     return () => window.removeEventListener("scroll", handleScroll);
   }, [session]);
@@ -64,20 +72,24 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   const handleLogout = async () => {
-    if (onLogout) {
-      await onLogout();
-    } else {
-      try {
+    try {
+      setIsLoading(true);
+      
+      if (onLogout) {
+        await onLogout();
+      } else {
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
         toast.success(language === "ar" ? "تم تسجيل الخروج بنجاح" : "Logged out successfully");
         navigate("/");
-      } catch (error: any) {
-        console.error("Error logging out:", error);
-        toast.error(language === "ar" ? "حدث خطأ أثناء تسجيل الخروج" : "An error occurred during logout");
       }
+    } catch (error: any) {
+      console.error("Error logging out:", error);
+      toast.error(language === "ar" ? "حدث خطأ أثناء تسجيل الخروج" : "An error occurred during logout");
+    } finally {
+      setIsLoading(false);
+      setShowLogoutConfirm(false);
     }
-    setShowLogoutConfirm(false);
   };
 
   const handleDashboardClick = () => {

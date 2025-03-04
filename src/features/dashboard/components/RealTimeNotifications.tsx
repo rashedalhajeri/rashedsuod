@@ -2,21 +2,38 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Bell, Package, CreditCard, User } from "lucide-react";
+import { Bell } from "lucide-react";
 import OrderNotifications from "@/features/orders/components/OrderNotifications";
 import { useStoreData } from "@/hooks/use-store-data";
 
-const RealTimeNotifications: React.FC = () => {
-  const { data: storeData } = useStoreData();
+interface RealTimeNotificationsProps {
+  storeId?: string;
+}
+
+const RealTimeNotifications: React.FC<RealTimeNotificationsProps> = ({ storeId }) => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [isRealtimeConnected, setIsRealtimeConnected] = useState(false);
   
-  // إذا كان لدينا معرف المتجر، نقوم بتفعيل الإشعارات
   useEffect(() => {
-    if (storeData?.id && notificationsEnabled) {
-      // سنستخدم مكون OrderNotifications للاستماع إلى الطلبات الجديدة
-      console.log("تم تفعيل الإشعارات لمتجر:", storeData.id);
+    // تفعيل الإشعارات فقط عندما يكون لدينا معرف متجر
+    if (storeId && notificationsEnabled) {
+      try {
+        console.log("جاري تفعيل الإشعارات لمتجر:", storeId);
+        setIsRealtimeConnected(true);
+      } catch (error) {
+        console.error("حدث خطأ أثناء تفعيل الإشعارات:", error);
+        toast.error("فشل في تفعيل الإشعارات. يرجى إعادة تحميل الصفحة");
+        setIsRealtimeConnected(false);
+      }
     }
-  }, [storeData?.id, notificationsEnabled]);
+    
+    return () => {
+      // تنظيف عند إزالة المكون
+      if (isRealtimeConnected) {
+        console.log("تم إلغاء الاشتراك في الإشعارات");
+      }
+    };
+  }, [storeId, notificationsEnabled]);
   
   // دالة لتفعيل أو إلغاء تفعيل الإشعارات
   const toggleNotifications = () => {
@@ -25,11 +42,15 @@ const RealTimeNotifications: React.FC = () => {
     toast.success(newState ? "تم تفعيل الإشعارات" : "تم إيقاف الإشعارات");
   };
   
+  // عدم عرض أي شيء إذا لم يكن هناك معرف متجر
+  if (!storeId) {
+    return null;
+  }
+  
   return (
     <>
-      {/* يتم عرض إشعارات الطلبات فقط عندما تكون الإشعارات مفعلة ولدينا معرف متجر */}
-      {notificationsEnabled && storeData?.id && (
-        <OrderNotifications storeId={storeData.id} />
+      {notificationsEnabled && storeId && (
+        <OrderNotifications storeId={storeId} />
       )}
     </>
   );
