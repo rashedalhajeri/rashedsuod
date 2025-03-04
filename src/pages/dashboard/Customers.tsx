@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,8 +32,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import useStoreData, { getCurrencyFormatter } from "@/hooks/use-store-data";
+import { format } from "date-fns";
+import { ar } from "date-fns/locale";
 
-// Define customer type
 interface Customer {
   id: string;
   name: string;
@@ -49,7 +49,6 @@ interface Customer {
   avatar?: string | null;
 }
 
-// Mock data for customers
 const mockCustomers: Customer[] = [
   {
     id: "cus-001",
@@ -118,7 +117,6 @@ const mockCustomers: Customer[] = [
   },
 ];
 
-// Customer List Item Component
 const CustomerListItem: React.FC<{ 
   customer: Customer; 
   onViewDetails: (customer: Customer) => void;
@@ -163,13 +161,20 @@ const CustomerListItem: React.FC<{
   );
 };
 
-// Customer Details Component
 const CustomerDetails: React.FC<{ 
   customer: Customer;
   onClose: () => void;
   currency: string;
 }> = ({ customer, onClose, currency }) => {
   const formatCurrency = getCurrencyFormatter(currency);
+  
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), 'dd MMMM yyyy', { locale: ar });
+    } catch (error) {
+      return dateString;
+    }
+  };
   
   return (
     <div className="space-y-6">
@@ -182,7 +187,7 @@ const CustomerDetails: React.FC<{
         </Avatar>
         <div className="text-center">
           <h2 className="text-xl font-bold">{customer.name}</h2>
-          <p className="text-gray-500">عميل منذ {new Date(customer.createdAt).toLocaleDateString('ar-SA')}</p>
+          <p className="text-gray-500">عميل منذ {formatDate(customer.createdAt)}</p>
         </div>
       </div>
       
@@ -285,7 +290,6 @@ const Customers: React.FC = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const { toast } = useToast();
   
-  // Filter customers based on search term and status
   const filteredCustomers = mockCustomers.filter(customer => {
     const matchesSearch = 
       customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -410,7 +414,6 @@ const Customers: React.FC = () => {
         </Card>
       </div>
       
-      {/* Customer Details Dialog */}
       <Dialog open={!!selectedCustomer} onOpenChange={(open) => !open && setSelectedCustomer(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
