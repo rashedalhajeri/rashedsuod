@@ -10,7 +10,7 @@ interface PromotionAlertProps {
 
 const PromotionAlert: React.FC<PromotionAlertProps> = ({ type }) => {
   // Only show promotion for free plan users
-  if (type === "basic" || type === "premium") return null;
+  if (type !== "free") return null;
   
   return (
     <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 flex items-start gap-3">
@@ -24,7 +24,7 @@ const PromotionAlert: React.FC<PromotionAlertProps> = ({ type }) => {
         </p>
         <div className="mt-2">
           <Button asChild size="sm" variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-100">
-            <Link to="/dashboard/settings">ترقية الباقة</Link>
+            <Link to="/dashboard/settings?tab=billing">ترقية الباقة</Link>
           </Button>
         </div>
       </div>

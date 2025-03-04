@@ -21,6 +21,7 @@ const Settings: React.FC = () => {
   const tabsListRef = useRef<HTMLDivElement>(null);
   
   const currentPlan = storeData?.subscription_plan || "free";
+  const isPaid = currentPlan === "basic" || currentPlan === "premium";
 
   useEffect(() => {
     if (storeData) {
@@ -362,16 +363,16 @@ const Settings: React.FC = () => {
                     قم بتفعيل وإعداد طرق الدفع التي تريد توفيرها لعملائك
                   </CardDescription>
                 </div>
-                {currentPlan !== "premium" && (
+                {!isPaid && (
                   <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
-                    بعض الميزات متاحة فقط في الباقة الاحترافية
+                    بوابات الدفع متاحة فقط في الباقات المدفوعة
                   </Badge>
                 )}
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
               <QuickTip>
-                كلما زادت طرق الدفع المتاحة في متجرك، زادت فرص إتمام عمليات الشراء. يمكنك البدء بالدفع عند الاستلام ثم إضافة بوابات الدفع الإلكتروني لاحقاً.
+                كلما زادت طرق الدفع المتاحة في متجرك، زادت فرص إتمام عمليات الشراء. الباقة المجانية توفر الدفع عند الاستلام فقط، بينما توفر الباقات المدفوعة جميع بوابات الدفع الإلكتروني.
               </QuickTip>
               
               <div className="grid gap-6">
@@ -414,9 +415,9 @@ const Settings: React.FC = () => {
                     <p className="text-sm text-muted-foreground mr-7">بوابة دفع شاملة تدعم العديد من وسائل الدفع في الخليج</p>
                   </div>
                   <div className="flex flex-col items-end gap-2 sm:min-w-28">
-                    {currentPlan !== "premium" && (
+                    {!isPaid && (
                       <Badge variant="outline" className="text-xs bg-gray-50 text-gray-500 border-gray-200">
-                        الباقة الاحترافية
+                        الباقات المدفوعة فقط
                       </Badge>
                     )}
                     <div className="flex items-center gap-2">
@@ -424,7 +425,7 @@ const Settings: React.FC = () => {
                         id="my-fatoorah" 
                         checked={myFatoorah}
                         onCheckedChange={setMyFatoorah}
-                        disabled={currentPlan !== "premium"}
+                        disabled={!isPaid}
                         className="data-[state=checked]:bg-blue-500"
                       />
                       <Label htmlFor="my-fatoorah" className="mr-2 text-sm font-medium text-gray-600">
@@ -448,9 +449,9 @@ const Settings: React.FC = () => {
                     <p className="text-sm text-muted-foreground mr-7">الدفع بالتقسيط بدون فوائد - اشتري الآن وادفع لاحقاً</p>
                   </div>
                   <div className="flex flex-col items-end gap-2 sm:min-w-28">
-                    {currentPlan !== "premium" && (
+                    {!isPaid && (
                       <Badge variant="outline" className="text-xs bg-gray-50 text-gray-500 border-gray-200">
-                        الباقة الاحترافية
+                        الباقات المدفوعة فقط
                       </Badge>
                     )}
                     <div className="flex items-center gap-2">
@@ -458,7 +459,7 @@ const Settings: React.FC = () => {
                         id="tabby" 
                         checked={tabby}
                         onCheckedChange={setTabby}
-                        disabled={currentPlan !== "premium"}
+                        disabled={!isPaid}
                         className="data-[state=checked]:bg-purple-500"
                       />
                       <Label htmlFor="tabby" className="mr-2 text-sm font-medium text-gray-600">
@@ -481,9 +482,9 @@ const Settings: React.FC = () => {
                     <p className="text-sm text-muted-foreground mr-7">منصة دفع عالمية للعملاء الدوليين</p>
                   </div>
                   <div className="flex flex-col items-end gap-2 sm:min-w-28">
-                    {currentPlan !== "premium" && (
+                    {!isPaid && (
                       <Badge variant="outline" className="text-xs bg-gray-50 text-gray-500 border-gray-200">
-                        الباقة الاحترافية
+                        الباقات المدفوعة فقط
                       </Badge>
                     )}
                     <div className="flex items-center gap-2">
@@ -491,7 +492,7 @@ const Settings: React.FC = () => {
                         id="paypal" 
                         checked={paypal}
                         onCheckedChange={setPaypal}
-                        disabled={currentPlan !== "premium"}
+                        disabled={!isPaid}
                         className="data-[state=checked]:bg-blue-700"
                       />
                       <Label htmlFor="paypal" className="mr-2 text-sm font-medium text-gray-600">
@@ -502,14 +503,14 @@ const Settings: React.FC = () => {
                 </div>
               </div>
               
-              {currentPlan !== "premium" && (
+              {!isPaid && (
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-lg border border-blue-100 mt-6">
                   <h3 className="text-base font-semibold text-blue-800 mb-2 flex items-center gap-2">
                     <Shield className="h-5 w-5 text-blue-500" />
                     ترقية للوصول لجميع بوابات الدفع
                   </h3>
                   <p className="text-sm text-blue-700 mb-4">
-                    قم بترقية متجرك للباقة الاحترافية للحصول على خيارات دفع متقدمة مثل ماي فاتورة وتابي وباي بال
+                    قم بترقية متجرك للباقة الأساسية أو الاحترافية للحصول على خيارات دفع متقدمة مثل ماي فاتورة وتابي وباي بال
                   </p>
                   <Button variant="default" className="bg-blue-600 hover:bg-blue-700" asChild>
                     <a href="/dashboard/settings?tab=billing">ترقية الآن</a>
