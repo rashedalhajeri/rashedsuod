@@ -115,7 +115,7 @@ const LogoUploader: React.FC<LogoUploaderProps> = ({
           <img 
             src={logoUrl} 
             alt="شعار المتجر" 
-            className="w-full h-16 object-contain bg-white p-1"
+            className="w-12 h-12 object-contain bg-white p-1 mx-auto"
           />
           <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-40 transition-all flex items-center justify-center opacity-0 hover:opacity-100">
             <div className="flex gap-1">
@@ -143,7 +143,7 @@ const LogoUploader: React.FC<LogoUploaderProps> = ({
       ) : (
         <div
           className={cn(
-            "border-2 border-dashed rounded-md p-2 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50 transition-colors",
+            "border-2 border-dashed rounded-md p-2 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50 transition-colors w-full aspect-square max-w-[120px] mx-auto",
             isDragging ? "border-primary bg-primary-50" : "border-gray-300",
             isUploading && "opacity-70 pointer-events-none"
           )}
