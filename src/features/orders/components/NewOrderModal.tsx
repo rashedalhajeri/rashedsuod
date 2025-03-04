@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -10,12 +11,25 @@ import { useToast } from "@/hooks/use-toast";
 import { createOrder } from "@/services/order-service";
 import SaveButton from "@/components/ui/save-button";
 import { Order, OrderStatus } from "@/types/orders";
+import { useQuery } from "@tanstack/react-query";
+import { getProductsWithPagination } from "@/integrations/supabase/client";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Minus, Plus, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface NewOrderModalProps {
   storeId: string;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+}
+
+interface OrderItem {
+  product_id: string;
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
 }
 
 const NewOrderModal: React.FC<NewOrderModalProps> = ({
@@ -26,6 +40,8 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
 }) => {
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedItems, setSelectedItems] = useState<OrderItem[]>([]);
   
   // إنشاء رقم طلب فريد بتنسيق ORD-{STORE_PREFIX}-{RANDOM_NUMBER}
   const generateOrderNumber = () => {
@@ -47,15 +63,34 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     notes: ""
   });
 
-  // إعادة إنشاء رقم الطلب عند فتح النافذة المنبثقة
+  // جلب المنتجات
+  const { data: productsData } = useQuery({
+    queryKey: ["products", storeId, searchQuery],
+    queryFn: () => getProductsWithPagination(storeId, 0, 100, searchQuery),
+    enabled: !!storeId && isOpen
+  });
+
+  // إعادة إنشاء رقم الطلب وإعادة تعيين العناصر المحددة عند فتح النافذة المنبثقة
   useEffect(() => {
     if (isOpen) {
       setOrderData(prev => ({
         ...prev,
-        order_number: generateOrderNumber()
+        order_number: generateOrderNumber(),
+        total: 0
       }));
+      setSelectedItems([]);
+      setSearchQuery("");
     }
   }, [isOpen, storeId]);
+
+  // حساب إجمالي الطلب كلما تغيرت العناصر المحددة
+  useEffect(() => {
+    const newTotal = selectedItems.reduce((sum, item) => sum + item.total_price, 0);
+    setOrderData(prev => ({
+      ...prev,
+      total: newTotal
+    }));
+  }, [selectedItems]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -79,6 +114,47 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     }
   };
 
+  // إضافة منتج إلى الطلب
+  const handleAddProduct = (productId: string, productName: string, price: number) => {
+    // التحقق مما إذا كان المنتج موجودًا بالفعل
+    const existingItemIndex = selectedItems.findIndex(item => item.product_id === productId);
+    
+    if (existingItemIndex >= 0) {
+      // زيادة الكمية إذا كان المنتج موجودًا بالفعل
+      const updatedItems = [...selectedItems];
+      updatedItems[existingItemIndex].quantity += 1;
+      updatedItems[existingItemIndex].total_price = updatedItems[existingItemIndex].quantity * updatedItems[existingItemIndex].unit_price;
+      setSelectedItems(updatedItems);
+    } else {
+      // إضافة منتج جديد
+      setSelectedItems(prev => [
+        ...prev,
+        {
+          product_id: productId,
+          product_name: productName,
+          quantity: 1,
+          unit_price: price,
+          total_price: price
+        }
+      ]);
+    }
+  };
+
+  // تغيير كمية منتج
+  const handleQuantityChange = (index: number, newQuantity: number) => {
+    if (newQuantity < 1) return;
+    
+    const updatedItems = [...selectedItems];
+    updatedItems[index].quantity = newQuantity;
+    updatedItems[index].total_price = newQuantity * updatedItems[index].unit_price;
+    setSelectedItems(updatedItems);
+  };
+
+  // إزالة منتج من الطلب
+  const handleRemoveItem = (index: number) => {
+    setSelectedItems(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -99,6 +175,15 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
       });
       return;
     }
+
+    if (selectedItems.length === 0) {
+      toast({
+        title: "لا توجد منتجات",
+        description: "يرجى إضافة منتج واحد على الأقل للطلب",
+        variant: "destructive"
+      });
+      return;
+    }
     
     try {
       setSaving(true);
@@ -109,7 +194,15 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
         store_id: storeId
       };
       
-      const result = await createOrder(storeId, completeOrderData);
+      // إنشاء بيانات العناصر
+      const orderItems = selectedItems.map(item => ({
+        product_id: item.product_id,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        total_price: item.total_price
+      }));
+      
+      const result = await createOrder(storeId, completeOrderData, orderItems);
       
       if (result) {
         toast({
@@ -202,18 +295,129 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="total">إجمالي المبلغ</Label>
+                    <Label htmlFor="total">إجمالي المبلغ (تلقائي)</Label>
                     <Input
                       id="total"
                       name="total"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={orderData.total}
-                      onChange={handleInputChange}
-                      placeholder="إجمالي المبلغ"
+                      value={orderData.total.toFixed(2)}
+                      readOnly
+                      className="bg-muted"
                     />
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>إضافة المنتجات</CardTitle>
+                <CardDescription>
+                  اختر المنتجات التي تريد إضافتها للطلب
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="product_search">البحث عن منتج</Label>
+                  <Input
+                    id="product_search"
+                    placeholder="اكتب اسم المنتج للبحث..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                
+                {/* قائمة المنتجات المتاحة */}
+                <div className="border rounded-md p-2 max-h-40 overflow-y-auto">
+                  <div className="grid grid-cols-1 gap-2">
+                    {productsData?.data && productsData.data.length > 0 ? (
+                      productsData.data.map((product) => (
+                        <div 
+                          key={product.id}
+                          className="flex justify-between items-center p-2 hover:bg-accent rounded-md cursor-pointer"
+                          onClick={() => handleAddProduct(product.id, product.name, product.price)}
+                        >
+                          <div>
+                            <span className="font-medium">{product.name}</span>
+                            <span className="text-sm text-muted-foreground block">{product.price.toFixed(2)}</span>
+                          </div>
+                          <Badge>إضافة</Badge>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-2 text-muted-foreground">
+                        {searchQuery ? "لا توجد منتجات مطابقة" : "لا توجد منتجات متاحة"}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* عناصر الطلب المحددة */}
+                <div className="mt-4">
+                  <Label>المنتجات المحددة</Label>
+                  {selectedItems.length > 0 ? (
+                    <Table className="mt-2">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>المنتج</TableHead>
+                          <TableHead>السعر</TableHead>
+                          <TableHead>الكمية</TableHead>
+                          <TableHead>المجموع</TableHead>
+                          <TableHead></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {selectedItems.map((item, index) => (
+                          <TableRow key={index}>
+                            <TableCell>{item.product_name}</TableCell>
+                            <TableCell>{item.unit_price.toFixed(2)}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => handleQuantityChange(index, item.quantity - 1)}
+                                >
+                                  <Minus className="h-3 w-3" />
+                                </Button>
+                                <span>{item.quantity}</span>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => handleQuantityChange(index, item.quantity + 1)}
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                            <TableCell>{item.total_price.toFixed(2)}</TableCell>
+                            <TableCell>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleRemoveItem(index)}
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        <TableRow>
+                          <TableCell colSpan={3} className="text-right font-bold">المجموع الكلي:</TableCell>
+                          <TableCell className="font-bold">{orderData.total.toFixed(2)}</TableCell>
+                          <TableCell></TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <div className="text-center py-4 border rounded-md mt-2 text-muted-foreground">
+                      لم تقم بإضافة أي منتجات بعد
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

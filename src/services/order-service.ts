@@ -136,7 +136,11 @@ export const updateOrderStatus = async (orderId: string, status: OrderStatus) =>
 };
 
 // إنشاء طلب جديد
-export const createOrder = async (storeId: string, orderData: Omit<Order, 'id' | 'created_at' | 'updated_at'>) => {
+export const createOrder = async (
+  storeId: string, 
+  orderData: Omit<Order, 'id' | 'created_at' | 'updated_at'>,
+  orderItems?: { product_id: string; quantity: number; unit_price: number; total_price: number }[]
+) => {
   try {
     const { data, error } = await supabase
       .from('orders')
@@ -149,6 +153,25 @@ export const createOrder = async (storeId: string, orderData: Omit<Order, 'id' |
       .single();
 
     if (error) throw error;
+
+    // إذا كانت هناك عناصر للطلب، قم بإضافتها
+    if (orderItems && orderItems.length > 0 && data) {
+      const orderItemsWithId = orderItems.map(item => ({
+        ...item,
+        order_id: data.id
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItemsWithId);
+
+      if (itemsError) {
+        console.error("Error adding order items:", itemsError);
+        // في حالة حدوث خطأ، قم بحذف الطلب الذي تم إنشاؤه
+        await supabase.from('orders').delete().eq('id', data.id);
+        throw itemsError;
+      }
+    }
 
     toast.success("تم إنشاء الطلب بنجاح");
     return data as Order;
