@@ -166,7 +166,7 @@ const CustomerDetails: React.FC<{
   onClose: () => void;
   currency: string;
 }> = ({ customer, onClose, currency }) => {
-  const formatCurrency = getCurrencyFormatter(currency);
+  const formatCurrency = getCurrencyFormatter('KWD');
   
   const formatDate = (dateString: string) => {
     try {
@@ -250,7 +250,7 @@ const CustomerDetails: React.FC<{
             </div>
             <div className="bg-primary-50 p-4 rounded-lg text-center">
               <p className="text-sm text-gray-600">آخر طلب</p>
-              <p className="text-xl font-bold text-primary-700">{new Date(customer.lastOrderDate).toLocaleDateString('ar-SA')}</p>
+              <p className="text-xl font-bold text-primary-700">{formatDate(customer.lastOrderDate)}</p>
             </div>
           </div>
         </TabsContent>
