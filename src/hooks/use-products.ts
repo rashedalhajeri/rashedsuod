@@ -1,21 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Json } from "@/integrations/supabase/types";
-
-// Define simpler Product interface to avoid recursive typing issues
-export interface Product {
-  id: string;
-  name: string;
-  price: number;
-  description: string | null;
-  image_url: string | null;
-  stock_quantity: number;
-  additional_images: string[] | null;
-  store_id: string;
-  created_at: string;
-  updated_at: string;
-}
+import { Product } from "@/features/store/product-detail/useProductDetail";
 
 interface UseProductsOptions {
   storeId: string;
@@ -93,9 +79,9 @@ export const useProducts = ({
         
         if (item.additional_images) {
           if (Array.isArray(item.additional_images)) {
-            processedImages = item.additional_images.map(img => 
-              typeof img === 'string' ? img : JSON.stringify(img)
-            );
+            processedImages = item.additional_images
+              .filter(img => img !== null)
+              .map(img => typeof img === 'string' ? img : String(img));
           } else if (typeof item.additional_images === 'string') {
             processedImages = [item.additional_images];
           }
@@ -105,13 +91,10 @@ export const useProducts = ({
           id: item.id,
           name: item.name,
           price: item.price,
-          description: item.description,
+          description: item.description || null,
           image_url: item.image_url,
           stock_quantity: item.stock_quantity || 0,
-          additional_images: processedImages,
-          store_id: item.store_id,
-          created_at: item.created_at,
-          updated_at: item.updated_at
+          additional_images: processedImages
         };
       }) : [];
 
