@@ -17,12 +17,19 @@ const StoreHome: React.FC = () => {
   useEffect(() => {
     const fetchStoreData = async () => {
       if (!storeId) {
-        setError("معرف المتجر غير متوفر");
+        setError("معرّف المتجر غير متوفر");
         setLoading(false);
         return;
       }
       
       try {
+        // Validate storeId to ensure it's not the parameter placeholder
+        if (storeId === ":storeId") {
+          setError("معرّف المتجر غير صالح");
+          setLoading(false);
+          return;
+        }
+        
         // Fetch store data
         const { data: storeData, error: storeError } = await supabase
           .from("stores")
