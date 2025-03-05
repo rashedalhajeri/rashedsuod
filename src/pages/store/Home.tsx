@@ -1,16 +1,33 @@
 
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import StorefrontLayout from "@/layouts/StorefrontLayout";
+import { toast } from "sonner";
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  image_url: string | null;
+  description?: string | null;
+}
+
+interface Store {
+  id: string;
+  store_name: string;
+  description?: string | null;
+  logo_url?: string | null;
+}
 
 const StoreHome: React.FC = () => {
   const { storeId } = useParams<{ storeId: string }>();
-  const [store, setStore] = useState<any>(null);
-  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
+  const navigate = useNavigate();
+  const [store, setStore] = useState<Store | null>(null);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,11 +45,16 @@ const StoreHome: React.FC = () => {
           .from("stores")
           .select("*")
           .eq("id", storeId)
-          .single();
+          .maybeSingle();
         
-        if (storeError) throw storeError;
+        if (storeError) {
+          console.error("Error fetching store:", storeError);
+          throw storeError;
+        }
+        
         if (!storeData) {
           setError("المتجر غير موجود");
+          setLoading(false);
           return;
         }
         
@@ -45,7 +67,10 @@ const StoreHome: React.FC = () => {
           .eq("store_id", storeId)
           .limit(4);
         
-        if (productsError) throw productsError;
+        if (productsError) {
+          console.error("Error fetching products:", productsError);
+          throw productsError;
+        }
         
         setFeaturedProducts(productsData || []);
       } catch (err) {
@@ -57,7 +82,13 @@ const StoreHome: React.FC = () => {
     };
     
     fetchStoreData();
-  }, [storeId]);
+  }, [storeId, navigate]);
+
+  const handleRetry = () => {
+    setLoading(true);
+    setError(null);
+    window.location.reload();
+  };
 
   if (loading) {
     return (
@@ -73,7 +104,19 @@ const StoreHome: React.FC = () => {
         <ErrorState 
           title="خطأ في تحميل المتجر"
           message={error}
-          onRetry={() => window.location.reload()}
+          onRetry={handleRetry}
+        />
+      </StorefrontLayout>
+    );
+  }
+
+  if (!store) {
+    return (
+      <StorefrontLayout>
+        <ErrorState 
+          title="المتجر غير موجود"
+          message="لم نتمكن من العثور على المتجر المطلوب"
+          onRetry={handleRetry}
         />
       </StorefrontLayout>
     );
@@ -85,7 +128,7 @@ const StoreHome: React.FC = () => {
         <div className="text-center mb-12">
           <h1 className="text-3xl font-bold mb-4">{store.store_name}</h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            مرحباً بك في متجر {store.store_name}. استعرض مجموعتنا من المنتجات المميزة.
+            {store.description || `مرحباً بك في متجر ${store.store_name}. استعرض مجموعتنا من المنتجات المميزة.`}
           </p>
         </div>
         

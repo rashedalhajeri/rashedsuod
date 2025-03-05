@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,6 +7,7 @@ import { useEffect, useState, createContext } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { secureRetrieve, secureStore, secureRemove } from "./lib/encryption";
 import { Session } from "@supabase/supabase-js";
+import { CartProvider } from "@/contexts/CartContext";
 
 // Import pages
 import Index from "./pages/Index";
@@ -113,7 +113,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// Fixed ProtectedRoute to not use Navigate directly as a component
 const ProtectedRoute = ({ children, redirectIfStore = false }: { children: React.ReactNode, redirectIfStore?: boolean }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [hasStore, setHasStore] = useState<boolean | null>(null);
@@ -296,10 +295,41 @@ const App = () => (
             />
             
             {/* Store Routes - Using storeId in URL */}
-            <Route path="/store/:storeId" element={<StoreHome />} />
-            <Route path="/store/:storeId/products" element={<StoreProducts />} />
-            <Route path="/store/:storeId/products/:productId" element={<StoreProductDetail />} />
-            <Route path="/store/:storeId/cart" element={<Cart />} />
+            <Route 
+              path="/store/:storeId" 
+              element={
+                <CartProvider>
+                  <StoreHome />
+                </CartProvider>
+              } 
+            />
+            
+            <Route 
+              path="/store/:storeId/products" 
+              element={
+                <CartProvider>
+                  <StoreProducts />
+                </CartProvider>
+              } 
+            />
+            
+            <Route 
+              path="/store/:storeId/products/:productId" 
+              element={
+                <CartProvider>
+                  <StoreProductDetail />
+                </CartProvider>
+              } 
+            />
+            
+            <Route 
+              path="/store/:storeId/cart" 
+              element={
+                <CartProvider>
+                  <Cart />
+                </CartProvider>
+              } 
+            />
             
             {/* Legacy route - redirect to new structure */}
             <Route 

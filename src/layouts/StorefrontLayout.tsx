@@ -1,53 +1,22 @@
 
-import React, { ReactNode, useEffect, useState } from "react";
+import React, { ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ShoppingCart, Search, User, Menu, X, Store as StoreIcon } from "lucide-react";
+import { ShoppingCart, Search, Menu, X, Store as StoreIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
+import { LoadingState } from "@/components/ui/loading-state";
+import { ErrorState } from "@/components/ui/error-state";
+import { StoreProvider, useStore } from "@/contexts/StoreContext";
 
 interface StorefrontLayoutProps {
   children: ReactNode;
 }
 
-const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
+const StorefrontContent: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { storeId } = useParams<{ storeId: string }>();
+  const { store, isLoading, error } = useStore();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-  const [storeData, setStoreData] = useState<{
-    store_name: string;
-    logo_url: string | null;
-  } | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Fetch store data on mount
-  useEffect(() => {
-    const fetchStoreData = async () => {
-      if (!storeId) return;
-
-      try {
-        const { data, error } = await supabase
-          .from("stores")
-          .select("store_name, logo_url")
-          .eq("id", storeId)
-          .single();
-
-        if (error) throw error;
-        setStoreData(data);
-      } catch (error) {
-        console.error("Error fetching store data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStoreData();
-  }, [storeId]);
-
-  // Toggle menu open/close
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
 
   // Menu items
   const menuItems = [
@@ -61,6 +30,50 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
     }
   ];
 
+  const handleRetry = () => {
+    window.location.reload();
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-gray-50 rtl">
+        <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
+          <div className="container mx-auto px-4 flex justify-center items-center h-16">
+            <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 mr-2">
+              <StoreIcon className="h-4 w-4 text-primary" />
+            </div>
+            <span className="font-bold text-xl text-gray-900">جاري التحميل...</span>
+          </div>
+        </header>
+        <main className="flex-1 flex items-center justify-center">
+          <LoadingState message="جاري تحميل بيانات المتجر..." />
+        </main>
+      </div>
+    );
+  }
+
+  if (error || !store) {
+    return (
+      <div className="flex flex-col min-h-screen bg-gray-50 rtl">
+        <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
+          <div className="container mx-auto px-4 flex justify-center items-center h-16">
+            <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 mr-2">
+              <StoreIcon className="h-4 w-4 text-primary" />
+            </div>
+            <span className="font-bold text-xl text-gray-900">متجر</span>
+          </div>
+        </header>
+        <main className="flex-1 flex items-center justify-center">
+          <ErrorState 
+            title={error ? "خطأ في تحميل المتجر" : "المتجر غير موجود"} 
+            message={error || "لم نتمكن من العثور على المتجر المطلوب"}
+            onRetry={handleRetry}
+          />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 rtl">
       {/* Header */}
@@ -68,11 +81,11 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
         <div className="container mx-auto px-4 flex justify-between items-center h-16">
           {/* Logo and Store Name */}
           <Link to={`/store/${storeId}`} className="flex items-center gap-2">
-            {storeData?.logo_url ? (
+            {store.logo_url ? (
               <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border border-gray-100">
                 <img 
-                  src={storeData.logo_url} 
-                  alt={storeData.store_name || "شعار المتجر"} 
+                  src={store.logo_url} 
+                  alt={store.store_name || "شعار المتجر"} 
                   className="w-full h-full object-contain"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = "/placeholder.svg";
@@ -85,7 +98,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
               </div>
             )}
             <span className="font-bold text-xl text-gray-900">
-              {loading ? "جاري التحميل..." : storeData?.store_name || "متجر"}
+              {store.store_name || "متجر"}
             </span>
           </Link>
 
@@ -121,11 +134,11 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
                 <SheetContent side="right" className="w-[250px] sm:w-[300px]">
                   <div className="flex flex-col h-full">
                     <div className="flex flex-col items-center justify-center py-6 mb-4 border-b">
-                      {storeData?.logo_url ? (
+                      {store.logo_url ? (
                         <div className="w-16 h-16 rounded-full overflow-hidden border border-gray-100 mb-3">
                           <img 
-                            src={storeData.logo_url} 
-                            alt={storeData.store_name || "شعار المتجر"} 
+                            src={store.logo_url} 
+                            alt={store.store_name || "شعار المتجر"} 
                             className="w-full h-full object-contain"
                             onError={(e) => {
                               (e.target as HTMLImageElement).src = "/placeholder.svg";
@@ -138,7 +151,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
                         </div>
                       )}
                       <span className="font-bold text-lg">
-                        {loading ? "جاري التحميل..." : storeData?.store_name || "متجر"}
+                        {store.store_name || "متجر"}
                       </span>
                     </div>
                     <nav className="flex flex-col space-y-4">
@@ -169,10 +182,20 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
       {/* Footer */}
       <footer className="bg-white border-t py-6">
         <div className="container mx-auto px-4 text-center text-gray-500 text-sm">
-          &copy; {new Date().getFullYear()} - {storeData?.store_name || "المتجر"} | جميع الحقوق محفوظة
+          &copy; {new Date().getFullYear()} - {store.store_name || "المتجر"} | جميع الحقوق محفوظة
         </div>
       </footer>
     </div>
+  );
+};
+
+const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
+  return (
+    <StoreProvider>
+      <StorefrontContent>
+        {children}
+      </StorefrontContent>
+    </StoreProvider>
   );
 };
 
