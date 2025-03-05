@@ -10,7 +10,7 @@ import useStoreData from "@/hooks/use-store-data";
 import { ProductBasicInfo } from "./product-dialog/ProductBasicInfo";
 import { ProductImagesTab } from "./product-dialog/ProductImagesTab";
 import { ProductInventoryTab } from "./product-dialog/ProductInventoryTab";
-import { useProductForm } from "./product-dialog/use-product-form";
+import { useProductForm, ProductFormData } from "./product-dialog/use-product-form";
 
 interface ProductDialogProps {
   isOpen: boolean;
@@ -73,17 +73,21 @@ const ProductDialog: React.FC<ProductDialogProps> = ({ isOpen, onClose, onSucces
                 formData={formData}
                 formErrors={formErrors}
                 storeData={storeData}
-                onFormDataChange={(newData) => {
+                onFormDataChange={(newData: Partial<ProductFormData>) => {
+                  // Create a new formData object with updated values
+                  const updatedFormData = { ...formData };
+                  
                   if ('image_url' in newData) {
-                    handleInputChange({
-                      target: { name: 'image_url', value: newData.image_url }
-                    } as React.ChangeEvent<HTMLInputElement>);
+                    updatedFormData.image_url = newData.image_url || null;
                   }
-                  if ('additional_images' in newData) {
-                    handleInputChange({
-                      target: { name: 'additional_images', value: newData.additional_images }
-                    } as React.ChangeEvent<HTMLInputElement>);
+                  
+                  if ('additional_images' in newData && newData.additional_images) {
+                    updatedFormData.additional_images = newData.additional_images;
                   }
+                  
+                  // Update the form data state
+                  formData.image_url = updatedFormData.image_url;
+                  formData.additional_images = updatedFormData.additional_images;
                 }}
               />
             </TabsContent>

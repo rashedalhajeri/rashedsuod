@@ -14,6 +14,7 @@ export interface ProductFormData {
 }
 
 export interface FormErrors {
+  [key: string]: string | undefined;
   name?: string;
   price?: string;
   image?: string;
