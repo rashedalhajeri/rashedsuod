@@ -68,7 +68,7 @@ const StorefrontPreview: React.FC = () => {
   }
   
   return (
-    <StorefrontLayout storeId={storeData.id}>
+    <StorefrontLayout storeData={storeData}>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold mb-2">{storeData.store_name || "متجر تجريبي"}</h1>

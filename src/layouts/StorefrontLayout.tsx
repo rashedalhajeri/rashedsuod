@@ -2,45 +2,25 @@
 import React, { ReactNode, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { ShoppingBag, Menu, X, Search, Heart, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useQuery } from "@tanstack/react-query";
 
 interface StorefrontLayoutProps {
   children: ReactNode;
-  storeId?: string;
+  storeData: any; // Use the complete store data object passed from StorefrontPreview
 }
 
 const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ 
   children, 
-  storeId 
+  storeData 
 }) => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
-  
-  // Fetch store data using storeId
-  const { data: storeData } = useQuery({
-    queryKey: ['storefront', storeId],
-    queryFn: async () => {
-      if (!storeId) return null;
-      
-      const { data, error } = await supabase
-        .from('stores')
-        .select('*')
-        .eq('id', storeId)
-        .single();
-        
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!storeId
-  });
   
   // Track scroll for navbar styling
   useEffect(() => {
