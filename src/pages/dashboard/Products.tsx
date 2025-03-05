@@ -328,7 +328,7 @@ const Products: React.FC = () => {
         return;
       }
       
-      const additionalImagesUrls = formData.additional_images;
+      const additionalImagesUrls = Array.isArray(formData.additional_images) ? formData.additional_images : [];
       
       const { data, error } = await supabase
         .from('products')
@@ -486,7 +486,7 @@ const Products: React.FC = () => {
                 <h3 className="font-medium text-lg">{product.name}</h3>
                 <p className="text-sm text-gray-500 line-clamp-1 max-w-md">{product.description || "بدون وصف"}</p>
                 
-                {product.additional_images && product.additional_images.length > 0 && (
+                {product.additional_images && Array.isArray(product.additional_images) && product.additional_images.length > 0 && (
                   <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
                     <ImagePlus className="h-3 w-3" />
                     <span>{product.additional_images.length} صور إضافية</span>
@@ -718,7 +718,7 @@ const Products: React.FC = () => {
                         <p className="text-xs text-red-600 text-center">{uploadImage.error}</p>
                       </>
                     ) : (
-                      <CheckCircle className="h-6 w-6 text-green-500" />
+                      <CheckCircle className="h-6 w-6 text-green-50" />
                     )}
                   </div>
                 )}
@@ -774,7 +774,7 @@ const Products: React.FC = () => {
             </div>
           )}
           
-          {selectedProduct.additional_images && selectedProduct.additional_images.length > 0 && 
+          {selectedProduct.additional_images && Array.isArray(selectedProduct.additional_images) && selectedProduct.additional_images.length > 0 && 
             selectedProduct.additional_images.map((url: string, index: number) => (
               <div key={index} className="aspect-square bg-gray-100 rounded-md overflow-hidden border border-red-100">
                 <img 
