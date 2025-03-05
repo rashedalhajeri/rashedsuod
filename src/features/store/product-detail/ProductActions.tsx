@@ -4,10 +4,9 @@ import { Link } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Product } from "./useProductDetail";
 
 interface ProductActionsProps {
-  product: Product;
+  product: any;
   storeId: string;
   quantity: number;
   onAddToCart: () => void;

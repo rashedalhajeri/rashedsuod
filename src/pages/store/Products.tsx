@@ -1,131 +1,45 @@
 
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent } from "@/components/ui/card";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import StorefrontLayout from "@/layouts/StorefrontLayout";
-import ProductCard from "@/components/store/ProductCard";
-import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
-import { Product } from "@/features/store/product-detail/useProductDetail";
-
-const PRODUCTS_PER_PAGE = 12;
 
 const StoreProducts: React.FC = () => {
   const { storeId } = useParams<{ storeId: string }>();
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currency, setCurrency] = useState("SAR");
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
 
-  // Fetch store and products
   useEffect(() => {
-    const fetchData = async () => {
-      if (!storeId || storeId === ":storeId") {
-        setError("معرف المتجر غير متوفر أو غير صالح");
+    const fetchProducts = async () => {
+      if (!storeId) {
+        setError("معرف المتجر غير متوفر");
         setLoading(false);
         return;
       }
       
       try {
-        // First, fetch store info to get the currency
-        const { data: storeData, error: storeError } = await supabase
-          .from("stores")
-          .select("currency")
-          .eq("id", storeId)
-          .maybeSingle();
+        const { data, error } = await supabase
+          .from("products")
+          .select("*")
+          .eq("store_id", storeId);
         
-        if (storeError) throw storeError;
+        if (error) throw error;
         
-        if (storeData?.currency) {
-          setCurrency(storeData.currency);
-        }
-        
-        // Then fetch the first page of products
-        await fetchProducts();
+        setProducts(data || []);
       } catch (err) {
-        console.error("Error fetching initial data:", err);
-        setError("حدث خطأ أثناء تحميل البيانات");
+        console.error("Error fetching products:", err);
+        setError("حدث خطأ أثناء تحميل المنتجات");
       } finally {
         setLoading(false);
       }
     };
     
-    fetchData();
+    fetchProducts();
   }, [storeId]);
-
-  const fetchProducts = async (loadMore = false) => {
-    if (loadMore) {
-      setLoadingMore(true);
-    }
-    
-    try {
-      const pageToLoad = loadMore ? page + 1 : 0;
-      const from = pageToLoad * PRODUCTS_PER_PAGE;
-      const to = from + PRODUCTS_PER_PAGE - 1;
-      
-      const { data, error, count } = await supabase
-        .from("products")
-        .select("*", { count: "exact" })
-        .eq("store_id", storeId)
-        .range(from, to)
-        .order("created_at", { ascending: false });
-      
-      if (error) throw error;
-      
-      // Transform data to ensure additional_images is always an array of strings
-      const processedProducts: Product[] = data?.map(product => {
-        let processedImages: string[] | null = null;
-        
-        if (product.additional_images) {
-          if (Array.isArray(product.additional_images)) {
-            processedImages = product.additional_images.map(img => 
-              typeof img === 'string' ? img : JSON.stringify(img)
-            );
-          } else if (typeof product.additional_images === 'string') {
-            processedImages = [product.additional_images];
-          }
-        }
-        
-        return {
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          image_url: product.image_url,
-          description: product.description,
-          stock_quantity: product.stock_quantity || 0,
-          additional_images: processedImages
-        };
-      }) || [];
-      
-      if (loadMore) {
-        setProducts(prev => [...prev, ...processedProducts]);
-        setPage(pageToLoad);
-      } else {
-        setProducts(processedProducts);
-      }
-      
-      // Update hasMore flag
-      setHasMore(count ? from + processedProducts.length < count : false);
-    } catch (err) {
-      console.error("Error fetching products:", err);
-      if (!loadMore) {
-        setError("حدث خطأ أثناء تحميل المنتجات");
-      }
-    } finally {
-      setLoadingMore(false);
-    }
-  };
-
-  const handleLoadMore = () => {
-    if (!loadingMore && hasMore) {
-      fetchProducts(true);
-    }
-  };
 
   if (loading) {
     return (
@@ -153,45 +67,51 @@ const StoreProducts: React.FC = () => {
         <h1 className="text-2xl font-bold mb-6">جميع المنتجات</h1>
         
         {products.length === 0 ? (
-          <div className="text-center py-12 bg-gray-50 rounded-lg">
-            <p className="text-gray-500">لا توجد منتجات متاحة حالياً</p>
-          </div>
+          <Card>
+            <CardContent className="text-center py-12">
+              <p className="text-gray-500">لا توجد منتجات متاحة حالياً</p>
+            </CardContent>
+          </Card>
         ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {products.map(product => (
-                <ProductCard 
-                  key={product.id} 
-                  product={product} 
-                  storeId={storeId || ""} 
-                  currency={currency}
-                />
-              ))}
-            </div>
-            
-            {hasMore && (
-              <div className="mt-8 text-center">
-                <Button 
-                  variant="outline" 
-                  onClick={handleLoadMore} 
-                  disabled={loadingMore}
-                  className="gap-2"
-                >
-                  {loadingMore ? (
-                    <>
-                      <span className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></span>
-                      جاري التحميل...
-                    </>
-                  ) : (
-                    <>
-                      <ChevronDown className="h-4 w-4" />
-                      عرض المزيد من المنتجات
-                    </>
-                  )}
-                </Button>
-              </div>
-            )}
-          </>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {products.map((product) => (
+              <Link 
+                key={product.id} 
+                to={`/store/${storeId}/products/${product.id}`}
+                className="group block"
+              >
+                <Card className="overflow-hidden h-full transition-shadow hover:shadow-md">
+                  <div className="aspect-square bg-gray-100">
+                    {product.image_url ? (
+                      <img 
+                        src={product.image_url} 
+                        alt={product.name} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "/placeholder.svg";
+                        }}
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <img 
+                          src="/placeholder.svg" 
+                          alt="Placeholder" 
+                          className="w-16 h-16 opacity-50" 
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <CardContent className="p-4">
+                    <h3 className="font-medium mb-1 line-clamp-1">{product.name}</h3>
+                    <p className="text-gray-900 font-bold">{product.price} ر.س</p>
+                    {product.stock_quantity <= 0 && (
+                      <p className="text-red-600 text-sm mt-1">غير متوفر</p>
+                    )}
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
         )}
       </div>
     </StorefrontLayout>

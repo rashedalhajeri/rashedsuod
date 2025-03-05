@@ -1,45 +1,53 @@
 
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ShoppingCart, Search, Menu, X, Store as StoreIcon } from "lucide-react";
+import { ShoppingCart, Search, User, Menu, X, Store as StoreIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Badge } from "@/components/ui/badge";
-import { LoadingState } from "@/components/ui/loading-state";
-import { ErrorState } from "@/components/ui/error-state";
-import { StoreProvider, useStore } from "@/contexts/StoreContext";
-import { CartProvider, useCart } from "@/contexts/CartContext";
+import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 interface StorefrontLayoutProps {
   children: ReactNode;
 }
 
-const CartButton = () => {
+const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
   const { storeId } = useParams<{ storeId: string }>();
-  const { items, getTotalQuantity } = useCart();
-  const itemCount = getTotalQuantity();
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [storeData, setStoreData] = useState<{
+    store_name: string;
+    logo_url: string | null;
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  return (
-    <Link to={`/store/${storeId}/cart`}>
-      <Button variant="ghost" size="icon" className="relative">
-        <ShoppingCart className="h-5 w-5" />
-        {itemCount > 0 && (
-          <Badge 
-            variant="destructive" 
-            className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center rounded-full text-xs"
-          >
-            {itemCount}
-          </Badge>
-        )}
-      </Button>
-    </Link>
-  );
-};
+  // Fetch store data on mount
+  useEffect(() => {
+    const fetchStoreData = async () => {
+      if (!storeId) return;
 
-const StorefrontContent: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { storeId } = useParams<{ storeId: string }>();
-  const { store, isLoading, error } = useStore();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+      try {
+        const { data, error } = await supabase
+          .from("stores")
+          .select("store_name, logo_url")
+          .eq("id", storeId)
+          .single();
+
+        if (error) throw error;
+        setStoreData(data);
+      } catch (error) {
+        console.error("Error fetching store data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStoreData();
+  }, [storeId]);
+
+  // Toggle menu open/close
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
 
   // Menu items
   const menuItems = [
@@ -53,50 +61,6 @@ const StorefrontContent: React.FC<{ children: ReactNode }> = ({ children }) => {
     }
   ];
 
-  const handleRetry = () => {
-    window.location.reload();
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex flex-col min-h-screen bg-gray-50 rtl">
-        <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
-          <div className="container mx-auto px-4 flex justify-center items-center h-16">
-            <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 mr-2">
-              <StoreIcon className="h-4 w-4 text-primary" />
-            </div>
-            <span className="font-bold text-xl text-gray-900">جاري التحميل...</span>
-          </div>
-        </header>
-        <main className="flex-1 flex items-center justify-center">
-          <LoadingState message="جاري تحميل بيانات المتجر..." />
-        </main>
-      </div>
-    );
-  }
-
-  if (error || !store) {
-    return (
-      <div className="flex flex-col min-h-screen bg-gray-50 rtl">
-        <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
-          <div className="container mx-auto px-4 flex justify-center items-center h-16">
-            <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 mr-2">
-              <StoreIcon className="h-4 w-4 text-primary" />
-            </div>
-            <span className="font-bold text-xl text-gray-900">متجر</span>
-          </div>
-        </header>
-        <main className="flex-1 flex items-center justify-center">
-          <ErrorState 
-            title={error ? "خطأ في تحميل المتجر" : "المتجر غير موجود"} 
-            message={error || "لم نتمكن من العثور على المتجر المطلوب"}
-            onRetry={handleRetry}
-          />
-        </main>
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 rtl">
       {/* Header */}
@@ -104,11 +68,11 @@ const StorefrontContent: React.FC<{ children: ReactNode }> = ({ children }) => {
         <div className="container mx-auto px-4 flex justify-between items-center h-16">
           {/* Logo and Store Name */}
           <Link to={`/store/${storeId}`} className="flex items-center gap-2">
-            {store.logo_url ? (
+            {storeData?.logo_url ? (
               <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border border-gray-100">
                 <img 
-                  src={store.logo_url} 
-                  alt={store.store_name || "شعار المتجر"} 
+                  src={storeData.logo_url} 
+                  alt={storeData.store_name || "شعار المتجر"} 
                   className="w-full h-full object-contain"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = "/placeholder.svg";
@@ -121,7 +85,7 @@ const StorefrontContent: React.FC<{ children: ReactNode }> = ({ children }) => {
               </div>
             )}
             <span className="font-bold text-xl text-gray-900">
-              {store.store_name || "متجر"}
+              {loading ? "جاري التحميل..." : storeData?.store_name || "متجر"}
             </span>
           </Link>
 
@@ -140,7 +104,11 @@ const StorefrontContent: React.FC<{ children: ReactNode }> = ({ children }) => {
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-4 space-x-reverse">
-            <CartButton />
+            <Link to={`/store/${storeId}/cart`}>
+              <Button variant="ghost" size="icon">
+                <ShoppingCart className="h-5 w-5" />
+              </Button>
+            </Link>
 
             {/* Mobile Menu Button */}
             <div className="md:hidden">
@@ -153,11 +121,11 @@ const StorefrontContent: React.FC<{ children: ReactNode }> = ({ children }) => {
                 <SheetContent side="right" className="w-[250px] sm:w-[300px]">
                   <div className="flex flex-col h-full">
                     <div className="flex flex-col items-center justify-center py-6 mb-4 border-b">
-                      {store.logo_url ? (
+                      {storeData?.logo_url ? (
                         <div className="w-16 h-16 rounded-full overflow-hidden border border-gray-100 mb-3">
                           <img 
-                            src={store.logo_url} 
-                            alt={store.store_name || "شعار المتجر"} 
+                            src={storeData.logo_url} 
+                            alt={storeData.store_name || "شعار المتجر"} 
                             className="w-full h-full object-contain"
                             onError={(e) => {
                               (e.target as HTMLImageElement).src = "/placeholder.svg";
@@ -170,7 +138,7 @@ const StorefrontContent: React.FC<{ children: ReactNode }> = ({ children }) => {
                         </div>
                       )}
                       <span className="font-bold text-lg">
-                        {store.store_name || "متجر"}
+                        {loading ? "جاري التحميل..." : storeData?.store_name || "متجر"}
                       </span>
                     </div>
                     <nav className="flex flex-col space-y-4">
@@ -184,14 +152,6 @@ const StorefrontContent: React.FC<{ children: ReactNode }> = ({ children }) => {
                           {item.label}
                         </Link>
                       ))}
-                      <Link 
-                        to={`/store/${storeId}/cart`}
-                        className="text-gray-600 hover:text-gray-900 py-2 flex items-center gap-2"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        <ShoppingCart className="h-4 w-4" />
-                        سلة التسوق
-                      </Link>
                     </nav>
                   </div>
                 </SheetContent>
@@ -209,22 +169,10 @@ const StorefrontContent: React.FC<{ children: ReactNode }> = ({ children }) => {
       {/* Footer */}
       <footer className="bg-white border-t py-6">
         <div className="container mx-auto px-4 text-center text-gray-500 text-sm">
-          &copy; {new Date().getFullYear()} - {store.store_name || "المتجر"} | جميع الحقوق محفوظة
+          &copy; {new Date().getFullYear()} - {storeData?.store_name || "المتجر"} | جميع الحقوق محفوظة
         </div>
       </footer>
     </div>
-  );
-};
-
-const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
-  return (
-    <StoreProvider>
-      <CartProvider>
-        <StorefrontContent>
-          {children}
-        </StorefrontContent>
-      </CartProvider>
-    </StoreProvider>
   );
 };
 

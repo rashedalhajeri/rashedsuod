@@ -44,17 +44,7 @@ const StoreProductDetail: React.FC = () => {
     );
   }
 
-  if (!product) {
-    return (
-      <StorefrontLayout>
-        <ErrorState 
-          title="المنتج غير موجود"
-          message="لم نتمكن من العثور على المنتج المطلوب"
-          onRetry={() => window.location.reload()}
-        />
-      </StorefrontLayout>
-    );
-  }
+  const allImages = getAllImages();
 
   return (
     <StorefrontLayout>
