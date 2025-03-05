@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,6 +15,7 @@ import Auth from "./pages/Auth";
 import CreateStore from "./pages/CreateStore";
 import NotFound from "./pages/NotFound";
 import ProductDetail from "./pages/ProductDetail";
+import StorefrontPreview from "./pages/StorefrontPreview";
 
 // Import dashboard pages
 import Dashboard from "./pages/Dashboard";
@@ -204,6 +206,10 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<Auth />} />
+            
+            {/* Store Preview Route - Publicly accessible */}
+            <Route path="/store-preview/:storeId" element={<StorefrontPreview />} />
+            <Route path="/store-preview" element={<StorefrontPreview />} />
             
             <Route 
               path="/create-store" 

@@ -37,6 +37,14 @@ const ThemePreviewCard: React.FC<ThemePreviewCardProps> = ({
   // Placeholder image URL if the actual preview is not available
   const previewUrl = theme.preview || 'https://via.placeholder.com/400x300';
   
+  // Function to handle preview click
+  const handlePreviewClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onPreview) {
+      onPreview();
+    }
+  };
+  
   return (
     <motion.div
       whileHover={{ y: -5 }}
@@ -64,7 +72,7 @@ const ThemePreviewCard: React.FC<ThemePreviewCardProps> = ({
               backgroundImage: `url(${previewUrl})`,
               backgroundColor: theme.colors.primary 
             }}
-            onClick={onPreview}
+            onClick={handlePreviewClick}
           >
             {/* Tooltip for preview indication */}
             <TooltipProvider>
@@ -118,11 +126,21 @@ const ThemePreviewCard: React.FC<ThemePreviewCardProps> = ({
           </div>
         </CardContent>
         
-        <CardFooter className="p-4 pt-0 flex justify-end">
+        <CardFooter className="p-4 pt-0 flex justify-between gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handlePreviewClick}
+            className="hover:bg-primary/10 hover:text-primary"
+          >
+            <Eye className="h-4 w-4 ml-1" />
+            معاينة
+          </Button>
+          
           <Button 
             variant={selected ? "default" : "outline"} 
             onClick={onSelect}
-            className={cn("w-full", 
+            className={cn(
               selected ? "bg-primary hover:bg-primary/90" : "hover:bg-primary/10 hover:text-primary"
             )}
           >
