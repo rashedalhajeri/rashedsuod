@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useCallback } from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -73,7 +72,6 @@ const Products: React.FC = () => {
   const { data: storeData } = useStoreData();
   const formatCurrency = getCurrencyFormatter(storeData?.currency || 'SAR');
 
-  // Reset form when dialog is opened/closed
   const resetForm = useCallback(() => {
     setFormData({
       name: "",
@@ -88,8 +86,7 @@ const Products: React.FC = () => {
     setUploadProgress(0);
     setUploadingImages([]);
   }, []);
-  
-  // فتشت بيانات المنتجات
+
   const { data: products, isLoading, refetch } = useQuery({
     queryKey: ['products'],
     queryFn: async () => {
@@ -113,14 +110,12 @@ const Products: React.FC = () => {
       return data || [];
     }
   });
-  
-  // تصفية المنتجات حسب البحث
+
   const filteredProducts = products?.filter(product => 
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase()))
   );
-  
-  // التحقق من المدخلات
+
   const validateForm = () => {
     const errors: FormErrors = {};
     
@@ -135,8 +130,7 @@ const Products: React.FC = () => {
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
-  
-  // محاكاة تقدم الرفع
+
   const simulateUploadProgress = (imageId: string) => {
     let progress = 0;
     const interval = setInterval(() => {
@@ -153,20 +147,17 @@ const Products: React.FC = () => {
     
     return () => clearInterval(interval);
   };
-  
-  // رفع ملف الصورة الرئيسية
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
     
-    // التحقق من نوع الملف
     if (!file.type.startsWith('image/')) {
       toast.error("يرجى رفع صورة فقط");
       setFormErrors(prev => ({ ...prev, image: "يرجى رفع صورة فقط" }));
       return;
     }
     
-    // التحقق من حجم الملف (أقل من 5 ميجابايت)
     if (file.size > 5 * 1024 * 1024) {
       toast.error("يجب أن يكون حجم الصورة أقل من 5 ميجابايت");
       setFormErrors(prev => ({ ...prev, image: "يجب أن يكون حجم الصورة أقل من 5 ميجابايت" }));
@@ -185,12 +176,10 @@ const Products: React.FC = () => {
         return;
       }
       
-      // إنشاء اسم فريد للملف
       const fileExt = file.name.split('.').pop();
       const fileName = `${storeData.id}/${Date.now()}.${fileExt}`;
       const filePath = `products/${fileName}`;
       
-      // رفع الملف إلى تخزين Supabase
       const { data, error } = await supabase.storage
         .from('store-images')
         .upload(filePath, file, {
@@ -206,12 +195,10 @@ const Products: React.FC = () => {
       
       setUploadProgress(100);
       
-      // الحصول على رابط الصورة العام
       const { data: urlData } = supabase.storage
         .from('store-images')
         .getPublicUrl(filePath);
       
-      // تحديث نموذج البيانات مع عنوان URL للصورة
       setFormData(prev => ({
         ...prev,
         image_url: urlData.publicUrl
@@ -228,8 +215,7 @@ const Products: React.FC = () => {
       setIsUploading(false);
     }
   };
-  
-  // رفع الصور الإضافية
+
   const handleMultipleImagesUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
@@ -239,7 +225,6 @@ const Products: React.FC = () => {
       return;
     }
     
-    // إنشاء قائمة بالصور المراد رفعها
     const newUploadingImages: UploadingImage[] = Array.from(files).map(file => ({
       id: crypto.randomUUID(),
       file,
@@ -249,11 +234,9 @@ const Products: React.FC = () => {
     
     setUploadingImages(prev => [...prev, ...newUploadingImages]);
     
-    // رفع كل صورة على حدة
     for (const uploadImage of newUploadingImages) {
       const file = uploadImage.file;
       
-      // التحقق من نوع الملف
       if (!file.type.startsWith('image/')) {
         setUploadingImages(prev => prev.map(img => 
           img.id === uploadImage.id 
@@ -263,7 +246,6 @@ const Products: React.FC = () => {
         continue;
       }
       
-      // التحقق من حجم الملف
       if (file.size > 5 * 1024 * 1024) {
         setUploadingImages(prev => prev.map(img => 
           img.id === uploadImage.id 
@@ -297,19 +279,16 @@ const Products: React.FC = () => {
           .from('store-images')
           .getPublicUrl(filePath);
         
-        // تحديث حالة الصورة إلى نجاح
         setUploadingImages(prev => prev.map(img => 
           img.id === uploadImage.id 
             ? { ...img, status: 'success', progress: 100, url: urlData.publicUrl } 
             : img
         ));
         
-        // إضافة الصورة إلى قائمة الصور الإضافية
         setFormData(prev => ({
           ...prev,
           additional_images: [...prev.additional_images, urlData.publicUrl]
         }));
-        
       } catch (error) {
         console.error("Error uploading additional image:", error);
         setUploadingImages(prev => prev.map(img => 
@@ -320,26 +299,22 @@ const Products: React.FC = () => {
       }
     }
     
-    // إعادة تعيين مدخل الملفات
     if (multipleFileInputRef.current) {
       multipleFileInputRef.current.value = '';
     }
   };
-  
-  // إزالة صورة إضافية
+
   const handleRemoveAdditionalImage = (index: number) => {
     setFormData(prev => ({
       ...prev,
       additional_images: prev.additional_images.filter((_, i) => i !== index)
     }));
   };
-  
-  // إزالة صورة قيد الرفع
+
   const handleRemoveUploadingImage = (id: string) => {
     setUploadingImages(prev => prev.filter(img => img.id !== id));
   };
-  
-  // إضافة منتج جديد
+
   const handleAddProduct = async () => {
     try {
       if (!validateForm()) {
@@ -353,7 +328,6 @@ const Products: React.FC = () => {
         return;
       }
       
-      // جمع قائمة بالصور الإضافية من الصور المرفوعة بنجاح
       const additionalImagesUrls = formData.additional_images;
       
       const { data, error } = await supabase
@@ -387,34 +361,28 @@ const Products: React.FC = () => {
       toast.error("حدث خطأ غير متوقع");
     }
   };
-  
-  // حذف منتج
+
   const handleDeleteProduct = async () => {
     if (!selectedProduct) return;
     
     try {
-      // إذا كان المنتج يحتوي على صورة، نحذفها أولاً
       if (selectedProduct.image_url) {
-        // استخراج المسار من URL الصورة
         const imageUrl = selectedProduct.image_url;
         const storageUrl = supabase.storage.from('store-images').getPublicUrl('').data.publicUrl;
         
         if (imageUrl.startsWith(storageUrl)) {
           const imagePath = imageUrl.replace(storageUrl + '/', '');
           
-          // حذف الصورة من التخزين
           const { error: storageError } = await supabase.storage
             .from('store-images')
             .remove([imagePath]);
             
           if (storageError) {
             console.error("Error deleting product image:", storageError);
-            // نستمر في حذف المنتج حتى لو فشل حذف الصورة
           }
         }
       }
       
-      // حذف الصور الإضافية إذا وجدت
       if (selectedProduct.additional_images && selectedProduct.additional_images.length > 0) {
         const storageUrl = supabase.storage.from('store-images').getPublicUrl('').data.publicUrl;
         
@@ -433,7 +401,6 @@ const Products: React.FC = () => {
         }
       }
       
-      // حذف المنتج
       const { error } = await supabase
         .from('products')
         .delete()
@@ -454,12 +421,10 @@ const Products: React.FC = () => {
       toast.error("حدث خطأ غير متوقع");
     }
   };
-  
-  // تغيير قيم النموذج
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     
-    // إزالة رسائل الخطأ عند الكتابة
     if (name in formErrors) {
       setFormErrors(prev => ({ ...prev, [name]: undefined }));
     }
@@ -469,20 +434,17 @@ const Products: React.FC = () => {
       [name]: name === 'price' || name === 'stock_quantity' ? parseFloat(value) || 0 : value
     }));
   };
-  
-  // إزالة الصورة
+
   const handleRemoveImage = () => {
     setFormData(prev => ({ ...prev, image_url: null }));
     setUploadState('idle');
     setUploadProgress(0);
     
-    // إعادة تعيين قيمة حقل الملف
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
-  
-  // عرض حالة فارغة إذا لم تكن هناك منتجات
+
   const renderEmptyState = () => (
     <div className="text-center py-12">
       <Package className="h-12 w-12 mx-auto text-muted-foreground" />
@@ -496,8 +458,7 @@ const Products: React.FC = () => {
       </Button>
     </div>
   );
-  
-  // عرض المنتجات في الجدول
+
   const renderProductsList = () => (
     <div className="grid gap-4">
       {filteredProducts?.map((product) => (
@@ -525,7 +486,6 @@ const Products: React.FC = () => {
                 <h3 className="font-medium text-lg">{product.name}</h3>
                 <p className="text-sm text-gray-500 line-clamp-1 max-w-md">{product.description || "بدون وصف"}</p>
                 
-                {/* عرض عدد الصور الإضافية إذا وجدت */}
                 {product.additional_images && product.additional_images.length > 0 && (
                   <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
                     <ImagePlus className="h-3 w-3" />
@@ -575,8 +535,7 @@ const Products: React.FC = () => {
       ))}
     </div>
   );
-  
-  // عرض مكون رفع الصورة الرئيسية
+
   const renderImageUploader = () => {
     return (
       <div className="grid gap-2">
@@ -684,15 +643,14 @@ const Products: React.FC = () => {
       </div>
     );
   };
-  
-  // عرض مكون رفع الصور الإضافية
+
   const renderAdditionalImagesUploader = () => {
     return (
       <div className="grid gap-2 mt-4">
         <Label className="flex items-center justify-between">
           <span>صور إضافية للمنتج</span>
           <span className="text-xs text-muted-foreground">
-            {formData.additional_images.length}/5 صور
+            {Array.isArray(formData.additional_images) ? formData.additional_images.length : 0}/5 صور
           </span>
         </Label>
         
@@ -705,8 +663,7 @@ const Products: React.FC = () => {
           className="hidden"
         />
         
-        {/* عرض الصور الإضافية المرفوعة */}
-        {formData.additional_images.length > 0 && (
+        {Array.isArray(formData.additional_images) && formData.additional_images.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
             {formData.additional_images.map((imageUrl, index) => (
               <div key={index} className="relative aspect-square bg-gray-100 rounded-md overflow-hidden border border-gray-200 group">
@@ -730,7 +687,6 @@ const Products: React.FC = () => {
           </div>
         )}
         
-        {/* عرض الصور قيد الرفع */}
         {uploadingImages.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
             {uploadingImages.map((uploadImage) => (
@@ -780,13 +736,12 @@ const Products: React.FC = () => {
           </div>
         )}
         
-        {/* زر لإضافة صور جديدة */}
         <Button 
           type="button" 
           variant="outline" 
           className="w-full h-20 border-dashed flex flex-col gap-1"
           onClick={() => multipleFileInputRef.current?.click()}
-          disabled={formData.additional_images.length >= 5}
+          disabled={Array.isArray(formData.additional_images) && formData.additional_images.length >= 5}
         >
           <ImagePlus className="h-5 w-5" />
           <span className="text-sm">إضافة صور للمنتج</span>
@@ -795,23 +750,20 @@ const Products: React.FC = () => {
       </div>
     );
   };
-  
-  // عرض قسم الصور في مربع الحوار
+
   const renderImagesTab = () => (
     <div className="space-y-6">
       {renderImageUploader()}
       {renderAdditionalImagesUploader()}
     </div>
   );
-  
-  // عرض صور المنتج عند الحذف
+
   const renderProductImagesPreview = () => {
     if (!selectedProduct) return null;
     
     return (
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-2">
-          {/* الصورة الرئيسية */}
           {selectedProduct.image_url && (
             <div className="aspect-square bg-gray-100 rounded-md overflow-hidden border border-red-100">
               <img 
@@ -822,7 +774,6 @@ const Products: React.FC = () => {
             </div>
           )}
           
-          {/* الصور الإضافية */}
           {selectedProduct.additional_images && selectedProduct.additional_images.length > 0 && 
             selectedProduct.additional_images.map((url: string, index: number) => (
               <div key={index} className="aspect-square bg-gray-100 rounded-md overflow-hidden border border-red-100">
@@ -838,7 +789,7 @@ const Products: React.FC = () => {
       </div>
     );
   };
-  
+
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6">
@@ -892,7 +843,6 @@ const Products: React.FC = () => {
         </Card>
       </div>
       
-      {/* مربع حوار إضافة منتج */}
       <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
         if (!open) resetForm();
         setIsAddDialogOpen(open);
@@ -997,7 +947,6 @@ const Products: React.FC = () => {
         </DialogContent>
       </Dialog>
       
-      {/* مربع حوار حذف منتج */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -1027,7 +976,6 @@ const Products: React.FC = () => {
                 </div>
               </div>
               
-              {/* عرض معاينة للصور قبل الحذف */}
               {(selectedProduct.image_url || (selectedProduct.additional_images && selectedProduct.additional_images.length > 0)) && (
                 <div className="mt-2">
                   <p className="text-sm font-medium text-red-600 mb-2">سيتم حذف الصور التالية:</p>
