@@ -2,126 +2,147 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-// جلب إعدادات الشحن للمتجر
-export const fetchShippingSettings = async (storeId: string) => {
+// أنواع البيانات للإعدادات
+export interface StoreShippingSettings {
+  id?: string;
+  store_id: string;
+  shipping_method: 'store_delivery' | 'bronze_delivery';
+  free_shipping: boolean;
+  free_shipping_min_order: number;
+  standard_delivery_time: string;
+  delivery_time_unit: 'hours' | 'days';
+  bronze_delivery_speed: 'standard' | 'express' | 'same_day';
+}
+
+export interface DeliveryArea {
+  id?: string;
+  store_id: string;
+  name: string;
+  price: number;
+  enabled: boolean;
+}
+
+// الحصول على إعدادات الشحن
+export const getShippingSettings = async (storeId: string): Promise<StoreShippingSettings | null> => {
   try {
-    // جلب إعدادات الشحن الأساسية
-    const { data: shippingData, error: shippingError } = await supabase
+    const { data, error } = await supabase
       .from('store_settings')
-      .select('shipping_method, free_shipping_min_order, standard_delivery_time')
+      .select('*')
       .eq('store_id', storeId)
       .single();
-      
-    if (shippingError && shippingError.code !== 'PGRST116') {
-      console.error("خطأ في جلب إعدادات الشحن:", shippingError);
-      return { 
-        shippingMethod: 'store', // الافتراضي: توصيل المتجر
-        freeShippingMinOrder: 100,
-        standardDeliveryTime: 3,
-        deliveryAreas: []
-      };
+    
+    if (error) {
+      console.error("خطأ في جلب إعدادات الشحن:", error);
+      return null;
     }
     
-    // جلب مناطق التوصيل
-    const { data: areasData, error: areasError } = await supabase
-      .from('delivery_areas')
-      .select('*')
-      .eq('store_id', storeId);
-      
-    if (areasError) {
-      console.error("خطأ في جلب مناطق التوصيل:", areasError);
-      return { 
-        shippingMethod: shippingData?.shipping_method || 'store',
-        freeShippingMinOrder: shippingData?.free_shipping_min_order || 100,
-        standardDeliveryTime: shippingData?.standard_delivery_time || 3,
-        deliveryAreas: []
-      };
-    }
-    
-    return {
-      shippingMethod: shippingData?.shipping_method || 'store',
-      freeShippingMinOrder: shippingData?.free_shipping_min_order || 100,
-      standardDeliveryTime: shippingData?.standard_delivery_time || 3,
-      deliveryAreas: areasData || []
-    };
+    return data as StoreShippingSettings;
   } catch (error) {
-    console.error("Error fetching shipping settings:", error);
-    toast.error("حدث خطأ أثناء جلب إعدادات الشحن");
-    return { 
-      shippingMethod: 'store',
-      freeShippingMinOrder: 100,
-      standardDeliveryTime: 3,
-      deliveryAreas: []
-    };
+    console.error("خطأ في خدمة الشحن:", error);
+    return null;
   }
 };
 
 // حفظ إعدادات الشحن
-export const saveShippingSettings = async (
-  storeId: string,
-  shippingMethod: 'store' | 'bronze',
-  settings: {
-    freeShippingMinOrder?: number,
-    standardDeliveryTime?: number,
-    bronzeDeliverySpeed?: string,
-    deliveryAreas?: {
-      id: string,
-      name: string,
-      price: number,
-      isEnabled: boolean
-    }[]
-  }
-) => {
+export const saveShippingSettings = async (settings: StoreShippingSettings): Promise<boolean> => {
   try {
-    // 1. حفظ الإعدادات الأساسية
-    const { error: settingsError } = await supabase
+    // التحقق من وجود إعدادات سابقة
+    const { data: existingSettings } = await supabase
       .from('store_settings')
-      .upsert({
-        store_id: storeId,
-        shipping_method: shippingMethod,
-        free_shipping_min_order: settings.freeShippingMinOrder,
-        standard_delivery_time: settings.standardDeliveryTime,
-        bronze_delivery_speed: settings.bronzeDeliverySpeed
-      }, {
-        onConflict: 'store_id'
-      });
-      
-    if (settingsError) throw settingsError;
+      .select('id')
+      .eq('store_id', settings.store_id)
+      .single();
     
-    // 2. حفظ مناطق التوصيل (فقط لطريقة توصيل المتجر)
-    if (shippingMethod === 'store' && settings.deliveryAreas) {
-      // حذف المناطق القديمة
-      const { error: deleteError } = await supabase
-        .from('delivery_areas')
-        .delete()
-        .eq('store_id', storeId);
-        
-      if (deleteError) throw deleteError;
-      
-      // إضافة المناطق الجديدة
-      const areasToInsert = settings.deliveryAreas
-        .filter(area => area.isEnabled)
-        .map(area => ({
-          store_id: storeId,
-          name: area.name,
-          price: area.price,
-          is_enabled: true
-        }));
-        
-      if (areasToInsert.length > 0) {
-        const { error: insertError } = await supabase
-          .from('delivery_areas')
-          .insert(areasToInsert);
-          
-        if (insertError) throw insertError;
-      }
+    let result;
+    
+    if (existingSettings?.id) {
+      // تحديث الإعدادات الموجودة
+      result = await supabase
+        .from('store_settings')
+        .update({
+          shipping_method: settings.shipping_method,
+          free_shipping: settings.free_shipping,
+          free_shipping_min_order: settings.free_shipping_min_order,
+          standard_delivery_time: settings.standard_delivery_time,
+          delivery_time_unit: settings.delivery_time_unit,
+          bronze_delivery_speed: settings.bronze_delivery_speed
+        })
+        .eq('id', existingSettings.id);
+    } else {
+      // إنشاء إعدادات جديدة
+      result = await supabase
+        .from('store_settings')
+        .insert([settings]);
     }
     
-    toast.success("تم حفظ إعدادات الشحن بنجاح");
+    if (result.error) {
+      console.error("خطأ في حفظ إعدادات الشحن:", result.error);
+      toast.error("حدث خطأ في حفظ إعدادات الشحن");
+      return false;
+    }
+    
     return true;
   } catch (error) {
-    console.error("Error saving shipping settings:", error);
-    toast.error("حدث خطأ أثناء حفظ إعدادات الشحن");
+    console.error("خطأ في خدمة الشحن:", error);
+    toast.error("حدث خطأ في حفظ إعدادات الشحن");
+    return false;
+  }
+};
+
+// الحصول على مناطق التوصيل
+export const getDeliveryAreas = async (storeId: string): Promise<DeliveryArea[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('delivery_areas')
+      .select('*')
+      .eq('store_id', storeId)
+      .order('name');
+    
+    if (error) {
+      console.error("خطأ في جلب مناطق التوصيل:", error);
+      return [];
+    }
+    
+    return data as DeliveryArea[];
+  } catch (error) {
+    console.error("خطأ في خدمة الشحن:", error);
+    return [];
+  }
+};
+
+// حفظ مناطق التوصيل
+export const saveDeliveryAreas = async (areas: DeliveryArea[]): Promise<boolean> => {
+  try {
+    if (!areas.length) return true;
+    
+    const storeId = areas[0].store_id;
+    
+    // أولاً، حذف جميع المناطق الحالية
+    const { error: deleteError } = await supabase
+      .from('delivery_areas')
+      .delete()
+      .eq('store_id', storeId);
+    
+    if (deleteError) {
+      console.error("خطأ في حذف مناطق التوصيل:", deleteError);
+      return false;
+    }
+    
+    // ثم إضافة المناطق الجديدة
+    const { error: insertError } = await supabase
+      .from('delivery_areas')
+      .insert(areas);
+    
+    if (insertError) {
+      console.error("خطأ في إضافة مناطق التوصيل:", insertError);
+      toast.error("حدث خطأ في حفظ مناطق التوصيل");
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("خطأ في خدمة الشحن:", error);
+    toast.error("حدث خطأ في حفظ مناطق التوصيل");
     return false;
   }
 };

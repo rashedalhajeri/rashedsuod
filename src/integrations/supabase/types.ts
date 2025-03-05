@@ -9,6 +9,44 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      delivery_areas: {
+        Row: {
+          created_at: string | null
+          enabled: boolean
+          id: string
+          name: string
+          price: number
+          store_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          enabled?: boolean
+          id?: string
+          name: string
+          price?: number
+          store_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          enabled?: boolean
+          id?: string
+          name?: string
+          price?: number
+          store_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_areas_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -149,6 +187,53 @@ export type Database = {
             foreignKeyName: "products_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_settings: {
+        Row: {
+          bronze_delivery_speed: string | null
+          created_at: string | null
+          delivery_time_unit: string | null
+          free_shipping: boolean
+          free_shipping_min_order: number | null
+          id: string
+          shipping_method: string
+          standard_delivery_time: string | null
+          store_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          bronze_delivery_speed?: string | null
+          created_at?: string | null
+          delivery_time_unit?: string | null
+          free_shipping?: boolean
+          free_shipping_min_order?: number | null
+          id?: string
+          shipping_method?: string
+          standard_delivery_time?: string | null
+          store_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          bronze_delivery_speed?: string | null
+          created_at?: string | null
+          delivery_time_unit?: string | null
+          free_shipping?: boolean
+          free_shipping_min_order?: number | null
+          id?: string
+          shipping_method?: string
+          standard_delivery_time?: string | null
+          store_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_settings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
