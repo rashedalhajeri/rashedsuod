@@ -109,9 +109,7 @@ const ProductDetail: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* صور المنتج */}
           <div className="space-y-4">
-            {/* عرض الصورة النشطة */}
             <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border">
               {activeImage ? (
                 <img 
@@ -130,7 +128,6 @@ const ProductDetail: React.FC = () => {
               )}
             </div>
 
-            {/* معرض الصور المصغرة */}
             {allImages.length > 1 && (
               <div className="flex gap-2 overflow-x-auto py-2 px-1">
                 {allImages.map((image, index) => (
@@ -156,7 +153,6 @@ const ProductDetail: React.FC = () => {
             )}
           </div>
 
-          {/* معلومات المنتج */}
           <div className="space-y-6">
             <div>
               <h1 className="text-2xl font-bold mb-2">{product.name}</h1>
