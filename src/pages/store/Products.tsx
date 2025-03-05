@@ -24,15 +24,21 @@ const StoreProducts: React.FC = () => {
       }
       
       try {
-        // Use the new utility function to get store data
+        console.log("Fetching products for store:", storeId);
+        // Use the utility function to get store data
         const { data: storeData, error: storeError } = await getStoreFromUrl(storeId, supabase);
         
-        if (storeError) throw storeError;
-        if (!storeData) {
-          setError("المتجر غير موجود");
-          return;
+        if (storeError) {
+          console.error("Error fetching store:", storeError);
+          throw storeError;
         }
         
+        if (!storeData) {
+          console.error("Store not found for ID:", storeId);
+          throw new Error("المتجر غير موجود");
+        }
+        
+        console.log("Store found:", storeData);
         setStore(storeData);
         
         // Fetch products with the store ID from database

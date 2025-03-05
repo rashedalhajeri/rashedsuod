@@ -22,6 +22,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
     domain_name: string | null;
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch store data on mount
   useEffect(() => {
@@ -32,7 +33,8 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
       }
 
       try {
-        // Use the new utility function to get store data
+        console.log("StorefrontLayout: Fetching store data for:", storeId);
+        // Use the utility function to get store data
         const { data, error } = await getStoreFromUrl(storeId, supabase);
 
         if (error) {
@@ -41,13 +43,15 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
         }
         
         if (!data) {
-          console.error("Store not found");
+          console.error("Store not found for ID:", storeId);
           throw new Error("المتجر غير موجود");
         }
         
+        console.log("Store found:", data);
         setStoreData(data);
       } catch (error) {
         console.error("Error fetching store data:", error);
+        setError("حدث خطأ في تحميل بيانات المتجر");
       } finally {
         setLoading(false);
       }
@@ -75,6 +79,32 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
       href: `${baseUrl}/products`
     }
   ];
+
+  // If there's an error, show a simplified header with error message
+  if (error) {
+    return (
+      <div className="flex flex-col min-h-screen bg-gray-50 rtl">
+        <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
+          <div className="container mx-auto px-4 flex justify-between items-center h-16">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                <StoreIcon className="h-4 w-4 text-primary" />
+              </div>
+              <span className="font-bold text-xl text-gray-900">متجر</span>
+            </div>
+          </div>
+        </header>
+        <main className="flex-1">
+          {children}
+        </main>
+        <footer className="bg-white border-t py-6">
+          <div className="container mx-auto px-4 text-center text-gray-500 text-sm">
+            &copy; {new Date().getFullYear()} - جميع الحقوق محفوظة
+          </div>
+        </footer>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 rtl">
