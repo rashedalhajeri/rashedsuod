@@ -19,11 +19,12 @@ const StorePreview: React.FC<StorePreviewProps> = ({ isOpen, onClose }) => {
   
   // معاينة المتجر ستكون على رابط مثل store.linok.me/{domain_name}
   const previewUrl = storeData?.domain_name 
-    ? `https://store.linok.me/${storeData.domain_name}`
-    : 'https://store.linok.me/demo-store';
+    ? `/store-preview/${storeData.domain_name}`
+    : '/store-preview/demo-store';
   
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(previewUrl).then(() => {
+    const fullUrl = window.location.origin + previewUrl;
+    navigator.clipboard.writeText(fullUrl).then(() => {
       setCopied(true);
       toast({
         title: "تم نسخ الرابط",
@@ -69,7 +70,7 @@ const StorePreview: React.FC<StorePreviewProps> = ({ isOpen, onClose }) => {
           {/* رابط المعاينة */}
           <div className="flex items-center space-x-2 rtl:space-x-reverse">
             <div className="flex-1 bg-muted p-3 rounded-md border">
-              <code className="text-sm truncate block" dir="ltr">{previewUrl}</code>
+              <code className="text-sm truncate block" dir="ltr">{window.location.origin + previewUrl}</code>
             </div>
             <Button size="icon" variant="outline" onClick={copyToClipboard}>
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}

@@ -68,7 +68,7 @@ const StorefrontPreview: React.FC = () => {
   }
   
   return (
-    <StorefrontLayout store={storeData}>
+    <StorefrontLayout storeId={storeData.id}>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold mb-2">{storeData.store_name || "متجر تجريبي"}</h1>
@@ -84,9 +84,9 @@ const StorefrontPreview: React.FC = () => {
               {products.slice(0, 8).map((product) => (
                 <div key={product.id} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
                   <div className="aspect-square bg-gray-100 relative">
-                    {product.images && product.images[0] ? (
+                    {product.image_url ? (
                       <img 
-                        src={product.images[0]} 
+                        src={product.image_url} 
                         alt={product.name} 
                         className="w-full h-full object-cover"
                       />
@@ -96,11 +96,7 @@ const StorefrontPreview: React.FC = () => {
                       </div>
                     )}
                     
-                    {product.discount_price && (
-                      <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
-                        خصم
-                      </div>
-                    )}
+                    {/* يمكن إضافة علامة خصم هنا في المستقبل عند إضافة السعر المخفض للمنتجات */}
                   </div>
                   
                   <div className="p-4">
@@ -109,14 +105,7 @@ const StorefrontPreview: React.FC = () => {
                     
                     <div className="flex items-center justify-between">
                       <div>
-                        {product.discount_price ? (
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-primary">{product.discount_price} ر.س</span>
-                            <span className="text-gray-400 line-through text-sm">{product.price} ر.س</span>
-                          </div>
-                        ) : (
-                          <span className="font-bold text-gray-800">{product.price} ر.س</span>
-                        )}
+                        <span className="font-bold text-gray-800">{product.price} ر.س</span>
                       </div>
                       
                       <button className="bg-primary text-white px-3 py-1 rounded-md text-sm">
