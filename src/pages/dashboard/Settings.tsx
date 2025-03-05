@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, updateStoreDescription } from "@/integrations/supabase/client";
 import PaymentMethodItem from "@/features/dashboard/components/PaymentMethodItem";
 import ShippingMethodForm from "@/features/dashboard/components/ShippingMethodForm";
 import useStoreData, { isPaidPlan } from "@/hooks/use-store-data";
