@@ -1,9 +1,9 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, Plus, Filter, Search, Edit, Trash2, Eye, MoreHorizontal } from "lucide-react";
+import { Package, Plus, Filter, Search, Edit, Trash2, Eye, MoreHorizontal, Upload, Image } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +44,8 @@ const Products: React.FC = () => {
     stock_quantity: 0,
     image_url: null
   });
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { data: storeData } = useStoreData();
   const formatCurrency = getCurrencyFormatter(storeData?.currency || 'SAR');
@@ -78,6 +80,68 @@ const Products: React.FC = () => {
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+  
+  // رفع ملف الصورة
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    // التحقق من نوع الملف
+    if (!file.type.startsWith('image/')) {
+      toast.error("يرجى رفع صورة فقط");
+      return;
+    }
+    
+    // التحقق من حجم الملف (أقل من 5 ميجابايت)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("يجب أن يكون حجم الصورة أقل من 5 ميجابايت");
+      return;
+    }
+    
+    try {
+      setIsUploading(true);
+      
+      if (!storeData?.id) {
+        toast.error("لم يتم العثور على معرف المتجر");
+        return;
+      }
+      
+      // إنشاء اسم فريد للملف
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${storeData.id}/${Date.now()}.${fileExt}`;
+      const filePath = `products/${fileName}`;
+      
+      // رفع الملف إلى تخزين Supabase
+      const { data, error } = await supabase.storage
+        .from('store-images')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // الحصول على رابط الصورة العام
+      const { data: urlData } = supabase.storage
+        .from('store-images')
+        .getPublicUrl(filePath);
+      
+      // تحديث نموذج البيانات مع عنوان URL للصورة
+      setFormData(prev => ({
+        ...prev,
+        image_url: urlData.publicUrl
+      }));
+      
+      toast.success("تم رفع الصورة بنجاح");
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast.error("حدث خطأ أثناء رفع الصورة");
+    } finally {
+      setIsUploading(false);
+    }
+  };
   
   // إضافة منتج جديد
   const handleAddProduct = async () => {
@@ -344,14 +408,75 @@ const Products: React.FC = () => {
                 </div>
                 
                 <div className="grid gap-2">
-                  <Label htmlFor="image_url">رابط الصورة</Label>
-                  <Input 
-                    id="image_url" 
-                    name="image_url" 
-                    placeholder="أدخل رابط صورة المنتج (اختياري)" 
-                    value={formData.image_url || ''} 
-                    onChange={handleInputChange} 
-                  />
+                  <Label htmlFor="image_url">صورة المنتج</Label>
+                  <div className="flex flex-col gap-3">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      ref={fileInputRef}
+                      className="hidden"
+                    />
+                    
+                    {formData.image_url ? (
+                      <div className="relative w-full h-40 bg-gray-100 rounded-md overflow-hidden">
+                        <img 
+                          src={formData.image_url} 
+                          alt="Product" 
+                          className="w-full h-full object-contain" 
+                        />
+                        <Button 
+                          variant="destructive"
+                          size="sm"
+                          className="absolute top-2 right-2"
+                          onClick={() => setFormData(prev => ({ ...prev, image_url: null }))}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div 
+                        className="w-full h-40 border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-gray-50 transition"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        {isUploading ? (
+                          <div className="flex flex-col items-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                            <p className="text-sm text-gray-500 mt-2">جاري رفع الصورة...</p>
+                          </div>
+                        ) : (
+                          <>
+                            <Upload className="h-8 w-8 text-gray-400" />
+                            <p className="text-sm font-medium">اضغط هنا لرفع صورة</p>
+                            <p className="text-xs text-gray-500">يدعم صيغ JPG، PNG بحد أقصى 5MB</p>
+                          </>
+                        )}
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 relative">
+                        <Image className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                          id="image_url" 
+                          name="image_url" 
+                          placeholder="أو أدخل رابط صورة المنتج مباشرة" 
+                          value={formData.image_url || ''} 
+                          onChange={handleInputChange}
+                          className="pl-3 pr-10"
+                        />
+                      </div>
+                      <Button 
+                        type="button" 
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        رفع صورة
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </TabsContent>
@@ -389,7 +514,7 @@ const Products: React.FC = () => {
             <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
               إلغاء
             </Button>
-            <Button onClick={handleAddProduct}>
+            <Button onClick={handleAddProduct} disabled={isUploading}>
               إضافة المنتج
             </Button>
           </DialogFooter>
