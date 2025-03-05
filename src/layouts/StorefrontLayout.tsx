@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import { ErrorState } from "@/components/ui/error-state";
 
 interface StorefrontLayoutProps {
   children: ReactNode;
@@ -20,25 +19,13 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
     logo_url: string | null;
   } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // Fetch store data on mount
   useEffect(() => {
     const fetchStoreData = async () => {
-      if (!storeId) {
-        setError("معرّف المتجر غير متوفر");
-        setLoading(false);
-        return;
-      }
+      if (!storeId) return;
 
       try {
-        // Validate storeId to ensure it's not the parameter placeholder
-        if (storeId === ":storeId") {
-          setError("معرّف المتجر غير صالح");
-          setLoading(false);
-          return;
-        }
-
         const { data, error } = await supabase
           .from("stores")
           .select("store_name, logo_url")
@@ -49,7 +36,6 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
         setStoreData(data);
       } catch (error) {
         console.error("Error fetching store data:", error);
-        setError("حدث خطأ في تحميل بيانات المتجر");
       } finally {
         setLoading(false);
       }
@@ -74,20 +60,6 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
       href: `/store/${storeId}/products`
     }
   ];
-
-  if (error) {
-    return (
-      <div className="flex flex-col min-h-screen bg-gray-50 rtl">
-        <div className="flex-1 flex items-center justify-center">
-          <ErrorState 
-            title="خطأ في تحميل المتجر"
-            message={error}
-            onRetry={() => window.location.reload()}
-          />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 rtl">
