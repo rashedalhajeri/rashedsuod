@@ -114,7 +114,7 @@ const mockRecentProducts = [
   },
   {
     id: "prod-3",
-    name: "حذاء ري��ضي",
+    name: "حذاء ري���ضي",
     thumbnail: null,
     price: 210,
     stock: 0,
@@ -239,6 +239,14 @@ const Dashboard: React.FC = () => {
     conversionRate: 3.7,
     avgOrderValue: 65.8,
     lowStockCount: mockEnhancedProducts.filter(p => p.status !== 'in_stock').length
+  };
+  
+  // Create stats data for the legacy DashboardStats component
+  const statsData = {
+    products: 54,
+    orders: advancedStatsData.orderCount,
+    customers: 35,
+    revenue: advancedStatsData.revenue
   };
   
   return (
