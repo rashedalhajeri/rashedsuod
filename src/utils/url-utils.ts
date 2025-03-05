@@ -14,6 +14,10 @@ export const formatStoreUrl = (domainName: string): string => {
   // Clean the domain name - remove any protocol or www prefix if present
   const cleanDomain = domainName.replace(/^(https?:\/\/)?(www\.)?/, '');
   
+  // Check if we're in development environment (localhost)
+  const isDevelopment = window.location.hostname === 'localhost' || 
+                        window.location.hostname.includes('lovableproject.com');
+  
   // If it already includes linok.me, ensure it's properly formatted
   if (cleanDomain.includes('linok.me')) {
     // Extract just the subdomain part
@@ -24,7 +28,13 @@ export const formatStoreUrl = (domainName: string): string => {
     return `https://${cleanDomain}`;
   }
   
-  // Format as subdomain
+  // In development environment, format as a path instead of subdomain
+  if (isDevelopment) {
+    // Use current origin for development
+    return `${window.location.origin}/store/${cleanDomain}`;
+  }
+  
+  // In production, format as subdomain
   return `https://${cleanDomain}.linok.me`;
 };
 
@@ -36,13 +46,28 @@ export const formatStoreUrl = (domainName: string): string => {
 export const getStoreUrl = (storeData: any): string => {
   if (!storeData) return '';
   
-  // If domain name exists, use it to create the subdomain URL
+  // Check if we're in development environment
+  const isDevelopment = window.location.hostname === 'localhost' || 
+                        window.location.hostname.includes('lovableproject.com');
+  
+  // If domain name exists, use it to create the URL
   if (storeData.domain_name) {
     return formatStoreUrl(storeData.domain_name);
   }
   
-  // Fallback to ID-based URL if domain name is not available
-  return storeData.id ? `/store/${storeData.id}` : '';
+  // Fallback to ID-based URL
+  if (storeData.id) {
+    // In development, use path-based URL
+    if (isDevelopment) {
+      return `${window.location.origin}/store/${storeData.id}`;
+    }
+    
+    // In production with no domain name yet, also use path-based URL
+    // This will be changed once the domain is properly set up
+    return `/store/${storeData.id}`;
+  }
+  
+  return '';
 };
 
 /**
