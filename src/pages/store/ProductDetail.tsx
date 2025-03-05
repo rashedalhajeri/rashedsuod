@@ -1,259 +1,369 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { motion } from "framer-motion";
+import { ChevronLeft, Minus, Plus, ShoppingBag, Heart, Share2, Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { LoadingState } from "@/components/ui/loading-state";
-import { ErrorState } from "@/components/ui/error-state";
-import { Button } from "@/components/ui/button";
-import { ShoppingBag, Heart, Share2, ChevronRight } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
 import StorefrontLayout from "@/layouts/StorefrontLayout";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { toast } from "sonner";
+import { useStoreData, getCurrencyFormatter } from "@/hooks/use-store-data";
+import { useShoppingCart } from "@/hooks/use-shopping-cart";
 
-const ProductDetail: React.FC = () => {
-  const { storeId, productId } = useParams<{ storeId: string; productId: string }>();
+const ProductDetailPage = () => {
+  const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
+  const { data: storeData } = useStoreData();
+  const { addToCart } = useShoppingCart();
+  
   const [quantity, setQuantity] = useState(1);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
   
-  // Fetch store data
-  const { data: storeData, isLoading: isLoadingStore, error: storeError } = useQuery({
-    queryKey: ["store", storeId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("stores")
-        .select("*")
-        .eq("domain_name", storeId)
-        .single();
-        
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!storeId,
-  });
+  const formatCurrency = storeData 
+    ? getCurrencyFormatter(storeData.currency) 
+    : (price: number) => `${price.toFixed(2)} KWD`;
   
-  // Fetch product data
-  const { 
-    data: product, 
-    isLoading: isLoadingProduct, 
-    error: productError 
-  } = useQuery({
-    queryKey: ["product", productId],
+  const { data: product, isLoading } = useQuery({
+    queryKey: ['product', productId],
     queryFn: async () => {
+      if (!productId) throw new Error("Product ID is required");
+      
       const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("id", productId)
+        .from('products')
+        .select('*')
+        .eq('id', productId)
         .single();
         
       if (error) throw error;
       return data;
     },
     enabled: !!productId,
+    meta: {
+      onError: (error: Error) => {
+        toast.error("حدث خطأ أثناء تحميل تفاصيل المنتج");
+        console.error(error);
+      }
+    }
   });
   
-  // Set RTL direction for Arabic
-  useEffect(() => {
-    document.documentElement.dir = "rtl";
-    document.documentElement.lang = "ar";
-    
-    return () => {
-      document.documentElement.dir = "ltr";
-      document.documentElement.lang = "en";
-    };
-  }, []);
+  const { data: relatedProducts, isLoading: isLoadingRelated } = useQuery({
+    queryKey: ['relatedProducts', product?.store_id],
+    queryFn: async () => {
+      if (!product?.store_id) return [];
+      
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('store_id', product.store_id)
+        .neq('id', product.id)
+        .order('created_at', { ascending: false })
+        .limit(4);
+        
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!product?.store_id
+  });
+  
+  const decreaseQuantity = () => {
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
+    }
+  };
+  
+  const increaseQuantity = () => {
+    if (quantity < 99) {
+      setQuantity(quantity + 1);
+    }
+  };
   
   const handleAddToCart = () => {
     if (!product) return;
     
-    // Get existing cart items or initialize an empty array
-    const existingCartItems = JSON.parse(localStorage.getItem("cart-items") || "[]");
+    setIsAddingToCart(true);
     
-    // Check if product is already in cart
-    const existingItemIndex = existingCartItems.findIndex(
-      (item: any) => item.id === product.id
-    );
-    
-    if (existingItemIndex >= 0) {
-      // Update quantity if product already exists in cart
-      existingCartItems[existingItemIndex].quantity += quantity;
-    } else {
-      // Add new item to cart
-      existingCartItems.push({
-        id: product.id,
+    setTimeout(() => {
+      addToCart({
+        productId: product.id,
         name: product.name,
         price: product.price,
         quantity: quantity,
-        image_url: product.image_url,
-        store_id: product.store_id
+        imageUrl: product.image_url
       });
-    }
-    
-    // Save updated cart to localStorage
-    localStorage.setItem("cart-items", JSON.stringify(existingCartItems));
-    
-    // Dispatch custom event to notify other components of cart update
-    window.dispatchEvent(new Event("cart-updated"));
-    
-    toast.success("تمت إضافة المنتج إلى السلة");
+      
+      setIsAddingToCart(false);
+    }, 500);
   };
   
-  const handleQuantityChange = (value: number) => {
-    setQuantity(Math.max(1, value));
-  };
-  
-  if (isLoadingStore || isLoadingProduct) {
-    return <LoadingState message="جاري تحميل المنتج..." />;
-  }
-  
-  if (storeError || !storeData) {
+  if (isLoading) {
     return (
-      <ErrorState
-        title="لم يتم العثور على المتجر"
-        message="تعذر العثور على المتجر المطلوب"
-      />
+      <StorefrontLayout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <Skeleton className="h-96 w-full rounded-xl" />
+              <div className="space-y-4">
+                <Skeleton className="h-10 w-3/4" />
+                <Skeleton className="h-6 w-1/4" />
+                <Skeleton className="h-24 w-full" />
+                <div className="pt-4 space-y-4">
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </StorefrontLayout>
     );
   }
   
-  if (productError || !product) {
+  if (!product) {
     return (
-      <ErrorState
-        title="لم يتم العثور على المنتج"
-        message="تعذر العثور على المنتج المطلوب"
-      />
+      <StorefrontLayout>
+        <div className="container mx-auto px-4 py-16 text-center">
+          <div className="text-6xl mb-4">😢</div>
+          <h1 className="text-2xl font-bold mb-2">لم يتم العثور على المنتج</h1>
+          <p className="text-gray-600 mb-6">
+            المنتج الذي تبحث عنه غير موجود أو تم حذفه
+          </p>
+          <Button
+            onClick={() => navigate('/store/products')}
+            className="flex items-center gap-2"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            العودة إلى المنتجات
+          </Button>
+        </div>
+      </StorefrontLayout>
     );
   }
   
   return (
-    <StorefrontLayout storeData={storeData}>
+    <StorefrontLayout storeId={product.store_id}>
       <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumb */}
         <div className="flex items-center text-sm text-gray-500 mb-6">
-          <button onClick={() => navigate(`/store/${storeId}`)} className="hover:text-primary">
-            الرئيسية
-          </button>
-          <ChevronRight className="h-4 w-4 mx-2" />
-          <button onClick={() => navigate(`/store/${storeId}/products`)} className="hover:text-primary">
-            المنتجات
-          </button>
-          <ChevronRight className="h-4 w-4 mx-2" />
-          <span className="text-gray-700 font-medium truncate">{product.name}</span>
+          <a href="/store" className="hover:text-primary">الرئيسية</a>
+          <span className="mx-2">/</span>
+          <a href="/store/products" className="hover:text-primary">المنتجات</a>
+          <span className="mx-2">/</span>
+          <span className="text-gray-900">{product.name}</span>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-          {/* Product Image */}
-          <div className="bg-white rounded-lg overflow-hidden shadow-md">
-            <div className="aspect-square relative">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-gray-50 rounded-xl overflow-hidden">
               {product.image_url ? (
                 <img
                   src={product.image_url}
                   alt={product.name}
-                  className="w-full h-full object-contain"
+                  className="w-full h-auto object-contain mx-auto"
+                  style={{ maxHeight: '400px' }}
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                <div className="w-full h-96 flex items-center justify-center bg-gray-100">
                   <span className="text-gray-400">لا توجد صورة</span>
                 </div>
               )}
             </div>
-          </div>
-          
-          {/* Product Details */}
-          <div className="bg-white rounded-lg p-6 shadow-sm">
-            <h1 className="text-2xl font-bold mb-2">{product.name}</h1>
             
-            <div className="flex items-center justify-between mb-6">
-              <div className="text-2xl font-bold text-primary">{product.price} ر.س</div>
+            <div>
+              <h1 className="text-2xl font-bold mb-2">{product.name}</h1>
               
-              <div className="flex items-center space-x-2 space-x-reverse">
-                <Button size="sm" variant="outline" className="rounded-full w-10 h-10 p-0">
-                  <Heart className="h-5 w-5" />
-                </Button>
-                <Button size="sm" variant="outline" className="rounded-full w-10 h-10 p-0">
-                  <Share2 className="h-5 w-5" />
-                </Button>
+              <div className="text-2xl font-bold text-primary-700 mb-4">
+                {formatCurrency(product.price)}
               </div>
-            </div>
-            
-            {product.stock_quantity !== null && product.stock_quantity > 0 ? (
-              <Badge className="bg-green-500 mb-4">متوفر في المخزون</Badge>
-            ) : (
-              <Badge variant="destructive" className="mb-4">غير متوفر حاليًا</Badge>
-            )}
-            
-            <div className="mb-6">
-              <p className="text-gray-600">{product.description || "لا يوجد وصف متاح لهذا المنتج."}</p>
-            </div>
-            
-            {/* Quantity Selector */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium mb-2">الكمية</label>
-              <div className="flex items-center">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-10 w-10 rounded-r-md"
-                  onClick={() => handleQuantityChange(quantity - 1)}
-                  disabled={quantity <= 1}
-                >
-                  -
-                </Button>
-                <div className="h-10 w-16 flex items-center justify-center border-y border-gray-200">
-                  {quantity}
+              
+              <div className="border-t border-b py-4 mb-6">
+                <p className="text-gray-700 leading-relaxed">
+                  {product.description || "لا يوجد وصف متاح لهذا المنتج."}
+                </p>
+              </div>
+              
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  الكمية
+                </label>
+                <div className="flex items-center border border-gray-300 rounded-md w-fit">
+                  <button
+                    type="button"
+                    className="px-3 py-2 text-gray-600 hover:text-primary-600 disabled:opacity-50"
+                    onClick={decreaseQuantity}
+                    disabled={quantity <= 1}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <span className="px-4 py-2 text-center w-12">{quantity}</span>
+                  <button
+                    type="button"
+                    className="px-3 py-2 text-gray-600 hover:text-primary-600 disabled:opacity-50"
+                    onClick={increaseQuantity}
+                    disabled={quantity >= 99}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
                 </div>
+              </div>
+              
+              {product.stock_quantity !== null && (
+                <div className="flex items-center mb-6">
+                  <div
+                    className={`flex items-center ${
+                      product.stock_quantity > 0 ? "text-green-600" : "text-red-600"
+                    }`}
+                  >
+                    {product.stock_quantity > 0 ? (
+                      <>
+                        <Check className="h-5 w-5 mr-1" />
+                        <span>متوفر في المخزن</span>
+                      </>
+                    ) : (
+                      <>
+                        <X className="h-5 w-5 mr-1" />
+                        <span>غير متوفر حالياً</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              <div className="space-y-3">
                 <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-10 w-10 rounded-l-md"
-                  onClick={() => handleQuantityChange(quantity + 1)}
+                  className="w-full flex items-center justify-center py-6"
+                  disabled={isAddingToCart || (product.stock_quantity !== null && product.stock_quantity <= 0)}
+                  onClick={handleAddToCart}
                 >
-                  +
+                  {isAddingToCart ? (
+                    <div className="flex items-center">
+                      <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      جاري الإضافة...
+                    </div>
+                  ) : (
+                    <>
+                      <ShoppingBag className="mr-2 h-5 w-5" />
+                      إضافة إلى السلة
+                    </>
+                  )}
                 </Button>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <Button variant="outline" className="flex items-center justify-center">
+                    <Heart className="mr-2 h-5 w-5" />
+                    أضف للمفضلة
+                  </Button>
+                  <Button variant="outline" className="flex items-center justify-center">
+                    <Share2 className="mr-2 h-5 w-5" />
+                    مشاركة
+                  </Button>
+                </div>
               </div>
             </div>
-            
-            {/* Add to Cart Button */}
-            <Button
-              className="w-full mb-4"
-              size="lg"
-              onClick={handleAddToCart}
-              disabled={product.stock_quantity !== null && product.stock_quantity <= 0}
-            >
-              <ShoppingBag className="ml-2 h-5 w-5" />
-              إضافة إلى السلة
-            </Button>
           </div>
         </div>
         
-        {/* Product Tabs */}
-        <Tabs defaultValue="details" className="mb-12">
-          <TabsList className="mb-4 w-full justify-start">
-            <TabsTrigger value="details">التفاصيل</TabsTrigger>
-            <TabsTrigger value="specifications">المواصفات</TabsTrigger>
-            <TabsTrigger value="reviews">التقييمات</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="details" className="bg-white p-6 rounded-lg shadow-sm">
-            <h3 className="text-xl font-semibold mb-4">تفاصيل المنتج</h3>
-            <p className="text-gray-600">
-              {product.description || "لا توجد تفاصيل إضافية لهذا المنتج."}
-            </p>
-          </TabsContent>
-          
-          <TabsContent value="specifications" className="bg-white p-6 rounded-lg shadow-sm">
-            <h3 className="text-xl font-semibold mb-4">مواصفات المنتج</h3>
-            <p className="text-gray-600">لا توجد مواصفات إضافية لهذا المنتج.</p>
-          </TabsContent>
-          
-          <TabsContent value="reviews" className="bg-white p-6 rounded-lg shadow-sm">
-            <h3 className="text-xl font-semibold mb-4">تقييمات العملاء</h3>
-            <p className="text-gray-600">لا توجد تقييمات لهذا المنتج حتى الآن.</p>
-          </TabsContent>
-        </Tabs>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-8">
+          <Tabs defaultValue="description">
+            <TabsList className="w-full border-b">
+              <TabsTrigger value="description" className="flex-1">الوصف</TabsTrigger>
+              <TabsTrigger value="details" className="flex-1">التفاصيل</TabsTrigger>
+              <TabsTrigger value="shipping" className="flex-1">الشحن والإرجاع</TabsTrigger>
+            </TabsList>
+            <div className="p-6">
+              <TabsContent value="description">
+                <div className="prose max-w-none">
+                  <p>{product.description || "لا يوجد وصف متاح لهذا المنتج."}</p>
+                </div>
+              </TabsContent>
+              <TabsContent value="details">
+                <div className="prose max-w-none">
+                  <table className="w-full text-sm">
+                    <tbody>
+                      <tr className="border-b">
+                        <td className="py-2 font-medium">الكود</td>
+                        <td className="py-2">{product.id.substring(0, 8).toUpperCase()}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 font-medium">السعر</td>
+                        <td className="py-2">{formatCurrency(product.price)}</td>
+                      </tr>
+                      {product.stock_quantity !== null && (
+                        <tr className="border-b">
+                          <td className="py-2 font-medium">المخزون</td>
+                          <td className="py-2">{product.stock_quantity} وحدة</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </TabsContent>
+              <TabsContent value="shipping">
+                <div className="prose max-w-none">
+                  <h4 className="text-lg font-medium mb-2">سياسة الشحن</h4>
+                  <p className="mb-4">يتم شحن المنتجات خلال 1-3 أيام عمل من تاريخ الطلب. تختلف رسوم الشحن حسب الموقع والوزن.</p>
+                  
+                  <h4 className="text-lg font-medium mb-2">سياسة الإرجاع</h4>
+                  <p>يمكن إرجاع المنتجات خلال 14 يومًا من تاريخ الاستلام شريطة أن تكون في حالتها الأصلية وغير مستخدمة.</p>
+                </div>
+              </TabsContent>
+            </div>
+          </Tabs>
+        </div>
+        
+        {relatedProducts && relatedProducts.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold mb-6">منتجات ذات صلة</h2>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {isLoadingRelated ? (
+                [...Array(4)].map((_, i) => (
+                  <Skeleton key={i} className="h-64 w-full rounded-lg" />
+                ))
+              ) : (
+                relatedProducts.map((relatedProduct) => (
+                  <motion.div
+                    key={relatedProduct.id}
+                    className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-gray-100"
+                    whileHover={{ y: -5 }}
+                  >
+                    <div
+                      className="relative h-48 bg-gray-100 cursor-pointer"
+                      onClick={() => navigate(`/store/products/${relatedProduct.id}`)}
+                    >
+                      {relatedProduct.image_url ? (
+                        <img
+                          src={relatedProduct.image_url}
+                          alt={relatedProduct.name}
+                          className="w-full h-full object-cover object-center"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                          <span className="text-gray-400">لا توجد صورة</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="p-4">
+                      <h3 
+                        className="font-medium text-lg mb-2 cursor-pointer hover:text-primary truncate"
+                        onClick={() => navigate(`/store/products/${relatedProduct.id}`)}
+                      >
+                        {relatedProduct.name}
+                      </h3>
+                      <p className="text-primary-700 font-bold">
+                        {formatCurrency(relatedProduct.price)}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </StorefrontLayout>
   );
 };
 
-export default ProductDetail;
+export default ProductDetailPage;

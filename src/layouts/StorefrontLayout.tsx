@@ -2,6 +2,8 @@
 import React, { ReactNode, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import useStoreData from "@/hooks/use-store-data";
 import { ShoppingBag, Menu, X, Search, Heart, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,14 +11,15 @@ import { Badge } from "@/components/ui/badge";
 
 interface StorefrontLayoutProps {
   children: ReactNode;
-  storeData: any; // Use the complete store data object passed from StorefrontPreview
+  storeId?: string;
 }
 
 const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ 
   children, 
-  storeData 
+  storeId 
 }) => {
   const navigate = useNavigate();
+  const { data: storeData } = useStoreData();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(0);

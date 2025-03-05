@@ -1,12 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import useStoreData, { getCurrencyFormatter } from "@/hooks/use-store-data";
 import { secureRetrieve } from "@/lib/encryption";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import LoadingState from "@/components/ui/loading-state";
 import ErrorState from "@/components/ui/error-state";
-import { Eye } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 // Import components
 import WelcomeSection from "@/features/dashboard/components/WelcomeSection";
@@ -20,9 +18,6 @@ import NotificationCenter from "@/features/dashboard/components/NotificationCent
 import AdvancedStats from "@/features/dashboard/components/AdvancedStats";
 import EnhancedSalesChart from "@/features/dashboard/components/EnhancedSalesChart";
 import InventoryTracker from "@/features/dashboard/components/InventoryTracker";
-
-// Import StorePreview component
-import StorePreview from "@/features/dashboard/components/StorePreview";
 
 // بيانات المبيعات للعرض
 const mockSalesData = [
@@ -119,7 +114,7 @@ const mockRecentProducts = [
   },
   {
     id: "prod-3",
-    name: "حذاء رياض��",
+    name: "حذاء رياضي",
     thumbnail: null,
     price: 210,
     stock: 0,
@@ -199,9 +194,6 @@ const Dashboard: React.FC = () => {
   // Fetch store data using the custom hook
   const { data: storeData, isLoading, error } = useStoreData();
   
-  // State for Store Preview modal
-  const [previewOpen, setPreviewOpen] = useState(false);
-  
   // Fetch user name
   const [userName, setUserName] = React.useState<string>("المدير");
   
@@ -271,25 +263,11 @@ const Dashboard: React.FC = () => {
           lowStockCount={5}
         />
         
-        {/* Notification Center and Preview Button */}
+        {/* Notification Center */}
         <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            className="flex items-center gap-1 bg-white hover:bg-primary/5 hover:text-primary hover:border-primary"
-            onClick={() => setPreviewOpen(true)}
-          >
-            <Eye className="h-4 w-4 ml-1" />
-            معاينة المتجر
-          </Button>
           <NotificationCenter />
         </div>
       </div>
-      
-      {/* Store Preview Modal */}
-      <StorePreview 
-        isOpen={previewOpen} 
-        onClose={() => setPreviewOpen(false)}
-      />
       
       {/* Advanced Stats Cards */}
       <AdvancedStats 
