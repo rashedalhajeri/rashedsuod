@@ -15,6 +15,11 @@ const DesignSettings: React.FC<DesignSettingsProps> = ({ storeData }) => {
     ? `https://${storeData.domain_name}` 
     : `/store/${storeData?.id}`;
     
+  // Handle store navigation in the same tab
+  const navigateToStore = () => {
+    window.location.href = storeUrl;
+  };
+  
   return (
     <div className="space-y-4">
       <Card className="border-primary/10 bg-white shadow-sm">
@@ -30,7 +35,7 @@ const DesignSettings: React.FC<DesignSettingsProps> = ({ storeData }) => {
             <Button 
               variant="outline" 
               className="flex items-center gap-2" 
-              onClick={() => window.open(storeUrl, '_blank')}
+              onClick={navigateToStore}
             >
               <ExternalLink className="h-4 w-4" />
               <span>معاينة وتحرير المتجر مباشرة</span>
