@@ -94,10 +94,11 @@ export const getStoreFromUrl = async (storeId: string, supabase: any) => {
     const cleanId = storeId.replace(/:/g, '');
     
     // First try to fetch by domain name (more likely in production)
+    // Using ILIKE instead of EQ for case-insensitive matching
     let { data, error } = await supabase
       .from("stores")
       .select("*")
-      .eq("domain_name", cleanId)
+      .ilike("domain_name", cleanId)
       .maybeSingle();
     
     // If not found by domain, try by UUID
