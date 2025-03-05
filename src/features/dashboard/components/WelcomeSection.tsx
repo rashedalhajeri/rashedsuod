@@ -5,7 +5,6 @@ import { Sparkles, Copy, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { getFullStoreUrl } from "@/utils/url-utils";
 
 interface WelcomeSectionProps {
   storeName: string;
@@ -36,7 +35,7 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
     greeting = "مساء الخير";
   }
   
-  // Generate store URL using our utility function
+  // Generate store URL if not provided
   const finalStoreUrl = storeUrl || (storeId ? `/store/${storeId}` : '');
   
   // Copy store link to clipboard
@@ -45,8 +44,10 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
     
     setCopying(true);
     
-    // Use utility to get full URL
-    const fullUrl = getFullStoreUrl(storeId, storeUrl);
+    // Create full URL with domain
+    const fullUrl = finalStoreUrl.startsWith('http') 
+      ? finalStoreUrl 
+      : `${window.location.origin}${finalStoreUrl}`;
       
     navigator.clipboard.writeText(fullUrl)
       .then(() => {
@@ -64,13 +65,7 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
   // Navigate to store
   const visitStore = () => {
     if (!finalStoreUrl) return;
-    
-    // Handle both relative and absolute URLs
-    if (finalStoreUrl.startsWith('http')) {
-      window.open(finalStoreUrl, '_blank');
-    } else {
-      window.location.href = finalStoreUrl;
-    }
+    window.location.href = finalStoreUrl;
   };
   
   return (

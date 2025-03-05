@@ -1,3 +1,4 @@
+
 import React, { ReactNode, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ShoppingCart, Search, User, Menu, X, Store as StoreIcon } from "lucide-react";
@@ -5,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import { formatStoreUrl } from "@/utils/url-utils";
 
 interface StorefrontLayoutProps {
   children: ReactNode;
@@ -20,6 +20,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Fetch store data on mount
   useEffect(() => {
     const fetchStoreData = async () => {
       if (!storeId) return;
@@ -43,10 +44,12 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
     fetchStoreData();
   }, [storeId]);
 
+  // Toggle menu open/close
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  // Menu items
   const menuItems = [
     {
       label: "الرئيسية",
@@ -60,8 +63,10 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 rtl">
+      {/* Header */}
       <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
         <div className="container mx-auto px-4 flex justify-between items-center h-16">
+          {/* Logo and Store Name */}
           <Link to={`/store/${storeId}`} className="flex items-center gap-2">
             {storeData?.logo_url ? (
               <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border border-gray-100">
@@ -84,6 +89,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
             </span>
           </Link>
 
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6 space-x-reverse">
             {menuItems.map((item, index) => (
               <Link 
@@ -96,6 +102,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
             ))}
           </nav>
 
+          {/* Action Buttons */}
           <div className="flex items-center space-x-4 space-x-reverse">
             <Link to={`/store/${storeId}/cart`}>
               <Button variant="ghost" size="icon">
@@ -103,6 +110,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
               </Button>
             </Link>
 
+            {/* Mobile Menu Button */}
             <div className="md:hidden">
               <Sheet>
                 <SheetTrigger asChild>
@@ -153,10 +161,12 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
         </div>
       </header>
 
+      {/* Main Content */}
       <main className="flex-1">
         {children}
       </main>
 
+      {/* Footer */}
       <footer className="bg-white border-t py-6">
         <div className="container mx-auto px-4 text-center text-gray-500 text-sm">
           &copy; {new Date().getFullYear()} - {storeData?.store_name || "المتجر"} | جميع الحقوق محفوظة

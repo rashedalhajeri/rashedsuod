@@ -1,3 +1,4 @@
+
 import React from "react";
 import useStoreData, { getCurrencyFormatter } from "@/hooks/use-store-data";
 import { secureRetrieve } from "@/lib/encryption";
@@ -5,10 +6,19 @@ import DashboardLayout from "@/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import LoadingState from "@/components/ui/loading-state";
 import ErrorState from "@/components/ui/error-state";
-import { formatStoreUrl } from "@/utils/url-utils";
 
 // Import components
 import WelcomeSection from "@/features/dashboard/components/WelcomeSection";
+import DashboardStats from "@/features/dashboard/components/DashboardStats";
+import QuickActions from "@/features/dashboard/components/QuickActions";
+import ActivitySummary from "@/features/dashboard/components/ActivitySummary";
+import { Order, OrderStatus } from "@/types/orders";
+
+// Import new enhanced components
+import NotificationCenter from "@/features/dashboard/components/NotificationCenter";
+import AdvancedStats from "@/features/dashboard/components/AdvancedStats";
+import EnhancedSalesChart from "@/features/dashboard/components/EnhancedSalesChart";
+import InventoryTracker from "@/features/dashboard/components/InventoryTracker";
 
 // بيانات المبيعات للعرض
 const mockSalesData = [
@@ -105,7 +115,7 @@ const mockRecentProducts = [
   },
   {
     id: "prod-3",
-    name: "حذاء ري��ضي",
+    name: "حذاء رياضي",
     thumbnail: null,
     price: 210,
     stock: 0,
@@ -223,8 +233,10 @@ const Dashboard: React.FC = () => {
   // Format currency based on store settings
   const formatCurrency = getCurrencyFormatter(storeData?.currency || 'SAR');
   
-  // Generate the store URL using our utility function
-  const storeUrl = formatStoreUrl(storeData?.id, storeData?.domain_name);
+  // Generate the store URL
+  const storeUrl = storeData?.domain_name 
+    ? `https://${storeData.domain_name}` 
+    : `/store/${storeData?.id}`;
   
   // Stats data for demonstration
   const statsData = {
@@ -260,6 +272,11 @@ const Dashboard: React.FC = () => {
             storeUrl={storeUrl}
             storeId={storeData?.id}
           />
+          
+          {/* Notification Center */}
+          <div className="w-full md:w-auto">
+            <NotificationCenter />
+          </div>
         </div>
         
         {/* Advanced Stats Cards */}
