@@ -72,36 +72,41 @@ export const useProducts = ({
         setHasMore((currentPage + 1) * limit < count);
       }
 
-      // Transform the data to ensure it matches the Product interface
-      const transformedData: Product[] = data ? data.map(item => {
-        // Process additional_images to ensure they're strings
-        let processedImages: string[] | null = null;
-        
-        if (item.additional_images) {
-          if (Array.isArray(item.additional_images)) {
-            processedImages = [];
-            // Directly process each item
-            for (let i = 0; i < item.additional_images.length; i++) {
-              const img = item.additional_images[i];
-              if (img !== null) {
-                processedImages.push(typeof img === 'string' ? img : String(img));
+      // Transform the data with simplified type handling
+      const transformedData: Product[] = [];
+      
+      if (data) {
+        for (const item of data) {
+          let processedImages: string[] = [];
+          
+          // Handle additional_images with explicit type checking
+          if (item.additional_images) {
+            if (Array.isArray(item.additional_images)) {
+              for (let i = 0; i < item.additional_images.length; i++) {
+                const img = item.additional_images[i];
+                if (img !== null) {
+                  processedImages.push(typeof img === 'string' ? img : String(img));
+                }
               }
+            } else if (typeof item.additional_images === 'string') {
+              processedImages = [item.additional_images];
             }
-          } else if (typeof item.additional_images === 'string') {
-            processedImages = [item.additional_images];
           }
+          
+          // Create a product object that strictly follows the Product interface
+          const product: Product = {
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            description: item.description || null,
+            image_url: item.image_url,
+            stock_quantity: item.stock_quantity || 0,
+            additional_images: processedImages
+          };
+          
+          transformedData.push(product);
         }
-        
-        return {
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          description: item.description || null,
-          image_url: item.image_url,
-          stock_quantity: item.stock_quantity || 0,
-          additional_images: processedImages
-        };
-      }) : [];
+      }
 
       if (append) {
         setProducts(prev => [...prev, ...transformedData]);
