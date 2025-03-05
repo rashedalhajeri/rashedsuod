@@ -4,7 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Truck, Package, Clock, MapPin, Info } from "lucide-react";
+import { Truck, Package, Clock, MapPin, Info, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
   const [freeShipping, setFreeShipping] = useState(false);
   const [bronzeDelivery, setBronzeDelivery] = useState(false);
   const [customZones, setCustomZones] = useState(false);
+  const [selectedDeliverySpeed, setSelectedDeliverySpeed] = useState("standard");
   
   // تعطيل خيارات الشحن الأخرى عند تفعيل خدمة برونز
   const handleBronzeDeliveryChange = (checked: boolean) => {
@@ -35,11 +36,11 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
   return (
     <div className="space-y-4">
       {/* خدمة توصيل برونز */}
-      <div className="relative rounded-lg border border-amber-200 bg-amber-50 shadow-sm">
+      <div className="relative rounded-lg border border-primary-200 bg-primary-50 shadow-sm">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center space-x-3 rtl:space-x-reverse">
-            <div className="rounded-full bg-amber-100 p-2">
-              <Truck className="h-5 w-5 text-amber-600" />
+            <div className="rounded-full bg-primary-100 p-2">
+              <Truck className="h-5 w-5 text-primary-600" />
             </div>
             <div>
               <h3 className="font-medium">توصيل فريق برونز</h3>
@@ -56,24 +57,52 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
         {bronzeDelivery && (
           <div className="border-t bg-white p-4">
             <div className="space-y-3">
-              <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-800">
+              <div className="rounded-md bg-primary-50 p-3 text-sm text-primary-800">
                 <p className="flex items-center gap-1">
                   <Info className="h-4 w-4" />
-                  تم تفعيل خدمة توصيل برونز. جميع الطلبات ستُحول تلقائياً إلى لوحة تحكم فريق برونز.
+                  جميع الطلبات ستُحول تلقائياً إلى لوحة تحكم فريق برونز
                 </p>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <Card className="border-amber-100">
+              <div className="grid grid-cols-1 gap-2">
+                <div className="text-sm font-medium mb-2">سرعة التوصيل:</div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                  <Card 
+                    className={`border-primary-100 transition-all cursor-pointer hover:shadow-md ${selectedDeliverySpeed === "standard" ? "bg-primary-50 ring-1 ring-primary-400" : ""}`}
+                    onClick={() => setSelectedDeliverySpeed("standard")}
+                  >
+                    <CardContent className="p-3 flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-primary-600" />
+                      <span>توصيل قياسي (2-3 أيام)</span>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card 
+                    className={`border-primary-100 transition-all cursor-pointer hover:shadow-md ${selectedDeliverySpeed === "express" ? "bg-primary-50 ring-1 ring-primary-400" : ""}`}
+                    onClick={() => setSelectedDeliverySpeed("express")}
+                  >
+                    <CardContent className="p-3 flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-primary-600" />
+                      <span>توصيل سريع (24 ساعة)</span>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card 
+                    className={`border-primary-100 transition-all cursor-pointer hover:shadow-md ${selectedDeliverySpeed === "same_day" ? "bg-primary-50 ring-1 ring-primary-400" : ""}`}
+                    onClick={() => setSelectedDeliverySpeed("same_day")}
+                  >
+                    <CardContent className="p-3 flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-primary-600" />
+                      <span>توصيل في نفس اليوم</span>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                <Card className="border-primary-100 mt-2">
                   <CardContent className="p-3 flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-amber-600" />
-                    <span>تغطية شاملة لجميع مناطق المملكة</span>
-                  </CardContent>
-                </Card>
-                <Card className="border-amber-100">
-                  <CardContent className="p-3 flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-amber-600" />
-                    <span>توصيل سريع خلال 24-48 ساعة</span>
+                    <MapPin className="h-4 w-4 text-primary-600" />
+                    <span>تغطية شاملة لجميع مناطق الكويت</span>
                   </CardContent>
                 </Card>
               </div>
