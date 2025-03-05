@@ -31,6 +31,17 @@ const ProductDialog: React.FC<ProductDialogProps> = ({ isOpen, onClose, onSucces
     handleAddProduct
   } = useProductForm(storeData, onClose, onSuccess);
 
+  // Handle form data updates from the images tab
+  const handleImageDataChange = (newData: Partial<ProductFormData>) => {
+    if ('image_url' in newData) {
+      formData.image_url = newData.image_url || null;
+    }
+    
+    if ('additional_images' in newData && newData.additional_images) {
+      formData.additional_images = newData.additional_images;
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
       if (!open) {
@@ -73,22 +84,7 @@ const ProductDialog: React.FC<ProductDialogProps> = ({ isOpen, onClose, onSucces
                 formData={formData}
                 formErrors={formErrors}
                 storeData={storeData}
-                onFormDataChange={(newData: Partial<ProductFormData>) => {
-                  // Create a new formData object with updated values
-                  const updatedFormData = { ...formData };
-                  
-                  if ('image_url' in newData) {
-                    updatedFormData.image_url = newData.image_url || null;
-                  }
-                  
-                  if ('additional_images' in newData && newData.additional_images) {
-                    updatedFormData.additional_images = newData.additional_images;
-                  }
-                  
-                  // Update the form data state
-                  formData.image_url = updatedFormData.image_url;
-                  formData.additional_images = updatedFormData.additional_images;
-                }}
+                onFormDataChange={handleImageDataChange}
               />
             </TabsContent>
             
@@ -109,7 +105,7 @@ const ProductDialog: React.FC<ProductDialogProps> = ({ isOpen, onClose, onSucces
             إلغاء
           </Button>
           <Button 
-            onClick={() => handleAddProduct()}
+            onClick={handleAddProduct}
             disabled={isUploading}
             className="bg-primary hover:bg-primary/90"
           >
