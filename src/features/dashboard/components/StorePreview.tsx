@@ -17,10 +17,10 @@ const StorePreview: React.FC<StorePreviewProps> = ({ isOpen, onClose }) => {
   const { toast } = useToast();
   const [copied, setCopied] = React.useState(false);
   
-  // Use the store domain for the preview URL
+  // معاينة المتجر ستكون على رابط مثل store.linok.me/{domain_name}
   const previewUrl = storeData?.domain_name 
-    ? `/store/${storeData.domain_name}`
-    : `/store/demo-store`;
+    ? `/store-preview/${storeData.domain_name}`
+    : '/store-preview/demo-store';
   
   const copyToClipboard = () => {
     const fullUrl = window.location.origin + previewUrl;

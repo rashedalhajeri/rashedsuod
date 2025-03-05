@@ -297,7 +297,6 @@ export type Database = {
           country: string
           created_at: string
           currency: string
-          description: string | null
           domain_name: string
           id: string
           logo_url: string | null
@@ -313,7 +312,6 @@ export type Database = {
           country?: string
           created_at?: string
           currency?: string
-          description?: string | null
           domain_name: string
           id?: string
           logo_url?: string | null
@@ -329,7 +327,6 @@ export type Database = {
           country?: string
           created_at?: string
           currency?: string
-          description?: string | null
           domain_name?: string
           id?: string
           logo_url?: string | null

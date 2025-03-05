@@ -1,8 +1,9 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState, createContext } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { secureRetrieve, secureStore, secureRemove } from "./lib/encryption";
@@ -194,24 +195,6 @@ const CreateStoreRoute = ({ children }: { children: React.ReactNode }) => {
   return <ProtectedRoute redirectIfStore={true}>{children}</ProtectedRoute>;
 };
 
-const StoreRouteHandler = () => {
-  const { storeDomain } = useParams();
-  const location = useLocation();
-  
-  const isLegacyPath = location.pathname.startsWith('/store/');
-  
-  if (isLegacyPath) {
-    return <StorefrontPreview />;
-  }
-  
-  return <StorefrontPreview />;
-};
-
-const StorePreviousRouteRedirect = () => {
-  const { storeId } = useParams();
-  return <Navigate to={`/store/${storeId}`} replace />;
-};
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -224,13 +207,9 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<Auth />} />
             
-            <Route path="/store/:storeId/*" element={<StorefrontPreview />} />
-            <Route path="/store" element={<StorefrontPreview />} />
-            
-            <Route path="/:storeDomain/*" element={<StoreRouteHandler />} />
-            
-            <Route path="/store-preview/:storeId/*" element={<StorePreviousRouteRedirect />} />
-            <Route path="/store-preview" element={<Navigate to="/store" replace />} />
+            {/* Store Preview Route - Publicly accessible */}
+            <Route path="/store-preview/:storeId" element={<StorefrontPreview />} />
+            <Route path="/store-preview" element={<StorefrontPreview />} />
             
             <Route 
               path="/create-store" 
@@ -241,13 +220,13 @@ const App = () => (
               } 
             />
             
-            <Route
-              path="/dashboard"
+            <Route 
+              path="/dashboard" 
               element={
                 <ProtectedRoute>
                   <DashboardHome />
                 </ProtectedRoute>
-              }
+              } 
             />
             
             <Route
