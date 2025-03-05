@@ -35,8 +35,13 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
     greeting = "مساء الخير";
   }
   
-  // Generate store URL using the utility function
-  const finalStoreUrl = storeUrl || getStoreUrl({ domain_name: null, id: storeId });
+  // Generate store URL using the utility function with complete store data
+  const finalStoreUrl = storeUrl || getStoreUrl({ 
+    id: storeId,
+    domain_name: null // Pass null to ensure ID-based fallback works correctly
+  });
+  
+  console.log("Generated store URL:", finalStoreUrl); // Debugging log
   
   // Copy store link to clipboard
   const copyStoreLink = () => {
@@ -60,7 +65,7 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
   // Navigate to store
   const visitStore = () => {
     if (!finalStoreUrl) return;
-    window.location.href = finalStoreUrl;
+    window.open(finalStoreUrl, '_blank');
   };
   
   return (

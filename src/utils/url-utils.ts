@@ -14,7 +14,7 @@ export const formatStoreUrl = (domainName: string): string => {
   // Clean the domain name - remove any protocol or www prefix if present
   const cleanDomain = domainName.replace(/^(https?:\/\/)?(www\.)?/, '');
   
-  // Check if we're in development environment (localhost)
+  // Check if we're in development environment (localhost or lovableproject.com)
   const isDevelopment = window.location.hostname === 'localhost' || 
                         window.location.hostname.includes('lovableproject.com');
   
@@ -62,9 +62,8 @@ export const getStoreUrl = (storeData: any): string => {
       return `${window.location.origin}/store/${storeData.id}`;
     }
     
-    // In production with no domain name yet, also use path-based URL
-    // This will be changed once the domain is properly set up
-    return `/store/${storeData.id}`;
+    // In production with no domain name yet, use full URL with path
+    return `${window.location.origin}/store/${storeData.id}`;
   }
   
   return '';
