@@ -113,11 +113,11 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+// Fixed ProtectedRoute to not use Navigate directly as a component
 const ProtectedRoute = ({ children, redirectIfStore = false }: { children: React.ReactNode, redirectIfStore?: boolean }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [hasStore, setHasStore] = useState<boolean | null>(null);
   const [isVerifying, setIsVerifying] = useState(true);
-  const navigate = Navigate;
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -182,15 +182,15 @@ const ProtectedRoute = ({ children, redirectIfStore = false }: { children: React
   }
   
   if (!isAuthenticated) {
-    return <Navigate to="/auth" />;
+    return <Navigate to="/auth" replace />;
   }
   
   if (hasStore === false && !redirectIfStore) {
-    return <Navigate to="/create-store" />;
+    return <Navigate to="/create-store" replace />;
   }
   
   if (hasStore === true && redirectIfStore) {
-    return <Navigate to="/dashboard" />;
+    return <Navigate to="/dashboard" replace />;
   }
   
   return <>{children}</>;
