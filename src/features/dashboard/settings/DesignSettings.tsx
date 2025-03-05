@@ -4,20 +4,21 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { PaintBucket, ExternalLink } from "lucide-react";
 import StoreThemes from "@/features/dashboard/components/StoreThemes";
 import { Button } from "@/components/ui/button";
+import { formatStoreUrl } from "@/utils/url-utils";
 
 interface DesignSettingsProps {
   storeData: any;
 }
 
 const DesignSettings: React.FC<DesignSettingsProps> = ({ storeData }) => {
-  // Generate the store URL based on store data
-  const storeUrl = storeData?.domain_name 
-    ? `https://${storeData.domain_name}` 
-    : `/store/${storeData?.id}`;
+  // Generate the store URL based on store data using our utility
+  const storeUrl = formatStoreUrl(storeData?.id, storeData?.domain_name);
     
   // Handle store navigation in the same tab
   const navigateToStore = () => {
-    window.location.href = storeUrl;
+    if (storeUrl) {
+      window.location.href = storeUrl;
+    }
   };
   
   return (
@@ -36,6 +37,7 @@ const DesignSettings: React.FC<DesignSettingsProps> = ({ storeData }) => {
               variant="outline" 
               className="flex items-center gap-2" 
               onClick={navigateToStore}
+              disabled={!storeUrl}
             >
               <ExternalLink className="h-4 w-4" />
               <span>معاينة وتحرير المتجر مباشرة</span>

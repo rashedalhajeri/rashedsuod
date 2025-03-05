@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import SaveButton from "@/components/ui/save-button";
 import LogoUploader from "@/features/dashboard/components/LogoUploader";
+import { isValidDomain } from "@/utils/url-utils";
 
 interface GeneralSettingsProps {
   storeData: any;
@@ -20,21 +21,24 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ storeData }) => {
     phone: "",
     address: "",
     currency: "",
-    language: "العربية"
+    language: "العربية",
+    domainName: ""
   });
   
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [domainError, setDomainError] = useState<string | null>(null);
   
   useEffect(() => {
     if (storeData) {
       setStoreValues({
         storeName: storeData.store_name || "",
-        email: "",
+        email: storeData.email || "",
         phone: storeData.phone_number || "",
-        address: "",
+        address: storeData.address || "",
         currency: storeData.currency || "SAR",
-        language: "العربية"
+        language: "العربية",
+        domainName: storeData.domain_name || ""
       });
       
       if (storeData.logo_url) {
@@ -46,9 +50,32 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ storeData }) => {
   const handleLogoUpdate = (url: string | null) => {
     setLogoUrl(url);
   };
+
+  const handleDomainChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setStoreValues({...storeValues, domainName: value});
+    
+    // Clear error when user is typing
+    if (domainError) setDomainError(null);
+    
+    // Only validate if there's a value and it doesn't contain http/https 
+    // (we'll add that later)
+    if (value && (value.includes('http://') || value.includes('https://'))) {
+      setDomainError('يرجى إدخال اسم النطاق فقط بدون http:// أو https://');
+    }
+  };
   
   const handleSaveGeneralSettings = async () => {
     try {
+      // Validate domain if provided
+      if (storeValues.domainName) {
+        const cleanDomain = storeValues.domainName.replace(/^https?:\/\//, '');
+        if (!isValidDomain(cleanDomain)) {
+          setDomainError('يرجى إدخال اسم نطاق صحيح');
+          return;
+        }
+      }
+      
       setIsSaving(true);
       
       if (!storeData?.id) {
@@ -61,7 +88,8 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ storeData }) => {
         .update({
           store_name: storeValues.storeName,
           phone_number: storeValues.phone,
-          logo_url: logoUrl
+          logo_url: logoUrl,
+          domain_name: storeValues.domainName
         })
         .eq('id', storeData.id);
       
@@ -112,6 +140,22 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ storeData }) => {
               defaultValue={`متجر ${storeValues.storeName || storeData?.store_name} الإلكتروني`} 
               className="mt-1 resize-none" 
             />
+          </div>
+          <div>
+            <Label htmlFor="domain-name">رابط المتجر (اسم النطاق)</Label>
+            <Input 
+              id="domain-name" 
+              value={storeValues.domainName} 
+              onChange={handleDomainChange}
+              placeholder="example.com" 
+              className="mt-1 dir-ltr" 
+            />
+            {domainError && (
+              <p className="text-sm text-red-500 mt-1">{domainError}</p>
+            )}
+            <p className="text-xs text-muted-foreground mt-2">
+              أدخل اسم النطاق الخاص بمتجرك بدون https:// أو http://
+            </p>
           </div>
         </CardContent>
       </Card>
