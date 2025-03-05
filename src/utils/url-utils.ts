@@ -89,27 +89,32 @@ export const isValidDomainName = (domainName: string): boolean => {
 export const getStoreFromUrl = async (storeId: string, supabase: any) => {
   if (!storeId) return { data: null, error: { message: "معرف المتجر غير متوفر" } };
   
-  // Remove any `:` character that might be in the param (from useParams)
-  const cleanId = storeId.replace(/:/g, '');
-  
-  // First try to fetch by domain name (more likely in production)
-  let { data, error } = await supabase
-    .from("stores")
-    .select("*")
-    .eq("domain_name", cleanId)
-    .single();
-  
-  // If not found by domain, try by UUID
-  if (error && !data) {
-    // Only try UUID lookup if the cleanId looks like a UUID
-    if (cleanId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-      ({ data, error } = await supabase
-        .from("stores")
-        .select("*")
-        .eq("id", cleanId)
-        .single());
+  try {
+    // Remove any `:` character that might be in the param (from useParams)
+    const cleanId = storeId.replace(/:/g, '');
+    
+    // First try to fetch by domain name (more likely in production)
+    let { data, error } = await supabase
+      .from("stores")
+      .select("*")
+      .eq("domain_name", cleanId)
+      .maybeSingle();
+    
+    // If not found by domain, try by UUID
+    if (!data && !error) {
+      // Only try UUID lookup if the cleanId looks like a UUID
+      if (cleanId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+        ({ data, error } = await supabase
+          .from("stores")
+          .select("*")
+          .eq("id", cleanId)
+          .maybeSingle());
+      }
     }
+    
+    return { data, error };
+  } catch (err) {
+    console.error("Error in getStoreFromUrl:", err);
+    return { data: null, error: err };
   }
-  
-  return { data, error };
 };
