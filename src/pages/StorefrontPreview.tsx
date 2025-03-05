@@ -1,8 +1,11 @@
 
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Routes, Route } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import StoreHomePage from '@/features/store/StoreHomePage';
+import ProductDetailPage from '@/features/store/ProductDetailPage';
+import CartPage from '@/features/store/CartPage';
+import { Loader2 } from 'lucide-react';
 
 const StorefrontPreview = () => {
   const { storeId } = useParams<{ storeId: string }>();
@@ -55,7 +58,7 @@ const StorefrontPreview = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
@@ -72,7 +75,13 @@ const StorefrontPreview = () => {
     );
   }
 
-  return <StoreHomePage />;
+  return (
+    <Routes>
+      <Route path="/" element={<StoreHomePage />} />
+      <Route path="/products/:productId" element={<ProductDetailPage />} />
+      <Route path="/cart" element={<CartPage />} />
+    </Routes>
+  );
 };
 
 export default StorefrontPreview;

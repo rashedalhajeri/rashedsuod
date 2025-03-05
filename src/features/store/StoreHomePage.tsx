@@ -70,6 +70,18 @@ const StoreHomePage = () => {
     };
 
     fetchStoreData();
+    
+    // تحميل سلة التسوق من التخزين المحلي
+    const loadCart = () => {
+      const cart = localStorage.getItem('shopping-cart');
+      if (cart) {
+        const parsedCart = JSON.parse(cart);
+        const totalItems = parsedCart.reduce((total: number, item: any) => total + item.quantity, 0);
+        setCartItemsCount(totalItems);
+      }
+    };
+    
+    loadCart();
   }, [storeId]);
 
   if (loading) {
@@ -106,7 +118,7 @@ const StoreHomePage = () => {
           <div className="container mx-auto px-4 text-center">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">{storeData?.store_name}</h1>
             <p className="text-gray-600 max-w-2xl mx-auto mb-8">
-              مرحبًا بك في متجرنا الإلكتروني، نقدم لك منتجات عالية الجودة بأسعار مناسبة وشحن سريع لجميع مناطق الكويت.
+              {storeData?.description || 'مرحبًا بك في متجرنا الإلكتروني، نقدم لك منتجات عالية الجودة بأسعار مناسبة وشحن سريع لجميع المناطق.'}
             </p>
             <Button size="lg" className="min-w-[160px]">تصفح المنتجات</Button>
           </div>
@@ -136,7 +148,6 @@ const StoreHomePage = () => {
                     stock={product.stock_quantity}
                     isOnSale={Math.random() > 0.7} // Random for demo
                     discountPercentage={Math.floor(Math.random() * 20) + 10} // Random discount for demo
-                    domainName={storeId || ''}
                   />
                 ))}
               </div>
@@ -167,7 +178,6 @@ const StoreHomePage = () => {
                     description={product.description}
                     stock={product.stock_quantity}
                     isNew={true}
-                    domainName={storeId || ''}
                   />
                 ))}
               </div>
@@ -198,7 +208,7 @@ const StoreHomePage = () => {
                   </svg>
                 </div>
                 <h3 className="text-lg font-semibold mb-2">شحن سريع</h3>
-                <p className="text-gray-600">نوفر خدمة توصيل سريعة لجميع مناطق الكويت خلال 24-48 ساعة</p>
+                <p className="text-gray-600">نوفر خدمة توصيل سريعة لجميع المناطق خلال 24-48 ساعة</p>
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-sm text-center">

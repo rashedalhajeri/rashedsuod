@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -207,8 +206,8 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<Auth />} />
             
-            {/* Store Preview Route - Publicly accessible */}
-            <Route path="/store-preview/:storeId" element={<StorefrontPreview />} />
+            {/* Store Preview Routes - Publicly accessible */}
+            <Route path="/store-preview/:storeId/*" element={<StorefrontPreview />} />
             <Route path="/store-preview" element={<StorefrontPreview />} />
             
             <Route 

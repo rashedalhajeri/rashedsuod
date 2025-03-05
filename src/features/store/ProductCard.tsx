@@ -1,11 +1,12 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Eye } from 'lucide-react';
 import useStoreData, { getCurrencyFormatter } from '@/hooks/use-store-data';
 import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 
 interface ProductCardProps {
   id: string;
@@ -17,7 +18,7 @@ interface ProductCardProps {
   isNew?: boolean;
   isOnSale?: boolean;
   discountPercentage?: number;
-  domainName: string;
+  domainName?: string;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ 
@@ -33,17 +34,43 @@ const ProductCard: React.FC<ProductCardProps> = ({
   domainName
 }) => {
   const navigate = useNavigate();
+  const { storeId } = useParams<{ storeId: string }>();
   const { data: storeData } = useStoreData();
   const formatCurrency = getCurrencyFormatter(storeData?.currency);
+  const currentDomain = domainName || storeId;
   
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click
-    // Handle add to cart logic
-    console.log('Adding to cart:', id);
+    
+    // الحصول على السلة الحالية أو إنشاء سلة جديدة
+    const currentCart = localStorage.getItem('shopping-cart');
+    const cart = currentCart ? JSON.parse(currentCart) : [];
+    
+    // التحقق مما إذا كان المنتج موجودًا بالفعل في السلة
+    const existingItemIndex = cart.findIndex((item: any) => item.id === id);
+    
+    if (existingItemIndex !== -1) {
+      // تحديث الكمية إذا كان المنتج موجودًا بالفعل
+      cart[existingItemIndex].quantity += 1;
+    } else {
+      // إضافة المنتج إلى السلة إذا لم يكن موجودًا
+      cart.push({
+        id,
+        name,
+        price,
+        quantity: 1,
+        image_url: imageUrl,
+      });
+    }
+    
+    // حفظ السلة المحدثة
+    localStorage.setItem('shopping-cart', JSON.stringify(cart));
+    
+    toast.success('تمت إضافة المنتج إلى السلة');
   };
   
   const handleViewProduct = () => {
-    navigate(`/store-preview/${domainName}/products/${id}`);
+    navigate(`/store-preview/${currentDomain}/products/${id}`);
   };
   
   const placeholderImage = '/placeholder.svg';

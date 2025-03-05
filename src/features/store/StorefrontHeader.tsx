@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ShoppingCart, Search, User, Home, Menu, X } from 'lucide-react';
@@ -14,6 +14,7 @@ interface StorefrontHeaderProps {
 
 const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ cartItemsCount = 0 }) => {
   const navigate = useNavigate();
+  const { storeId } = useParams<{ storeId: string }>();
   const { data: storeData } = useStoreData();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -21,14 +22,14 @@ const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ cartItemsCount = 0 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     // Navigate to search results
-    navigate(`/store-preview/${storeData?.domain_name}/search?q=${searchQuery}`);
+    navigate(`/store-preview/${storeId}/search?q=${searchQuery}`);
   };
 
   const menuItems = [
-    { title: 'الرئيسية', icon: <Home className="h-4 w-4 ml-2" />, path: `/store-preview/${storeData?.domain_name}` },
-    { title: 'المنتجات', icon: null, path: `/store-preview/${storeData?.domain_name}/products` },
-    { title: 'حسابي', icon: <User className="h-4 w-4 ml-2" />, path: `/store-preview/${storeData?.domain_name}/account` },
-    { title: 'سلة التسوق', icon: <ShoppingCart className="h-4 w-4 ml-2" />, path: `/store-preview/${storeData?.domain_name}/cart` },
+    { title: 'الرئيسية', icon: <Home className="h-4 w-4 ml-2" />, path: `/store-preview/${storeId}` },
+    { title: 'المنتجات', icon: null, path: `/store-preview/${storeId}/products` },
+    { title: 'حسابي', icon: <User className="h-4 w-4 ml-2" />, path: `/store-preview/${storeId}/account` },
+    { title: 'سلة التسوق', icon: <ShoppingCart className="h-4 w-4 ml-2" />, path: `/store-preview/${storeId}/cart` },
   ];
 
   return (
@@ -71,7 +72,7 @@ const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ cartItemsCount = 0 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center">
             <Button 
-              onClick={() => navigate(`/store-preview/${storeData?.domain_name}/cart`)}
+              onClick={() => navigate(`/store-preview/${storeId}/cart`)}
               variant="ghost" 
               className="relative"
             >
