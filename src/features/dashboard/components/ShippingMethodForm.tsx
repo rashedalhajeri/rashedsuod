@@ -36,11 +36,11 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
   return (
     <div className="space-y-4">
       {/* خدمة توصيل برونز */}
-      <div className="relative rounded-lg border border-primary-200 bg-primary-50 shadow-sm">
+      <div className="relative rounded-lg border border-green-200 bg-green-50 shadow-sm">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center space-x-3 rtl:space-x-reverse">
-            <div className="rounded-full bg-primary-100 p-2">
-              <Truck className="h-5 w-5 text-primary-600" />
+            <div className="rounded-full bg-green-100 p-2">
+              <Truck className="h-5 w-5 text-green-600" />
             </div>
             <div>
               <h3 className="font-medium">توصيل فريق برونز</h3>
@@ -57,7 +57,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
         {bronzeDelivery && (
           <div className="border-t bg-white p-4">
             <div className="space-y-3">
-              <div className="rounded-md bg-primary-50 p-3 text-sm text-primary-800">
+              <div className="rounded-md bg-green-50 p-3 text-sm text-green-800">
                 <p className="flex items-center gap-1">
                   <Info className="h-4 w-4" />
                   جميع الطلبات ستُحول تلقائياً إلى لوحة تحكم فريق برونز
@@ -69,39 +69,39 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <Card 
-                    className={`border-primary-100 transition-all cursor-pointer hover:shadow-md ${selectedDeliverySpeed === "standard" ? "bg-primary-50 ring-1 ring-primary-400" : ""}`}
+                    className={`border-green-100 transition-all cursor-pointer hover:shadow-md ${selectedDeliverySpeed === "standard" ? "bg-green-50 ring-1 ring-green-400" : ""}`}
                     onClick={() => setSelectedDeliverySpeed("standard")}
                   >
                     <CardContent className="p-3 flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-primary-600" />
-                      <span>توصيل قياسي (2-3 أيام)</span>
+                      <Clock className="h-4 w-4 text-green-600" />
+                      <span>توصيل قياسي <span className="font-bold text-lg dir-ltr inline-block">2-3</span> أيام</span>
                     </CardContent>
                   </Card>
                   
                   <Card 
-                    className={`border-primary-100 transition-all cursor-pointer hover:shadow-md ${selectedDeliverySpeed === "express" ? "bg-primary-50 ring-1 ring-primary-400" : ""}`}
+                    className={`border-green-100 transition-all cursor-pointer hover:shadow-md ${selectedDeliverySpeed === "express" ? "bg-green-50 ring-1 ring-green-400" : ""}`}
                     onClick={() => setSelectedDeliverySpeed("express")}
                   >
                     <CardContent className="p-3 flex items-center gap-2">
-                      <Zap className="h-4 w-4 text-primary-600" />
-                      <span>توصيل سريع (24 ساعة)</span>
+                      <Zap className="h-4 w-4 text-green-600" />
+                      <span>توصيل سريع <span className="font-bold text-lg dir-ltr inline-block">24</span> ساعة</span>
                     </CardContent>
                   </Card>
                   
                   <Card 
-                    className={`border-primary-100 transition-all cursor-pointer hover:shadow-md ${selectedDeliverySpeed === "same_day" ? "bg-primary-50 ring-1 ring-primary-400" : ""}`}
+                    className={`border-green-100 transition-all cursor-pointer hover:shadow-md ${selectedDeliverySpeed === "same_day" ? "bg-green-50 ring-1 ring-green-400" : ""}`}
                     onClick={() => setSelectedDeliverySpeed("same_day")}
                   >
                     <CardContent className="p-3 flex items-center gap-2">
-                      <Zap className="h-4 w-4 text-primary-600" />
+                      <Zap className="h-4 w-4 text-green-600" />
                       <span>توصيل في نفس اليوم</span>
                     </CardContent>
                   </Card>
                 </div>
                 
-                <Card className="border-primary-100 mt-2">
+                <Card className="border-green-100 mt-2">
                   <CardContent className="p-3 flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-primary-600" />
+                    <MapPin className="h-4 w-4 text-green-600" />
                     <span>تغطية شاملة لجميع مناطق الكويت</span>
                   </CardContent>
                 </Card>
@@ -139,11 +139,11 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
                   <div className="flex items-end gap-3">
                     <div className="flex-1">
                       <Label htmlFor="shipping-cost">تكلفة الشحن</Label>
-                      <Input id="shipping-cost" type="number" className="mt-1" defaultValue="15" />
+                      <Input id="shipping-cost" type="number" className="mt-1 text-lg font-medium dir-ltr" defaultValue="15" />
                     </div>
                     <div className="flex-1">
                       <Label htmlFor="delivery-time">مدة التوصيل (بالأيام)</Label>
-                      <Input id="delivery-time" type="number" className="mt-1" defaultValue="3" />
+                      <Input id="delivery-time" type="number" className="mt-1 text-lg font-medium dir-ltr" defaultValue="3" />
                     </div>
                   </div>
                 </div>
@@ -174,7 +174,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
               <div className="border-t p-4">
                 <div className="space-y-3">
                   <Label htmlFor="min-order-free-shipping">الحد الأدنى للطلب للشحن المجاني</Label>
-                  <Input id="min-order-free-shipping" type="number" defaultValue="100" />
+                  <Input id="min-order-free-shipping" type="number" className="text-lg font-medium dir-ltr" defaultValue="100" />
                 </div>
               </div>
             )}
