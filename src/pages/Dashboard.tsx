@@ -1,4 +1,3 @@
-
 import React from "react";
 import useStoreData, { getCurrencyFormatter } from "@/hooks/use-store-data";
 import { secureRetrieve } from "@/lib/encryption";
@@ -115,7 +114,7 @@ const mockRecentProducts = [
   },
   {
     id: "prod-3",
-    name: "حذاء رياضي",
+    name: "حذاء ري��ضي",
     thumbnail: null,
     price: 210,
     stock: 0,
@@ -233,19 +232,6 @@ const Dashboard: React.FC = () => {
   // Format currency based on store settings
   const formatCurrency = getCurrencyFormatter(storeData?.currency || 'SAR');
   
-  // Generate the store URL
-  const storeUrl = storeData?.domain_name 
-    ? `https://${storeData.domain_name}` 
-    : `/store/${storeData?.id}`;
-  
-  // Stats data for demonstration
-  const statsData = {
-    products: 54,
-    orders: 128,
-    customers: 35,
-    revenue: 8425
-  };
-
   // Advanced stats data
   const advancedStatsData = {
     revenue: 8425,
@@ -254,9 +240,6 @@ const Dashboard: React.FC = () => {
     avgOrderValue: 65.8,
     lowStockCount: mockEnhancedProducts.filter(p => p.status !== 'in_stock').length
   };
-  
-  // Subscription plan status - use basic as default
-  const subscriptionPlan = storeData?.subscription_plan || "basic";
   
   return (
     <DashboardLayout>
@@ -269,8 +252,8 @@ const Dashboard: React.FC = () => {
             ownerName={userName}
             newOrdersCount={7}
             lowStockCount={5}
-            storeUrl={storeUrl}
             storeId={storeData?.id}
+            storeDomain={storeData?.domain_name}
           />
           
           {/* Notification Center */}

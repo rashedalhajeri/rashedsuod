@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Sparkles, Copy, ExternalLink } from "lucide-react";
@@ -13,6 +14,7 @@ interface WelcomeSectionProps {
   lowStockCount: number;
   storeUrl?: string;
   storeId?: string;
+  storeDomain?: string;
 }
 
 const WelcomeSection: React.FC<WelcomeSectionProps> = ({
@@ -21,7 +23,8 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
   newOrdersCount,
   lowStockCount,
   storeUrl,
-  storeId
+  storeId,
+  storeDomain
 }) => {
   const currentHour = new Date().getHours();
   const [copying, setCopying] = useState(false);
@@ -35,10 +38,10 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
     greeting = "مساء الخير";
   }
   
-  // Generate store URL using the utility function with complete store data
+  // Generate store URL using the utility function with proper domain name
   const finalStoreUrl = storeUrl || getStoreUrl({ 
     id: storeId,
-    domain_name: null // Pass null to ensure ID-based fallback works correctly
+    domain_name: storeDomain
   });
   
   console.log("Generated store URL:", finalStoreUrl); // Debugging log
