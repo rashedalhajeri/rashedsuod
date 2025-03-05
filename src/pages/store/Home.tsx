@@ -33,13 +33,17 @@ const StoreHome: React.FC = () => {
 
   useEffect(() => {
     const fetchStoreData = async () => {
-      if (!storeId) {
-        setError("معرف المتجر غير متوفر");
+      // Validate the storeId to ensure it's a proper value and not just the placeholder
+      if (!storeId || storeId === ":storeId") {
+        console.error("Invalid store ID:", storeId);
+        setError("معرف المتجر غير متوفر أو غير صالح");
         setLoading(false);
         return;
       }
       
       try {
+        console.log("Fetching store with ID:", storeId);
+        
         // Fetch store data
         const { data: storeData, error: storeError } = await supabase
           .from("stores")
@@ -53,6 +57,7 @@ const StoreHome: React.FC = () => {
         }
         
         if (!storeData) {
+          console.error("Store not found for ID:", storeId);
           setError("المتجر غير موجود");
           setLoading(false);
           return;
@@ -72,7 +77,15 @@ const StoreHome: React.FC = () => {
           throw productsError;
         }
         
-        setFeaturedProducts(productsData || []);
+        // Transform the additional_images field to ensure it's compatible with our Product interface
+        const transformedProducts = productsData ? productsData.map(product => ({
+          ...product,
+          additional_images: Array.isArray(product.additional_images)
+            ? product.additional_images
+            : []
+        })) : [];
+        
+        setFeaturedProducts(transformedProducts);
       } catch (err) {
         console.error("Error fetching store data:", err);
         setError("حدث خطأ أثناء تحميل بيانات المتجر");

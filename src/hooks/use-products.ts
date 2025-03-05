@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Json } from "@/integrations/supabase/types";
 
 interface Product {
   id: string;
@@ -84,10 +85,21 @@ export const useProducts = ({
         setHasMore((currentPage + 1) * limit < count);
       }
 
+      // Transform the data to ensure it matches the Product interface
+      const transformedData: Product[] = data ? data.map(item => ({
+        ...item,
+        // Convert Json type to string[] for additional_images
+        additional_images: Array.isArray(item.additional_images) 
+          ? item.additional_images as string[]
+          : item.additional_images 
+            ? [item.additional_images as string] 
+            : null
+      })) : [];
+
       if (append) {
-        setProducts(prev => [...prev, ...(data || [])]);
+        setProducts(prev => [...prev, ...transformedData]);
       } else {
-        setProducts(data || []);
+        setProducts(transformedData);
       }
     } catch (err) {
       console.error("Error fetching products:", err);

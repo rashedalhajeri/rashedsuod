@@ -43,8 +43,10 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchStoreData = async () => {
-    if (!storeId) {
-      setError("معرف المتجر غير متوفر");
+    // Validate the storeId to ensure it's a proper value and not just the placeholder
+    if (!storeId || storeId === ":storeId") {
+      console.error("Invalid store ID:", storeId);
+      setError("معرف المتجر غير متوفر أو غير صالح");
       setIsLoading(false);
       return;
     }
@@ -53,6 +55,8 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     setError(null);
 
     try {
+      console.log("Fetching store with ID:", storeId);
+      
       const { data, error: storeError } = await supabase
         .from("stores")
         .select("*")
@@ -65,10 +69,12 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
       }
 
       if (!data) {
+        console.error("Store not found for ID:", storeId);
         setError("المتجر غير موجود");
         return;
       }
 
+      console.log("Store data retrieved:", data);
       setStore(data as Store);
     } catch (err) {
       console.error("Error fetching store data:", err);
