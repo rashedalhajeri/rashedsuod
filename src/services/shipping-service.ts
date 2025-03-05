@@ -20,6 +20,7 @@ export interface DeliveryArea {
   name: string;
   price: number;
   enabled: boolean;
+  is_governorate?: boolean; // إضافة حقل لتمييز المحافظات
 }
 
 // الحصول على إعدادات الشحن
@@ -145,4 +146,37 @@ export const saveDeliveryAreas = async (areas: DeliveryArea[]): Promise<boolean>
     toast.error("حدث خطأ في حفظ مناطق التوصيل");
     return false;
   }
+};
+
+// الحصول على محافظات الكويت
+export const getKuwaitGovernorates = (): DeliveryArea[] => {
+  // قائمة المحافظات في الكويت مع أسعار التوصيل الافتراضية
+  return [
+    { name: "العاصمة", price: 2, enabled: true, is_governorate: true },
+    { name: "حولي", price: 2, enabled: true, is_governorate: true },
+    { name: "الفروانية", price: 3, enabled: true, is_governorate: true },
+    { name: "الأحمدي", price: 3, enabled: true, is_governorate: true },
+    { name: "الجهراء", price: 4, enabled: true, is_governorate: true },
+    { name: "مبارك الكبير", price: 3, enabled: true, is_governorate: true }
+  ] as DeliveryArea[];
+};
+
+// تطبيق سعر موحد على محافظات محددة
+export const applyPriceToSelectedGovernorates = (areas: DeliveryArea[], selectedGovs: string[], price: number): DeliveryArea[] => {
+  return areas.map(area => {
+    if (area.is_governorate && selectedGovs.includes(area.name)) {
+      return { ...area, price };
+    }
+    return area;
+  });
+};
+
+// تمكين أو تعطيل محافظات محددة
+export const toggleSelectedGovernorates = (areas: DeliveryArea[], selectedGovs: string[], enabled: boolean): DeliveryArea[] => {
+  return areas.map(area => {
+    if (area.is_governorate && selectedGovs.includes(area.name)) {
+      return { ...area, enabled };
+    }
+    return area;
+  });
 };
