@@ -364,38 +364,152 @@ const Settings = () => {
             <div className="space-y-4">
               <PromotionAlert type={subscriptionType} section="shipping" />
               
-              <div className="space-y-3">
-                <PaymentMethodItem
-                  id="standard-shipping"
-                  title="الشحن القياسي"
-                  description="خيارات الشحن الأساسية للمتجر"
-                  checked={shippingMethods["standard-shipping"]}
-                  onCheckedChange={(checked) => handleShippingMethodChange("standard-shipping", checked)}
-                  isPaidPlan={true}
-                  icon={<Truck className="h-5 w-5" />}
-                  color="bg-primary-500"
-                  tooltipContent="إعدادات الشحن القياسي للمتجر"
-                  additionalContent={
-                    <ShippingMethodForm isPaidPlan={isPaidPlan} />
-                  }
-                />
-                
-                <PaymentMethodItem
-                  id="linok-delivery"
-                  title="توصيل Linok"
-                  description="استخدام خدمة توصيل Linok لتوصيل الطلبات بسرعة واحترافية"
-                  checked={shippingMethods["linok-delivery"]}
-                  onCheckedChange={(checked) => handleShippingMethodChange("linok-delivery", checked)}
-                  isPaidPlan={isPaidPlan}
-                  icon={<div className="h-5 w-5 flex items-center justify-center rounded-full bg-primary-100 text-primary-600 font-bold">L</div>}
-                  color="bg-primary-500"
-                  tooltipContent="عند تفعيل هذه الميزة، سيتم تحويل الطلبات تلقائيًا إلى نظام توصيل Linok"
-                  badges={[
-                    { text: "سريع وموثوق", color: "bg-primary-50 text-primary-700" },
-                    { text: "تتبع مباشر", color: "bg-blue-50 text-blue-700" }
-                  ]}
-                />
-              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Truck className="h-5 w-5 text-primary" />
+                    <span>إعدادات الشحن</span>
+                  </CardTitle>
+                  <CardDescription>إدارة وتخصيص طرق الشحن المتاحة لعملائك</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div className="bg-muted/30 p-4 rounded-lg border">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex gap-3">
+                          <div className="bg-primary-500 p-2 rounded-full flex items-center justify-center">
+                            <Truck className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="font-medium text-base">الشحن القياسي</h3>
+                            <p className="text-sm text-muted-foreground">خيارات الشحن الأساسية للمتجر</p>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={shippingMethods["standard-shipping"]}
+                          onCheckedChange={(checked) => handleShippingMethodChange("standard-shipping", checked)}
+                        />
+                      </div>
+
+                      {shippingMethods["standard-shipping"] && (
+                        <ShippingMethodForm isPaidPlan={true} />
+                      )}
+                    </div>
+                    
+                    <div className="bg-muted/30 p-4 rounded-lg border">
+                      <div className="flex items-start justify-between">
+                        <div className="flex gap-3">
+                          <div className="bg-primary-500 p-2 rounded-full flex items-center justify-center">
+                            <div className="h-5 w-5 flex items-center justify-center rounded-full bg-white text-primary-600 font-bold">L</div>
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-medium text-base">توصيل Linok</h3>
+                              <div className="flex gap-1">
+                                <Badge className="bg-primary-50 text-primary-700 hover:bg-primary-100">سريع وموثوق</Badge>
+                                <Badge className="bg-blue-50 text-blue-700 hover:bg-blue-100">تتبع مباشر</Badge>
+                              </div>
+                            </div>
+                            <p className="text-sm text-muted-foreground">استخدام خدمة توصيل Linok لتوصيل الطلبات بسرعة واحترافية</p>
+                            
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="link" className="p-0 h-auto text-xs text-primary/80 flex items-center gap-1 mt-1">
+                                    <Info className="h-3 w-3" />
+                                    معلومات إضافية
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                  <p>عند تفعيل هذه الميزة، سيتم تحويل الطلبات تلقائيًا إلى نظام توصيل Linok</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {!isPaidPlan && <Badge className="bg-amber-50 text-amber-600">باقة مدفوعة</Badge>}
+                          <Switch
+                            checked={shippingMethods["linok-delivery"]}
+                            onCheckedChange={(checked) => handleShippingMethodChange("linok-delivery", checked)}
+                            disabled={!isPaidPlan}
+                          />
+                        </div>
+                      </div>
+
+                      {isPaidPlan && shippingMethods["linok-delivery"] && (
+                        <div className="mt-4 border-t pt-4">
+                          <div className="space-y-3">
+                            <div>
+                              <Label htmlFor="api-key">مفتاح API لـ Linok</Label>
+                              <Input id="api-key" placeholder="أدخل مفتاح API" className="mt-1" />
+                            </div>
+                            <div>
+                              <Label htmlFor="merchant-id">معرف التاجر</Label>
+                              <Input id="merchant-id" placeholder="أدخل معرف التاجر" className="mt-1" />
+                            </div>
+                            <Button size="sm" className="mt-2">
+                              ربط الحساب
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="bg-muted/30 p-4 rounded-lg border">
+                      <div className="flex items-start justify-between">
+                        <div className="flex gap-3">
+                          <div className="bg-primary-500 p-2 rounded-full flex items-center justify-center">
+                            <MapPin className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="font-medium text-base">مناطق الشحن المخصصة</h3>
+                            <p className="text-sm text-muted-foreground">تحديد رسوم شحن مخصصة لكل منطقة</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {!isPaidPlan && <Badge className="bg-amber-50 text-amber-600">باقة مدفوعة</Badge>}
+                          <Switch
+                            checked={shippingMethods["custom-zones"]}
+                            onCheckedChange={(checked) => handleShippingMethodChange("custom-zones", checked)}
+                            disabled={!isPaidPlan}
+                          />
+                        </div>
+                      </div>
+
+                      {isPaidPlan && shippingMethods["custom-zones"] && (
+                        <div className="mt-4 border-t pt-4">
+                          <p className="text-sm mb-3">حدد مناطق الشحن ورسوم التوصيل لكل منطقة</p>
+                          
+                          <div className="space-y-3">
+                            <div className="flex gap-3 items-end">
+                              <div className="flex-1">
+                                <Label>المنطقة</Label>
+                                <Input placeholder="الرياض" className="mt-1" />
+                              </div>
+                              <div className="flex-1">
+                                <Label>رسوم الشحن</Label>
+                                <Input placeholder="15" type="number" className="mt-1" />
+                              </div>
+                              <div className="flex-1">
+                                <Label>وقت التوصيل (بالأيام)</Label>
+                                <Input placeholder="2-3" className="mt-1" />
+                              </div>
+                              <Button variant="outline" size="icon" className="shrink-0">
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            
+                            <Button variant="outline" size="sm" className="mt-2">
+                              إضافة منطقة جديدة
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
           
