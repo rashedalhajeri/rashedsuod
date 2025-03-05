@@ -8,16 +8,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import StorefrontLayout from "@/layouts/StorefrontLayout";
 import ProductCard from "@/components/store/ProductCard";
 import { useStore } from "@/contexts/StoreContext";
-
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  image_url: string | null;
-  description?: string | null;
-  stock_quantity: number;
-  additional_images: string[] | null;
-}
+import { Product } from "@/features/store/product-detail/useProductDetail";
 
 const StoreHome: React.FC = () => {
   const { storeId } = useParams<{ storeId: string }>();
@@ -52,14 +43,29 @@ const StoreHome: React.FC = () => {
       }
       
       // Transform the products data
-      const transformedProducts: Product[] = productsData?.map(product => ({
-        ...product,
-        additional_images: Array.isArray(product.additional_images) 
-          ? product.additional_images 
-          : product.additional_images 
-            ? [product.additional_images as string]
-            : []
-      })) || [];
+      const transformedProducts: Product[] = productsData?.map(product => {
+        let processedImages: string[] | null = null;
+        
+        if (product.additional_images) {
+          if (Array.isArray(product.additional_images)) {
+            processedImages = product.additional_images.map(img => 
+              typeof img === 'string' ? img : JSON.stringify(img)
+            );
+          } else if (typeof product.additional_images === 'string') {
+            processedImages = [product.additional_images];
+          }
+        }
+        
+        return {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image_url: product.image_url,
+          description: product.description,
+          stock_quantity: product.stock_quantity || 0,
+          additional_images: processedImages
+        };
+      }) || [];
       
       setFeaturedProducts(transformedProducts);
     } catch (err) {

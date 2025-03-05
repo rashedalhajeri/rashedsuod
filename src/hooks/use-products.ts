@@ -9,7 +9,7 @@ interface Product {
   price: number;
   description: string | null;
   image_url: string | null;
-  stock_quantity: number | null;
+  stock_quantity: number;
   additional_images: string[] | null;
   store_id: string;
   created_at: string;
@@ -86,15 +86,25 @@ export const useProducts = ({
       }
 
       // Transform the data to ensure it matches the Product interface
-      const transformedData: Product[] = data ? data.map(item => ({
-        ...item,
-        // Convert Json type to string[] for additional_images
-        additional_images: Array.isArray(item.additional_images) 
-          ? item.additional_images as string[]
-          : item.additional_images 
-            ? [item.additional_images as string] 
-            : null
-      })) : [];
+      const transformedData: Product[] = data ? data.map(item => {
+        let processedImages: string[] | null = null;
+        
+        if (item.additional_images) {
+          if (Array.isArray(item.additional_images)) {
+            processedImages = item.additional_images.map(img => 
+              typeof img === 'string' ? img : JSON.stringify(img)
+            );
+          } else if (typeof item.additional_images === 'string') {
+            processedImages = [item.additional_images];
+          }
+        }
+        
+        return {
+          ...item,
+          stock_quantity: item.stock_quantity || 0,
+          additional_images: processedImages
+        };
+      }) : [];
 
       if (append) {
         setProducts(prev => [...prev, ...transformedData]);

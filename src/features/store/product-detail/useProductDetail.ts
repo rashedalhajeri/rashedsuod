@@ -43,14 +43,27 @@ export const useProductDetail = () => {
           return;
         }
 
-        // Transform data to ensure additional_images is always an array
+        // Transform data to ensure additional_images is always a string array
+        let processedImages: string[] = [];
+        
+        if (data.additional_images) {
+          if (Array.isArray(data.additional_images)) {
+            processedImages = data.additional_images.map(img => 
+              typeof img === 'string' ? img : JSON.stringify(img)
+            );
+          } else if (typeof data.additional_images === 'string') {
+            processedImages = [data.additional_images];
+          }
+        }
+
         const processedProduct: Product = {
-          ...data,
-          additional_images: Array.isArray(data.additional_images) 
-            ? data.additional_images 
-            : data.additional_images 
-              ? [data.additional_images as string]
-              : []
+          id: data.id,
+          name: data.name,
+          price: data.price,
+          image_url: data.image_url,
+          description: data.description,
+          stock_quantity: data.stock_quantity || 0,
+          additional_images: processedImages
         };
 
         setProduct(processedProduct);

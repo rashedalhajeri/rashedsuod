@@ -8,15 +8,7 @@ import StorefrontLayout from "@/layouts/StorefrontLayout";
 import ProductCard from "@/components/store/ProductCard";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
-
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  image_url: string | null;
-  stock_quantity: number;
-  additional_images: string[] | null;
-}
+import { Product } from "@/features/store/product-detail/useProductDetail";
 
 const PRODUCTS_PER_PAGE = 12;
 
@@ -85,15 +77,30 @@ const StoreProducts: React.FC = () => {
       
       if (error) throw error;
       
-      // Transform data to ensure additional_images is always an array
-      const processedProducts: Product[] = data?.map(product => ({
-        ...product,
-        additional_images: Array.isArray(product.additional_images) 
-          ? product.additional_images 
-          : product.additional_images 
-            ? [product.additional_images as string]
-            : []
-      })) || [];
+      // Transform data to ensure additional_images is always an array of strings
+      const processedProducts: Product[] = data?.map(product => {
+        let processedImages: string[] | null = null;
+        
+        if (product.additional_images) {
+          if (Array.isArray(product.additional_images)) {
+            processedImages = product.additional_images.map(img => 
+              typeof img === 'string' ? img : JSON.stringify(img)
+            );
+          } else if (typeof product.additional_images === 'string') {
+            processedImages = [product.additional_images];
+          }
+        }
+        
+        return {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image_url: product.image_url,
+          description: product.description,
+          stock_quantity: product.stock_quantity || 0,
+          additional_images: processedImages
+        };
+      }) || [];
       
       if (loadMore) {
         setProducts(prev => [...prev, ...processedProducts]);
