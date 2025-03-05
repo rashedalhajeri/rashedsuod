@@ -30,11 +30,15 @@ const Settings = () => {
   const [isCopied, setIsCopied] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [storeLogoUrl, setStoreLogoUrl] = useState<string | null>(null);
+  const [storeDescription, setStoreDescription] = useState<string>("");
   
-  // Set initial logo URL from store data
+  // Set initial logo URL and description from store data
   useEffect(() => {
     if (storeData?.logo_url) {
       setStoreLogoUrl(storeData.logo_url);
+    }
+    if (storeData?.store_description) {
+      setStoreDescription(storeData.store_description);
     }
   }, [storeData]);
   
@@ -42,6 +46,22 @@ const Settings = () => {
   const handleLogoUpdate = (url: string | null) => {
     setStoreLogoUrl(url);
     // You can add the logic to save the logo URL to the database here
+  };
+  
+  // Function to handle description change
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setStoreDescription(e.target.value);
+  };
+  
+  // Function to handle save button click
+  const handleSaveClick = () => {
+    setIsSaving(true);
+    
+    // Simulate saving data
+    setTimeout(() => {
+      setIsSaving(false);
+      toast.success("تم حفظ الإعدادات بنجاح");
+    }, 1500);
   };
   
   // Function to copy store URL
@@ -160,6 +180,8 @@ const Settings = () => {
                       <Textarea
                         id="storeDescription"
                         placeholder="وصف تفصيلي عن متجرك"
+                        value={storeDescription}
+                        onChange={handleDescriptionChange}
                       />
                     </div>
                     <div className="space-y-2">
@@ -171,7 +193,7 @@ const Settings = () => {
                       />
                     </div>
                   </div>
-                  <SaveButton isSaving={isSaving} />
+                  <SaveButton isSaving={isSaving} onClick={handleSaveClick} />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -233,19 +255,16 @@ const Settings = () => {
                 <CardContent className="space-y-4">
                   <ShippingMethodForm 
                     isPaidPlan={isCurrentPaidPlan} 
-                    id="standard-shipping"
                     title="الشحن القياسي"
                     description="خدمة الشحن الأساسية"
                   />
                   <ShippingMethodForm 
                     isPaidPlan={isCurrentPaidPlan}
-                    id="express-shipping"
                     title="الشحن السريع"
                     description="خدمة توصيل سريعة خلال 24 ساعة"
                   />
                   <ShippingMethodForm 
                     isPaidPlan={isCurrentPaidPlan}
-                    id="free-shipping"
                     title="الشحن المجاني"
                     description="شحن مجاني للطلبات فوق مبلغ معين"
                   />
