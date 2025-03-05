@@ -52,14 +52,14 @@ const ThemePreviewCard: React.FC<ThemePreviewCardProps> = ({
             <p className="font-bold text-xl">{theme.name}</p>
           </div>
           
-          {/* Premium badge */}
+          {/* Premium badge is now only shown for information, not as a restriction */}
           {theme.isPremium && (
             <Badge 
               variant="outline" 
               className="absolute top-2 right-2 bg-amber-500 text-white border-0"
             >
               <Crown className="h-3 w-3 mr-1" />
-              <span>Premium</span>
+              <span>قريباً</span>
             </Badge>
           )}
           
@@ -81,10 +81,9 @@ const ThemePreviewCard: React.FC<ThemePreviewCardProps> = ({
         <Button 
           variant={selected ? "default" : "outline"} 
           onClick={onSelect}
-          disabled={theme.isPremium}
           className="w-full"
         >
-          {selected ? 'الثيم المحدد' : theme.isPremium ? 'متوفر في الباقة المدفوعة' : 'اختيار الثيم'}
+          {selected ? 'الثيم المحدد' : 'اختيار الثيم'}
         </Button>
       </CardFooter>
     </Card>

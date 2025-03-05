@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { Label } from '@/components/ui/label';
-import { Check, Crown, PaintBucket, Palette, Sparkles } from 'lucide-react';
+import { Check, Palette, PaintBucket, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import SaveButton from '@/components/ui/save-button';
@@ -71,7 +71,7 @@ const themes: ThemeOption[] = [
     name: 'تجاري احترافي',
     description: 'تصميم احترافي يناسب المتاجر الكبيرة والشركات التجارية',
     preview: '/themes/business.jpg',
-    isPremium: true,
+    isPremium: false, // Changed from true to false to make it available for free
     colors: {
       primary: '#2D3748',
       secondary: '#EDF2F7',
@@ -176,10 +176,56 @@ const StoreThemes: React.FC<StoreThemesProps> = ({ storeId }) => {
                   </div>
                 </div>
                 
+                <div className="grid gap-2">
+                  <Label htmlFor="secondary-color">اللون الثانوي</Label>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-10 h-10 rounded-md border"
+                      style={{ backgroundColor: '#E2E8F0' }}
+                    />
+                    <Select defaultValue="#E2E8F0">
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="اختر اللون الثانوي" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="#E2E8F0">رمادي فاتح (الافتراضي)</SelectItem>
+                        <SelectItem value="#DBEAFE">أزرق فاتح</SelectItem>
+                        <SelectItem value="#FEE2E2">أحمر فاتح</SelectItem>
+                        <SelectItem value="#F3E8FF">بنفسجي فاتح</SelectItem>
+                        <SelectItem value="#FEF3C7">أصفر فاتح</SelectItem>
+                        <SelectItem value="#FCE7F3">وردي فاتح</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="accent-color">لون التأكيد</Label>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-10 h-10 rounded-md border"
+                      style={{ backgroundColor: '#CBD5E0' }}
+                    />
+                    <Select defaultValue="#CBD5E0">
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="اختر لون التأكيد" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="#CBD5E0">رمادي متوسط (الافتراضي)</SelectItem>
+                        <SelectItem value="#93C5FD">أزرق متوسط</SelectItem>
+                        <SelectItem value="#FCA5A5">أحمر متوسط</SelectItem>
+                        <SelectItem value="#D8B4FE">بنفسجي متوسط</SelectItem>
+                        <SelectItem value="#FDE68A">أصفر متوسط</SelectItem>
+                        <SelectItem value="#F9A8D4">وردي متوسط</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
                 <div className="border p-4 rounded-md bg-gray-50">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Sparkles className="h-4 w-4" />
-                    <span>متوفر المزيد من خيارات التخصيص في الباقات المدفوعة</span>
+                    <span>متوفر المزيد من خيارات التخصيص قريباً</span>
                   </div>
                 </div>
               </div>
@@ -191,10 +237,33 @@ const StoreThemes: React.FC<StoreThemesProps> = ({ storeId }) => {
               <CardTitle className="text-lg">التخطيط</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="border p-4 rounded-md bg-gray-50">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Crown className="h-4 w-4 text-amber-500" />
-                  <span>خيارات تخصيص التخطيط متوفرة في الباقة المدفوعة</span>
+              <div className="space-y-4">
+                <div className="grid gap-2">
+                  <Label>عرض المنتجات</Label>
+                  <Select defaultValue="grid">
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="اختر طريقة عرض المنتجات" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="grid">شبكة</SelectItem>
+                      <SelectItem value="list">قائمة</SelectItem>
+                      <SelectItem value="compact">مدمج</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label>عدد المنتجات في الصف</Label>
+                  <Select defaultValue="3">
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="اختر عدد المنتجات في الصف" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="2">2 منتجات</SelectItem>
+                      <SelectItem value="3">3 منتجات</SelectItem>
+                      <SelectItem value="4">4 منتجات</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </CardContent>
