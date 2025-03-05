@@ -80,8 +80,9 @@ export const useProducts = ({
         if (item.additional_images) {
           if (Array.isArray(item.additional_images)) {
             processedImages = [];
-            // Safely convert each item to string
-            for (const img of item.additional_images) {
+            // Directly process each item
+            for (let i = 0; i < item.additional_images.length; i++) {
+              const img = item.additional_images[i];
               if (img !== null) {
                 processedImages.push(typeof img === 'string' ? img : String(img));
               }
