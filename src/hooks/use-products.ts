@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
 
-interface Product {
+// Define simpler Product interface to avoid recursive typing issues
+export interface Product {
   id: string;
   name: string;
   price: number;
@@ -87,6 +88,7 @@ export const useProducts = ({
 
       // Transform the data to ensure it matches the Product interface
       const transformedData: Product[] = data ? data.map(item => {
+        // Process additional_images to ensure they're strings
         let processedImages: string[] | null = null;
         
         if (item.additional_images) {
@@ -100,9 +102,16 @@ export const useProducts = ({
         }
         
         return {
-          ...item,
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          description: item.description,
+          image_url: item.image_url,
           stock_quantity: item.stock_quantity || 0,
-          additional_images: processedImages
+          additional_images: processedImages,
+          store_id: item.store_id,
+          created_at: item.created_at,
+          updated_at: item.updated_at
         };
       }) : [];
 
