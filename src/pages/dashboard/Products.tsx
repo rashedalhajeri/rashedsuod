@@ -1,14 +1,14 @@
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, Plus, Filter, Search, Edit, Trash2, Eye, MoreHorizontal, Upload, Image } from "lucide-react";
+import { Package, Plus, Filter, Search, Edit, Trash2, Eye, MoreHorizontal, Upload, Image, X, CheckCircle, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { 
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, 
@@ -23,6 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Link } from "react-router-dom";
 import LoadingState from "@/components/ui/loading-state";
 import useStoreData, { getCurrencyFormatter } from "@/hooks/use-store-data";
+import { Progress } from "@/components/ui/progress";
 
 interface ProductFormData {
   name: string;
@@ -30,6 +31,12 @@ interface ProductFormData {
   price: number;
   stock_quantity: number;
   image_url: string | null;
+}
+
+interface FormErrors {
+  name?: string;
+  price?: string;
+  image?: string;
 }
 
 const Products: React.FC = () => {
@@ -44,11 +51,28 @@ const Products: React.FC = () => {
     stock_quantity: 0,
     image_url: null
   });
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadState, setUploadState] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { data: storeData } = useStoreData();
   const formatCurrency = getCurrencyFormatter(storeData?.currency || 'SAR');
+
+  // Reset form when dialog is opened/closed
+  const resetForm = useCallback(() => {
+    setFormData({
+      name: "",
+      description: "",
+      price: 0,
+      stock_quantity: 0,
+      image_url: null
+    });
+    setFormErrors({});
+    setUploadState('idle');
+    setUploadProgress(0);
+  }, []);
   
   // فتشت بيانات المنتجات
   const { data: products, isLoading, refetch } = useQuery({
@@ -81,6 +105,37 @@ const Products: React.FC = () => {
     (product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase()))
   );
   
+  // التحقق من المدخلات
+  const validateForm = () => {
+    const errors: FormErrors = {};
+    
+    if (!formData.name.trim()) {
+      errors.name = "يرجى إدخال اسم المنتج";
+    }
+    
+    if (formData.price <= 0) {
+      errors.price = "يجب أن يكون السعر أكبر من صفر";
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+  
+  // محاكاة تقدم الرفع
+  const simulateUploadProgress = () => {
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.random() * 10;
+      if (progress > 95) {
+        progress = 95;
+        clearInterval(interval);
+      }
+      setUploadProgress(progress);
+    }, 200);
+    
+    return () => clearInterval(interval);
+  };
+  
   // رفع ملف الصورة
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -89,17 +144,23 @@ const Products: React.FC = () => {
     // التحقق من نوع الملف
     if (!file.type.startsWith('image/')) {
       toast.error("يرجى رفع صورة فقط");
+      setFormErrors(prev => ({ ...prev, image: "يرجى رفع صورة فقط" }));
       return;
     }
     
     // التحقق من حجم الملف (أقل من 5 ميجابايت)
     if (file.size > 5 * 1024 * 1024) {
       toast.error("يجب أن يكون حجم الصورة أقل من 5 ميجابايت");
+      setFormErrors(prev => ({ ...prev, image: "يجب أن يكون حجم الصورة أقل من 5 ميجابايت" }));
       return;
     }
     
     try {
       setIsUploading(true);
+      setUploadState('uploading');
+      setFormErrors(prev => ({ ...prev, image: undefined }));
+      
+      const stopSimulation = simulateUploadProgress();
       
       if (!storeData?.id) {
         toast.error("لم يتم العثور على معرف المتجر");
@@ -119,9 +180,13 @@ const Products: React.FC = () => {
           upsert: false
         });
       
+      stopSimulation();
+      
       if (error) {
         throw error;
       }
+      
+      setUploadProgress(100);
       
       // الحصول على رابط الصورة العام
       const { data: urlData } = supabase.storage
@@ -134,9 +199,12 @@ const Products: React.FC = () => {
         image_url: urlData.publicUrl
       }));
       
+      setUploadState('success');
       toast.success("تم رفع الصورة بنجاح");
     } catch (error) {
       console.error("Error uploading image:", error);
+      setUploadState('error');
+      setFormErrors(prev => ({ ...prev, image: "حدث خطأ أثناء رفع الصورة" }));
       toast.error("حدث خطأ أثناء رفع الصورة");
     } finally {
       setIsUploading(false);
@@ -146,15 +214,14 @@ const Products: React.FC = () => {
   // إضافة منتج جديد
   const handleAddProduct = async () => {
     try {
+      if (!validateForm()) {
+        return;
+      }
+      
       const { data: storeData } = await useStoreData().refetch();
       
       if (!storeData?.id) {
         toast.error("لم يتم العثور على معرف المتجر");
-        return;
-      }
-      
-      if (!formData.name || formData.price <= 0) {
-        toast.error("يرجى ملء جميع الحقول المطلوبة");
         return;
       }
       
@@ -163,10 +230,10 @@ const Products: React.FC = () => {
         .insert([
           {
             store_id: storeData.id,
-            name: formData.name,
-            description: formData.description,
+            name: formData.name.trim(),
+            description: formData.description?.trim() || null,
             price: formData.price,
-            stock_quantity: formData.stock_quantity,
+            stock_quantity: formData.stock_quantity || 0,
             image_url: formData.image_url
           }
         ])
@@ -180,13 +247,7 @@ const Products: React.FC = () => {
       
       toast.success("تمت إضافة المنتج بنجاح");
       setIsAddDialogOpen(false);
-      setFormData({
-        name: "",
-        description: "",
-        price: 0,
-        stock_quantity: 0,
-        image_url: null
-      });
+      resetForm();
       
       refetch();
     } catch (error) {
@@ -200,6 +261,28 @@ const Products: React.FC = () => {
     if (!selectedProduct) return;
     
     try {
+      // إذا كان المنتج يحتوي على صورة، نحذفها أولاً
+      if (selectedProduct.image_url) {
+        // استخراج المسار من URL الصورة
+        const imageUrl = selectedProduct.image_url;
+        const storageUrl = supabase.storage.from('store-images').getPublicUrl('').data.publicUrl;
+        
+        if (imageUrl.startsWith(storageUrl)) {
+          const imagePath = imageUrl.replace(storageUrl + '/', '');
+          
+          // حذف الصورة من التخزين
+          const { error: storageError } = await supabase.storage
+            .from('store-images')
+            .remove([imagePath]);
+            
+          if (storageError) {
+            console.error("Error deleting product image:", storageError);
+            // نستمر في حذف المنتج حتى لو فشل حذف الصورة
+          }
+        }
+      }
+      
+      // حذف المنتج
       const { error } = await supabase
         .from('products')
         .delete()
@@ -224,10 +307,28 @@ const Products: React.FC = () => {
   // تغيير قيم النموذج
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    
+    // إزالة رسائل الخطأ عند الكتابة
+    if (name in formErrors) {
+      setFormErrors(prev => ({ ...prev, [name]: undefined }));
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'price' || name === 'stock_quantity' ? parseFloat(value) : value
+      [name]: name === 'price' || name === 'stock_quantity' ? parseFloat(value) || 0 : value
     }));
+  };
+  
+  // إزالة الصورة
+  const handleRemoveImage = () => {
+    setFormData(prev => ({ ...prev, image_url: null }));
+    setUploadState('idle');
+    setUploadProgress(0);
+    
+    // إعادة تعيين قيمة حقل الملف
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
   
   // عرض حالة فارغة إذا لم تكن هناك منتجات
@@ -258,7 +359,7 @@ const Products: React.FC = () => {
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-12 w-12 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden">
+              <div className="h-16 w-16 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden">
                 {product.image_url ? (
                   <img 
                     src={product.image_url} 
@@ -270,14 +371,14 @@ const Products: React.FC = () => {
                 )}
               </div>
               <div>
-                <h3 className="font-medium">{product.name}</h3>
-                <p className="text-sm text-gray-500 line-clamp-1">{product.description || "بدون وصف"}</p>
+                <h3 className="font-medium text-lg">{product.name}</h3>
+                <p className="text-sm text-gray-500 line-clamp-1 max-w-md">{product.description || "بدون وصف"}</p>
               </div>
             </div>
             
             <div className="flex items-center gap-6">
               <div className="text-right">
-                <div className="font-bold">{formatCurrency(product.price)}</div>
+                <div className="font-bold text-lg">{formatCurrency(product.price)}</div>
                 <div className="text-sm">
                   <Badge variant={product.stock_quantity > 0 ? "outline" : "destructive"} className="mt-1">
                     {product.stock_quantity > 0 ? `${product.stock_quantity} في المخزون` : "نفذت الكمية"}
@@ -316,12 +417,124 @@ const Products: React.FC = () => {
     </div>
   );
   
+  // عرض مكون رفع الصورة
+  const renderImageUploader = () => {
+    return (
+      <div className="grid gap-2">
+        <Label htmlFor="image_url">صورة المنتج</Label>
+        <div className="flex flex-col gap-3">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileUpload}
+            ref={fileInputRef}
+            className="hidden"
+          />
+          
+          {formData.image_url ? (
+            <div className="relative w-full h-48 bg-gray-100 rounded-md overflow-hidden border border-green-200">
+              <img 
+                src={formData.image_url} 
+                alt="Product" 
+                className="w-full h-full object-contain" 
+              />
+              <div className="absolute top-0 right-0 p-2 flex gap-2">
+                <Button 
+                  variant="destructive"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={handleRemoveImage}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 bg-green-50 text-green-700 p-2 text-sm flex items-center gap-2 border-t border-green-200">
+                <CheckCircle className="h-4 w-4" />
+                تم رفع الصورة بنجاح
+              </div>
+            </div>
+          ) : (
+            <div 
+              className={`w-full h-48 border-2 border-dashed rounded-md flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-gray-50 transition ${
+                uploadState === 'error' ? 'border-red-300 bg-red-50' : 'border-gray-300'
+              }`}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {uploadState === 'uploading' ? (
+                <div className="flex flex-col items-center w-full px-8">
+                  <div className="flex items-center gap-2 mb-2 text-blue-600">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
+                    <p className="text-sm font-medium">جاري رفع الصورة...</p>
+                  </div>
+                  <Progress value={uploadProgress} className="w-full h-2" />
+                  <p className="text-xs text-gray-500 mt-2">{Math.round(uploadProgress)}%</p>
+                </div>
+              ) : uploadState === 'error' ? (
+                <>
+                  <div className="rounded-full bg-red-100 p-2">
+                    <AlertCircle className="h-6 w-6 text-red-500" />
+                  </div>
+                  <p className="text-sm font-medium text-red-600">فشل رفع الصورة</p>
+                  <p className="text-xs text-red-500">{formErrors.image}</p>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="mt-2 text-red-600 hover:text-red-700"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setUploadState('idle');
+                      setFormErrors(prev => ({ ...prev, image: undefined }));
+                    }}
+                  >
+                    حاول مرة أخرى
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Upload className="h-8 w-8 text-gray-400" />
+                  <p className="text-sm font-medium">اضغط هنا لرفع صورة</p>
+                  <p className="text-xs text-gray-500">يدعم صيغ JPG، PNG بحد أقصى 5MB</p>
+                </>
+              )}
+            </div>
+          )}
+          
+          <div className="flex items-center gap-3">
+            <div className="flex-1 relative">
+              <Image className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input 
+                id="image_url" 
+                name="image_url" 
+                placeholder="أو أدخل رابط صورة المنتج مباشرة" 
+                value={formData.image_url || ''} 
+                onChange={handleInputChange}
+                className="pl-3 pr-10"
+              />
+            </div>
+            <Button 
+              type="button" 
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+            >
+              <Upload className="h-4 w-4 ml-2" />
+              رفع صورة
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">إدارة المنتجات</h1>
-          <Button className="gap-2" onClick={() => setIsAddDialogOpen(true)}>
+          <Button className="gap-2" onClick={() => {
+            resetForm();
+            setIsAddDialogOpen(true);
+          }}>
             <Plus className="h-4 w-4" />
             <span>إضافة منتج</span>
           </Button>
@@ -367,7 +580,10 @@ const Products: React.FC = () => {
       </div>
       
       {/* مربع حوار إضافة منتج */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+      <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
+        if (!open) resetForm();
+        setIsAddDialogOpen(open);
+      }}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>إضافة منتج جديد</DialogTitle>
@@ -391,8 +607,12 @@ const Products: React.FC = () => {
                     name="name" 
                     placeholder="أدخل اسم المنتج" 
                     value={formData.name} 
-                    onChange={handleInputChange} 
+                    onChange={handleInputChange}
+                    className={formErrors.name ? "border-red-300" : ""}
                   />
+                  {formErrors.name && (
+                    <p className="text-sm text-red-500">{formErrors.name}</p>
+                  )}
                 </div>
                 
                 <div className="grid gap-2">
@@ -407,77 +627,7 @@ const Products: React.FC = () => {
                   />
                 </div>
                 
-                <div className="grid gap-2">
-                  <Label htmlFor="image_url">صورة المنتج</Label>
-                  <div className="flex flex-col gap-3">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileUpload}
-                      ref={fileInputRef}
-                      className="hidden"
-                    />
-                    
-                    {formData.image_url ? (
-                      <div className="relative w-full h-40 bg-gray-100 rounded-md overflow-hidden">
-                        <img 
-                          src={formData.image_url} 
-                          alt="Product" 
-                          className="w-full h-full object-contain" 
-                        />
-                        <Button 
-                          variant="destructive"
-                          size="sm"
-                          className="absolute top-2 right-2"
-                          onClick={() => setFormData(prev => ({ ...prev, image_url: null }))}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <div 
-                        className="w-full h-40 border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-gray-50 transition"
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        {isUploading ? (
-                          <div className="flex flex-col items-center">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                            <p className="text-sm text-gray-500 mt-2">جاري رفع الصورة...</p>
-                          </div>
-                        ) : (
-                          <>
-                            <Upload className="h-8 w-8 text-gray-400" />
-                            <p className="text-sm font-medium">اضغط هنا لرفع صورة</p>
-                            <p className="text-xs text-gray-500">يدعم صيغ JPG، PNG بحد أقصى 5MB</p>
-                          </>
-                        )}
-                      </div>
-                    )}
-                    
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 relative">
-                        <Image className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input 
-                          id="image_url" 
-                          name="image_url" 
-                          placeholder="أو أدخل رابط صورة المنتج مباشرة" 
-                          value={formData.image_url || ''} 
-                          onChange={handleInputChange}
-                          className="pl-3 pr-10"
-                        />
-                      </div>
-                      <Button 
-                        type="button" 
-                        variant="outline"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
-                      >
-                        <Upload className="h-4 w-4 mr-2" />
-                        رفع صورة
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+                {renderImageUploader()}
               </div>
             </TabsContent>
             
@@ -485,14 +635,23 @@ const Products: React.FC = () => {
               <div className="grid gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="price">السعر <span className="text-red-500">*</span></Label>
-                  <Input 
-                    id="price" 
-                    name="price" 
-                    type="number" 
-                    placeholder="0.00" 
-                    value={formData.price} 
-                    onChange={handleInputChange} 
-                  />
+                  <div className="relative">
+                    <Input 
+                      id="price" 
+                      name="price" 
+                      type="number" 
+                      placeholder="0.00" 
+                      value={formData.price === 0 ? "" : formData.price} 
+                      onChange={handleInputChange}
+                      className={`pl-16 text-base font-semibold dir-ltr ${formErrors.price ? "border-red-300" : ""}`}
+                    />
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 border-r border-gray-200 pr-2">
+                      <span className="text-sm">{storeData?.currency || 'KWD'}</span>
+                    </div>
+                  </div>
+                  {formErrors.price && (
+                    <p className="text-sm text-red-500">{formErrors.price}</p>
+                  )}
                 </div>
                 
                 <div className="grid gap-2">
@@ -502,9 +661,10 @@ const Products: React.FC = () => {
                     name="stock_quantity" 
                     type="number" 
                     placeholder="0" 
-                    value={formData.stock_quantity} 
+                    value={formData.stock_quantity === 0 ? "" : formData.stock_quantity} 
                     onChange={handleInputChange} 
                   />
+                  <p className="text-xs text-gray-500">اترك الكمية كـ 0 إذا كان المنتج غير متوفر في المخزون</p>
                 </div>
               </div>
             </TabsContent>
@@ -530,6 +690,26 @@ const Products: React.FC = () => {
               هل أنت متأكد من رغبتك في حذف هذا المنتج؟ لا يمكن التراجع عن هذه العملية.
             </DialogDescription>
           </DialogHeader>
+          
+          {selectedProduct && (
+            <div className="flex items-center gap-3 p-3 bg-red-50 rounded-md border border-red-100">
+              <div className="h-12 w-12 bg-white rounded overflow-hidden border border-red-100">
+                {selectedProduct.image_url ? (
+                  <img 
+                    src={selectedProduct.image_url} 
+                    alt={selectedProduct.name} 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Package className="h-6 w-6 text-gray-400 m-3" />
+                )}
+              </div>
+              <div>
+                <h3 className="font-medium">{selectedProduct.name}</h3>
+                <p className="text-sm text-gray-500">السعر: {formatCurrency(selectedProduct.price)}</p>
+              </div>
+            </div>
+          )}
           
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
