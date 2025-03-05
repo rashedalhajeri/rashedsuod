@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -8,61 +7,53 @@ import { Truck, Package, Clock, MapPin, Info, Zap, CheckCircle, PlusCircle, Targ
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { StoreShippingSettings, DeliveryArea, getShippingSettings, saveShippingSettings, getDeliveryAreas, saveDeliveryAreas } from "@/services/shipping-service";
 import useStoreData from "@/hooks/use-store-data";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
 interface ShippingMethodFormProps {
   isPaidPlan: boolean;
 }
 
 // قائمة المناطق في الكويت
-const kuwaitAreas = [
-  "العاصمة", "حولي", "الفروانية", "الأحمدي", "الجهراء", "مبارك الكبير"
-];
-
+const kuwaitAreas = ["العاصمة", "حولي", "الفروانية", "الأحمدي", "الجهراء", "مبارك الكبير"];
 const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
   isPaidPlan
 }) => {
-  const { data: storeData } = useStoreData();
-  
+  const {
+    data: storeData
+  } = useStoreData();
+
   // حالة نظام التوصيل: إما توصيل المتجر (storeDelivery) أو توصيل فريق برونز (bronzeDelivery)
   const [storeDelivery, setStoreDelivery] = useState(true);
   const [bronzeDelivery, setBronzeDelivery] = useState(false);
-  
+
   // إعدادات توصيل المتجر (الافتراضي)
   const [freeShipping, setFreeShipping] = useState(false);
   const [freeShippingMinOrder, setFreeShippingMinOrder] = useState("100");
   const [standardDeliveryTime, setStandardDeliveryTime] = useState("2-3");
   const [deliveryTimeUnit, setDeliveryTimeUnit] = useState("days");
-  
+
   // إدارة مناطق التوصيل للمتجر
   const [deliveryAreas, setDeliveryAreas] = useState<DeliveryArea[]>([]);
   const [newAreaName, setNewAreaName] = useState("");
   const [newAreaPrice, setNewAreaPrice] = useState("5");
-  
+
   // حالة توصيل فريق برونز
   const [selectedDeliverySpeed, setSelectedDeliverySpeed] = useState("standard");
-  
+
   // حالة التحميل
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // جلب الإعدادات عند تحميل المكون
   useEffect(() => {
     const fetchSettings = async () => {
       if (storeData?.id) {
         setIsLoading(true);
-        
+
         // جلب إعدادات الشحن
         const settings = await getShippingSettings(storeData.id);
         if (settings) {
@@ -74,113 +65,94 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
           setDeliveryTimeUnit(settings.delivery_time_unit);
           setSelectedDeliverySpeed(settings.bronze_delivery_speed);
         }
-        
+
         // جلب مناطق التوصيل
         const areas = await getDeliveryAreas(storeData.id);
         if (areas.length > 0) {
           setDeliveryAreas(areas);
         } else {
           // إنشاء مناطق افتراضية إذا لم تكن موجودة
-          setDeliveryAreas(
-            kuwaitAreas.map(area => ({
-              store_id: storeData.id,
-              name: area,
-              price: 5,
-              enabled: true
-            }))
-          );
+          setDeliveryAreas(kuwaitAreas.map(area => ({
+            store_id: storeData.id,
+            name: area,
+            price: 5,
+            enabled: true
+          })));
         }
-        
         setIsLoading(false);
       }
     };
-    
     fetchSettings();
   }, [storeData?.id]);
-  
+
   // تعامل مع تبديل طريقة التوصيل
   const handleBronzeDeliveryChange = (checked: boolean) => {
     setBronzeDelivery(checked);
     setStoreDelivery(!checked);
-    
     if (checked) {
       toast.success("تم تفعيل خدمة توصيل فريق برونز بنجاح");
     } else {
       toast.success("تم العودة إلى نظام توصيل المتجر");
     }
   };
-  
   const handleStoreDeliveryChange = (checked: boolean) => {
     setStoreDelivery(checked);
     setBronzeDelivery(!checked);
-    
     if (checked) {
       toast.success("تم تفعيل نظام توصيل المتجر بنجاح");
     } else {
       toast.success("تم تفعيل خدمة توصيل فريق برونز");
     }
   };
-  
+
   // إدارة مناطق التوصيل
   const handleAreaPriceChange = (areaId: string, price: string) => {
-    setDeliveryAreas(
-      deliveryAreas.map(area => 
-        area.id === areaId ? { ...area, price: parseFloat(price) || 0 } : area
-      )
-    );
+    setDeliveryAreas(deliveryAreas.map(area => area.id === areaId ? {
+      ...area,
+      price: parseFloat(price) || 0
+    } : area));
   };
-  
   const handleAreaToggle = (areaId: string, isEnabled: boolean) => {
-    setDeliveryAreas(
-      deliveryAreas.map(area => 
-        area.id === areaId ? { ...area, enabled: isEnabled } : area
-      )
-    );
+    setDeliveryAreas(deliveryAreas.map(area => area.id === areaId ? {
+      ...area,
+      enabled: isEnabled
+    } : area));
   };
-  
   const handleAddNewArea = () => {
     if (!newAreaName.trim()) {
       toast.error("يرجى إدخال اسم المنطقة");
       return;
     }
-    
+
     // التحقق من وجود المنطقة مسبقًا
-    const areaExists = deliveryAreas.some(
-      area => area.name.trim().toLowerCase() === newAreaName.trim().toLowerCase()
-    );
-    
+    const areaExists = deliveryAreas.some(area => area.name.trim().toLowerCase() === newAreaName.trim().toLowerCase());
     if (areaExists) {
       toast.error("هذه المنطقة موجودة بالفعل");
       return;
     }
-    
     const newArea: DeliveryArea = {
       store_id: storeData?.id || "",
       name: newAreaName.trim(),
       price: parseFloat(newAreaPrice) || 0,
       enabled: true
     };
-    
     setDeliveryAreas([...deliveryAreas, newArea]);
     setNewAreaName("");
     setNewAreaPrice("5");
     toast.success("تمت إضافة المنطقة بنجاح");
   };
-  
   const handleRemoveArea = (areaId: string) => {
     setDeliveryAreas(deliveryAreas.filter(area => area.id !== areaId));
     toast.success("تم حذف المنطقة بنجاح");
   };
-  
+
   // حفظ الإعدادات
   const handleSaveSettings = async () => {
     if (!storeData?.id) {
       toast.error("لم يتم العثور على معرف المتجر");
       return;
     }
-    
     setIsLoading(true);
-    
     try {
       // تجهيز إعدادات الشحن
       const shippingSettings: StoreShippingSettings = {
@@ -192,20 +164,17 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
         delivery_time_unit: deliveryTimeUnit as 'hours' | 'days',
         bronze_delivery_speed: selectedDeliverySpeed as 'standard' | 'express' | 'same_day'
       };
-      
+
       // حفظ إعدادات الشحن
       const settingsSaved = await saveShippingSettings(shippingSettings);
-      
       if (settingsSaved && storeDelivery) {
         // إذا كان توصيل المتجر مفعل، نقوم بحفظ مناطق التوصيل
         const areasWithStoreId = deliveryAreas.map(area => ({
           ...area,
           store_id: storeData.id
         }));
-        
         await saveDeliveryAreas(areasWithStoreId);
       }
-      
       toast.success("تم حفظ إعدادات الشحن بنجاح");
     } catch (error) {
       console.error("خطأ في حفظ الإعدادات:", error);
@@ -214,31 +183,22 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
       setIsLoading(false);
     }
   };
-  
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center p-12">
+    return <div className="flex justify-center items-center p-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         <span className="mr-2">جاري تحميل الإعدادات...</span>
-      </div>
-    );
+      </div>;
   }
-  
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       {/* نظام التوصيل الرئيسي - اختيار بين توصيل المتجر أو فريق برونز */}
       <Card className="border-primary/10 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Truck className="h-5 w-5 text-primary" />
-            <span>اختر نظام التوصيل</span>
-          </CardTitle>
+          
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-2 gap-4">
             {/* توصيل المتجر (الافتراضي) */}
-            <Card className={`relative cursor-pointer transition-all duration-300 p-1 ${storeDelivery ? "ring-2 ring-blue-500 bg-blue-50" : "opacity-80 hover:opacity-100"}`}
-              onClick={() => handleStoreDeliveryChange(true)}>
+            <Card className={`relative cursor-pointer transition-all duration-300 p-1 ${storeDelivery ? "ring-2 ring-blue-500 bg-blue-50" : "opacity-80 hover:opacity-100"}`} onClick={() => handleStoreDeliveryChange(true)}>
               <CardContent className="p-4">
                 <div className="flex justify-between items-center mb-3">
                   <div className="flex items-center gap-2">
@@ -247,11 +207,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
                     </div>
                     <h3 className="text-lg font-semibold text-blue-800">نظام توصيل المتجر</h3>
                   </div>
-                  <Switch 
-                    checked={storeDelivery} 
-                    onCheckedChange={handleStoreDeliveryChange}
-                    aria-label="تفعيل نظام توصيل المتجر" 
-                  />
+                  <Switch checked={storeDelivery} onCheckedChange={handleStoreDeliveryChange} aria-label="تفعيل نظام توصيل المتجر" />
                 </div>
                 <p className="text-sm text-blue-700 mb-2">تحكم كامل في عمليات التوصيل وتحديد المناطق والأسعار</p>
                 <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">الوضع الافتراضي</Badge>
@@ -259,8 +215,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
             </Card>
             
             {/* توصيل فريق برونز */}
-            <Card className={`relative cursor-pointer transition-all duration-300 p-1 ${bronzeDelivery ? "ring-2 ring-green-500 bg-green-50" : "opacity-80 hover:opacity-100"}`}
-              onClick={() => handleBronzeDeliveryChange(true)}>
+            <Card className={`relative cursor-pointer transition-all duration-300 p-1 ${bronzeDelivery ? "ring-2 ring-green-500 bg-green-50" : "opacity-80 hover:opacity-100"}`} onClick={() => handleBronzeDeliveryChange(true)}>
               <CardContent className="p-4">
                 <div className="flex justify-between items-center mb-3">
                   <div className="flex items-center gap-2">
@@ -269,11 +224,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
                     </div>
                     <h3 className="text-lg font-semibold text-green-800">توصيل فريق برونز</h3>
                   </div>
-                  <Switch 
-                    checked={bronzeDelivery} 
-                    onCheckedChange={handleBronzeDeliveryChange}
-                    aria-label="تفعيل خدمة برونز" 
-                  />
+                  <Switch checked={bronzeDelivery} onCheckedChange={handleBronzeDeliveryChange} aria-label="تفعيل خدمة برونز" />
                 </div>
                 <p className="text-sm text-green-700 mb-2">خدمة توصيل متكاملة تُدار بواسطة فريق برونز</p>
                 <Badge className="bg-green-100 text-green-800 hover:bg-green-200">موصى به</Badge>
@@ -285,8 +236,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
       
       {/* تفاصيل نظام التوصيل المختار */}
       {/* نظام توصيل المتجر */}
-      {storeDelivery && (
-        <div className="space-y-5">
+      {storeDelivery && <div className="space-y-5">
           <div className="rounded-lg border border-blue-200 bg-white shadow-md">
             <div className="p-5 border-b border-blue-100">
               <h3 className="text-xl font-semibold text-blue-800 mb-2">إعدادات توصيل المتجر</h3>
@@ -305,32 +255,20 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
                     <p className="text-sm text-blue-600">تقديم توصيل مجاني للطلبات التي تتجاوز قيمة معينة</p>
                   </div>
                 </div>
-                <Switch
-                  checked={freeShipping}
-                  onCheckedChange={setFreeShipping}
-                  aria-label="تفعيل الشحن المجاني"
-                />
+                <Switch checked={freeShipping} onCheckedChange={setFreeShipping} aria-label="تفعيل الشحن المجاني" />
               </div>
               
-              {freeShipping && (
-                <div className="border border-blue-100 rounded-lg p-4 bg-white">
+              {freeShipping && <div className="border border-blue-100 rounded-lg p-4 bg-white">
                   <Label htmlFor="min-order-free-shipping" className="text-blue-800 font-medium mb-2 block">
                     الحد الأدنى للطلب للشحن المجاني (KWD)
                   </Label>
                   <div className="relative">
-                    <Input
-                      id="min-order-free-shipping"
-                      type="number"
-                      className="pl-12 text-xl font-semibold dir-ltr"
-                      value={freeShippingMinOrder}
-                      onChange={e => setFreeShippingMinOrder(e.target.value)}
-                    />
+                    <Input id="min-order-free-shipping" type="number" className="pl-12 text-xl font-semibold dir-ltr" value={freeShippingMinOrder} onChange={e => setFreeShippingMinOrder(e.target.value)} />
                     <div className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                       KWD
                     </div>
                   </div>
-                </div>
-              )}
+                </div>}
               
               {/* وقت التوصيل */}
               <div className="border border-blue-100 rounded-lg p-4 bg-white">
@@ -339,20 +277,10 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
                 </Label>
                 <div className="flex gap-3">
                   <div className="relative flex-1">
-                    <Input
-                      id="delivery-time"
-                      type="text"
-                      className="pl-4 text-xl font-semibold dir-ltr"
-                      value={standardDeliveryTime}
-                      onChange={e => setStandardDeliveryTime(e.target.value)}
-                      placeholder="1-2"
-                    />
+                    <Input id="delivery-time" type="text" className="pl-4 text-xl font-semibold dir-ltr" value={standardDeliveryTime} onChange={e => setStandardDeliveryTime(e.target.value)} placeholder="1-2" />
                   </div>
                   <div className="w-1/3">
-                    <Select
-                      value={deliveryTimeUnit}
-                      onValueChange={setDeliveryTimeUnit}
-                    >
+                    <Select value={deliveryTimeUnit} onValueChange={setDeliveryTimeUnit}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="وحدة" />
                       </SelectTrigger>
@@ -386,15 +314,9 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
                     
                     <TabsContent value="existing-areas">
                       <div className="space-y-3 max-h-80 overflow-y-auto p-2">
-                        {deliveryAreas.length > 0 ? (
-                          deliveryAreas.map((area, index) => (
-                            <div key={area.id || `new-area-${index}`} className="flex items-center justify-between p-3 rounded-lg border border-blue-50 bg-blue-25">
+                        {deliveryAreas.length > 0 ? deliveryAreas.map((area, index) => <div key={area.id || `new-area-${index}`} className="flex items-center justify-between p-3 rounded-lg border border-blue-50 bg-blue-25">
                               <div className="flex items-center gap-3">
-                                <Checkbox
-                                  checked={area.enabled}
-                                  onCheckedChange={checked => handleAreaToggle(area.id || `new-area-${index}`, checked === true)}
-                                  id={`area-${area.id || index}`}
-                                />
+                                <Checkbox checked={area.enabled} onCheckedChange={checked => handleAreaToggle(area.id || `new-area-${index}`, checked === true)} id={`area-${area.id || index}`} />
                                 <Label htmlFor={`area-${area.id || index}`} className={`font-medium ${area.enabled ? 'text-blue-800' : 'text-gray-500'}`}>
                                   {area.name}
                                 </Label>
@@ -403,36 +325,20 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
                               <div className="flex items-center gap-2">
                                 <div className="w-28">
                                   <div className="relative">
-                                    <Input
-                                      type="number"
-                                      className="pl-10 text-base font-semibold dir-ltr"
-                                      value={area.price.toString()}
-                                      onChange={e => handleAreaPriceChange(area.id || `new-area-${index}`, e.target.value)}
-                                      disabled={!area.enabled}
-                                    />
+                                    <Input type="number" className="pl-10 text-base font-semibold dir-ltr" value={area.price.toString()} onChange={e => handleAreaPriceChange(area.id || `new-area-${index}`, e.target.value)} disabled={!area.enabled} />
                                     <div className="absolute inset-y-0 left-0 flex items-center pl-2 text-gray-400 text-sm">
                                       KWD
                                     </div>
                                   </div>
                                 </div>
                                 
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                                  onClick={() => handleRemoveArea(area.id || `new-area-${index}`)}
-                                >
+                                <Button type="button" variant="ghost" size="icon" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => handleRemoveArea(area.id || `new-area-${index}`)}>
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </div>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="text-center p-4 text-gray-500">
+                            </div>) : <div className="text-center p-4 text-gray-500">
                             لا توجد مناطق توصيل مضافة. قم بإضافة مناطق التوصيل التي تخدمها.
-                          </div>
-                        )}
+                          </div>}
                       </div>
                     </TabsContent>
                     
@@ -443,12 +349,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
                             <Label htmlFor="new-area-name" className="block text-sm font-medium text-gray-700 mb-1">
                               اسم المنطقة
                             </Label>
-                            <Input
-                              id="new-area-name"
-                              value={newAreaName}
-                              onChange={e => setNewAreaName(e.target.value)}
-                              placeholder="أدخل اسم المنطقة"
-                            />
+                            <Input id="new-area-name" value={newAreaName} onChange={e => setNewAreaName(e.target.value)} placeholder="أدخل اسم المنطقة" />
                           </div>
                           
                           <div>
@@ -456,24 +357,14 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
                               سعر التوصيل (KWD)
                             </Label>
                             <div className="relative">
-                              <Input
-                                id="new-area-price"
-                                type="number"
-                                className="pl-10 text-base font-semibold dir-ltr"
-                                value={newAreaPrice}
-                                onChange={e => setNewAreaPrice(e.target.value)}
-                              />
+                              <Input id="new-area-price" type="number" className="pl-10 text-base font-semibold dir-ltr" value={newAreaPrice} onChange={e => setNewAreaPrice(e.target.value)} />
                               <div className="absolute inset-y-0 left-0 flex items-center pl-2 text-gray-400 text-sm">
                                 KWD
                               </div>
                             </div>
                           </div>
                           
-                          <Button 
-                            type="button"
-                            onClick={handleAddNewArea}
-                            className="mt-2"
-                          >
+                          <Button type="button" onClick={handleAddNewArea} className="mt-2">
                             <PlusCircle className="h-4 w-4 ml-1" /> إضافة المنطقة
                           </Button>
                         </div>
@@ -484,12 +375,10 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
               </div>
             </div>
           </div>
-        </div>
-      )}
+        </div>}
       
       {/* توصيل فريق برونز */}
-      {bronzeDelivery && (
-        <div className="rounded-lg border border-green-300 bg-white shadow-md">
+      {bronzeDelivery && <div className="rounded-lg border border-green-300 bg-white shadow-md">
           <div className="p-5 border-b border-green-100">
             <h3 className="text-xl font-semibold text-green-800 mb-2">خدمة توصيل فريق برونز</h3>
             <p className="text-green-700">خدمة متكاملة لتوصيل طلبات متجرك بواسطة فريق برونز</p>
@@ -508,10 +397,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
               <div className="text-base font-medium mb-2 text-green-800">سرعة التوصيل:</div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <Card 
-                  className={`border-green-200 transition-all cursor-pointer hover:shadow-md ${selectedDeliverySpeed === "standard" ? "bg-green-50 ring-2 ring-green-500" : ""}`} 
-                  onClick={() => setSelectedDeliverySpeed("standard")}
-                >
+                <Card className={`border-green-200 transition-all cursor-pointer hover:shadow-md ${selectedDeliverySpeed === "standard" ? "bg-green-50 ring-2 ring-green-500" : ""}`} onClick={() => setSelectedDeliverySpeed("standard")}>
                   <CardContent className="p-4 flex items-center gap-3">
                     <Clock className="h-5 w-5 text-green-600" />
                     <div className="flex flex-col">
@@ -524,10 +410,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
                   </CardContent>
                 </Card>
                 
-                <Card 
-                  className={`border-green-200 transition-all cursor-pointer hover:shadow-md ${selectedDeliverySpeed === "express" ? "bg-green-50 ring-2 ring-green-500" : ""}`} 
-                  onClick={() => setSelectedDeliverySpeed("express")}
-                >
+                <Card className={`border-green-200 transition-all cursor-pointer hover:shadow-md ${selectedDeliverySpeed === "express" ? "bg-green-50 ring-2 ring-green-500" : ""}`} onClick={() => setSelectedDeliverySpeed("express")}>
                   <CardContent className="p-4 flex items-center gap-3">
                     <Zap className="h-5 w-5 text-green-600" />
                     <div className="flex flex-col">
@@ -540,10 +423,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
                   </CardContent>
                 </Card>
                 
-                <Card 
-                  className={`border-green-200 transition-all cursor-pointer hover:shadow-md ${selectedDeliverySpeed === "same_day" ? "bg-green-50 ring-2 ring-green-500" : ""}`} 
-                  onClick={() => setSelectedDeliverySpeed("same_day")}
-                >
+                <Card className={`border-green-200 transition-all cursor-pointer hover:shadow-md ${selectedDeliverySpeed === "same_day" ? "bg-green-50 ring-2 ring-green-500" : ""}`} onClick={() => setSelectedDeliverySpeed("same_day")}>
                   <CardContent className="p-4 flex items-center gap-3">
                     <Zap className="h-5 w-5 text-green-600" />
                     <div className="flex flex-col">
@@ -565,19 +445,11 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
               </Card>
             </div>
           </div>
-        </div>
-      )}
+        </div>}
       
       <div className="flex justify-end">
-        <Button 
-          type="button" 
-          onClick={handleSaveSettings}
-          className="bg-green-600 hover:bg-green-700" 
-          size="lg"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <>
+        <Button type="button" onClick={handleSaveSettings} className="bg-green-600 hover:bg-green-700" size="lg" disabled={isLoading}>
+          {isLoading ? <>
               <span className="animate-spin mr-2">
                 <svg className="h-4 w-4" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
@@ -585,17 +457,12 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
                 </svg>
               </span>
               جاري الحفظ...
-            </>
-          ) : (
-            <>
+            </> : <>
               <Save className="h-4 w-4 ml-1" />
               حفظ التغييرات
-            </>
-          )}
+            </>}
         </Button>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default ShippingMethodForm;
