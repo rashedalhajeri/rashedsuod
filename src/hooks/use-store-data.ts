@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { secureRetrieve } from "@/lib/encryption";
@@ -57,7 +58,7 @@ export const useStoreData = () => {
       subscription_start_date: data.subscription_start_date || userMetadata?.subscription_start_date,
       subscription_end_date: data.subscription_end_date || userMetadata?.subscription_end_date,
       logo_url: data.logo_url || null, // Handle logo_url from data
-      description: data.description || null // Handle description from data
+      description: null // Default description to null since it might not exist in the database yet
     } as StoreData;
   };
   
