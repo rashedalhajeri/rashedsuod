@@ -37,8 +37,9 @@ const Settings = () => {
     if (storeData?.logo_url) {
       setStoreLogoUrl(storeData.logo_url);
     }
-    if (storeData?.store_description) {
-      setStoreDescription(storeData.store_description);
+    // Check if store description exists in storeData and use it
+    if (storeData?.description) {
+      setStoreDescription(storeData.description);
     }
   }, [storeData]);
   
@@ -53,15 +54,19 @@ const Settings = () => {
     setStoreDescription(e.target.value);
   };
   
-  // Function to handle save button click
-  const handleSaveClick = () => {
+  // Function to handle save button click - making it async to return a Promise
+  const handleSaveClick = async (): Promise<void> => {
     setIsSaving(true);
     
-    // Simulate saving data
-    setTimeout(() => {
-      setIsSaving(false);
-      toast.success("تم حفظ الإعدادات بنجاح");
-    }, 1500);
+    // Return a Promise to match the expected type
+    return new Promise((resolve) => {
+      // Simulate saving data
+      setTimeout(() => {
+        setIsSaving(false);
+        toast.success("تم حفظ الإعدادات بنجاح");
+        resolve();
+      }, 1500);
+    });
   };
   
   // Function to copy store URL
@@ -253,21 +258,10 @@ const Settings = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <ShippingMethodForm 
-                    isPaidPlan={isCurrentPaidPlan} 
-                    title="الشحن القياسي"
-                    description="خدمة الشحن الأساسية"
-                  />
-                  <ShippingMethodForm 
-                    isPaidPlan={isCurrentPaidPlan}
-                    title="الشحن السريع"
-                    description="خدمة توصيل سريعة خلال 24 ساعة"
-                  />
-                  <ShippingMethodForm 
-                    isPaidPlan={isCurrentPaidPlan}
-                    title="الشحن المجاني"
-                    description="شحن مجاني للطلبات فوق مبلغ معين"
-                  />
+                  {/* Removed title and description props from ShippingMethodForm components */}
+                  <ShippingMethodForm isPaidPlan={isCurrentPaidPlan} />
+                  <ShippingMethodForm isPaidPlan={isCurrentPaidPlan} />
+                  <ShippingMethodForm isPaidPlan={isCurrentPaidPlan} />
                   <Button>إضافة طريقة شحن جديدة</Button>
                 </CardContent>
               </Card>
