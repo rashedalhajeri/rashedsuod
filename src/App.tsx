@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,9 +14,8 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import CreateStore from "./pages/CreateStore";
 import NotFound from "./pages/NotFound";
-import ProductDetail from "./pages/ProductDetail";
 
-// Import dashboard pages
+// Import platform dashboard pages
 import Dashboard from "./pages/Dashboard";
 import DashboardHome from "./pages/dashboard/Home";
 import Products from "./pages/dashboard/Products";
@@ -25,6 +25,13 @@ import Customers from "./pages/dashboard/Customers";
 import Payments from "./pages/dashboard/Payments";
 import Coupons from "./pages/dashboard/Coupons";
 import Settings from "./pages/dashboard/Settings";
+
+// Import store pages
+import ProductDetail from "./pages/ProductDetail";
+import StoreHome from "./pages/store/Home";
+import StoreProducts from "./pages/store/Products";
+import StoreProductDetail from "./pages/store/ProductDetail";
+import Cart from "./pages/store/Cart";
 
 // Create a new query client with retry disabled
 const queryClient = new QueryClient({
@@ -201,6 +208,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Platform Routes */}
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<Auth />} />
@@ -214,6 +222,7 @@ const App = () => (
               } 
             />
             
+            {/* Dashboard Routes */}
             <Route 
               path="/dashboard" 
               element={
@@ -286,15 +295,19 @@ const App = () => (
               }
             />
             
+            {/* Store Routes - Using storeId in URL */}
+            <Route path="/store/:storeId" element={<StoreHome />} />
+            <Route path="/store/:storeId/products" element={<StoreProducts />} />
+            <Route path="/store/:storeId/products/:productId" element={<StoreProductDetail />} />
+            <Route path="/store/:storeId/cart" element={<Cart />} />
+            
+            {/* Legacy route - redirect to new structure */}
             <Route 
               path="/products/:productId" 
-              element={
-                <ProtectedRoute>
-                  <ProductDetail />
-                </ProtectedRoute>
-              } 
+              element={<ProductDetail />}
             />
             
+            {/* Catch-all route for 404 */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
