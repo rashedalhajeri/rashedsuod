@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Truck, Package, Clock, MapPin, Zap, CheckCircle, PlusCircle, Trash2, Save, Check } from "lucide-react";
+import { Truck, Package, Clock, MapPin, PlusCircle, Trash2, Save, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -35,42 +34,33 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
 }) => {
   const { data: storeData } = useStoreData();
 
-  // حالة نظام التوصيل: إما توصيل المتجر (storeDelivery) أو توصيل فريق برونز (bronzeDelivery)
   const [storeDelivery, setStoreDelivery] = useState(true);
   const [bronzeDelivery, setBronzeDelivery] = useState(false);
 
-  // إعدادات توصيل المتجر (الافتراضي)
   const [freeShipping, setFreeShipping] = useState(false);
   const [freeShippingMinOrder, setFreeShippingMinOrder] = useState("100");
   const [standardDeliveryTime, setStandardDeliveryTime] = useState("2-3");
   const [deliveryTimeUnit, setDeliveryTimeUnit] = useState("days");
 
-  // إدارة مناطق التوصيل للمتجر
   const [deliveryAreas, setDeliveryAreas] = useState<DeliveryArea[]>([]);
   
-  // محافظات الكويت
   const [selectedGovernorateTab, setSelectedGovernorateTab] = useState("all");
   const [selectedGovernorates, setSelectedGovernorates] = useState<string[]>([]);
   const [governoratePrice, setGovernoratePrice] = useState("3");
   
-  // إضافة مناطق خاصة
   const [newAreaName, setNewAreaName] = useState("");
   const [newAreaPrice, setNewAreaPrice] = useState("5");
   const [activeAreaTab, setActiveAreaTab] = useState("governorates");
 
-  // حالة توصيل فريق برونز
   const [selectedDeliverySpeed, setSelectedDeliverySpeed] = useState("standard");
 
-  // حالة التحميل
   const [isLoading, setIsLoading] = useState(false);
 
-  // جلب الإعدادات عند تحميل المكون
   useEffect(() => {
     const fetchSettings = async () => {
       if (storeData?.id) {
         setIsLoading(true);
 
-        // جلب إعدادات الشحن
         const settings = await getShippingSettings(storeData.id);
         if (settings) {
           setStoreDelivery(settings.shipping_method === 'store_delivery');
@@ -82,13 +72,10 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
           setSelectedDeliverySpeed(settings.bronze_delivery_speed);
         }
 
-        // جلب مناطق التوصيل
         const areas = await getDeliveryAreas(storeData.id);
         if (areas.length > 0) {
-          // تحديد المناطق الموجودة
           setDeliveryAreas(areas);
         } else {
-          // إنشاء محافظات افتراضية إذا لم تكن موجودة
           setDeliveryAreas(getKuwaitGovernorates().map(gov => ({
             ...gov,
             store_id: storeData.id
@@ -100,7 +87,6 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
     fetchSettings();
   }, [storeData?.id]);
 
-  // تعامل مع تبديل طريقة التوصيل
   const handleBronzeDeliveryChange = (checked: boolean) => {
     setBronzeDelivery(checked);
     setStoreDelivery(!checked);
@@ -121,7 +107,6 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
     }
   };
 
-  // إدارة المحافظات
   const handleGovernorateSelection = (governorateName: string) => {
     setSelectedGovernorates(prev => {
       if (prev.includes(governorateName)) {
@@ -166,7 +151,6 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
     toast.success(enabled ? "تم تفعيل المحافظات المحددة" : "تم تعطيل المحافظات المحددة");
   };
   
-  // إدارة مناطق التوصيل الإضافية
   const handleAreaPriceChange = (areaId: string, price: string) => {
     setDeliveryAreas(deliveryAreas.map(area => area.id === areaId || (!area.id && area.name === areaId) ? {
       ...area,
@@ -187,7 +171,6 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
       return;
     }
 
-    // التحقق من وجود المنطقة مسبقًا
     const areaExists = deliveryAreas.some(area => area.name.trim().toLowerCase() === newAreaName.trim().toLowerCase());
     if (areaExists) {
       toast.error("هذه المنطقة موجودة بالفعل");
@@ -213,7 +196,6 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
     toast.success("تم حذف المنطقة بنجاح");
   };
 
-  // حفظ الإعدادات
   const handleSaveSettings = async () => {
     if (!storeData?.id) {
       toast.error("لم يتم العثور على معرف المتجر");
@@ -221,7 +203,6 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
     }
     setIsLoading(true);
     try {
-      // تجهيز إعدادات الشحن
       const shippingSettings: StoreShippingSettings = {
         store_id: storeData.id,
         shipping_method: storeDelivery ? 'store_delivery' : 'bronze_delivery',
@@ -229,13 +210,11 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
         free_shipping_min_order: parseFloat(freeShippingMinOrder) || 0,
         standard_delivery_time: standardDeliveryTime,
         delivery_time_unit: deliveryTimeUnit as 'hours' | 'days',
-        bronze_delivery_speed: selectedDeliverySpeed as 'standard' | 'express' | 'same_day'
+        bronze_delivery_speed: 'standard'
       };
 
-      // حفظ إعدادات الشحن
       const settingsSaved = await saveShippingSettings(shippingSettings);
       if (settingsSaved && storeDelivery) {
-        // إذا كان توصيل المتجر مفعل، نقوم بحفظ مناطق التوصيل
         const areasWithStoreId = deliveryAreas.map(area => ({
           ...area,
           store_id: storeData.id
@@ -250,7 +229,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
       setIsLoading(false);
     }
   };
-  
+
   if (isLoading) {
     return <div className="flex justify-center items-center p-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -258,17 +237,13 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
       </div>;
   }
 
-  // الحصول على المحافظات المفعلة فقط
   const enabledGovernorates = deliveryAreas.filter(area => area.is_governorate && area.enabled);
-  // الحصول على المناطق الإضافية
   const customAreas = deliveryAreas.filter(area => !area.is_governorate);
   
   return <div className="space-y-6">
-      {/* نظام التوصيل الرئيسي - اختيار بين توصيل المتجر أو فريق برونز */}
       <Card className="border-primary/10 bg-white shadow-sm">
         <CardContent className="pt-6">
           <div className="grid md:grid-cols-2 gap-4">
-            {/* توصيل المتجر (الافتراضي) */}
             <Card className={`relative cursor-pointer transition-all duration-300 p-1 ${storeDelivery ? "ring-2 ring-blue-500 bg-blue-50" : "opacity-80 hover:opacity-100"}`} onClick={() => handleStoreDeliveryChange(true)}>
               <CardContent className="p-4">
                 <div className="flex justify-between items-center mb-3">
@@ -285,7 +260,6 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
               </CardContent>
             </Card>
             
-            {/* توصيل فريق برونز */}
             <Card className={`relative cursor-pointer transition-all duration-300 p-1 ${bronzeDelivery ? "ring-2 ring-green-500 bg-green-50" : "opacity-80 hover:opacity-100"}`} onClick={() => handleBronzeDeliveryChange(true)}>
               <CardContent className="p-4">
                 <div className="flex justify-between items-center mb-3">
@@ -305,8 +279,6 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
         </CardContent>
       </Card>
       
-      {/* تفاصيل نظام التوصيل المختار */}
-      {/* نظام توصيل المتجر */}
       {storeDelivery && <div className="space-y-5">
           <div className="rounded-lg border border-blue-200 bg-white shadow-md">
             <div className="p-5 border-b border-blue-100">
@@ -315,11 +287,10 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
             </div>
             
             <div className="p-5 space-y-6">
-              {/* التوصيل المجاني */}
               <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-100">
                 <div className="flex items-center gap-3">
                   <div className="bg-blue-100 p-2 rounded-full">
-                    <CheckCircle className="h-5 w-5 text-blue-600" />
+                    <Check className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
                     <h4 className="font-medium text-blue-800">التوصيل المجاني</h4>
@@ -341,7 +312,6 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
                   </div>
                 </div>}
               
-              {/* وقت التوصيل */}
               <div className="border border-blue-100 rounded-lg p-4 bg-white">
                 <Label htmlFor="delivery-time" className="text-blue-800 font-medium mb-2 block">
                   مدة التوصيل
@@ -367,7 +337,6 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
                 </p>
               </div>
               
-              {/* مناطق التوصيل */}
               <div className="border border-blue-100 rounded-lg bg-white">
                 <div className="p-4 border-b border-blue-100">
                   <h4 className="font-medium text-blue-800 flex items-center gap-2">
@@ -385,7 +354,6 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
                     
                     <TabsContent value="governorates" className="mt-4">
                       <div className="space-y-4">
-                        {/* شريط التحكم بالمحافظات */}
                         <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
                           <div className="flex justify-between items-center mb-3">
                             <h5 className="font-medium text-blue-800">تحديد المحافظات</h5>
@@ -520,7 +488,6 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
                     
                     <TabsContent value="custom-areas" className="mt-4">
                       <div className="space-y-4">
-                        {/* إضافة منطقة جديدة */}
                         <div className="border border-blue-100 rounded-lg p-4 bg-white">
                           <h5 className="font-medium text-blue-800 mb-3">إضافة منطقة جديدة</h5>
                           <div className="grid gap-3">
@@ -564,7 +531,6 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
                           </div>
                         </div>
                         
-                        {/* المناطق الإضافية */}
                         {customAreas.length > 0 ? (
                           <div className="border border-blue-100 rounded-lg p-4 bg-white">
                             <h5 className="font-medium text-blue-800 mb-3">المناطق الإضافية</h5>
@@ -628,7 +594,6 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
           </div>
         </div>}
       
-      {/* توصيل فريق برونز */}
       {bronzeDelivery && <div className="rounded-lg border border-green-300 bg-white shadow-md">
           <div className="p-5 border-b border-green-100">
             <h3 className="text-xl font-semibold text-green-800 mb-2">خدمة توصيل فريق برونز</h3>
@@ -645,55 +610,16 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
             </Alert>
             
             <div className="space-y-5">
-              <div className="text-base font-medium mb-2 text-green-800">سرعة التوصيل:</div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <Card className={`border-green-200 transition-all cursor-pointer hover:shadow-md ${selectedDeliverySpeed === "standard" ? "bg-green-50 ring-2 ring-green-500" : ""}`} onClick={() => setSelectedDeliverySpeed("standard")}>
-                  <CardContent className="p-4 flex items-center gap-3">
-                    <Clock className="h-5 w-5 text-green-600" />
-                    <div className="flex flex-col">
-                      <span className="font-medium">توصيل قياسي</span>
-                      <span className="text-green-700 font-bold">
-                        <span className="text-xl ltr:inline-block">2-3</span> أيام
-                      </span>
-                    </div>
-                    {selectedDeliverySpeed === "standard" && <CheckCircle className="h-5 w-5 text-green-600 ml-auto" />}
-                  </CardContent>
-                </Card>
-                
-                <Card className={`border-green-200 transition-all cursor-pointer hover:shadow-md ${selectedDeliverySpeed === "express" ? "bg-green-50 ring-2 ring-green-500" : ""}`} onClick={() => setSelectedDeliverySpeed("express")}>
-                  <CardContent className="p-4 flex items-center gap-3">
-                    <Zap className="h-5 w-5 text-green-600" />
-                    <div className="flex flex-col">
-                      <span className="font-medium">توصيل سريع</span>
-                      <span className="text-green-700 font-bold">
-                        <span className="text-xl ltr:inline-block">24</span> ساعة
-                      </span>
-                    </div>
-                    {selectedDeliverySpeed === "express" && <CheckCircle className="h-5 w-5 text-green-600 ml-auto" />}
-                  </CardContent>
-                </Card>
-                
-                <Card className={`border-green-200 transition-all cursor-pointer hover:shadow-md ${selectedDeliverySpeed === "same_day" ? "bg-green-50 ring-2 ring-green-500" : ""}`} onClick={() => setSelectedDeliverySpeed("same_day")}>
-                  <CardContent className="p-4 flex items-center gap-3">
-                    <Zap className="h-5 w-5 text-green-600" />
-                    <div className="flex flex-col">
-                      <span className="font-medium">توصيل في نفس اليوم</span>
-                      <span className="text-green-700 font-bold">
-                        <span className="text-xl ltr:inline-block">3-5</span> ساعات
-                      </span>
-                    </div>
-                    {selectedDeliverySpeed === "same_day" && <CheckCircle className="h-5 w-5 text-green-600 ml-auto" />}
-                  </CardContent>
-                </Card>
-              </div>
-              
-              <Card className="border-green-200 mt-4">
+              <Card className="border-green-200">
                 <CardContent className="p-4 flex items-center gap-3">
                   <MapPin className="h-5 w-5 text-green-600" />
                   <span className="font-medium">تغطية شاملة لجميع مناطق الكويت</span>
                 </CardContent>
               </Card>
+              
+              <p className="text-center text-green-700 p-4 bg-green-50 rounded-lg border border-green-100">
+                يتم تحديد سرعة التوصيل من قبل الشركة حسب الخطة المتفق عليها
+              </p>
             </div>
           </div>
         </div>}
