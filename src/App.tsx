@@ -211,8 +211,8 @@ const App = () => (
             <Route path="/store" element={<StorefrontPreview />} />
             
             {/* Keep old routes temporarily for backward compatibility */}
-            <Route path="/store-preview/:storeId/*" element={<Navigate to={location => location.pathname.replace('store-preview', 'store')} />} />
-            <Route path="/store-preview" element={<Navigate to="/store" />} />
+            <Route path="/store-preview/:storeId/*" element={<Navigate to={(params: any) => `/store/${params.storeId}`} replace />} />
+            <Route path="/store-preview" element={<Navigate to="/store" replace />} />
             
             <Route 
               path="/create-store" 
@@ -223,13 +223,13 @@ const App = () => (
               } 
             />
             
-            <Route 
-              path="/dashboard" 
+            <Route
+              path="/dashboard"
               element={
                 <ProtectedRoute>
                   <DashboardHome />
                 </ProtectedRoute>
-              } 
+              }
             />
             
             <Route
