@@ -7,6 +7,7 @@ import useStoreData from "@/hooks/use-store-data";
 import RealTimeNotifications from "@/features/dashboard/components/RealTimeNotifications";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLocation } from "react-router-dom";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -16,6 +17,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const isTablet = useMediaQuery("(max-width: 1024px)");
   const { data: storeData } = useStoreData();
+  const location = useLocation();
   
   // إضافة حالة لعرض القائمة الجانبية في الهواتف
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
