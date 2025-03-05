@@ -1,10 +1,10 @@
-
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Sparkles, Copy, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { getStoreUrl } from "@/utils/url-utils";
 
 interface WelcomeSectionProps {
   storeName: string;
@@ -35,8 +35,8 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
     greeting = "مساء الخير";
   }
   
-  // Generate store URL if not provided
-  const finalStoreUrl = storeUrl || (storeId ? `/store/${storeId}` : '');
+  // Generate store URL using the utility function
+  const finalStoreUrl = storeUrl || getStoreUrl({ domain_name: null, id: storeId });
   
   // Copy store link to clipboard
   const copyStoreLink = () => {
@@ -44,12 +44,7 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
     
     setCopying(true);
     
-    // Create full URL with domain
-    const fullUrl = finalStoreUrl.startsWith('http') 
-      ? finalStoreUrl 
-      : `${window.location.origin}${finalStoreUrl}`;
-      
-    navigator.clipboard.writeText(fullUrl)
+    navigator.clipboard.writeText(finalStoreUrl)
       .then(() => {
         toast.success("تم نسخ رابط المتجر بنجاح");
       })

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -8,6 +7,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import SaveButton from "@/components/ui/save-button";
 import LogoUploader from "@/features/dashboard/components/LogoUploader";
+import { formatStoreUrl, isValidDomainName } from "@/utils/url-utils";
 
 interface GeneralSettingsProps {
   storeData: any;
@@ -20,7 +20,8 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ storeData }) => {
     phone: "",
     address: "",
     currency: "",
-    language: "العربية"
+    language: "العربية",
+    domainName: ""
   });
   
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -34,7 +35,8 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ storeData }) => {
         phone: storeData.phone_number || "",
         address: "",
         currency: storeData.currency || "SAR",
-        language: "العربية"
+        language: "العربية",
+        domainName: storeData.domain_name || ""
       });
       
       if (storeData.logo_url) {
@@ -56,11 +58,39 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ storeData }) => {
         return;
       }
       
+      // Validate domain name if it was changed
+      if (storeValues.domainName !== storeData.domain_name) {
+        if (!isValidDomainName(storeValues.domainName)) {
+          toast.error("اسم النطاق يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط");
+          setIsSaving(false);
+          return;
+        }
+        
+        // Check domain availability
+        const { data: existingDomain, error: domainError } = await supabase
+          .from('stores')
+          .select('id')
+          .eq('domain_name', storeValues.domainName)
+          .neq('id', storeData.id)
+          .maybeSingle();
+          
+        if (domainError) {
+          throw domainError;
+        }
+        
+        if (existingDomain) {
+          toast.error("اسم النطاق غير متاح، الرجاء اختيار اسم آخر");
+          setIsSaving(false);
+          return;
+        }
+      }
+      
       const { error } = await supabase
         .from('stores')
         .update({
           store_name: storeValues.storeName,
           phone_number: storeValues.phone,
+          domain_name: storeValues.domainName,
           logo_url: logoUrl
         })
         .eq('id', storeData.id);
@@ -77,6 +107,9 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ storeData }) => {
       setIsSaving(false);
     }
   };
+  
+  // Display formatted domain for user
+  const formattedDomainUrl = storeValues.domainName ? formatStoreUrl(storeValues.domainName) : '';
   
   return (
     <div className="space-y-4">
@@ -104,6 +137,24 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ storeData }) => {
                 storeId={storeData?.id}
               />
             </div>
+          </div>
+          <div>
+            <Label htmlFor="store-domain">اسم النطاق</Label>
+            <div className="flex items-center mt-1">
+              <Input 
+                id="store-domain" 
+                value={storeValues.domainName} 
+                onChange={(e) => setStoreValues({...storeValues, domainName: e.target.value})}
+                className="flex-1" 
+                placeholder="example"
+              />
+              <span className="text-gray-500 mr-2">.linok.me</span>
+            </div>
+            {formattedDomainUrl && (
+              <p className="text-sm text-muted-foreground mt-1">
+                عنوان المتجر: {formattedDomainUrl}
+              </p>
+            )}
           </div>
           <div>
             <Label htmlFor="store-description">وصف المتجر</Label>

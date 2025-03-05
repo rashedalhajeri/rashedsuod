@@ -4,20 +4,21 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { PaintBucket, ExternalLink } from "lucide-react";
 import StoreThemes from "@/features/dashboard/components/StoreThemes";
 import { Button } from "@/components/ui/button";
+import { getStoreUrl } from "@/utils/url-utils";
 
 interface DesignSettingsProps {
   storeData: any;
 }
 
 const DesignSettings: React.FC<DesignSettingsProps> = ({ storeData }) => {
-  // Generate the store URL based on store data
-  const storeUrl = storeData?.domain_name 
-    ? `https://${storeData.domain_name}` 
-    : `/store/${storeData?.id}`;
+  // Generate the store URL using the utility function
+  const storeUrl = getStoreUrl(storeData);
     
   // Handle store navigation in the same tab
   const navigateToStore = () => {
-    window.location.href = storeUrl;
+    if (storeUrl) {
+      window.location.href = storeUrl;
+    }
   };
   
   return (

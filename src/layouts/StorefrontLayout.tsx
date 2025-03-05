@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { getStoreUrl } from "@/utils/url-utils";
 
 interface StorefrontLayoutProps {
   children: ReactNode;
@@ -17,6 +18,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
   const [storeData, setStoreData] = useState<{
     store_name: string;
     logo_url: string | null;
+    domain_name: string | null;
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -28,7 +30,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
       try {
         const { data, error } = await supabase
           .from("stores")
-          .select("store_name, logo_url")
+          .select("store_name, logo_url, domain_name")
           .eq("id", storeId)
           .single();
 
@@ -49,15 +51,18 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  // Menu items
+  // Generate store URL
+  const storeUrl = storeData ? getStoreUrl(storeData) : `/store/${storeId}`;
+
+  // Menu items with proper URLs
   const menuItems = [
     {
       label: "الرئيسية",
-      href: `/store/${storeId}`
+      href: storeUrl
     },
     {
       label: "المنتجات",
-      href: `/store/${storeId}/products`
+      href: `${storeUrl}/products`
     }
   ];
 
@@ -67,7 +72,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
       <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
         <div className="container mx-auto px-4 flex justify-between items-center h-16">
           {/* Logo and Store Name */}
-          <Link to={`/store/${storeId}`} className="flex items-center gap-2">
+          <Link to={storeUrl} className="flex items-center gap-2">
             {storeData?.logo_url ? (
               <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border border-gray-100">
                 <img 
@@ -104,7 +109,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-4 space-x-reverse">
-            <Link to={`/store/${storeId}/cart`}>
+            <Link to={`${storeUrl}/cart`}>
               <Button variant="ghost" size="icon">
                 <ShoppingCart className="h-5 w-5" />
               </Button>
