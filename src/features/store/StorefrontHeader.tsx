@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -21,15 +20,15 @@ const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ cartItemsCount = 0 
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Navigate to search results
-    navigate(`/store-preview/${storeId}/search?q=${searchQuery}`);
+    // Navigate to search results with updated URL
+    navigate(`/store/${storeId}/search?q=${searchQuery}`);
   };
 
   const menuItems = [
-    { title: 'الرئيسية', icon: <Home className="h-4 w-4 ml-2" />, path: `/store-preview/${storeId}` },
-    { title: 'المنتجات', icon: null, path: `/store-preview/${storeId}/products` },
-    { title: 'حسابي', icon: <User className="h-4 w-4 ml-2" />, path: `/store-preview/${storeId}/account` },
-    { title: 'سلة التسوق', icon: <ShoppingCart className="h-4 w-4 ml-2" />, path: `/store-preview/${storeId}/cart` },
+    { title: 'الرئيسية', icon: <Home className="h-4 w-4 ml-2" />, path: `/store/${storeId}` },
+    { title: 'المنتجات', icon: null, path: `/store/${storeId}/products` },
+    { title: 'حسابي', icon: <User className="h-4 w-4 ml-2" />, path: `/store/${storeId}/account` },
+    { title: 'سلة التسوق', icon: <ShoppingCart className="h-4 w-4 ml-2" />, path: `/store/${storeId}/cart` },
   ];
 
   return (
@@ -72,7 +71,7 @@ const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ cartItemsCount = 0 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center">
             <Button 
-              onClick={() => navigate(`/store-preview/${storeId}/cart`)}
+              onClick={() => navigate(`/store/${storeId}/cart`)}
               variant="ghost" 
               className="relative"
             >

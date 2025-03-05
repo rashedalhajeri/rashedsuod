@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -73,7 +72,7 @@ const Settings = () => {
   const copyStoreUrl = () => {
     if (!storeData?.domain_name) return;
     
-    const storeUrl = `/store-preview/${storeData.domain_name}`;
+    const storeUrl = `/store/${storeData.domain_name}`;
     navigator.clipboard.writeText(window.location.origin + storeUrl);
     setIsCopied(true);
     
@@ -86,7 +85,7 @@ const Settings = () => {
   
   const openStorePreview = () => {
     if (!storeData?.domain_name) return;
-    window.open(`/store-preview/${storeData.domain_name}`, '_blank');
+    window.open(`/store/${storeData.domain_name}`, '_blank');
   };
 
   const isCurrentPaidPlan = storeData ? isPaidPlan(storeData.subscription_plan) : false;
@@ -271,7 +270,7 @@ const Settings = () => {
                 <CardContent className="space-y-6">
                   <div className="w-full aspect-video bg-gray-100 rounded-lg overflow-hidden relative border">
                     <iframe 
-                      src={storeData?.domain_name ? `/store-preview/${storeData.domain_name}` : '/store-preview/demo-store'} 
+                      src={storeData?.domain_name ? `/store/${storeData.domain_name}` : '/store/demo-store'} 
                       className="w-full h-full border-0"
                       title="معاينة المتجر"
                     />
@@ -288,7 +287,7 @@ const Settings = () => {
                     <div className="flex items-center space-x-2 rtl:space-x-reverse">
                       <div className="flex-1 bg-muted p-3 rounded-md border">
                         <code className="text-sm truncate block" dir="ltr">
-                          {window.location.origin}/store-preview/{storeData?.domain_name || 'demo-store'}
+                          {window.location.origin}/store/{storeData?.domain_name || 'demo-store'}
                         </code>
                       </div>
                       <Button size="icon" variant="outline" onClick={copyStoreUrl}>

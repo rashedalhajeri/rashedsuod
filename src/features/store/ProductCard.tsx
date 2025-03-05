@@ -70,7 +70,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
   };
   
   const handleViewProduct = () => {
-    navigate(`/store-preview/${currentDomain}/products/${id}`);
+    // Update the navigation path to use the new URL structure
+    navigate(`/store/${currentDomain}/products/${id}`);
   };
   
   const placeholderImage = '/placeholder.svg';

@@ -206,9 +206,13 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<Auth />} />
             
-            {/* Store Preview Routes - Publicly accessible */}
-            <Route path="/store-preview/:storeId/*" element={<StorefrontPreview />} />
-            <Route path="/store-preview" element={<StorefrontPreview />} />
+            {/* Store Routes - Updated from store-preview to store */}
+            <Route path="/store/:storeId/*" element={<StorefrontPreview />} />
+            <Route path="/store" element={<StorefrontPreview />} />
+            
+            {/* Keep old routes temporarily for backward compatibility */}
+            <Route path="/store-preview/:storeId/*" element={<Navigate to={location => location.pathname.replace('store-preview', 'store')} />} />
+            <Route path="/store-preview" element={<Navigate to="/store" />} />
             
             <Route 
               path="/create-store" 
