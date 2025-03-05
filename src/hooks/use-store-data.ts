@@ -18,6 +18,7 @@ type StoreData = {
   subscription_start_date?: string;
   subscription_end_date?: string;
   logo_url?: string | null; // Added logo_url property
+  description?: string | null; // Added description property
 };
 
 // Hook for fetching store data
@@ -55,7 +56,8 @@ export const useStoreData = () => {
       subscription_plan: data.subscription_plan || userMetadata?.subscription_plan || "free" as "free" | "basic" | "premium",
       subscription_start_date: data.subscription_start_date || userMetadata?.subscription_start_date,
       subscription_end_date: data.subscription_end_date || userMetadata?.subscription_end_date,
-      logo_url: data.logo_url || null // Handle logo_url from data
+      logo_url: data.logo_url || null, // Handle logo_url from data
+      description: data.description || null // Handle description from data
     } as StoreData;
   };
   
