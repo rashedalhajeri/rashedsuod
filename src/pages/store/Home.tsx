@@ -1,12 +1,13 @@
 
 import React, { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import StorefrontLayout from "@/layouts/StorefrontLayout";
-import { toast } from "sonner";
+import ProductCard from "@/components/store/ProductCard";
+import { useStore } from "@/contexts/StoreContext";
 
 interface Product {
   id: string;
@@ -14,96 +15,67 @@ interface Product {
   price: number;
   image_url: string | null;
   description?: string | null;
-}
-
-interface Store {
-  id: string;
-  store_name: string;
-  description?: string | null;
-  logo_url?: string | null;
+  stock_quantity: number;
+  additional_images: string[] | null;
 }
 
 const StoreHome: React.FC = () => {
   const { storeId } = useParams<{ storeId: string }>();
-  const navigate = useNavigate();
-  const [store, setStore] = useState<Store | null>(null);
+  const { store, isLoading, error } = useStore();
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [productError, setProductError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchStoreData = async () => {
-      // Validate the storeId to ensure it's a proper value and not just the placeholder
-      if (!storeId || storeId === ":storeId") {
-        console.error("Invalid store ID:", storeId);
-        setError("معرف المتجر غير متوفر أو غير صالح");
-        setLoading(false);
-        return;
+    // Only fetch products if store data is loaded successfully
+    if (!isLoading && store && !error) {
+      fetchFeaturedProducts();
+    }
+  }, [isLoading, store, error, storeId]);
+
+  const fetchFeaturedProducts = async () => {
+    if (!storeId || storeId === ":storeId") return;
+    
+    setLoadingProducts(true);
+    setProductError(null);
+    
+    try {
+      // Fetch featured products
+      const { data: productsData, error: productsError } = await supabase
+        .from("products")
+        .select("*")
+        .eq("store_id", storeId)
+        .limit(4);
+      
+      if (productsError) {
+        throw productsError;
       }
       
-      try {
-        console.log("Fetching store with ID:", storeId);
-        
-        // Fetch store data
-        const { data: storeData, error: storeError } = await supabase
-          .from("stores")
-          .select("*")
-          .eq("id", storeId)
-          .maybeSingle();
-        
-        if (storeError) {
-          console.error("Error fetching store:", storeError);
-          throw storeError;
-        }
-        
-        if (!storeData) {
-          console.error("Store not found for ID:", storeId);
-          setError("المتجر غير موجود");
-          setLoading(false);
-          return;
-        }
-        
-        setStore(storeData);
-        
-        // Fetch featured products
-        const { data: productsData, error: productsError } = await supabase
-          .from("products")
-          .select("*")
-          .eq("store_id", storeId)
-          .limit(4);
-        
-        if (productsError) {
-          console.error("Error fetching products:", productsError);
-          throw productsError;
-        }
-        
-        // Transform the additional_images field to ensure it's compatible with our Product interface
-        const transformedProducts = productsData ? productsData.map(product => ({
-          ...product,
-          additional_images: Array.isArray(product.additional_images)
-            ? product.additional_images
+      // Transform the products data
+      const transformedProducts: Product[] = productsData?.map(product => ({
+        ...product,
+        additional_images: Array.isArray(product.additional_images) 
+          ? product.additional_images 
+          : product.additional_images 
+            ? [product.additional_images as string]
             : []
-        })) : [];
-        
-        setFeaturedProducts(transformedProducts);
-      } catch (err) {
-        console.error("Error fetching store data:", err);
-        setError("حدث خطأ أثناء تحميل بيانات المتجر");
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchStoreData();
-  }, [storeId, navigate]);
+      })) || [];
+      
+      setFeaturedProducts(transformedProducts);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+      setProductError("حدث خطأ أثناء تحميل المنتجات");
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
 
   const handleRetry = () => {
-    setLoading(true);
-    setError(null);
     window.location.reload();
   };
 
-  if (loading) {
+  // If the store context is still loading, show the loading state
+  if (isLoading) {
     return (
       <StorefrontLayout>
         <LoadingState message="جاري تحميل بيانات المتجر..." />
@@ -111,6 +83,7 @@ const StoreHome: React.FC = () => {
     );
   }
 
+  // If there's an error in the store context, show the error state
   if (error) {
     return (
       <StorefrontLayout>
@@ -123,6 +96,7 @@ const StoreHome: React.FC = () => {
     );
   }
 
+  // If no store is found in the context, show an error
   if (!store) {
     return (
       <StorefrontLayout>
@@ -154,41 +128,27 @@ const StoreHome: React.FC = () => {
             </Button>
           </div>
           
-          {featuredProducts.length === 0 ? (
+          {loadingProducts ? (
+            <LoadingState message="جاري تحميل المنتجات..." />
+          ) : productError ? (
+            <ErrorState 
+              title="خطأ في تحميل المنتجات"
+              message={productError}
+              onRetry={fetchFeaturedProducts}
+            />
+          ) : featuredProducts.length === 0 ? (
             <div className="text-center py-12 bg-gray-50 rounded-lg">
               <p className="text-gray-500">لا توجد منتجات متاحة حالياً</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featuredProducts.map((product) => (
-                <Link 
+              {featuredProducts.map(product => (
+                <ProductCard 
                   key={product.id} 
-                  to={`/store/${storeId}/products/${product.id}`}
-                  className="group block"
-                >
-                  <div className="bg-gray-100 aspect-square rounded-md overflow-hidden mb-2">
-                    {product.image_url ? (
-                      <img 
-                        src={product.image_url} 
-                        alt={product.name} 
-                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = "/placeholder.svg";
-                        }}
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full">
-                        <img 
-                          src="/placeholder.svg" 
-                          alt="Placeholder" 
-                          className="w-16 h-16 opacity-50" 
-                        />
-                      </div>
-                    )}
-                  </div>
-                  <h3 className="font-medium">{product.name}</h3>
-                  <p className="text-gray-900 font-bold">{product.price} ر.س</p>
-                </Link>
+                  product={product} 
+                  storeId={storeId || ""} 
+                  currency={store.currency}
+                />
               ))}
             </div>
           )}

@@ -4,13 +4,25 @@ import { useParams } from "react-router-dom";
 import { getProductById } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getCurrencyFormatter } from "@/hooks/use-store-data";
+import { useCart } from "@/contexts/CartContext";
+
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  image_url: string | null;
+  description: string | null;
+  stock_quantity: number;
+  additional_images: string[] | null;
+}
 
 export const useProductDetail = () => {
   const { storeId, productId } = useParams<{ storeId: string; productId: string }>();
-  const [product, setProduct] = useState<any>(null);
+  const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const { addToCart } = useCart();
   
   const formatCurrency = getCurrencyFormatter("SAR");
 
@@ -31,7 +43,17 @@ export const useProductDetail = () => {
           return;
         }
 
-        setProduct(data);
+        // Transform data to ensure additional_images is always an array
+        const processedProduct: Product = {
+          ...data,
+          additional_images: Array.isArray(data.additional_images) 
+            ? data.additional_images 
+            : data.additional_images 
+              ? [data.additional_images as string]
+              : []
+        };
+
+        setProduct(processedProduct);
       } catch (err) {
         console.error("Error fetching product:", err);
         setError("حدث خطأ أثناء تحميل المنتج");
@@ -44,11 +66,22 @@ export const useProductDetail = () => {
   }, [productId]);
 
   const handleQuantityChange = (value: number) => {
-    const newQuantity = Math.max(1, Math.min(product?.stock_quantity || 10, value));
+    if (!product) return;
+    const maxStock = product.stock_quantity || 10;
+    const newQuantity = Math.max(1, Math.min(maxStock, value));
     setQuantity(newQuantity);
   };
 
   const handleAddToCart = () => {
+    if (!product) return;
+    
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image_url: product.image_url
+    }, quantity);
+    
     toast.success("تمت إضافة المنتج إلى سلة التسوق");
   };
 

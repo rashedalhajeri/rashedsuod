@@ -1,22 +1,45 @@
 
-import React, { ReactNode } from "react";
+import React, { ReactNode, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ShoppingCart, Search, Menu, X, Store as StoreIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { StoreProvider, useStore } from "@/contexts/StoreContext";
+import { CartProvider, useCart } from "@/contexts/CartContext";
 
 interface StorefrontLayoutProps {
   children: ReactNode;
 }
 
+const CartButton = () => {
+  const { storeId } = useParams<{ storeId: string }>();
+  const { items, getTotalQuantity } = useCart();
+  const itemCount = getTotalQuantity();
+
+  return (
+    <Link to={`/store/${storeId}/cart`}>
+      <Button variant="ghost" size="icon" className="relative">
+        <ShoppingCart className="h-5 w-5" />
+        {itemCount > 0 && (
+          <Badge 
+            variant="destructive" 
+            className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center rounded-full text-xs"
+          >
+            {itemCount}
+          </Badge>
+        )}
+      </Button>
+    </Link>
+  );
+};
+
 const StorefrontContent: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { storeId } = useParams<{ storeId: string }>();
   const { store, isLoading, error } = useStore();
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Menu items
   const menuItems = [
@@ -117,11 +140,7 @@ const StorefrontContent: React.FC<{ children: ReactNode }> = ({ children }) => {
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-4 space-x-reverse">
-            <Link to={`/store/${storeId}/cart`}>
-              <Button variant="ghost" size="icon">
-                <ShoppingCart className="h-5 w-5" />
-              </Button>
-            </Link>
+            <CartButton />
 
             {/* Mobile Menu Button */}
             <div className="md:hidden">
@@ -165,6 +184,14 @@ const StorefrontContent: React.FC<{ children: ReactNode }> = ({ children }) => {
                           {item.label}
                         </Link>
                       ))}
+                      <Link 
+                        to={`/store/${storeId}/cart`}
+                        className="text-gray-600 hover:text-gray-900 py-2 flex items-center gap-2"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <ShoppingCart className="h-4 w-4" />
+                        سلة التسوق
+                      </Link>
                     </nav>
                   </div>
                 </SheetContent>
@@ -192,9 +219,11 @@ const StorefrontContent: React.FC<{ children: ReactNode }> = ({ children }) => {
 const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
   return (
     <StoreProvider>
-      <StorefrontContent>
-        {children}
-      </StorefrontContent>
+      <CartProvider>
+        <StorefrontContent>
+          {children}
+        </StorefrontContent>
+      </CartProvider>
     </StoreProvider>
   );
 };
