@@ -144,6 +144,48 @@ export const updateSubscriptionPlan = async (storeId: string, planData: {
   }
 };
 
+// Add a new function to update store description
+export const updateStoreDescription = async (storeId: string, description: string | null) => {
+  try {
+    const { data, error } = await supabase
+      .from('stores')
+      .update({ description })
+      .eq('id', storeId)
+      .select();
+      
+    if (error) {
+      console.error("Error updating store description:", error);
+      return { data: null, error };
+    }
+    
+    return { data, error: null };
+  } catch (error) {
+    console.error("Error in updateStoreDescription function:", error);
+    return { data: null, error };
+  }
+};
+
+// Helper function to update store logo
+export const updateStoreLogo = async (storeId: string, logoUrl: string | null) => {
+  try {
+    const { data, error } = await supabase
+      .from('stores')
+      .update({ logo_url: logoUrl })
+      .eq('id', storeId)
+      .select();
+      
+    if (error) {
+      console.error("Error updating store logo:", error);
+      return { data: null, error };
+    }
+    
+    return { data, error: null };
+  } catch (error) {
+    console.error("Error in updateStoreLogo function:", error);
+    return { data: null, error };
+  }
+};
+
 // Helper function to get products with pagination
 export const getProductsWithPagination = async (storeId: string, page: number, pageSize: number, searchQuery?: string) => {
   try {
@@ -253,26 +295,5 @@ export const deleteProduct = async (productId: string) => {
   } catch (error) {
     console.error("Error in deleteProduct function:", error);
     return { success: false, error };
-  }
-};
-
-// Helper function to update store logo
-export const updateStoreLogo = async (storeId: string, logoUrl: string | null) => {
-  try {
-    const { data, error } = await supabase
-      .from('stores')
-      .update({ logo_url: logoUrl })
-      .eq('id', storeId)
-      .select();
-      
-    if (error) {
-      console.error("Error updating store logo:", error);
-      return { data: null, error };
-    }
-    
-    return { data, error: null };
-  } catch (error) {
-    console.error("Error in updateStoreLogo function:", error);
-    return { data: null, error };
   }
 };

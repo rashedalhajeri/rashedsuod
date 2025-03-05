@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { secureRetrieve } from "@/lib/encryption";
 import { toast } from "sonner";
 
-// Extended store type with subscription_plan and logo_url
+// Extended store type with subscription_plan, logo_url and description
 type StoreData = {
   id: string;
   user_id: string;
@@ -58,7 +58,7 @@ export const useStoreData = () => {
       subscription_start_date: data.subscription_start_date || userMetadata?.subscription_start_date,
       subscription_end_date: data.subscription_end_date || userMetadata?.subscription_end_date,
       logo_url: data.logo_url || null, // Handle logo_url from data
-      description: null // Default description to null since it might not exist in the database yet
+      description: data.description || null // Handle description from data properly
     } as StoreData;
   };
   

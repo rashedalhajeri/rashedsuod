@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,44 +31,44 @@ const Settings = () => {
   const [storeLogoUrl, setStoreLogoUrl] = useState<string | null>(null);
   const [storeDescription, setStoreDescription] = useState<string>("");
   
-  // Set initial logo URL and description from store data
   useEffect(() => {
     if (storeData?.logo_url) {
       setStoreLogoUrl(storeData.logo_url);
     }
-    // Check if store description exists in storeData and use it
     if (storeData?.description) {
       setStoreDescription(storeData.description);
     }
   }, [storeData]);
   
-  // Function to handle logo update
   const handleLogoUpdate = (url: string | null) => {
     setStoreLogoUrl(url);
-    // You can add the logic to save the logo URL to the database here
   };
   
-  // Function to handle description change
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setStoreDescription(e.target.value);
   };
   
-  // Function to handle save button click - making it async to return a Promise
   const handleSaveClick = async (): Promise<void> => {
     setIsSaving(true);
     
-    // Return a Promise to match the expected type
-    return new Promise((resolve) => {
-      // Simulate saving data
-      setTimeout(() => {
-        setIsSaving(false);
+    try {
+      if (storeData?.id) {
+        const { error } = await updateStoreDescription(storeData.id, storeDescription);
+        
+        if (error) {
+          throw error;
+        }
+        
         toast.success("تم حفظ الإعدادات بنجاح");
-        resolve();
-      }, 1500);
-    });
+      }
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      toast.error("حدث خطأ أثناء حفظ الإعدادات");
+    } finally {
+      setIsSaving(false);
+    }
   };
   
-  // Function to copy store URL
   const copyStoreUrl = () => {
     if (!storeData?.domain_name) return;
     
@@ -89,10 +88,8 @@ const Settings = () => {
     window.open(`/store-preview/${storeData.domain_name}`, '_blank');
   };
 
-  // Check if current subscription is paid
   const isCurrentPaidPlan = storeData ? isPaidPlan(storeData.subscription_plan) : false;
   
-  // Mock payment methods data
   const paymentMethods = [
     {
       id: "cash-on-delivery",
@@ -161,7 +158,6 @@ const Settings = () => {
               </TabsTrigger>
             </TabsList>
             
-            {/* قسم إعدادات المتجر */}
             <TabsContent value="store" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -203,7 +199,6 @@ const Settings = () => {
               </Card>
             </TabsContent>
             
-            {/* قسم إعدادات الدفع */}
             <TabsContent value="payment" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -233,7 +228,6 @@ const Settings = () => {
               </Card>
             </TabsContent>
             
-            {/* قسم مظهر المتجر */}
             <TabsContent value="appearance" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -248,7 +242,6 @@ const Settings = () => {
               </Card>
             </TabsContent>
             
-            {/* قسم إعدادات الشحن */}
             <TabsContent value="shipping" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -258,7 +251,6 @@ const Settings = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* Removed title and description props from ShippingMethodForm components */}
                   <ShippingMethodForm isPaidPlan={isCurrentPaidPlan} />
                   <ShippingMethodForm isPaidPlan={isCurrentPaidPlan} />
                   <ShippingMethodForm isPaidPlan={isCurrentPaidPlan} />
@@ -267,7 +259,6 @@ const Settings = () => {
               </Card>
             </TabsContent>
             
-            {/* قسم معاينة المتجر */}
             <TabsContent value="preview" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -277,7 +268,6 @@ const Settings = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* معاينة المتجر */}
                   <div className="w-full aspect-video bg-gray-100 rounded-lg overflow-hidden relative border">
                     <iframe 
                       src={storeData?.domain_name ? `/store-preview/${storeData.domain_name}` : '/store-preview/demo-store'} 
@@ -292,7 +282,6 @@ const Settings = () => {
                     </div>
                   </div>
                   
-                  {/* رابط المتجر */}
                   <div className="mt-4">
                     <h3 className="text-lg font-medium mb-2">رابط المتجر</h3>
                     <div className="flex items-center space-x-2 rtl:space-x-reverse">
