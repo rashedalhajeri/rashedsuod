@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -14,12 +15,37 @@ import useStoreData from "@/hooks/use-store-data";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
 interface ShippingMethodFormProps {
   isPaidPlan: boolean;
 }
 
-// قائمة المناطق في الكويت
-const kuwaitAreas = ["العاصمة", "حولي", "الفروانية", "الأحمدي", "الجهراء", "مبارك الكبير"];
+// قائمة المحافظات في الكويت
+const kuwaitGovernorates = [
+  { name: "العاصمة", price: 2 },
+  { name: "حولي", price: 2 },
+  { name: "الفروانية", price: 3 },
+  { name: "الأحمدي", price: 3 },
+  { name: "الجهراء", price: 4 },
+  { name: "مبارك الكبير", price: 3 }
+];
+
+// قائمة أمثلة لمناطق إضافية يمكن إضافتها
+const suggestedAreas = [
+  "الشويخ",
+  "السالمية",
+  "الصباحية",
+  "الفحيحيل",
+  "المنقف",
+  "الجابرية",
+  "الرقة",
+  "الفنطاس",
+  "العارضية",
+  "خيطان",
+  "الصليبية",
+  "الوفرة"
+];
+
 const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
   isPaidPlan
 }) => {
@@ -41,6 +67,8 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
   const [deliveryAreas, setDeliveryAreas] = useState<DeliveryArea[]>([]);
   const [newAreaName, setNewAreaName] = useState("");
   const [newAreaPrice, setNewAreaPrice] = useState("5");
+  const [suggestedAreaFilter, setSuggestedAreaFilter] = useState("");
+  const [selectedSuggestion, setSelectedSuggestion] = useState("");
 
   // حالة توصيل فريق برونز
   const [selectedDeliverySpeed, setSelectedDeliverySpeed] = useState("standard");
@@ -71,11 +99,11 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
         if (areas.length > 0) {
           setDeliveryAreas(areas);
         } else {
-          // إنشاء مناطق افتراضية إذا لم تكن موجودة
-          setDeliveryAreas(kuwaitAreas.map(area => ({
+          // إنشاء مناطق افتراضية من المحافظات إذا لم تكن موجودة
+          setDeliveryAreas(kuwaitGovernorates.map(area => ({
             store_id: storeData.id,
-            name: area,
-            price: 5,
+            name: area.name,
+            price: area.price,
             enabled: true
           })));
         }
@@ -112,12 +140,14 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
       price: parseFloat(price) || 0
     } : area));
   };
+  
   const handleAreaToggle = (areaId: string, isEnabled: boolean) => {
     setDeliveryAreas(deliveryAreas.map(area => area.id === areaId ? {
       ...area,
       enabled: isEnabled
     } : area));
   };
+  
   const handleAddNewArea = () => {
     if (!newAreaName.trim()) {
       toast.error("يرجى إدخال اسم المنطقة");
@@ -130,21 +160,54 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
       toast.error("هذه المنطقة موجودة بالفعل");
       return;
     }
+    
     const newArea: DeliveryArea = {
       store_id: storeData?.id || "",
       name: newAreaName.trim(),
       price: parseFloat(newAreaPrice) || 0,
       enabled: true
     };
+    
     setDeliveryAreas([...deliveryAreas, newArea]);
     setNewAreaName("");
     setNewAreaPrice("5");
     toast.success("تمت إضافة المنطقة بنجاح");
   };
+  
   const handleRemoveArea = (areaId: string) => {
     setDeliveryAreas(deliveryAreas.filter(area => area.id !== areaId));
     toast.success("تم حذف المنطقة بنجاح");
   };
+
+  // إضافة منطقة من الاقتراحات
+  const handleAddSuggestedArea = () => {
+    if (selectedSuggestion) {
+      // التحقق من وجود المنطقة مسبقًا
+      const areaExists = deliveryAreas.some(area => area.name.trim().toLowerCase() === selectedSuggestion.trim().toLowerCase());
+      if (areaExists) {
+        toast.error("هذه المنطقة موجودة بالفعل");
+        return;
+      }
+      
+      const newArea: DeliveryArea = {
+        store_id: storeData?.id || "",
+        name: selectedSuggestion,
+        price: parseFloat(newAreaPrice) || 0,
+        enabled: true
+      };
+      
+      setDeliveryAreas([...deliveryAreas, newArea]);
+      setSelectedSuggestion("");
+      setNewAreaPrice("5");
+      toast.success("تمت إضافة المنطقة بنجاح");
+    }
+  };
+
+  // المناطق المقترحة المصفاة
+  const filteredSuggestions = suggestedAreas.filter(area => 
+    !deliveryAreas.some(existingArea => existingArea.name.toLowerCase() === area.toLowerCase()) &&
+    area.toLowerCase().includes(suggestedAreaFilter.toLowerCase())
+  );
 
   // حفظ الإعدادات
   const handleSaveSettings = async () => {
@@ -183,12 +246,14 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
       setIsLoading(false);
     }
   };
+  
   if (isLoading) {
     return <div className="flex justify-center items-center p-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         <span className="mr-2">جاري تحميل الإعدادات...</span>
       </div>;
   }
+  
   return <div className="space-y-6">
       {/* نظام التوصيل الرئيسي - اختيار بين توصيل المتجر أو فريق برونز */}
       <Card className="border-primary/10 bg-white shadow-sm">
@@ -292,7 +357,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
                   </div>
                 </div>
                 <p className="text-sm text-gray-500 mt-2">
-                  يمكنك استخدام نطاق مثل "1-2" أو "2-3" أو قيمة محددة مثل "24" حسب احتياجك
+                  يمكنك استخدام نطاق مثل "1-2" أو "2-3" أو قيمة محددة مثل "24" أو "اليوم" حسب احتياجك
                 </p>
               </div>
               
@@ -306,18 +371,71 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
                 </div>
                 
                 <div className="p-3">
-                  <Tabs defaultValue="existing-areas">
-                    <TabsList className="grid w-full grid-cols-2 mb-4">
-                      <TabsTrigger value="existing-areas">المناطق الحالية</TabsTrigger>
-                      <TabsTrigger value="add-area">إضافة منطقة</TabsTrigger>
-                    </TabsList>
+                  <div className="space-y-3 max-h-80 overflow-y-auto p-2">
+                    {/* عرض المحافظات */}
+                    <div className="mb-4">
+                      <h5 className="font-medium text-blue-900 mb-2">المحافظات</h5>
+                      <div className="space-y-2">
+                        {deliveryAreas.filter(area => 
+                          kuwaitGovernorates.some(gov => gov.name === area.name)
+                        ).map((area, index) => (
+                          <div key={area.id || `gov-area-${index}`} className="flex items-center justify-between p-3 rounded-lg border border-blue-50 bg-blue-25">
+                            <div className="flex items-center gap-3">
+                              <Checkbox 
+                                checked={area.enabled} 
+                                onCheckedChange={checked => handleAreaToggle(area.id || `gov-area-${index}`, checked === true)} 
+                                id={`area-${area.id || index}`} 
+                              />
+                              <Label 
+                                htmlFor={`area-${area.id || index}`} 
+                                className={`font-medium ${area.enabled ? 'text-blue-800' : 'text-gray-500'}`}
+                              >
+                                {area.name}
+                              </Label>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              <div className="w-28">
+                                <div className="relative">
+                                  <Input 
+                                    type="number" 
+                                    className="pl-10 text-base font-semibold dir-ltr" 
+                                    value={area.price.toString()} 
+                                    onChange={e => handleAreaPriceChange(area.id || `gov-area-${index}`, e.target.value)} 
+                                    disabled={!area.enabled} 
+                                  />
+                                  <div className="absolute inset-y-0 left-0 flex items-center pl-2 text-gray-400 text-sm">
+                                    KWD
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                     
-                    <TabsContent value="existing-areas">
-                      <div className="space-y-3 max-h-80 overflow-y-auto p-2">
-                        {deliveryAreas.length > 0 ? deliveryAreas.map((area, index) => <div key={area.id || `new-area-${index}`} className="flex items-center justify-between p-3 rounded-lg border border-blue-50 bg-blue-25">
+                    {/* عرض المناطق الإضافية */}
+                    {deliveryAreas.filter(area => 
+                      !kuwaitGovernorates.some(gov => gov.name === area.name)
+                    ).length > 0 && (
+                      <div className="mb-4">
+                        <h5 className="font-medium text-blue-900 mb-2">المناطق الإضافية</h5>
+                        <div className="space-y-2">
+                          {deliveryAreas.filter(area => 
+                            !kuwaitGovernorates.some(gov => gov.name === area.name)
+                          ).map((area, index) => (
+                            <div key={area.id || `custom-area-${index}`} className="flex items-center justify-between p-3 rounded-lg border border-blue-50 bg-blue-25">
                               <div className="flex items-center gap-3">
-                                <Checkbox checked={area.enabled} onCheckedChange={checked => handleAreaToggle(area.id || `new-area-${index}`, checked === true)} id={`area-${area.id || index}`} />
-                                <Label htmlFor={`area-${area.id || index}`} className={`font-medium ${area.enabled ? 'text-blue-800' : 'text-gray-500'}`}>
+                                <Checkbox 
+                                  checked={area.enabled} 
+                                  onCheckedChange={checked => handleAreaToggle(area.id || `custom-area-${index}`, checked === true)} 
+                                  id={`area-${area.id || index}`} 
+                                />
+                                <Label 
+                                  htmlFor={`area-${area.id || index}`} 
+                                  className={`font-medium ${area.enabled ? 'text-blue-800' : 'text-gray-500'}`}
+                                >
                                   {area.name}
                                 </Label>
                               </div>
@@ -325,31 +443,50 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
                               <div className="flex items-center gap-2">
                                 <div className="w-28">
                                   <div className="relative">
-                                    <Input type="number" className="pl-10 text-base font-semibold dir-ltr" value={area.price.toString()} onChange={e => handleAreaPriceChange(area.id || `new-area-${index}`, e.target.value)} disabled={!area.enabled} />
+                                    <Input 
+                                      type="number" 
+                                      className="pl-10 text-base font-semibold dir-ltr" 
+                                      value={area.price.toString()} 
+                                      onChange={e => handleAreaPriceChange(area.id || `custom-area-${index}`, e.target.value)} 
+                                      disabled={!area.enabled} 
+                                    />
                                     <div className="absolute inset-y-0 left-0 flex items-center pl-2 text-gray-400 text-sm">
                                       KWD
                                     </div>
                                   </div>
                                 </div>
                                 
-                                <Button type="button" variant="ghost" size="icon" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => handleRemoveArea(area.id || `new-area-${index}`)}>
+                                <Button 
+                                  type="button" 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="text-red-500 hover:text-red-700 hover:bg-red-50" 
+                                  onClick={() => handleRemoveArea(area.id || `custom-area-${index}`)}
+                                >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </div>
-                            </div>) : <div className="text-center p-4 text-gray-500">
-                            لا توجد مناطق توصيل مضافة. قم بإضافة مناطق التوصيل التي تخدمها.
-                          </div>}
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </TabsContent>
+                    )}
                     
-                    <TabsContent value="add-area">
-                      <div className="p-3 border border-blue-100 rounded-lg">
+                    {/* إضافة مناطق جديدة */}
+                    <div className="mt-6">
+                      <h5 className="font-medium text-blue-900 mb-2">إضافة منطقة جديدة</h5>
+                      <div className="border border-blue-100 rounded-lg p-4">
                         <div className="grid gap-4">
                           <div>
                             <Label htmlFor="new-area-name" className="block text-sm font-medium text-gray-700 mb-1">
                               اسم المنطقة
                             </Label>
-                            <Input id="new-area-name" value={newAreaName} onChange={e => setNewAreaName(e.target.value)} placeholder="أدخل اسم المنطقة" />
+                            <Input 
+                              id="new-area-name" 
+                              value={newAreaName} 
+                              onChange={e => setNewAreaName(e.target.value)} 
+                              placeholder="أدخل اسم المنطقة" 
+                            />
                           </div>
                           
                           <div>
@@ -357,7 +494,13 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
                               سعر التوصيل (KWD)
                             </Label>
                             <div className="relative">
-                              <Input id="new-area-price" type="number" className="pl-10 text-base font-semibold dir-ltr" value={newAreaPrice} onChange={e => setNewAreaPrice(e.target.value)} />
+                              <Input 
+                                id="new-area-price" 
+                                type="number" 
+                                className="pl-10 text-base font-semibold dir-ltr" 
+                                value={newAreaPrice} 
+                                onChange={e => setNewAreaPrice(e.target.value)} 
+                              />
                               <div className="absolute inset-y-0 left-0 flex items-center pl-2 text-gray-400 text-sm">
                                 KWD
                               </div>
@@ -369,8 +512,79 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({
                           </Button>
                         </div>
                       </div>
-                    </TabsContent>
-                  </Tabs>
+                    </div>
+                    
+                    {/* اقتراحات المناطق */}
+                    <div className="mt-6">
+                      <h5 className="font-medium text-blue-900 mb-2">مناطق مقترحة</h5>
+                      <div className="border border-blue-100 rounded-lg p-4">
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="suggested-area-filter" className="block text-sm font-medium text-gray-700 mb-1">
+                              البحث في المناطق المقترحة
+                            </Label>
+                            <Input 
+                              id="suggested-area-filter" 
+                              value={suggestedAreaFilter} 
+                              onChange={e => setSuggestedAreaFilter(e.target.value)} 
+                              placeholder="ابحث عن منطقة..." 
+                            />
+                          </div>
+                          
+                          <div className="max-h-40 overflow-y-auto border rounded p-2">
+                            {filteredSuggestions.length > 0 ? (
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                {filteredSuggestions.map((area, index) => (
+                                  <div 
+                                    key={`suggestion-${index}`}
+                                    className={`p-2 rounded cursor-pointer text-center transition-colors ${selectedSuggestion === area ? 'bg-blue-100 text-blue-800' : 'hover:bg-blue-50'}`}
+                                    onClick={() => setSelectedSuggestion(area)}
+                                  >
+                                    {area}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="text-center p-2 text-gray-500">
+                                لا توجد مناطق مقترحة متاحة
+                              </div>
+                            )}
+                          </div>
+                          
+                          {selectedSuggestion && (
+                            <div>
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-sm font-medium">المنطقة المختارة:</span>
+                                <Badge>{selectedSuggestion}</Badge>
+                              </div>
+                              
+                              <div className="mb-2">
+                                <Label htmlFor="suggested-area-price" className="block text-sm font-medium text-gray-700 mb-1">
+                                  سعر التوصيل (KWD)
+                                </Label>
+                                <div className="relative">
+                                  <Input 
+                                    id="suggested-area-price" 
+                                    type="number" 
+                                    className="pl-10 text-base font-semibold dir-ltr" 
+                                    value={newAreaPrice} 
+                                    onChange={e => setNewAreaPrice(e.target.value)} 
+                                  />
+                                  <div className="absolute inset-y-0 left-0 flex items-center pl-2 text-gray-400 text-sm">
+                                    KWD
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <Button type="button" onClick={handleAddSuggestedArea} className="w-full">
+                                <PlusCircle className="h-4 w-4 ml-1" /> إضافة {selectedSuggestion}
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
