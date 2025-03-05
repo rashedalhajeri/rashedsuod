@@ -1,9 +1,8 @@
-
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { ChevronLeft, Minus, Plus, ShoppingBag, Heart, Share2, Check } from "lucide-react";
+import { ChevronLeft, Minus, Plus, ShoppingBag, Heart, Share2, Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import StorefrontLayout from "@/layouts/StorefrontLayout";
 import { Button } from "@/components/ui/button";
@@ -19,16 +18,13 @@ const ProductDetailPage = () => {
   const { data: storeData } = useStoreData();
   const { addToCart } = useShoppingCart();
   
-  // Product quantity state
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   
-  // Format currency based on store settings
   const formatCurrency = storeData 
     ? getCurrencyFormatter(storeData.currency) 
     : (price: number) => `${price.toFixed(2)} KWD`;
   
-  // Fetch product details
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', productId],
     queryFn: async () => {
@@ -52,7 +48,6 @@ const ProductDetailPage = () => {
     }
   });
   
-  // Fetch related products
   const { data: relatedProducts, isLoading: isLoadingRelated } = useQuery({
     queryKey: ['relatedProducts', product?.store_id],
     queryFn: async () => {
@@ -72,7 +67,6 @@ const ProductDetailPage = () => {
     enabled: !!product?.store_id
   });
   
-  // Handle quantity change
   const decreaseQuantity = () => {
     if (quantity > 1) {
       setQuantity(quantity - 1);
@@ -85,13 +79,11 @@ const ProductDetailPage = () => {
     }
   };
   
-  // Handle add to cart
   const handleAddToCart = () => {
     if (!product) return;
     
     setIsAddingToCart(true);
     
-    // Simulate a short delay for better UX
     setTimeout(() => {
       addToCart({
         productId: product.id,
@@ -152,7 +144,6 @@ const ProductDetailPage = () => {
   return (
     <StorefrontLayout storeId={product.store_id}>
       <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumbs */}
         <div className="flex items-center text-sm text-gray-500 mb-6">
           <a href="/store" className="hover:text-primary">الرئيسية</a>
           <span className="mx-2">/</span>
@@ -161,10 +152,8 @@ const ProductDetailPage = () => {
           <span className="text-gray-900">{product.name}</span>
         </div>
         
-        {/* Product Details */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Product Image */}
             <div className="bg-gray-50 rounded-xl overflow-hidden">
               {product.image_url ? (
                 <img
@@ -180,7 +169,6 @@ const ProductDetailPage = () => {
               )}
             </div>
             
-            {/* Product Info */}
             <div>
               <h1 className="text-2xl font-bold mb-2">{product.name}</h1>
               
@@ -194,7 +182,6 @@ const ProductDetailPage = () => {
                 </p>
               </div>
               
-              {/* Quantity Selector */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   الكمية
@@ -220,7 +207,6 @@ const ProductDetailPage = () => {
                 </div>
               </div>
               
-              {/* Stock Status */}
               {product.stock_quantity !== null && (
                 <div className="flex items-center mb-6">
                   <div
@@ -243,7 +229,6 @@ const ProductDetailPage = () => {
                 </div>
               )}
               
-              {/* Action Buttons */}
               <div className="space-y-3">
                 <Button
                   className="w-full flex items-center justify-center py-6"
@@ -278,7 +263,6 @@ const ProductDetailPage = () => {
           </div>
         </div>
         
-        {/* Product Tabs */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-8">
           <Tabs defaultValue="description">
             <TabsList className="w-full border-b">
@@ -327,7 +311,6 @@ const ProductDetailPage = () => {
           </Tabs>
         </div>
         
-        {/* Related Products */}
         {relatedProducts && relatedProducts.length > 0 && (
           <div className="mb-8">
             <h2 className="text-2xl font-bold mb-6">منتجات ذات صلة</h2>
