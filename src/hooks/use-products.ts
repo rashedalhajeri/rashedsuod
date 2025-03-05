@@ -79,9 +79,13 @@ export const useProducts = ({
         
         if (item.additional_images) {
           if (Array.isArray(item.additional_images)) {
-            processedImages = item.additional_images
-              .filter(img => img !== null)
-              .map(img => typeof img === 'string' ? img : String(img));
+            processedImages = [];
+            // Safely convert each item to string
+            for (const img of item.additional_images) {
+              if (img !== null) {
+                processedImages.push(typeof img === 'string' ? img : String(img));
+              }
+            }
           } else if (typeof item.additional_images === 'string') {
             processedImages = [item.additional_images];
           }
