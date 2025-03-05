@@ -17,10 +17,10 @@ const StorePreview: React.FC<StorePreviewProps> = ({ isOpen, onClose }) => {
   const { toast } = useToast();
   const [copied, setCopied] = React.useState(false);
   
-  // Update URL structure
+  // Update URL structure to use the new domain-based format
   const previewUrl = storeData?.domain_name 
-    ? `/store/${storeData.domain_name}`
-    : '/store/demo-store';
+    ? `/${storeData.domain_name}`
+    : '/demo-store';
   
   const copyToClipboard = () => {
     const fullUrl = window.location.origin + previewUrl;

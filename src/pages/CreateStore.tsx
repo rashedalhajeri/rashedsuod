@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,14 +23,23 @@ const CreateStore: React.FC = () => {
   // Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-
-    // Reset domain availability check when domain name changes
+    
+    // If domain name, convert to lowercase and remove spaces and special characters
     if (name === "domainName") {
+      // Allow only lowercase letters, numbers, and hyphens
+      const sanitizedValue = value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+      setFormData({
+        ...formData,
+        [name]: sanitizedValue
+      });
+      
+      // Reset domain availability check when domain name changes
       setDomainAvailable(null);
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
     }
   };
 
@@ -43,7 +51,7 @@ const CreateStore: React.FC = () => {
     });
   };
 
-  // Check domain availability (manual check since RPC was removed)
+  // Check domain availability
   const checkDomainAvailability = async () => {
     if (!formData.domainName.trim()) {
       toast.error("الرجاء إدخال اسم النطاق أولاً");
@@ -51,19 +59,19 @@ const CreateStore: React.FC = () => {
     }
 
     // Validate domain name (alphanumeric and hyphens only)
-    const domainRegex = /^[a-zA-Z0-9-]+$/;
+    const domainRegex = /^[a-z0-9-]+$/;
     if (!domainRegex.test(formData.domainName)) {
-      toast.error("اسم النطاق يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط");
+      toast.error("اسم النطاق يجب أن يحتوي على أحرف إنجليزية صغيرة وأرقام وشرطات فقط");
       return;
     }
 
     setCheckingDomain(true);
     try {
-      // Check if domain already exists in database
+      // Check if domain already exists in database (case insensitive)
       const { data, error } = await supabase
         .from('stores')
         .select('domain_name')
-        .eq('domain_name', formData.domainName)
+        .ilike('domain_name', formData.domainName.toLowerCase())
         .maybeSingle();
 
       if (error) throw error;
@@ -99,18 +107,43 @@ const CreateStore: React.FC = () => {
       if (userError) throw userError;
       if (!userData.user) {
         toast.error("الرجاء تسجيل الدخول للمتابعة");
-        navigate("/");
+        navigate("/auth");
         return;
       }
 
-      // Create store
+      // First check if the user already has a store
+      const { count, error: countError } = await supabase
+        .from('stores')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userData.user.id);
+        
+      if (countError) throw countError;
+      
+      // If user already has a store, redirect to dashboard
+      // For free plan users, limit to 1 store
+      if (count && count > 0) {
+        const { data: userStore } = await supabase
+          .from('stores')
+          .select('subscription_plan')
+          .eq('user_id', userData.user.id)
+          .limit(1)
+          .single();
+          
+        if (userStore?.subscription_plan === 'free') {
+          toast.error("الخطة المجانية تسمح بإنشاء متجر واحد فقط. يرجى الترقية للخطة المدفوعة لإنشاء المزيد من المتاجر.");
+          navigate("/dashboard");
+          return;
+        }
+      }
+
+      // Create store with sanitized domain name
       const { data, error } = await supabase
         .from('stores')
         .insert([
           {
             user_id: userData.user.id,
             store_name: formData.storeName,
-            domain_name: formData.domainName,
+            domain_name: formData.domainName.toLowerCase().trim(),
             phone_number: formData.phoneNumber,
             country: formData.country,
             currency: formData.currency
@@ -122,8 +155,7 @@ const CreateStore: React.FC = () => {
       if (error) throw error;
 
       toast.success("تم إنشاء المتجر بنجاح");
-      // Redirect to home page since dashboard is removed
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Error creating store:", error);
       toast.error("حدث خطأ أثناء إنشاء المتجر");
@@ -158,7 +190,7 @@ const CreateStore: React.FC = () => {
                 name="domainName"
                 value={formData.domainName}
                 onChange={handleChange}
-                placeholder="example"
+                placeholder="my-store"
                 className="flex-1 ml-2"
                 required
               />
@@ -180,6 +212,7 @@ const CreateStore: React.FC = () => {
             {domainAvailable === false && (
               <p className="text-red-600 text-sm">✗ اسم النطاق غير متاح</p>
             )}
+            <p className="text-gray-500 text-xs">يجب أن يحتوي اسم النطاق على أحرف إنجليزية صغيرة وأرقام وشرطات فقط، مثل: my-store</p>
           </div>
           
           <div className="space-y-2">

@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from "react-router-dom";
 import { useEffect, useState, createContext } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { secureRetrieve, secureStore, secureRemove } from "./lib/encryption";
@@ -194,6 +194,19 @@ const CreateStoreRoute = ({ children }: { children: React.ReactNode }) => {
   return <ProtectedRoute redirectIfStore={true}>{children}</ProtectedRoute>;
 };
 
+const StoreRouteHandler = () => {
+  const { storeDomain } = useParams();
+  const location = useLocation();
+  
+  const isLegacyPath = location.pathname.startsWith('/store/');
+  
+  if (isLegacyPath) {
+    return <StorefrontPreview />;
+  }
+  
+  return <StorefrontPreview />;
+};
+
 const StorePreviousRouteRedirect = () => {
   const { storeId } = useParams();
   return <Navigate to={`/store/${storeId}`} replace />;
@@ -211,11 +224,11 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<Auth />} />
             
-            {/* Store Routes - Updated from store-preview to store */}
             <Route path="/store/:storeId/*" element={<StorefrontPreview />} />
             <Route path="/store" element={<StorefrontPreview />} />
             
-            {/* Keep old routes temporarily for backward compatibility */}
+            <Route path="/:storeDomain/*" element={<StoreRouteHandler />} />
+            
             <Route path="/store-preview/:storeId/*" element={<StorePreviousRouteRedirect />} />
             <Route path="/store-preview" element={<Navigate to="/store" replace />} />
             

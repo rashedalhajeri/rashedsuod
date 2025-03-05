@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Eye } from 'lucide-react';
@@ -34,26 +33,25 @@ const ProductCard: React.FC<ProductCardProps> = ({
   domainName
 }) => {
   const navigate = useNavigate();
-  const { storeId } = useParams<{ storeId: string }>();
+  const { storeId, storeDomain } = useParams<{ storeId?: string; storeDomain?: string }>();
+  const location = useLocation();
   const { data: storeData } = useStoreData();
   const formatCurrency = getCurrencyFormatter(storeData?.currency);
-  const currentDomain = domainName || storeId;
+  
+  const isDomainBased = !location.pathname.startsWith('/store/');
+  const currentDomain = domainName || storeData?.domain_name || storeId || storeDomain;
   
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click
     
-    // الحصول على السلة الحالية أو إنشاء سلة جديدة
     const currentCart = localStorage.getItem('shopping-cart');
     const cart = currentCart ? JSON.parse(currentCart) : [];
     
-    // التحقق مما إذا كان المنتج موجودًا بالفعل في السلة
     const existingItemIndex = cart.findIndex((item: any) => item.id === id);
     
     if (existingItemIndex !== -1) {
-      // تحديث الكمية إذا كان المنتج موجودًا بالفعل
       cart[existingItemIndex].quantity += 1;
     } else {
-      // إضافة المنتج إلى السلة إذا لم يكن موجودًا
       cart.push({
         id,
         name,
@@ -63,15 +61,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
       });
     }
     
-    // حفظ السلة المحدثة
     localStorage.setItem('shopping-cart', JSON.stringify(cart));
     
     toast.success('تمت إضافة المنتج إلى السلة');
   };
   
   const handleViewProduct = () => {
-    // Update the navigation path to use the new URL structure
-    navigate(`/store/${currentDomain}/products/${id}`);
+    if (isDomainBased) {
+      navigate(`/${currentDomain}/products/${id}`);
+    } else {
+      navigate(`/store/${currentDomain}/products/${id}`);
+    }
   };
   
   const placeholderImage = '/placeholder.svg';
@@ -87,7 +87,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
           />
         </div>
         
-        {/* Badges */}
         <div className="absolute top-2 right-2 flex flex-col gap-1">
           {isNew && (
             <Badge className="bg-blue-500">جديد</Badge>
@@ -113,7 +112,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <p className="text-gray-500 mt-2 text-sm line-clamp-2">{description}</p>
         )}
         
-        {/* Stock status */}
         {stock !== undefined && stock <= 5 && stock > 0 && (
           <div className="text-amber-600 text-sm mt-2">باقي {stock} فقط</div>
         )}

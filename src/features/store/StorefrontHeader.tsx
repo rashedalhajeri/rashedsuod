@@ -1,8 +1,8 @@
 import React from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ShoppingCart, Search, User, Home, Menu, X } from 'lucide-react';
+import { ShoppingCart, Search, User, Home, Menu } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import useStoreData from '@/hooks/use-store-data';
@@ -13,29 +13,32 @@ interface StorefrontHeaderProps {
 
 const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ cartItemsCount = 0 }) => {
   const navigate = useNavigate();
-  const { storeId } = useParams<{ storeId: string }>();
+  const { storeId, storeDomain } = useParams<{ storeId?: string; storeDomain?: string }>();
+  const location = useLocation();
   const { data: storeData } = useStoreData();
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
+  
+  const isDomainBased = !location.pathname.startsWith('/store/');
+  const currentDomain = storeData?.domain_name || storeId || storeDomain;
+  
+  const urlPrefix = isDomainBased ? `/${currentDomain}` : `/store/${currentDomain}`;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Navigate to search results with updated URL
-    navigate(`/store/${storeId}/search?q=${searchQuery}`);
+    navigate(`${urlPrefix}/search?q=${searchQuery}`);
   };
 
   const menuItems = [
-    { title: 'الرئيسية', icon: <Home className="h-4 w-4 ml-2" />, path: `/store/${storeId}` },
-    { title: 'المنتجات', icon: null, path: `/store/${storeId}/products` },
-    { title: 'حسابي', icon: <User className="h-4 w-4 ml-2" />, path: `/store/${storeId}/account` },
-    { title: 'سلة التسوق', icon: <ShoppingCart className="h-4 w-4 ml-2" />, path: `/store/${storeId}/cart` },
+    { title: 'الرئيسية', icon: <Home className="h-4 w-4 ml-2" />, path: `${urlPrefix}` },
+    { title: 'المنتجات', icon: null, path: `${urlPrefix}/products` },
+    { title: 'حسابي', icon: <User className="h-4 w-4 ml-2" />, path: `${urlPrefix}/account` },
+    { title: 'سلة التسوق', icon: <ShoppingCart className="h-4 w-4 ml-2" />, path: `${urlPrefix}/cart` },
   ];
 
   return (
     <header className="sticky top-0 z-30 w-full bg-white border-b shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
           <div className="flex items-center">
             {storeData?.logo_url ? (
               <img 
@@ -48,7 +51,6 @@ const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ cartItemsCount = 0 
             )}
           </div>
           
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-6 rtl:space-x-reverse">
             {menuItems.map((item, index) => (
               <Button 
@@ -68,10 +70,9 @@ const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ cartItemsCount = 0 
             ))}
           </nav>
           
-          {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center">
             <Button 
-              onClick={() => navigate(`/store/${storeId}/cart`)}
+              onClick={() => navigate(`${urlPrefix}/cart`)}
               variant="ghost" 
               className="relative"
             >
@@ -111,7 +112,6 @@ const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ cartItemsCount = 0 
           </div>
         </div>
         
-        {/* Search Bar */}
         <div className="py-3">
           <form onSubmit={handleSearch} className="flex w-full max-w-sm items-center space-x-2 rtl:space-x-reverse">
             <Input
