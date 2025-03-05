@@ -239,6 +239,59 @@ export type Database = {
           },
         ]
       }
+      store_theme_settings: {
+        Row: {
+          accent_color: string
+          created_at: string
+          custom_css: string | null
+          font_family: string
+          id: string
+          layout_type: string
+          primary_color: string
+          products_per_row: number
+          secondary_color: string
+          store_id: string
+          theme_id: string
+          updated_at: string
+        }
+        Insert: {
+          accent_color?: string
+          created_at?: string
+          custom_css?: string | null
+          font_family?: string
+          id?: string
+          layout_type?: string
+          primary_color?: string
+          products_per_row?: number
+          secondary_color?: string
+          store_id: string
+          theme_id: string
+          updated_at?: string
+        }
+        Update: {
+          accent_color?: string
+          created_at?: string
+          custom_css?: string | null
+          font_family?: string
+          id?: string
+          layout_type?: string
+          primary_color?: string
+          products_per_row?: number
+          secondary_color?: string
+          store_id?: string
+          theme_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_theme_settings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stores: {
         Row: {
           country: string
@@ -292,7 +345,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      user_owns_store: {
+        Args: {
+          store_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
