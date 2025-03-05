@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -172,7 +171,6 @@ const StoreThemes: React.FC<StoreThemesProps> = ({ storeId }) => {
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [previewTheme, setPreviewTheme] = useState<ThemeOption | null>(null);
   
-  // State for theme settings
   const [themeSettings, setThemeSettings] = useState<ThemeSettings>({
     store_id: storeId || '',
     theme_id: 'classic',
@@ -184,7 +182,6 @@ const StoreThemes: React.FC<StoreThemesProps> = ({ storeId }) => {
     font_family: 'default',
   });
   
-  // Fetch existing theme settings
   const { data: existingSettings, isLoading: isLoadingSettings } = useQuery({
     queryKey: ['themeSettings', storeId],
     queryFn: async () => {
@@ -206,7 +203,6 @@ const StoreThemes: React.FC<StoreThemesProps> = ({ storeId }) => {
     enabled: !!storeId,
   });
   
-  // Update theme settings in state when data is loaded
   useEffect(() => {
     if (existingSettings) {
       setThemeSettings({
@@ -224,7 +220,6 @@ const StoreThemes: React.FC<StoreThemesProps> = ({ storeId }) => {
     }
   }, [existingSettings]);
   
-  // Update theme settings mutation
   const { mutate: saveThemeSettings, isPending: isSaving } = useMutation({
     mutationFn: async (settings: ThemeSettings) => {
       if (!storeId) {
@@ -232,7 +227,6 @@ const StoreThemes: React.FC<StoreThemesProps> = ({ storeId }) => {
       }
       
       if (settings.id) {
-        // Update existing settings
         const { data, error } = await supabase
           .from('store_theme_settings')
           .update({
@@ -251,7 +245,6 @@ const StoreThemes: React.FC<StoreThemesProps> = ({ storeId }) => {
         if (error) throw error;
         return data;
       } else {
-        // Insert new settings
         const { data, error } = await supabase
           .from('store_theme_settings')
           .insert([{
@@ -306,8 +299,8 @@ const StoreThemes: React.FC<StoreThemesProps> = ({ storeId }) => {
     setPreviewDialogOpen(true);
   };
   
-  const handleSaveSettings = () => {
-    saveThemeSettings(themeSettings);
+  const handleSaveSettings = async (): Promise<void> => {
+    return saveThemeSettings(themeSettings);
   };
   
   return (
@@ -510,7 +503,6 @@ const StoreThemes: React.FC<StoreThemesProps> = ({ storeId }) => {
       
       <SaveButton onClick={handleSaveSettings} isSaving={isSaving} />
       
-      {/* Theme Preview Dialog */}
       <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
         <DialogContent className="sm:max-w-4xl">
           <DialogHeader>
