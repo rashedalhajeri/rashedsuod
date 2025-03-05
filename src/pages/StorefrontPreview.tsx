@@ -15,11 +15,12 @@ const StorefrontPreview = () => {
   const [storeData, setStoreData] = useState<any>(null);
 
   useEffect(() => {
-    // Check if we are in the right context (store preview)
     const fetchStoreData = async () => {
       try {
         // Determine if we're using domain-based or id-based access
-        const isDomainBased = !location.pathname.startsWith('/store/') && storeDomain;
+        const isDomainBased = !location.pathname.startsWith('/store/');
+        
+        // Use either the domain name or store ID
         const storeIdentifier = isDomainBased ? storeDomain : storeId;
         
         if (!storeIdentifier) {
@@ -27,37 +28,47 @@ const StorefrontPreview = () => {
           return;
         }
         
-        let query = supabase.from('stores').select('*');
+        console.log('Fetching store with identifier:', storeIdentifier, 'using domain?', isDomainBased);
         
-        // Query by domain_name or id depending on the route accessed
-        if (isDomainBased) {
-          query = query.eq('domain_name', storeIdentifier);
-        } else {
-          // Try first as domain name (backwards compatibility)
-          query = query.eq('domain_name', storeIdentifier);
+        let { data, error } = await supabase
+          .from('stores')
+          .select('*')
+          .eq('domain_name', storeIdentifier)
+          .maybeSingle();
+          
+        if (error) {
+          console.error('Error fetching by domain_name:', error);
+          // If we're using the /store/:storeId route, try to fetch by ID as fallback
+          if (!isDomainBased) {
+            const { data: storeById, error: idError } = await supabase
+              .from('stores')
+              .select('*')
+              .eq('id', storeIdentifier)
+              .maybeSingle();
+              
+            if (idError) {
+              console.error('Error fetching by id:', idError);
+            } else if (storeById) {
+              data = storeById;
+            }
+          }
         }
         
-        const { data, error } = await query.maybeSingle();
-          
-        if (error) throw error;
-        
-        if (data) {
+        // Handle demo store specially
+        if (storeIdentifier === 'demo-store') {
+          setStoreExists(true);
+          // Set some demo data
+          setStoreData({
+            id: 'demo-store-id',
+            domain_name: 'demo-store',
+            store_name: 'متجر تجريبي',
+            description: 'هذا متجر تجريبي لعرض الميزات',
+            currency: 'SAR',
+            country: 'السعودية'
+          });
+        } else if (data) {
           setStoreData(data);
           setStoreExists(true);
-        } else if (!isDomainBased) {
-          // If we didn't find by domain_name when using /store/:storeId, try by ID as fallback
-          const { data: storeById, error: idError } = await supabase
-            .from('stores')
-            .select('*')
-            .eq('id', storeIdentifier)
-            .maybeSingle();
-            
-          if (idError) throw idError;
-          
-          if (storeById) {
-            setStoreData(storeById);
-            setStoreExists(true);
-          }
         }
       } catch (error) {
         console.error('Error fetching store data:', error);
@@ -88,7 +99,7 @@ const StorefrontPreview = () => {
     );
   }
 
-  if (!storeExists && storeId !== 'demo-store' && storeDomain !== 'demo-store') {
+  if (!storeExists) {
     return (
       <div className="flex flex-col items-center justify-center h-screen p-4">
         <h1 className="text-2xl font-bold mb-4">المتجر غير موجود</h1>

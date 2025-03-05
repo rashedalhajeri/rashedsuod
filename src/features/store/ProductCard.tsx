@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -39,7 +40,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const formatCurrency = getCurrencyFormatter(storeData?.currency);
   
   const isDomainBased = !location.pathname.startsWith('/store/');
-  const currentDomain = domainName || storeData?.domain_name || storeId || storeDomain;
+  const domainIdentifier = isDomainBased ? storeDomain : storeId;
+  const storeIdentifier = domainName || storeData?.domain_name || domainIdentifier || 'demo-store';
   
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click
@@ -67,11 +69,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
   };
   
   const handleViewProduct = () => {
-    if (isDomainBased) {
-      navigate(`/${currentDomain}/products/${id}`);
-    } else {
-      navigate(`/store/${currentDomain}/products/${id}`);
-    }
+    // Construct the correct product URL based on the current route
+    const baseUrl = isDomainBased 
+      ? `/${storeIdentifier}` 
+      : `/store/${storeIdentifier}`;
+      
+    navigate(`${baseUrl}/products/${id}`);
   };
   
   const placeholderImage = '/placeholder.svg';
