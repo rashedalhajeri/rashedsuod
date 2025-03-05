@@ -11,13 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Truck, MapPin, Clock, Info, Package, ChevronDown, ChevronUp } from "lucide-react";
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Truck, MapPin, Clock, Info, ChevronDown, ChevronUp } from "lucide-react";
 
 interface ShippingMethodFormProps {
   isPaidPlan: boolean;
@@ -38,11 +32,11 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
   const [deliveryZones, setDeliveryZones] = useState<DeliveryZone[]>([]);
   const [expandedSections, setExpandedSections] = useState({
     standard: true,
-    talefree: true,
+    bronze: isPaidPlan,
     zones: isPaidPlan
   });
 
-  const toggleSection = (section: 'standard' | 'talefree' | 'zones') => {
+  const toggleSection = (section: 'standard' | 'bronze' | 'zones') => {
     setExpandedSections({
       ...expandedSections,
       [section]: !expandedSections[section]
@@ -73,7 +67,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
 
   return (
     <div className="space-y-6 py-2 animate-fade-in">
-      <Card className="border-primary/10 bg-white overflow-hidden">
+      <Card className="border-primary/10 bg-white overflow-hidden shadow-sm">
         <div className="bg-gradient-to-r from-primary-50 to-white px-6 py-4 flex items-center justify-between cursor-pointer"
              onClick={() => toggleSection('standard')}>
           <div className="flex items-center gap-2">
@@ -192,96 +186,95 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
         )}
       </Card>
       
-      <Card className="border-primary/10 bg-white overflow-hidden">
+      <Card className="border-primary/10 bg-white overflow-hidden shadow-sm">
         <div className="bg-gradient-to-r from-amber-50 to-white px-6 py-4 flex items-center justify-between cursor-pointer"
-             onClick={() => toggleSection('talefree')}>
+             onClick={() => toggleSection('bronze')}>
           <div className="flex items-center gap-2">
             <div className="bg-amber-100 p-2 rounded-full">
-              <div className="h-5 w-5 flex items-center justify-center font-bold text-amber-600">T</div>
+              <div className="h-5 w-5 flex items-center justify-center font-bold text-amber-600">B</div>
             </div>
-            <h3 className="text-md font-semibold">توصيل تاليفري</h3>
+            <h3 className="text-md font-semibold">توصيل برونز</h3>
             <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
               متاح في الكويت
             </Badge>
           </div>
-          {expandedSections.talefree ? 
+          {expandedSections.bronze ? 
             <ChevronUp className="h-5 w-5 text-gray-500" /> : 
             <ChevronDown className="h-5 w-5 text-gray-500" />
           }
         </div>
         
-        {expandedSections.talefree && (
+        {expandedSections.bronze && (
           <CardContent className="pt-6">
             <div className="space-y-4">
               <div className="space-y-2">
                 <p className="text-sm text-gray-600">
-                  عند تفعيل هذه الخدمة، ستتمكن من استخدام خدمات توصيل تاليفري المتاحة في جميع مناطق الكويت. سيتم تحويل الطلبات مباشرة إلى نظام توصيل تاليفري.
+                  استخدم خدمة توصيل برونز المتخصصة لتسريع عملية توصيل طلباتك في جميع مناطق الكويت. 
+                  سيتم ربط متجرك مباشرة بنظام برونز وإدارة الطلبات بشكل آلي.
                 </p>
                 
-                <div className="grid md:grid-cols-3 gap-3 mt-2">
+                <div className="grid md:grid-cols-3 gap-3 mt-4">
                   <div className="flex items-start gap-2 bg-white p-3 rounded-lg border border-amber-100">
                     <div className="h-5 w-5 flex items-center justify-center rounded-full bg-amber-100 text-amber-600 mt-0.5">1</div>
-                    <div className="text-sm text-gray-700">استلام الطلبات من متجرك مباشرة</div>
+                    <div className="text-sm text-gray-700">استلام الطلبات من متجرك تلقائياً</div>
                   </div>
                   <div className="flex items-start gap-2 bg-white p-3 rounded-lg border border-amber-100">
                     <div className="h-5 w-5 flex items-center justify-center rounded-full bg-amber-100 text-amber-600 mt-0.5">2</div>
-                    <div className="text-sm text-gray-700">تجهيز الطلب من خلال فريق تاليفري</div>
+                    <div className="text-sm text-gray-700">تجهيز الطلب وتغليفه بواسطة فريق برونز</div>
                   </div>
                   <div className="flex items-start gap-2 bg-white p-3 rounded-lg border border-amber-100">
                     <div className="h-5 w-5 flex items-center justify-center rounded-full bg-amber-100 text-amber-600 mt-0.5">3</div>
-                    <div className="text-sm text-gray-700">توصيل الطلب إلى عميلك بسرعة واحترافية</div>
+                    <div className="text-sm text-gray-700">توصيل الطلب للعميل بسرعة وكفاءة عالية</div>
                   </div>
                 </div>
               </div>
               
-              <div>
-                <div className="bg-amber-50 p-4 rounded-md">
-                  <RadioGroup defaultValue="standard">
-                    <div className="flex items-start space-x-2 space-x-reverse mb-3">
-                      <RadioGroupItem value="standard" id="standard" className="mt-1 border-amber-400 text-amber-600" />
-                      <div className="grid gap-1.5 mr-2">
-                        <Label htmlFor="standard" className="text-sm font-medium">الخدمة القياسية</Label>
-                        <div className="flex items-center">
-                          <p className="text-xs text-gray-500 ml-1">
-                            توصيل خلال 2-3 ساعات
-                          </p>
-                          <Badge className="bg-white text-amber-600 border-amber-200">
-                            2 د.ك
-                          </Badge>
-                        </div>
+              <div className="bg-amber-50 p-4 rounded-md mt-4">
+                <RadioGroup defaultValue="standard">
+                  <div className="flex items-start space-x-2 space-x-reverse mb-3">
+                    <RadioGroupItem value="standard" id="standard" className="mt-1 border-amber-400 text-amber-600" />
+                    <div className="grid gap-1.5 mr-2">
+                      <Label htmlFor="standard" className="text-sm font-medium">الباقة القياسية</Label>
+                      <div className="flex items-center">
+                        <p className="text-xs text-gray-500 ml-1">
+                          توصيل خلال 2-3 ساعات
+                        </p>
+                        <Badge className="bg-white text-amber-600 border-amber-200">
+                          2 د.ك
+                        </Badge>
                       </div>
                     </div>
-                    
-                    <div className="flex items-start space-x-2 space-x-reverse">
-                      <RadioGroupItem 
-                        value="express" 
-                        id="express" 
-                        disabled={!isPaidPlan}
-                        className="mt-1 border-amber-400 text-amber-600 disabled:opacity-50"
-                      />
-                      <div className="grid gap-1.5 mr-2">
-                        <div className="flex items-center">
-                          <Label htmlFor="express" className={`text-sm font-medium ${!isPaidPlan ? 'text-gray-400' : ''}`}>
-                            التوصيل السريع
-                          </Label>
-                          {!isPaidPlan && (
-                            <Badge variant="outline" className="mr-2 text-xs bg-gray-50 text-gray-500 border-gray-200">
-                              الباقات المدفوعة فقط
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center">
-                          <p className={`text-xs ${!isPaidPlan ? 'text-gray-400' : 'text-gray-500'} ml-1`}>
-                            توصيل خلال ساعة واحدة
-                          </p>
-                          <Badge className={`${!isPaidPlan ? 'bg-gray-100 text-gray-400 border-gray-200' : 'bg-white text-amber-600 border-amber-200'}`}>
-                            3 د.ك
+                  </div>
+                  
+                  <div className="flex items-start space-x-2 space-x-reverse">
+                    <RadioGroupItem 
+                      value="express" 
+                      id="express" 
+                      disabled={!isPaidPlan}
+                      className="mt-1 border-amber-400 text-amber-600 disabled:opacity-50"
+                    />
+                    <div className="grid gap-1.5 mr-2">
+                      <div className="flex items-center">
+                        <Label htmlFor="express" className={`text-sm font-medium ${!isPaidPlan ? 'text-gray-400' : ''}`}>
+                          التوصيل السريع
+                        </Label>
+                        {!isPaidPlan && (
+                          <Badge variant="outline" className="mr-2 text-xs bg-gray-50 text-gray-500 border-gray-200">
+                            الباقات المدفوعة فقط
                           </Badge>
-                        </div>
+                        )}
+                      </div>
+                      <div className="flex items-center">
+                        <p className={`text-xs ${!isPaidPlan ? 'text-gray-400' : 'text-gray-500'} ml-1`}>
+                          توصيل خلال ساعة واحدة
+                        </p>
+                        <Badge className={`${!isPaidPlan ? 'bg-gray-100 text-gray-400 border-gray-200' : 'bg-white text-amber-600 border-amber-200'}`}>
+                          3 د.ك
+                        </Badge>
                       </div>
                     </div>
-                  </RadioGroup>
-                </div>
+                  </div>
+                </RadioGroup>
               </div>
               
               <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-amber-800 text-sm">
@@ -289,7 +282,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
                   <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
                   <span>
                     <span className="font-medium">ملاحظة: </span>
-                    سيتم فتح حساب خاص بالمتجر على منصة تاليفري للتوصيل. وسيتم التواصل معك من قبل فريق تاليفري لإكمال الإعداد.
+                    سيتم إنشاء حساب خاص بمتجرك في نظام برونز للتوصيل. وسيتم التواصل معك من قبل فريق برونز لإكمال عملية الإعداد.
                   </span>
                 </div>
               </div>
@@ -299,7 +292,7 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
       </Card>
       
       {isPaidPlan && (
-        <Card className="border-primary/10 bg-white overflow-hidden">
+        <Card className="border-primary/10 bg-white overflow-hidden shadow-sm">
           <div className="bg-gradient-to-r from-green-50 to-white px-6 py-4 flex items-center justify-between cursor-pointer"
                onClick={() => toggleSection('zones')}>
             <div className="flex items-center gap-2">
@@ -412,7 +405,6 @@ const ShippingMethodForm: React.FC<ShippingMethodFormProps> = ({ isPaidPlan }) =
       )}
       
       <div className="flex justify-end gap-2">
-        <Button size="sm" variant="outline" className="border-gray-200">إلغاء</Button>
         <Button 
           size="sm" 
           className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700"
