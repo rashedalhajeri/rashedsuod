@@ -1,113 +1,91 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import LoadingState from '@/components/ui/loading-state';
-import ErrorState from '@/components/ui/error-state';
-import StorefrontLayout from '@/layouts/StorefrontLayout';
-import { Link } from 'react-router-dom';
 
-const StoreProducts: React.FC = () => {
+import React, { useState, useEffect } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { LoadingState } from "@/components/ui/loading-state";
+import { ErrorState } from "@/components/ui/error-state";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { Search, Filter, Grid3X3, List } from "lucide-react";
+import StorefrontLayout from "@/layouts/StorefrontLayout";
+
+const Products: React.FC = () => {
   const { storeId } = useParams<{ storeId: string }>();
-  const [searchParams] = useSearchParams();
-  const categoryId = searchParams.get('category');
-  const searchQuery = searchParams.get('search');
-  const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 12;
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
+  const [priceRange, setPriceRange] = useState([0, 1000]);
+  const [isListView, setIsListView] = useState(false);
   
   // Fetch store data
-  const { data: storeData, isLoading: storeLoading, error: storeError } = useQuery({
-    queryKey: ['store', storeId],
+  const { data: storeData, isLoading: isLoadingStore, error: storeError } = useQuery({
+    queryKey: ["store", storeId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('stores')
-        .select('*')
-        .eq('domain_name', storeId || 'demo-store')
+        .from("stores")
+        .select("*")
+        .eq("domain_name", storeId)
         .single();
         
       if (error) throw error;
       return data;
     },
-    enabled: !!storeId || storeId === 'demo-store'
+    enabled: !!storeId,
   });
   
-  // Fetch products with filters
-  const { data: productsData, isLoading: productsLoading } = useQuery({
-    queryKey: ['storeProducts', storeData?.id, categoryId, searchQuery, currentPage],
+  // Fetch products
+  const { data: products, isLoading: isLoadingProducts } = useQuery({
+    queryKey: ["storeProducts", storeData?.id, searchQuery, priceRange],
     queryFn: async () => {
       let query = supabase
-        .from('products')
-        .select('*, categories(name)')
-        .eq('store_id', storeData?.id);
-      
-      if (categoryId) {
-        query = query.eq('category_id', categoryId);
-      }
+        .from("products")
+        .select("*")
+        .eq("store_id", storeData?.id);
       
       if (searchQuery) {
-        query = query.ilike('name', `%${searchQuery}%`);
+        query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
       }
       
-      const { data, error } = await query
-        .order('created_at', { ascending: false })
-        .range((currentPage - 1) * productsPerPage, currentPage * productsPerPage - 1);
-        
+      if (priceRange[0] > 0 || priceRange[1] < 1000) {
+        query = query
+          .gte("price", priceRange[0])
+          .lte("price", priceRange[1]);
+      }
+      
+      const { data, error } = await query.order("created_at", { ascending: false });
+      
       if (error) throw error;
       return data;
     },
-    enabled: !!storeData?.id
+    enabled: !!storeData?.id,
   });
   
-  // Fetch total products count for pagination
-  const { data: totalCount } = useQuery({
-    queryKey: ['storeProductsCount', storeData?.id, categoryId, searchQuery],
-    queryFn: async () => {
-      let query = supabase
-        .from('products')
-        .select('id', { count: 'exact' })
-        .eq('store_id', storeData?.id);
-      
-      if (categoryId) {
-        query = query.eq('category_id', categoryId);
-      }
-      
-      if (searchQuery) {
-        query = query.ilike('name', `%${searchQuery}%`);
-      }
-      
-      const { count, error } = await query;
-      
-      if (error) throw error;
-      return count || 0;
-    },
-    enabled: !!storeData?.id
-  });
+  // Set RTL direction for Arabic
+  useEffect(() => {
+    document.documentElement.dir = "rtl";
+    document.documentElement.lang = "ar";
+    
+    return () => {
+      document.documentElement.dir = "ltr";
+      document.documentElement.lang = "en";
+    };
+  }, []);
   
-  // Fetch categories
-  const { data: categories } = useQuery({
-    queryKey: ['storeCategories', storeData?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('store_id', storeData?.id)
-        .order('name', { ascending: true });
-        
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!storeData?.id
-  });
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearchParams({ search: searchQuery });
+  };
   
-  if (storeLoading || productsLoading) {
-    return <LoadingState message="جاري تحميل المنتجات..." />;
+  if (isLoadingStore) {
+    return <LoadingState message="جاري تحميل المتجر..." />;
   }
   
-  if (storeError) {
+  if (storeError || !storeData) {
     return (
-      <ErrorState 
+      <ErrorState
         title="لم يتم العثور على المتجر"
-        message="تعذر العثور على المتجر المطلوب. الرجاء التحقق من الرابط والمحاولة مرة أخرى."
+        message="تعذر العثور على المتجر المطلوب"
       />
     );
   }
@@ -115,95 +93,124 @@ const StoreProducts: React.FC = () => {
   return (
     <StorefrontLayout storeData={storeData}>
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-4">
-          {searchQuery ? `نتائج البحث عن "${searchQuery}"` : 'جميع المنتجات'}
-        </h1>
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold mb-2">جميع المنتجات</h1>
+          <p className="text-muted-foreground">
+            تصفح مجموعة منتجات {storeData.store_name}
+          </p>
+        </div>
         
-        {/* Filters and products display */}
-        <div className="flex flex-col md:flex-row">
-          {/* Categories filter */}
-          <div className="w-full md:w-1/4 mb-6 md:mb-0">
-            <h2 className="text-xl font-semibold mb-2">التصنيفات</h2>
-            <ul>
-              <li>
-                <Link 
-                  to={`/store/${storeId}/products`} 
-                  className={`block py-2 px-4 rounded hover:bg-gray-100 transition-colors ${!categoryId ? 'bg-gray-100 font-semibold' : ''}`}
-                >
-                  الكل
-                </Link>
-              </li>
-              {categories?.map((category) => (
-                <li key={category.id}>
-                  <Link 
-                    to={`/store/${storeId}/products?category=${category.id}`}
-                    className={`block py-2 px-4 rounded hover:bg-gray-100 transition-colors ${categoryId === String(category.id) ? 'bg-gray-100 font-semibold' : ''}`}
-                  >
-                    {category.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+        {/* Search and Filter */}
+        <div className="mb-8 bg-white p-4 rounded-lg shadow-sm">
+          <form onSubmit={handleSearch} className="flex gap-2 mb-4">
+            <Input
+              placeholder="ابحث عن منتج..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="flex-grow"
+            />
+            <Button type="submit">
+              <Search className="h-4 w-4 ml-2" />
+              بحث
+            </Button>
+          </form>
           
-          {/* Product grid */}
-          <div className="w-full md:w-3/4">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {productsData?.map((product) => (
-                <div key={product.id} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-                  <div className="aspect-square bg-gray-100 relative">
-                    {product.image_url ? (
-                      <img 
-                        src={product.image_url} 
-                        alt={product.name} 
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                        <span className="text-gray-400">لا توجد صورة</span>
-                      </div>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4" />
+              <span className="text-sm font-medium">نطاق السعر:</span>
+              <div className="w-48">
+                <Slider 
+                  defaultValue={[0, 1000]} 
+                  max={1000} 
+                  step={10}
+                  value={priceRange}
+                  onValueChange={setPriceRange}
+                />
+              </div>
+              <span className="text-sm">
+                {priceRange[0]} - {priceRange[1]} ر.س
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <span className="text-sm">طريقة العرض:</span>
+              <Button
+                variant={isListView ? "outline" : "default"}
+                size="sm"
+                className="w-9 h-9 p-0"
+                onClick={() => setIsListView(false)}
+              >
+                <Grid3X3 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={isListView ? "default" : "outline"}
+                size="sm"
+                className="w-9 h-9 p-0"
+                onClick={() => setIsListView(true)}
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+        
+        {/* Products Grid */}
+        {isLoadingProducts ? (
+          <LoadingState message="جاري تحميل المنتجات..." />
+        ) : products && products.length > 0 ? (
+          <div className={`grid ${isListView ? "grid-cols-1" : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4"} gap-4`}>
+            {products.map((product) => (
+              <a
+                key={product.id}
+                href={`/store/${storeId}/product/${product.id}`}
+                className={`bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow ${
+                  isListView ? "flex" : "block"
+                }`}
+              >
+                <div className={`${isListView ? "w-1/3" : "w-full"} aspect-square bg-gray-100 relative`}>
+                  {product.image_url ? (
+                    <img
+                      src={product.image_url}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                      <span className="text-gray-400">لا توجد صورة</span>
+                    </div>
+                  )}
+                </div>
+                
+                <div className={`${isListView ? "w-2/3" : "w-full"} p-4`}>
+                  <h3 className="font-semibold text-lg mb-1 line-clamp-1">{product.name}</h3>
+                  {isListView && (
+                    <p className="text-gray-600 text-sm mb-2 line-clamp-2">
+                      {product.description || "لا يوجد وصف"}
+                    </p>
+                  )}
+                  
+                  <div className={`flex items-center ${isListView ? "justify-between" : ""}`}>
+                    <span className="font-bold text-gray-800">{product.price} ر.س</span>
+                    
+                    {isListView && (
+                      <Button size="sm" className="bg-primary text-white px-3 py-1 rounded-md text-sm">
+                        عرض المنتج
+                      </Button>
                     )}
                   </div>
-                  
-                  <div className="p-4">
-                    <h3 className="font-semibold text-lg mb-1 line-clamp-1">{product.name}</h3>
-                    <p className="text-gray-600 text-sm mb-2 line-clamp-2">{product.description || "لا يوجد وصف"}</p>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="font-bold text-gray-800">{product.price} ر.س</span>
-                      </div>
-                      
-                      <button className="bg-primary text-white px-3 py-1 rounded-md text-sm">
-                        إضافة للسلة
-                      </button>
-                    </div>
-                  </div>
                 </div>
-              ))}
-            </div>
+              </a>
+            ))}
           </div>
-        </div>
-        
-        {/* Pagination */}
-        <div className="flex justify-center mt-8">
-          {totalCount !== undefined && (
-            <div className="join">
-              {Array.from({ length: Math.ceil(totalCount / productsPerPage) }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  className={`join-item btn ${currentPage === page ? 'btn-active' : ''}`}
-                  onClick={() => setCurrentPage(page)}
-                >
-                  {page}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="text-center py-12 bg-gray-50 rounded-lg">
+            <p className="text-gray-500">لا توجد منتجات متاحة حاليًا</p>
+          </div>
+        )}
       </div>
     </StorefrontLayout>
   );
 };
 
-export default StoreProducts;
+export default Products;
