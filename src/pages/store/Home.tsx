@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import StorefrontLayout from "@/layouts/StorefrontLayout";
+import { getStoreFromUrl } from "@/utils/url-utils";
 
 const StoreHome: React.FC = () => {
   const { storeId } = useParams<{ storeId: string }>();
@@ -23,12 +24,8 @@ const StoreHome: React.FC = () => {
       }
       
       try {
-        // Fetch store data
-        const { data: storeData, error: storeError } = await supabase
-          .from("stores")
-          .select("*")
-          .eq("id", storeId)
-          .single();
+        // Use the new utility function to get store data
+        const { data: storeData, error: storeError } = await getStoreFromUrl(storeId, supabase);
         
         if (storeError) throw storeError;
         if (!storeData) {
@@ -42,7 +39,7 @@ const StoreHome: React.FC = () => {
         const { data: productsData, error: productsError } = await supabase
           .from("products")
           .select("*")
-          .eq("store_id", storeId)
+          .eq("store_id", storeData.id)
           .limit(4);
         
         if (productsError) throw productsError;
@@ -79,6 +76,9 @@ const StoreHome: React.FC = () => {
     );
   }
 
+  // Store URL for links
+  const baseUrl = `/store/${store.id}`;
+
   return (
     <StorefrontLayout>
       <div className="container mx-auto py-8">
@@ -94,7 +94,7 @@ const StoreHome: React.FC = () => {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold">منتجات مميزة</h2>
             <Button variant="outline" asChild>
-              <Link to={`/store/${storeId}/products`}>عرض كل المنتجات</Link>
+              <Link to={`${baseUrl}/products`}>عرض كل المنتجات</Link>
             </Button>
           </div>
           
@@ -107,7 +107,7 @@ const StoreHome: React.FC = () => {
               {featuredProducts.map((product) => (
                 <Link 
                   key={product.id} 
-                  to={`/store/${storeId}/products/${product.id}`}
+                  to={`${baseUrl}/products/${product.id}`}
                   className="group block"
                 >
                   <div className="bg-gray-100 aspect-square rounded-md overflow-hidden mb-2">

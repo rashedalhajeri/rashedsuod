@@ -6,9 +6,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import StorefrontLayout from "@/layouts/StorefrontLayout";
+import { getStoreFromUrl } from "@/utils/url-utils";
 
 const StoreProducts: React.FC = () => {
   const { storeId } = useParams<{ storeId: string }>();
+  const [store, setStore] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,10 +24,22 @@ const StoreProducts: React.FC = () => {
       }
       
       try {
+        // Use the new utility function to get store data
+        const { data: storeData, error: storeError } = await getStoreFromUrl(storeId, supabase);
+        
+        if (storeError) throw storeError;
+        if (!storeData) {
+          setError("المتجر غير موجود");
+          return;
+        }
+        
+        setStore(storeData);
+        
+        // Fetch products with the store ID from database
         const { data, error } = await supabase
           .from("products")
           .select("*")
-          .eq("store_id", storeId);
+          .eq("store_id", storeData.id);
         
         if (error) throw error;
         
@@ -61,6 +75,9 @@ const StoreProducts: React.FC = () => {
     );
   }
 
+  // Store URL for links
+  const baseUrl = `/store/${store.id}`;
+
   return (
     <StorefrontLayout>
       <div className="container mx-auto py-8">
@@ -77,7 +94,7 @@ const StoreProducts: React.FC = () => {
             {products.map((product) => (
               <Link 
                 key={product.id} 
-                to={`/store/${storeId}/products/${product.id}`}
+                to={`${baseUrl}/products/${product.id}`}
                 className="group block"
               >
                 <Card className="overflow-hidden h-full transition-shadow hover:shadow-md">

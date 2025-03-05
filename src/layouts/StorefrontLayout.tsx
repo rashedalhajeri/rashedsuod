@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import { getStoreUrl } from "@/utils/url-utils";
+import { getStoreUrl, getStoreFromUrl } from "@/utils/url-utils";
 
 interface StorefrontLayoutProps {
   children: ReactNode;
@@ -16,6 +16,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
   const { storeId } = useParams<{ storeId: string }>();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [storeData, setStoreData] = useState<{
+    id: string;
     store_name: string;
     logo_url: string | null;
     domain_name: string | null;
@@ -25,16 +26,25 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
   // Fetch store data on mount
   useEffect(() => {
     const fetchStoreData = async () => {
-      if (!storeId) return;
+      if (!storeId) {
+        setLoading(false);
+        return;
+      }
 
       try {
-        const { data, error } = await supabase
-          .from("stores")
-          .select("store_name, logo_url, domain_name")
-          .eq("id", storeId)
-          .single();
+        // Use the new utility function to get store data
+        const { data, error } = await getStoreFromUrl(storeId, supabase);
 
-        if (error) throw error;
+        if (error) {
+          console.error("Error fetching store data:", error);
+          throw error;
+        }
+        
+        if (!data) {
+          console.error("Store not found");
+          throw new Error("المتجر غير موجود");
+        }
+        
         setStoreData(data);
       } catch (error) {
         console.error("Error fetching store data:", error);
@@ -51,18 +61,18 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  // Generate store URL
-  const storeUrl = storeData ? getStoreUrl(storeData) : `/store/${storeId}`;
+  // Generate store URL for navigation
+  const baseUrl = storeData ? `/store/${storeData.id}` : `/store/${storeId}`;
 
   // Menu items with proper URLs
   const menuItems = [
     {
       label: "الرئيسية",
-      href: storeUrl
+      href: baseUrl
     },
     {
       label: "المنتجات",
-      href: `${storeUrl}/products`
+      href: `${baseUrl}/products`
     }
   ];
 
@@ -72,7 +82,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
       <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
         <div className="container mx-auto px-4 flex justify-between items-center h-16">
           {/* Logo and Store Name */}
-          <Link to={storeUrl} className="flex items-center gap-2">
+          <Link to={baseUrl} className="flex items-center gap-2">
             {storeData?.logo_url ? (
               <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border border-gray-100">
                 <img 
@@ -109,7 +119,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-4 space-x-reverse">
-            <Link to={`${storeUrl}/cart`}>
+            <Link to={`${baseUrl}/cart`}>
               <Button variant="ghost" size="icon">
                 <ShoppingCart className="h-5 w-5" />
               </Button>

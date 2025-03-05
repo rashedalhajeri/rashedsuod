@@ -79,3 +79,37 @@ export const isValidDomainName = (domainName: string): boolean => {
   const domainRegex = /^[a-zA-Z0-9-]+$/;
   return domainRegex.test(domainName);
 };
+
+/**
+ * Get store data from the URL storeId parameter (either ID or domain name)
+ * @param storeId The storeId from URL params (could be UUID or domain name)
+ * @param supabase Supabase client instance
+ * @returns Promise with the store data or error
+ */
+export const getStoreFromUrl = async (storeId: string, supabase: any) => {
+  if (!storeId) return { data: null, error: { message: "معرف المتجر غير متوفر" } };
+  
+  // Remove any `:` character that might be in the param (from useParams)
+  const cleanId = storeId.replace(/:/g, '');
+  
+  // First try to fetch by domain name (more likely in production)
+  let { data, error } = await supabase
+    .from("stores")
+    .select("*")
+    .eq("domain_name", cleanId)
+    .single();
+  
+  // If not found by domain, try by UUID
+  if (error && !data) {
+    // Only try UUID lookup if the cleanId looks like a UUID
+    if (cleanId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      ({ data, error } = await supabase
+        .from("stores")
+        .select("*")
+        .eq("id", cleanId)
+        .single());
+    }
+  }
+  
+  return { data, error };
+};
