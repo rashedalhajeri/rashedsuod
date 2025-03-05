@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +19,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { supabase } from "@/integrations/supabase/client";
 import PaymentMethodItem from "@/features/dashboard/components/PaymentMethodItem";
 import ShippingMethodForm from "@/features/dashboard/components/ShippingMethodForm";
-import useStoreData from "@/hooks/use-store-data";
+import useStoreData, { isPaidPlan } from "@/hooks/use-store-data";
 import SaveButton from "@/components/ui/save-button";
 import LogoUploader from "@/features/dashboard/components/LogoUploader";
 import StoreThemes from "@/features/dashboard/components/StoreThemes";
@@ -27,8 +28,21 @@ const Settings = () => {
   const { data: storeData } = useStoreData();
   const [activeTab, setActiveTab] = useState("store");
   const [isCopied, setIsCopied] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [storeLogoUrl, setStoreLogoUrl] = useState<string | null>(null);
   
-  // Add other state variables and functions as needed
+  // Set initial logo URL from store data
+  useEffect(() => {
+    if (storeData?.logo_url) {
+      setStoreLogoUrl(storeData.logo_url);
+    }
+  }, [storeData]);
+  
+  // Function to handle logo update
+  const handleLogoUpdate = (url: string | null) => {
+    setStoreLogoUrl(url);
+    // You can add the logic to save the logo URL to the database here
+  };
   
   // Function to copy store URL
   const copyStoreUrl = () => {
@@ -49,6 +63,43 @@ const Settings = () => {
     if (!storeData?.domain_name) return;
     window.open(`/store-preview/${storeData.domain_name}`, '_blank');
   };
+
+  // Check if current subscription is paid
+  const isCurrentPaidPlan = storeData ? isPaidPlan(storeData.subscription_plan) : false;
+  
+  // Mock payment methods data
+  const paymentMethods = [
+    {
+      id: "cash-on-delivery",
+      title: "الدفع عند الاستلام",
+      description: "السماح للعملاء بالدفع نقدًا عند استلام الطلب",
+      checked: true,
+      color: "bg-green-500",
+      icon: <Wallet className="h-5 w-5" />,
+      tooltipContent: "طريقة دفع بسيطة تتيح للعملاء الدفع عند استلام الطلب",
+      badges: []
+    },
+    {
+      id: "credit-card",
+      title: "بطاقات الائتمان",
+      description: "قبول المدفوعات عبر بطاقات الائتمان والخصم",
+      checked: isCurrentPaidPlan,
+      color: "bg-blue-500",
+      icon: <CreditCard className="h-5 w-5" />,
+      tooltipContent: "دمج بوابات الدفع الإلكتروني (متاح في الباقات المدفوعة)",
+      badges: [{ text: "الأكثر استخدامًا", color: "bg-blue-100 text-blue-700" }]
+    },
+    {
+      id: "bank-transfer",
+      title: "التحويل البنكي",
+      description: "قبول التحويلات البنكية المباشرة",
+      checked: false,
+      color: "bg-purple-500",
+      icon: <Globe className="h-5 w-5" />,
+      tooltipContent: "السماح للعملاء بالدفع عبر التحويل البنكي المباشر",
+      badges: []
+    }
+  ];
   
   return (
     <DashboardLayout>
@@ -109,15 +160,18 @@ const Settings = () => {
                       <Textarea
                         id="storeDescription"
                         placeholder="وصف تفصيلي عن متجرك"
-                        defaultValue={storeData?.description}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label>شعار المتجر</Label>
-                      <LogoUploader />
+                      <LogoUploader 
+                        logoUrl={storeLogoUrl} 
+                        onLogoUpdate={handleLogoUpdate}
+                        storeId={storeData?.id}
+                      />
                     </div>
                   </div>
-                  <SaveButton />
+                  <SaveButton isSaving={isSaving} />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -132,9 +186,21 @@ const Settings = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <PaymentMethodItem />
-                  <PaymentMethodItem />
-                  <PaymentMethodItem />
+                  {paymentMethods.map((method) => (
+                    <PaymentMethodItem
+                      key={method.id}
+                      id={method.id}
+                      title={method.title}
+                      description={method.description}
+                      checked={method.checked}
+                      onCheckedChange={() => {}}
+                      isPaidPlan={method.id === "cash-on-delivery" ? true : isCurrentPaidPlan}
+                      icon={method.icon}
+                      color={method.color}
+                      tooltipContent={method.tooltipContent}
+                      badges={method.badges}
+                    />
+                  ))}
                   <Button>إضافة طريقة دفع جديدة</Button>
                 </CardContent>
               </Card>
@@ -165,9 +231,24 @@ const Settings = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <ShippingMethodForm />
-                  <ShippingMethodForm />
-                  <ShippingMethodForm />
+                  <ShippingMethodForm 
+                    isPaidPlan={isCurrentPaidPlan} 
+                    id="standard-shipping"
+                    title="الشحن القياسي"
+                    description="خدمة الشحن الأساسية"
+                  />
+                  <ShippingMethodForm 
+                    isPaidPlan={isCurrentPaidPlan}
+                    id="express-shipping"
+                    title="الشحن السريع"
+                    description="خدمة توصيل سريعة خلال 24 ساعة"
+                  />
+                  <ShippingMethodForm 
+                    isPaidPlan={isCurrentPaidPlan}
+                    id="free-shipping"
+                    title="الشحن المجاني"
+                    description="شحن مجاني للطلبات فوق مبلغ معين"
+                  />
                   <Button>إضافة طريقة شحن جديدة</Button>
                 </CardContent>
               </Card>
