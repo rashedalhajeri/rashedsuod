@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Json } from "@/integrations/supabase/types";
 
 // Define a simplified Product interface
 interface Product {
@@ -41,7 +42,7 @@ export const useProducts = (storeId: string | undefined) => {
       const processedProducts: Product[] = [];
       
       for (const item of data || []) {
-        // Process additional_images safely
+        // Process additional_images safely - make sure we convert all items to strings
         let additionalImages: string[] = [];
         if (item.additional_images) {
           try {
@@ -49,7 +50,10 @@ export const useProducts = (storeId: string | undefined) => {
             if (typeof item.additional_images === 'string') {
               additionalImages = JSON.parse(item.additional_images);
             } else if (Array.isArray(item.additional_images)) {
-              additionalImages = item.additional_images;
+              // Convert each item to string to ensure type safety
+              additionalImages = (item.additional_images as Json[]).map(item => 
+                item !== null ? String(item) : ''
+              ).filter(item => item !== '');
             }
           } catch (e) {
             console.error("Error parsing additional_images:", e);
