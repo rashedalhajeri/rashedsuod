@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase, getProductById } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,13 +12,14 @@ import { getCurrencyFormatter } from "@/hooks/use-store-data";
 import StorefrontLayout from "@/layouts/StorefrontLayout";
 import { toast } from "sonner";
 
-const ProductDetail: React.FC = () => {
+const StoreProductDetail: React.FC = () => {
   const { storeId, productId } = useParams<{ storeId: string; productId: string }>();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeImage, setActiveImage] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const navigate = useNavigate();
 
   const formatCurrency = getCurrencyFormatter("SAR");
 
@@ -229,4 +230,4 @@ const ProductDetail: React.FC = () => {
   );
 };
 
-export default ProductDetail;
+export default StoreProductDetail;
