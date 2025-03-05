@@ -2,18 +2,16 @@
 import React, { useState } from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Package, Plus, Filter, Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Package } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ProductDialog from "@/components/product/ProductDialog";
-import ProductCard from "@/components/product/ProductCard";
 import ProductDeleteDialog from "@/components/product/ProductDeleteDialog";
-import EmptyProductState from "@/components/product/EmptyProductState";
-import LoadingState from "@/components/ui/loading-state";
 import useStoreData from "@/hooks/use-store-data";
+import ProductHeader from "@/components/product/ProductHeader";
+import SearchAndFilter from "@/components/product/SearchAndFilter";
+import ProductList from "@/components/product/ProductList";
 
 const Products: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -112,39 +110,24 @@ const Products: React.FC = () => {
     }
   };
 
+  const handleAddProduct = () => {
+    setIsAddDialogOpen(true);
+  };
+
+  const handleDeleteProductClick = (product: any) => {
+    setSelectedProduct(product);
+    setIsDeleteDialogOpen(true);
+  };
+
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h1 className="text-2xl font-bold">إدارة المنتجات</h1>
-          <Button 
-            className="gap-2 rounded-full shadow-sm"
-            onClick={() => setIsAddDialogOpen(true)}
-          >
-            <Plus className="h-4 w-4" />
-            <span>إضافة منتج</span>
-          </Button>
-        </div>
+        <ProductHeader onAddProduct={handleAddProduct} />
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="md:col-span-2">
-            <div className="relative">
-              <Search className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="البحث عن منتج..." 
-                className="pl-3 pr-10" 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </div>
-          <div>
-            <Button variant="outline" className="w-full gap-2">
-              <Filter className="h-4 w-4" />
-              <span>تصفية النتائج</span>
-            </Button>
-          </div>
-        </div>
+        <SearchAndFilter 
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+        />
         
         <Card className="overflow-hidden border-gray-200 shadow-sm">
           <CardHeader className="pb-3 bg-gradient-to-r from-gray-50 to-white border-b">
@@ -156,29 +139,13 @@ const Products: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
-            {isLoading ? (
-              <LoadingState message="جاري تحميل المنتجات..." />
-            ) : filteredProducts && filteredProducts.length > 0 ? (
-              <div className="grid gap-4">
-                {filteredProducts.map((product) => (
-                  <ProductCard 
-                    key={product.id}
-                    product={product}
-                    currency={storeData?.currency}
-                    onDelete={() => {
-                      setSelectedProduct(product);
-                      setIsDeleteDialogOpen(true);
-                    }}
-                    onEdit={() => {
-                      // Edit functionality will be implemented later
-                      toast.info("وظيفة التعديل ستكون متاحة قريباً");
-                    }}
-                  />
-                ))}
-              </div>
-            ) : (
-              <EmptyProductState onAddProduct={() => setIsAddDialogOpen(true)} />
-            )}
+            <ProductList 
+              products={filteredProducts}
+              isLoading={isLoading}
+              storeData={storeData}
+              onDelete={handleDeleteProductClick}
+              onAddProduct={handleAddProduct}
+            />
           </CardContent>
         </Card>
       </div>
