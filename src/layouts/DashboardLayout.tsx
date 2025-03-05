@@ -2,10 +2,10 @@
 import React, { ReactNode, useState, useEffect } from "react";
 import Sidebar from "@/features/dashboard/components/Sidebar";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import useStoreData from "@/hooks/use-store-data";
 import RealTimeNotifications from "@/features/dashboard/components/RealTimeNotifications";
-import { Menu } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "react-router-dom";
 
@@ -36,13 +36,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 rtl">
-      {/* الشريط الجانبي مع دعم عرض/إخفاء في الأجهزة المحمولة */}
+      {/* Sidebar Component */}
       <Sidebar isMobileMenuOpen={isMobileMenuOpen} />
       
-      {/* إضافة مكون الإشعارات إذا كان المتجر موجودًا */}
+      {/* Add notifications component if store exists */}
       {storeData?.id && <RealTimeNotifications storeId={storeData.id} />}
       
-      {/* زر فتح القائمة الجانبية في الأجهزة المحمولة */}
+      {/* Mobile menu button */}
       {isMobile && (
         <div className="fixed top-4 right-4 z-50">
           <Button
@@ -51,11 +51,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             className="rounded-full shadow-md bg-white"
             onClick={toggleMobileMenu}
           >
-            <Menu size={20} />
+            {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </Button>
         </div>
       )}
       
+      {/* Main content */}
       <motion.main 
         className={`flex-1 overflow-x-hidden overflow-y-auto py-2 px-0 transition-all duration-300 ${
           isMobile ? "mr-0" : isTablet ? "mr-[80px]" : "mr-[250px]"
@@ -64,6 +65,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
+        {/* Overlay for mobile menu */}
+        <AnimatePresence>
+          {isMobile && isMobileMenuOpen && (
+            <motion.div 
+              className="fixed inset-0 bg-black/40 z-30"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+          )}
+        </AnimatePresence>
+        
         <div className="container py-2 px-3 md:px-6 max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0 }}

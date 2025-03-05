@@ -1,23 +1,30 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Copy, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface WelcomeSectionProps {
   storeName: string;
   ownerName: string;
   newOrdersCount: number;
   lowStockCount: number;
+  storeUrl?: string;
+  storeId?: string;
 }
 
 const WelcomeSection: React.FC<WelcomeSectionProps> = ({
   storeName,
   ownerName,
   newOrdersCount,
-  lowStockCount
+  lowStockCount,
+  storeUrl,
+  storeId
 }) => {
   const currentHour = new Date().getHours();
+  const [copying, setCopying] = useState(false);
   
   let greeting = "مرحباً";
   if (currentHour < 12) {
@@ -28,15 +35,49 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
     greeting = "مساء الخير";
   }
   
+  // Generate store URL if not provided
+  const finalStoreUrl = storeUrl || (storeId ? `/store/${storeId}` : '');
+  
+  // Copy store link to clipboard
+  const copyStoreLink = () => {
+    if (!finalStoreUrl) return;
+    
+    setCopying(true);
+    
+    // Create full URL with domain
+    const fullUrl = finalStoreUrl.startsWith('http') 
+      ? finalStoreUrl 
+      : `${window.location.origin}${finalStoreUrl}`;
+      
+    navigator.clipboard.writeText(fullUrl)
+      .then(() => {
+        toast.success("تم نسخ رابط المتجر بنجاح");
+      })
+      .catch((err) => {
+        console.error("Failed to copy:", err);
+        toast.error("حدث خطأ أثناء نسخ الرابط");
+      })
+      .finally(() => {
+        setTimeout(() => setCopying(false), 1000);
+      });
+  };
+  
+  // Navigate to store
+  const visitStore = () => {
+    if (!finalStoreUrl) return;
+    window.location.href = finalStoreUrl;
+  };
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
+      className="w-full"
     >
       <Card className="bg-gradient-to-r from-primary-50/80 to-primary-100/50 border-primary-100">
         <CardContent className="pt-6">
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
               <h2 className="text-2xl font-bold flex items-center">
                 {greeting}, {ownerName}
@@ -46,6 +87,29 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
                 مرحباً بك في لوحة تحكم {storeName}
               </p>
             </div>
+            
+            {finalStoreUrl && (
+              <div className="flex gap-2 mr-auto ml-0">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="bg-white hover:bg-primary-50 gap-1.5"
+                  onClick={copyStoreLink}
+                >
+                  <Copy className="h-4 w-4" />
+                  <span>{copying ? "تم النسخ!" : "نسخ الرابط"}</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-white hover:bg-primary-50 gap-1.5"
+                  onClick={visitStore}
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  <span>مشاهدة متجري</span>
+                </Button>
+              </div>
+            )}
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
