@@ -150,6 +150,7 @@ export type Database = {
       }
       products: {
         Row: {
+          additional_images: Json | null
           created_at: string
           description: string | null
           id: string
@@ -161,6 +162,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          additional_images?: Json | null
           created_at?: string
           description?: string | null
           id?: string
@@ -172,6 +174,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          additional_images?: Json | null
           created_at?: string
           description?: string | null
           id?: string

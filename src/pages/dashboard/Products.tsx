@@ -3,7 +3,7 @@ import React, { useState, useRef, useCallback } from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, Plus, Filter, Search, Edit, Trash2, Eye, MoreHorizontal, Upload, Image, X, CheckCircle, AlertCircle } from "lucide-react";
+import { Package, Plus, Filter, Search, Edit, Trash2, Eye, MoreHorizontal, Upload, Image, X, CheckCircle, AlertCircle, ImagePlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
@@ -31,12 +31,22 @@ interface ProductFormData {
   price: number;
   stock_quantity: number;
   image_url: string | null;
+  additional_images: string[];
 }
 
 interface FormErrors {
   name?: string;
   price?: string;
   image?: string;
+}
+
+interface UploadingImage {
+  id: string;
+  file: File;
+  progress: number;
+  status: 'uploading' | 'success' | 'error';
+  url?: string;
+  error?: string;
 }
 
 const Products: React.FC = () => {
@@ -49,13 +59,16 @@ const Products: React.FC = () => {
     description: "",
     price: 0,
     stock_quantity: 0,
-    image_url: null
+    image_url: null,
+    additional_images: []
   });
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadState, setUploadState] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  const [uploadingImages, setUploadingImages] = useState<UploadingImage[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const multipleFileInputRef = useRef<HTMLInputElement>(null);
   
   const { data: storeData } = useStoreData();
   const formatCurrency = getCurrencyFormatter(storeData?.currency || 'SAR');
@@ -67,11 +80,13 @@ const Products: React.FC = () => {
       description: "",
       price: 0,
       stock_quantity: 0,
-      image_url: null
+      image_url: null,
+      additional_images: []
     });
     setFormErrors({});
     setUploadState('idle');
     setUploadProgress(0);
+    setUploadingImages([]);
   }, []);
   
   // فتشت بيانات المنتجات
@@ -122,7 +137,7 @@ const Products: React.FC = () => {
   };
   
   // محاكاة تقدم الرفع
-  const simulateUploadProgress = () => {
+  const simulateUploadProgress = (imageId: string) => {
     let progress = 0;
     const interval = setInterval(() => {
       progress += Math.random() * 10;
@@ -130,13 +145,16 @@ const Products: React.FC = () => {
         progress = 95;
         clearInterval(interval);
       }
-      setUploadProgress(progress);
+      
+      setUploadingImages(prev => prev.map(img => 
+        img.id === imageId ? { ...img, progress } : img
+      ));
     }, 200);
     
     return () => clearInterval(interval);
   };
   
-  // رفع ملف الصورة
+  // رفع ملف الصورة الرئيسية
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -160,7 +178,7 @@ const Products: React.FC = () => {
       setUploadState('uploading');
       setFormErrors(prev => ({ ...prev, image: undefined }));
       
-      const stopSimulation = simulateUploadProgress();
+      const stopSimulation = simulateUploadProgress("main-image");
       
       if (!storeData?.id) {
         toast.error("لم يتم العثور على معرف المتجر");
@@ -211,6 +229,116 @@ const Products: React.FC = () => {
     }
   };
   
+  // رفع الصور الإضافية
+  const handleMultipleImagesUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+    
+    if (!storeData?.id) {
+      toast.error("لم يتم العثور على معرف المتجر");
+      return;
+    }
+    
+    // إنشاء قائمة بالصور المراد رفعها
+    const newUploadingImages: UploadingImage[] = Array.from(files).map(file => ({
+      id: crypto.randomUUID(),
+      file,
+      progress: 0,
+      status: 'uploading'
+    }));
+    
+    setUploadingImages(prev => [...prev, ...newUploadingImages]);
+    
+    // رفع كل صورة على حدة
+    for (const uploadImage of newUploadingImages) {
+      const file = uploadImage.file;
+      
+      // التحقق من نوع الملف
+      if (!file.type.startsWith('image/')) {
+        setUploadingImages(prev => prev.map(img => 
+          img.id === uploadImage.id 
+            ? { ...img, status: 'error', error: "يجب رفع صورة فقط" } 
+            : img
+        ));
+        continue;
+      }
+      
+      // التحقق من حجم الملف
+      if (file.size > 5 * 1024 * 1024) {
+        setUploadingImages(prev => prev.map(img => 
+          img.id === uploadImage.id 
+            ? { ...img, status: 'error', error: "حجم الصورة أكبر من 5 ميجابايت" } 
+            : img
+        ));
+        continue;
+      }
+      
+      try {
+        const stopSimulation = simulateUploadProgress(uploadImage.id);
+        
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${storeData.id}/${Date.now()}-${uploadImage.id}.${fileExt}`;
+        const filePath = `products/${fileName}`;
+        
+        const { data, error } = await supabase.storage
+          .from('store-images')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+        
+        stopSimulation();
+        
+        if (error) {
+          throw error;
+        }
+        
+        const { data: urlData } = supabase.storage
+          .from('store-images')
+          .getPublicUrl(filePath);
+        
+        // تحديث حالة الصورة إلى نجاح
+        setUploadingImages(prev => prev.map(img => 
+          img.id === uploadImage.id 
+            ? { ...img, status: 'success', progress: 100, url: urlData.publicUrl } 
+            : img
+        ));
+        
+        // إضافة الصورة إلى قائمة الصور الإضافية
+        setFormData(prev => ({
+          ...prev,
+          additional_images: [...prev.additional_images, urlData.publicUrl]
+        }));
+        
+      } catch (error) {
+        console.error("Error uploading additional image:", error);
+        setUploadingImages(prev => prev.map(img => 
+          img.id === uploadImage.id 
+            ? { ...img, status: 'error', error: "فشل رفع الصورة" } 
+            : img
+        ));
+      }
+    }
+    
+    // إعادة تعيين مدخل الملفات
+    if (multipleFileInputRef.current) {
+      multipleFileInputRef.current.value = '';
+    }
+  };
+  
+  // إزالة صورة إضافية
+  const handleRemoveAdditionalImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      additional_images: prev.additional_images.filter((_, i) => i !== index)
+    }));
+  };
+  
+  // إزالة صورة قيد الرفع
+  const handleRemoveUploadingImage = (id: string) => {
+    setUploadingImages(prev => prev.filter(img => img.id !== id));
+  };
+  
   // إضافة منتج جديد
   const handleAddProduct = async () => {
     try {
@@ -225,6 +353,9 @@ const Products: React.FC = () => {
         return;
       }
       
+      // جمع قائمة بالصور الإضافية من الصور المرفوعة بنجاح
+      const additionalImagesUrls = formData.additional_images;
+      
       const { data, error } = await supabase
         .from('products')
         .insert([
@@ -234,7 +365,8 @@ const Products: React.FC = () => {
             description: formData.description?.trim() || null,
             price: formData.price,
             stock_quantity: formData.stock_quantity || 0,
-            image_url: formData.image_url
+            image_url: formData.image_url,
+            additional_images: additionalImagesUrls
           }
         ])
         .select();
@@ -278,6 +410,25 @@ const Products: React.FC = () => {
           if (storageError) {
             console.error("Error deleting product image:", storageError);
             // نستمر في حذف المنتج حتى لو فشل حذف الصورة
+          }
+        }
+      }
+      
+      // حذف الصور الإضافية إذا وجدت
+      if (selectedProduct.additional_images && selectedProduct.additional_images.length > 0) {
+        const storageUrl = supabase.storage.from('store-images').getPublicUrl('').data.publicUrl;
+        
+        const imagePaths = selectedProduct.additional_images
+          .filter((url: string) => url.startsWith(storageUrl))
+          .map((url: string) => url.replace(storageUrl + '/', ''));
+        
+        if (imagePaths.length > 0) {
+          const { error: storageError } = await supabase.storage
+            .from('store-images')
+            .remove(imagePaths);
+            
+          if (storageError) {
+            console.error("Error deleting additional product images:", storageError);
           }
         }
       }
@@ -373,6 +524,14 @@ const Products: React.FC = () => {
               <div>
                 <h3 className="font-medium text-lg">{product.name}</h3>
                 <p className="text-sm text-gray-500 line-clamp-1 max-w-md">{product.description || "بدون وصف"}</p>
+                
+                {/* عرض عدد الصور الإضافية إذا وجدت */}
+                {product.additional_images && product.additional_images.length > 0 && (
+                  <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+                    <ImagePlus className="h-3 w-3" />
+                    <span>{product.additional_images.length} صور إضافية</span>
+                  </div>
+                )}
               </div>
             </div>
             
@@ -417,11 +576,11 @@ const Products: React.FC = () => {
     </div>
   );
   
-  // عرض مكون رفع الصورة
+  // عرض مكون رفع الصورة الرئيسية
   const renderImageUploader = () => {
     return (
       <div className="grid gap-2">
-        <Label htmlFor="image_url">صورة المنتج</Label>
+        <Label htmlFor="image_url">صورة المنتج الرئيسية</Label>
         <div className="flex flex-col gap-3">
           <input
             type="file"
@@ -492,7 +651,7 @@ const Products: React.FC = () => {
               ) : (
                 <>
                   <Upload className="h-8 w-8 text-gray-400" />
-                  <p className="text-sm font-medium">اضغط هنا لرفع صورة</p>
+                  <p className="text-sm font-medium">اضغط هنا لرفع صورة رئيسية</p>
                   <p className="text-xs text-gray-500">يدعم صيغ JPG، PNG بحد أقصى 5MB</p>
                 </>
               )}
@@ -521,6 +680,160 @@ const Products: React.FC = () => {
               رفع صورة
             </Button>
           </div>
+        </div>
+      </div>
+    );
+  };
+  
+  // عرض مكون رفع الصور الإضافية
+  const renderAdditionalImagesUploader = () => {
+    return (
+      <div className="grid gap-2 mt-4">
+        <Label className="flex items-center justify-between">
+          <span>صور إضافية للمنتج</span>
+          <span className="text-xs text-muted-foreground">
+            {formData.additional_images.length}/5 صور
+          </span>
+        </Label>
+        
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          ref={multipleFileInputRef}
+          onChange={handleMultipleImagesUpload}
+          className="hidden"
+        />
+        
+        {/* عرض الصور الإضافية المرفوعة */}
+        {formData.additional_images.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
+            {formData.additional_images.map((imageUrl, index) => (
+              <div key={index} className="relative aspect-square bg-gray-100 rounded-md overflow-hidden border border-gray-200 group">
+                <img 
+                  src={imageUrl} 
+                  alt={`Additional ${index + 1}`} 
+                  className="w-full h-full object-cover" 
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                  <Button 
+                    variant="destructive" 
+                    size="icon" 
+                    className="h-8 w-8"
+                    onClick={() => handleRemoveAdditionalImage(index)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {/* عرض الصور قيد الرفع */}
+        {uploadingImages.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
+            {uploadingImages.map((uploadImage) => (
+              <div 
+                key={uploadImage.id} 
+                className={`relative aspect-square bg-gray-100 rounded-md overflow-hidden border ${
+                  uploadImage.status === 'uploading' ? 'border-blue-200 bg-blue-50' :
+                  uploadImage.status === 'success' ? 'border-green-200 bg-green-50' :
+                  'border-red-200 bg-red-50'
+                }`}
+              >
+                {uploadImage.status === 'success' && uploadImage.url ? (
+                  <img 
+                    src={uploadImage.url} 
+                    alt="Uploaded" 
+                    className="w-full h-full object-cover" 
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full p-2">
+                    {uploadImage.status === 'uploading' ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mb-2"></div>
+                        <Progress value={uploadImage.progress} className="w-full h-1.5 mb-1" />
+                        <p className="text-xs text-blue-600">{Math.round(uploadImage.progress)}%</p>
+                      </>
+                    ) : uploadImage.status === 'error' ? (
+                      <>
+                        <AlertCircle className="h-5 w-5 text-red-500 mb-1" />
+                        <p className="text-xs text-red-600 text-center">{uploadImage.error}</p>
+                      </>
+                    ) : (
+                      <CheckCircle className="h-6 w-6 text-green-500" />
+                    )}
+                  </div>
+                )}
+                
+                <Button 
+                  variant="destructive" 
+                  size="icon" 
+                  className="h-6 w-6 absolute top-1 right-1"
+                  onClick={() => handleRemoveUploadingImage(uploadImage.id)}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {/* زر لإضافة صور جديدة */}
+        <Button 
+          type="button" 
+          variant="outline" 
+          className="w-full h-20 border-dashed flex flex-col gap-1"
+          onClick={() => multipleFileInputRef.current?.click()}
+          disabled={formData.additional_images.length >= 5}
+        >
+          <ImagePlus className="h-5 w-5" />
+          <span className="text-sm">إضافة صور للمنتج</span>
+          <span className="text-xs text-muted-foreground">يمكنك إضافة حتى 5 صور</span>
+        </Button>
+      </div>
+    );
+  };
+  
+  // عرض قسم الصور في مربع الحوار
+  const renderImagesTab = () => (
+    <div className="space-y-6">
+      {renderImageUploader()}
+      {renderAdditionalImagesUploader()}
+    </div>
+  );
+  
+  // عرض صور المنتج عند الحذف
+  const renderProductImagesPreview = () => {
+    if (!selectedProduct) return null;
+    
+    return (
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-2">
+          {/* الصورة الرئيسية */}
+          {selectedProduct.image_url && (
+            <div className="aspect-square bg-gray-100 rounded-md overflow-hidden border border-red-100">
+              <img 
+                src={selectedProduct.image_url} 
+                alt={selectedProduct.name} 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+          
+          {/* الصور الإضافية */}
+          {selectedProduct.additional_images && selectedProduct.additional_images.length > 0 && 
+            selectedProduct.additional_images.map((url: string, index: number) => (
+              <div key={index} className="aspect-square bg-gray-100 rounded-md overflow-hidden border border-red-100">
+                <img 
+                  src={url} 
+                  alt={`${selectedProduct.name} - ${index + 1}`} 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ))
+          }
         </div>
       </div>
     );
@@ -593,8 +906,9 @@ const Products: React.FC = () => {
           </DialogHeader>
           
           <Tabs defaultValue="details" className="mt-4">
-            <TabsList className="grid grid-cols-2">
+            <TabsList className="grid grid-cols-3">
               <TabsTrigger value="details">معلومات المنتج</TabsTrigger>
+              <TabsTrigger value="images">الصور</TabsTrigger>
               <TabsTrigger value="inventory">المخزون والسعر</TabsTrigger>
             </TabsList>
             
@@ -626,9 +940,11 @@ const Products: React.FC = () => {
                     rows={4}
                   />
                 </div>
-                
-                {renderImageUploader()}
               </div>
+            </TabsContent>
+            
+            <TabsContent value="images" className="space-y-4 mt-4">
+              {renderImagesTab()}
             </TabsContent>
             
             <TabsContent value="inventory" className="space-y-4 mt-4">
@@ -692,22 +1008,32 @@ const Products: React.FC = () => {
           </DialogHeader>
           
           {selectedProduct && (
-            <div className="flex items-center gap-3 p-3 bg-red-50 rounded-md border border-red-100">
-              <div className="h-12 w-12 bg-white rounded overflow-hidden border border-red-100">
-                {selectedProduct.image_url ? (
-                  <img 
-                    src={selectedProduct.image_url} 
-                    alt={selectedProduct.name} 
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <Package className="h-6 w-6 text-gray-400 m-3" />
-                )}
+            <div className="flex flex-col gap-3 p-3 bg-red-50 rounded-md border border-red-100">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 bg-white rounded overflow-hidden border border-red-100">
+                  {selectedProduct.image_url ? (
+                    <img 
+                      src={selectedProduct.image_url} 
+                      alt={selectedProduct.name} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Package className="h-6 w-6 text-gray-400 m-3" />
+                  )}
+                </div>
+                <div>
+                  <h3 className="font-medium">{selectedProduct.name}</h3>
+                  <p className="text-sm text-gray-500">السعر: {formatCurrency(selectedProduct.price)}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-medium">{selectedProduct.name}</h3>
-                <p className="text-sm text-gray-500">السعر: {formatCurrency(selectedProduct.price)}</p>
-              </div>
+              
+              {/* عرض معاينة للصور قبل الحذف */}
+              {(selectedProduct.image_url || (selectedProduct.additional_images && selectedProduct.additional_images.length > 0)) && (
+                <div className="mt-2">
+                  <p className="text-sm font-medium text-red-600 mb-2">سيتم حذف الصور التالية:</p>
+                  {renderProductImagesPreview()}
+                </div>
+              )}
             </div>
           )}
           
