@@ -18,7 +18,6 @@ import NotificationCenter from "@/features/dashboard/components/NotificationCent
 import AdvancedStats from "@/features/dashboard/components/AdvancedStats";
 import EnhancedSalesChart from "@/features/dashboard/components/EnhancedSalesChart";
 import InventoryTracker from "@/features/dashboard/components/InventoryTracker";
-import PromotionAlert from "@/features/dashboard/components/PromotionAlert";
 
 // بيانات المبيعات للعرض
 const mockSalesData = [
@@ -269,9 +268,6 @@ const Dashboard: React.FC = () => {
           <NotificationCenter />
         </div>
       </div>
-      
-      {/* Subscription Alert for Basic Plan */}
-      <PromotionAlert type={subscriptionPlan} />
       
       {/* Advanced Stats Cards */}
       <AdvancedStats 

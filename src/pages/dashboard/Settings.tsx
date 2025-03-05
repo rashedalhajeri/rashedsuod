@@ -16,7 +16,6 @@ import { Textarea } from "@/components/ui/textarea";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
-import PromotionAlert from "@/features/dashboard/components/PromotionAlert";
 import PaymentMethodItem from "@/features/dashboard/components/PaymentMethodItem";
 import ShippingMethodForm from "@/features/dashboard/components/ShippingMethodForm";
 import useStoreData from "@/hooks/use-store-data";
@@ -294,8 +293,6 @@ const Settings = () => {
           
           <TabsContent value="payment">
             <div className="space-y-4">
-              <PromotionAlert type={subscriptionType} section="payment" />
-              
               <div className="space-y-3">
                 <PaymentMethodItem
                   id="cash-on-delivery"
@@ -362,8 +359,6 @@ const Settings = () => {
           
           <TabsContent value="shipping">
             <div className="space-y-4">
-              <PromotionAlert type={subscriptionType} section="shipping" />
-              
               <Card className="border-primary/10 bg-white shadow-sm">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
