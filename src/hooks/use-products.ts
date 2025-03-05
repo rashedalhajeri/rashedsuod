@@ -72,19 +72,19 @@ export const useProducts = ({
         setHasMore((currentPage + 1) * limit < count);
       }
 
-      // Transform the data with simplified type handling
-      const transformedData: Product[] = [];
+      // Transform data with simplified approach to avoid deep type recursion
+      const transformedProducts: Product[] = [];
       
       if (data) {
         for (const item of data) {
+          // Process additional_images with simple approach
           let processedImages: string[] = [];
           
-          // Handle additional_images with explicit type checking
           if (item.additional_images) {
             if (Array.isArray(item.additional_images)) {
-              for (let i = 0; i < item.additional_images.length; i++) {
-                const img = item.additional_images[i];
+              for (const img of item.additional_images) {
                 if (img !== null) {
+                  // Simple conversion to string to avoid complex type inference
                   processedImages.push(typeof img === 'string' ? img : String(img));
                 }
               }
@@ -93,7 +93,7 @@ export const useProducts = ({
             }
           }
           
-          // Create a product object that strictly follows the Product interface
+          // Explicitly create a product object with known types
           const product: Product = {
             id: item.id,
             name: item.name,
@@ -104,14 +104,14 @@ export const useProducts = ({
             additional_images: processedImages
           };
           
-          transformedData.push(product);
+          transformedProducts.push(product);
         }
       }
 
       if (append) {
-        setProducts(prev => [...prev, ...transformedData]);
+        setProducts(prev => [...prev, ...transformedProducts]);
       } else {
-        setProducts(transformedData);
+        setProducts(transformedProducts);
       }
     } catch (err) {
       console.error("Error fetching products:", err);
