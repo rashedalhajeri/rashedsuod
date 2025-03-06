@@ -80,24 +80,13 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
   return (
     <header className="relative" dir="rtl">
       {/* Main Header with gradient background and curved bottom edge */}
-      <div className="bg-gradient-to-r from-blue-700 to-green-500 pt-10 pb-20 px-4 rounded-b-3xl">
+      <div className="bg-gradient-to-r from-blue-700 to-green-500 pt-8 pb-16 px-4 rounded-b-3xl shadow-lg">
         <div className="container mx-auto">
           <div className="flex items-center justify-between">
-            {/* Left: Notification and Cart */}
-            <NavActions 
-              storeDomain={storeDomain || ''} 
-              totalItems={totalItems}
-            />
-            
             {/* Right: User info and avatar */}
             <div className="flex items-center gap-3 text-white">
-              <div className="text-right">
-                <p className="text-sm">{greetingMessages[currentGreetingIndex]}،</p>
-                <h2 className="font-bold text-lg tracking-wide">{storeName}</h2>
-              </div>
-              
               <Link to={`/store/${storeDomain}/login`}>
-                <Avatar className="h-12 w-12 bg-white text-blue-600 border-2 border-white/30">
+                <Avatar className="h-12 w-12 bg-white text-blue-600 border-2 border-white/30 shadow-md transition-transform hover:scale-105">
                   {logoUrl ? (
                     <AvatarImage src={logoUrl} alt={storeName} />
                   ) : (
@@ -107,26 +96,40 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
                   )}
                 </Avatar>
               </Link>
+              <div className="text-right">
+                <div className="flex items-center">
+                  <span className="text-sm font-medium bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-sm animate-fade-in">
+                    {greetingMessages[currentGreetingIndex]}،
+                  </span>
+                </div>
+                <h2 className="font-bold text-lg tracking-wide">{storeName}</h2>
+              </div>
             </div>
+            
+            {/* Left: Notification and Cart */}
+            <NavActions 
+              storeDomain={storeDomain || ''} 
+              totalItems={totalItems}
+            />
           </div>
           
           {/* Time display in top right */}
-          <div className="absolute top-4 right-4 bg-green-500 text-white px-4 py-1 rounded-full text-sm font-medium">
+          <div className="absolute top-4 left-4 bg-green-500 text-white px-4 py-1 rounded-full text-sm font-medium shadow-sm">
             {formatTime(currentTime)}
           </div>
           
           {/* Mobile signal indicators - purely decorative */}
-          <div className="absolute top-4 left-4 flex items-center gap-3">
+          <div className="absolute top-4 right-4 flex items-center gap-3">
+            <div className="flex gap-[2px]">
+              <div className="h-4 w-[2px] bg-white/70"></div>
+              <div className="h-3 w-[2px] bg-white/70"></div>
+              <div className="h-2 w-[2px] bg-white/70"></div>
+            </div>
             <div className="flex items-center gap-1">
-              <div className="w-6 h-3 border border-white/70 rounded-sm flex items-center justify-start p-[2px]">
+              <div className="w-6 h-3 border border-white/70 rounded-sm flex items-center justify-end p-[2px]">
                 <div className="bg-white/70 h-full w-1/3 rounded-sm"></div>
               </div>
               <span className="text-white/90 text-xs font-medium">5G</span>
-            </div>
-            <div className="flex gap-[2px]">
-              <div className="h-2 w-[2px] bg-white/70"></div>
-              <div className="h-3 w-[2px] bg-white/70"></div>
-              <div className="h-4 w-[2px] bg-white/70"></div>
             </div>
           </div>
         </div>

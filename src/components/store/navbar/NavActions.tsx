@@ -16,22 +16,12 @@ const NavActions: React.FC<NavActionsProps> = ({
 }) => {
   return (
     <div className="flex items-center gap-5">
-      {/* Notification bell */}
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        className="text-white p-0 hover:bg-transparent"
-        aria-label="الإشعارات"
-      >
-        <Bell className="h-7 w-7" />
-      </Button>
-      
       {/* Cart button */}
       <Link to={`/store/${storeDomain}/cart`}>
         <Button 
           variant="ghost" 
           size="sm" 
-          className="relative text-white p-0 hover:bg-transparent"
+          className="relative text-white p-0 hover:bg-white/10 transition-colors"
           aria-label="عربة التسوق"
         >
           <ShoppingCart className="h-7 w-7" />
@@ -42,6 +32,16 @@ const NavActions: React.FC<NavActionsProps> = ({
           )}
         </Button>
       </Link>
+      
+      {/* Notification bell */}
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        className="text-white p-0 hover:bg-white/10 transition-colors"
+        aria-label="الإشعارات"
+      >
+        <Bell className="h-7 w-7" />
+      </Button>
     </div>
   );
 };
