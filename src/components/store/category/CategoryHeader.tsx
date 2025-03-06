@@ -26,7 +26,7 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({
 
   return (
     <header className="bg-gradient-to-l from-blue-600 to-blue-700 text-white shadow-md">
-      <div className="container mx-auto px-4 py-3 relative z-10">
+      <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           {/* Left side: Back button with category name */}
           <div className="flex items-center">
