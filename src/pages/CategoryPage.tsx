@@ -1,7 +1,6 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import StoreLayout from "@/components/store/StoreLayout";
 import { useStoreData } from "@/hooks/use-store-data";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
@@ -10,7 +9,7 @@ import SearchBar from "@/components/store/navbar/SearchBar";
 import { supabase } from "@/integrations/supabase/client";
 import CategoryNavigation from "@/components/store/CategoryNavigation";
 import { motion } from "framer-motion";
-import { ShoppingCart, User, ChevronLeft } from "lucide-react";
+import { ShoppingCart, User, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // Define the Product interface to match what we're getting from Supabase
@@ -107,7 +106,7 @@ const CategoryPage = () => {
     e.preventDefault();
   };
   
-  // Handle category change - now we'll navigate without triggering full reload
+  // Handle category change - navigate without full page reload
   const handleCategoryChange = (category: string) => {
     if (!storeDomain) return;
     
@@ -131,8 +130,8 @@ const CategoryPage = () => {
       ) 
     : products;
 
-  // Back button handler
-  const handleBackToStore = () => {
+  // Navigate to all deals / home
+  const handleNavigateToAllDeals = () => {
     navigate(`/store/${storeDomain}`);
   };
 
@@ -143,35 +142,33 @@ const CategoryPage = () => {
   if (error) {
     return <ErrorState title="خطأ" message={error.message || "حدث خطأ أثناء تحميل المتجر"} />;
   }
+  
+  // Header title (جميع الصفقات or category name)
+  const headerTitle = categoryDetails?.name || "جميع الصفقات";
 
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
-      {/* Category Header - Modified to be more compact and professional */}
-      <header className="bg-gradient-to-l from-blue-500 to-blue-600 text-white">
+      {/* Gradient Header */}
+      <header className="bg-gradient-to-l from-blue-500 to-teal-500 text-white">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <Link to={`/store/${storeDomain}/cart`} className="block">
+              <ShoppingCart className="h-6 w-6 text-white" />
+            </Link>
+            
+            <h1 className="text-xl font-bold">{headerTitle}</h1>
+            
+            <div className="flex items-center space-x-4 rtl:space-x-reverse">
               <Button 
                 variant="ghost" 
-                size="sm" 
-                className="text-white bg-white/10 hover:bg-white/20 rounded-full mr-2"
-                onClick={handleBackToStore}
+                className="text-white bg-white/10 hover:bg-white/20 p-0 h-8 w-8 rounded-full"
+                onClick={handleNavigateToAllDeals}
               >
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronRight className="h-5 w-5" />
               </Button>
-              <h1 className="text-xl font-bold">{categoryDetails?.name || "جميع المنتجات"}</h1>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Link to={`/store/${storeDomain}/cart`}>
-                <Button variant="ghost" size="sm" className="text-white bg-white/10 hover:bg-white/20 rounded-full">
-                  <ShoppingCart className="h-5 w-5" />
-                </Button>
-              </Link>
-              <Link to={`/store/${storeDomain}/login`}>
-                <Button variant="ghost" size="sm" className="text-white bg-white/10 hover:bg-white/20 rounded-full">
-                  <User className="h-5 w-5" />
-                </Button>
+              
+              <Link to={`/store/${storeDomain}/login`} className="block">
+                <User className="h-6 w-6 text-white" />
               </Link>
             </div>
           </div>
@@ -179,21 +176,19 @@ const CategoryPage = () => {
       </header>
       
       <motion.div 
-        className="container mx-auto px-4 py-6"
+        className="container mx-auto px-4 py-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
       >
         {/* Search Bar with rounded design */}
         <div className="mb-4">
-          <div className="search-bar-modern">
-            <SearchBar 
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              handleSearchSubmit={handleSearchSubmit}
-              productNames={productNames}
-            />
-          </div>
+          <SearchBar 
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            handleSearchSubmit={handleSearchSubmit}
+            productNames={productNames}
+          />
         </div>
         
         {/* Category Navigation */}
