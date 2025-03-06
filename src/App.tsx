@@ -1,299 +1,266 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import React, { useState, useEffect, createContext, useContext } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useEffect, useState, createContext } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { secureRetrieve, secureStore, secureRemove } from "./lib/encryption";
-import { Session } from "@supabase/supabase-js";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { createClient } from "@supabase/supabase-js";
+import { Toaster } from "sonner";
+import { secureLocalStorage } from "@/lib/encryption";
 
 // Import pages
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import CreateStore from "./pages/CreateStore";
-import NotFound from "./pages/NotFound";
+import Index from "@/pages/Index";
+import Auth from "@/pages/Auth";
+import CreateStore from "@/pages/CreateStore";
+import NotFound from "@/pages/NotFound";
+import DashboardHome from "@/pages/dashboard/Home";
+import Orders from "@/pages/dashboard/Orders";
+import Products from "@/pages/dashboard/Products";
+import Categories from "@/pages/dashboard/Categories";
+import Customers from "@/pages/dashboard/Customers";
+import Payments from "@/pages/dashboard/Payments";
+import Coupons from "@/pages/dashboard/Coupons";
+import Settings from "@/pages/dashboard/Settings";
+import AdminLayout from "@/layouts/AdminLayout";
+import AdminDashboard from "@/pages/admin/Dashboard";
+import AdminStoresPage from "@/pages/admin/Stores";
+import ActivityLogsPage from "@/pages/admin/ActivityLogs";
 
-// Import platform dashboard pages
-import Dashboard from "./pages/Dashboard";
-import DashboardHome from "./pages/dashboard/Home";
-import Products from "./pages/dashboard/Products";
-import Orders from "./pages/dashboard/Orders";
-import Categories from "./pages/dashboard/Categories";
-import Customers from "./pages/dashboard/Customers";
-import Payments from "./pages/dashboard/Payments";
-import Coupons from "./pages/dashboard/Coupons";
-import Settings from "./pages/dashboard/Settings";
+const queryClient = new QueryClient();
 
-// Create a new query client with retry disabled
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: 1,
-    },
-  },
-});
+// Create Supabase client
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+export const supabase = createClient(supabaseUrl, supabaseKey);
 
-export const AuthContext = createContext<{
-  session: Session | null;
-  loading: boolean;
+// Auth Context
+interface AuthContextProps {
+  session: any;
+  user: any;
+  signIn: (provider: "google" | "github") => Promise<void>;
   signOut: () => Promise<void>;
-}>({
-  session: null,
-  loading: true,
-  signOut: async () => {},
-});
+}
 
-const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+const AuthContext = createContext<AuthContextProps | undefined>(undefined);
+
+const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [session, setSession] = useState(null);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setLoading(false);
-        
-        if (session) {
-          await secureStore('user-id', session.user.id);
-        } else {
-          secureRemove('user-id');
-        }
-      }
-    );
-    
-    const checkCurrentSession = async () => {
-      try {
-        const userId = await secureRetrieve('user-id');
-        
-        if (userId) {
-          const { data } = await supabase.auth.getSession();
-          if (data.session) {
-            setSession(data.session);
-          } else {
-            secureRemove('user-id');
-          }
-        } else {
-          const { data } = await supabase.auth.getSession();
-          setSession(data.session);
-        }
-      } catch (error) {
-        console.error('Auth check error:', error);
-      } finally {
-        setLoading(false);
-      }
+    const fetchSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setSession(data.session);
+      setUser(data.session?.user || null);
     };
-    
-    checkCurrentSession();
-    
-    return () => {
-      subscription.unsubscribe();
-    };
+
+    fetchSession();
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user || null);
+    });
   }, []);
-  
+
+  const signIn = async (provider: "google" | "github") => {
+    await supabase.auth.signInWithOAuth({
+      provider: provider,
+    });
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
-    secureRemove('user-id');
-    setSession(null);
   };
-  
+
+  const value: AuthContextProps = {
+    session,
+    user,
+    signIn,
+    signOut,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
+
+// Store Data Context
+interface StoreDataContextProps {
+  storeData: any;
+  setStoreData: React.Dispatch<React.SetStateAction<any>>;
+}
+
+const StoreDataContext = createContext<StoreDataContextProps | undefined>(
+  undefined
+);
+
+const StoreDataProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [storeData, setStoreData] = useState(null);
+
   return (
-    <AuthContext.Provider value={{ session, loading, signOut }}>
+    <StoreDataContext.Provider value={{ storeData, setStoreData }}>
       {children}
-    </AuthContext.Provider>
+    </StoreDataContext.Provider>
   );
 };
 
-// Fixed ProtectedRoute to not use Navigate directly as a component
-const ProtectedRoute = ({ children, redirectIfStore = false }: { children: React.ReactNode, redirectIfStore?: boolean }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [hasStore, setHasStore] = useState<boolean | null>(null);
-  const [isVerifying, setIsVerifying] = useState(true);
+const useStoreData = () => {
+  const context = useContext(StoreDataContext);
+  if (!context) {
+    throw new Error("useStoreData must be used within a StoreDataProvider");
+  }
+  return context;
+};
+
+// Protected Route Component
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  redirectTo: string;
+}
+
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  children,
+  redirectTo,
+}) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        setIsVerifying(true);
-        
-        const userId = await secureRetrieve('user-id');
-        
+        const userId = await secureLocalStorage.retrieve("user-id");
         if (userId) {
-          const { data: sessionData } = await supabase.auth.getSession();
-          
-          if (sessionData.session && sessionData.session.user.id === userId) {
-            setIsAuthenticated(true);
-            
-            const { count, error: storeError } = await supabase
-              .from('stores')
-              .select('*', { count: 'exact', head: true })
-              .eq('user_id', userId);
-            
-            if (storeError) throw storeError;
-            
-            setHasStore(count ? count > 0 : false);
-          } else {
-            secureRemove('user-id');
-            setIsAuthenticated(false);
-            setHasStore(false);
-          }
+          setIsAuthenticated(true);
         } else {
-          const { data: sessionData } = await supabase.auth.getSession();
-          
-          if (sessionData.session) {
-            await secureStore('user-id', sessionData.session.user.id);
-            setIsAuthenticated(true);
-            
-            const { count, error: storeError } = await supabase
-              .from('stores')
-              .select('*', { count: 'exact', head: true })
-              .eq('user_id', sessionData.session.user.id);
-            
-            if (storeError) throw storeError;
-            
-            setHasStore(count ? count > 0 : false);
-          } else {
-            setIsAuthenticated(false);
-            setHasStore(false);
-          }
+          setIsAuthenticated(false);
         }
       } catch (error) {
-        console.error('Auth check error:', error);
+        console.error("Error retrieving user ID:", error);
         setIsAuthenticated(false);
-        setHasStore(false);
       } finally {
-        setIsVerifying(false);
+        setLoading(false);
       }
     };
-    
+
     checkAuth();
   }, []);
 
-  if (isVerifying) {
-    return <div className="flex h-screen items-center justify-center">جاري التحقق...</div>;
+  if (loading) {
+    return <div>Loading...</div>;
   }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/auth" replace />;
-  }
-  
-  if (hasStore === false && !redirectIfStore) {
-    return <Navigate to="/create-store" replace />;
-  }
-  
-  if (hasStore === true && redirectIfStore) {
-    return <Navigate to="/dashboard" replace />;
-  }
-  
-  return <>{children}</>;
+
+  return isAuthenticated ? (
+    children
+  ) : (
+    <Navigate to={redirectTo} replace={true} />
+  );
 };
 
-const CreateStoreRoute = ({ children }: { children: React.ReactNode }) => {
-  return <ProtectedRoute redirectIfStore={true}>{children}</ProtectedRoute>;
-};
+function App() {
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Platform Routes */}
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/reset-password" element={<Auth />} />
-            
-            <Route 
-              path="/create-store" 
-              element={
-                <CreateStoreRoute>
-                  <CreateStore />
-                </CreateStoreRoute>
-              } 
-            />
-            
-            {/* Dashboard Routes */}
-            <Route 
-              path="/dashboard" 
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
+        <StoreDataProvider>
+          <Toaster richColors position="top-center" />
+          <Router>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/create-store" element={<CreateStore />} />
+              <Route path="/not-found" element={<NotFound />} />
+              
+              {/* Dashboard Routes */}
+              <Route path="/dashboard" element={
+                <ProtectedRoute redirectTo="/auth">
+                  <DashboardHome />
                 </ProtectedRoute>
-              } 
-            />
-            
-            <Route
-              path="/dashboard/settings"
-              element={
-                <ProtectedRoute>
-                  <Settings />
-                </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="/dashboard/products"
-              element={
-                <ProtectedRoute>
-                  <Products />
-                </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="/dashboard/orders"
-              element={
-                <ProtectedRoute>
+              } />
+              
+              <Route path="/dashboard/orders" element={
+                <ProtectedRoute redirectTo="/auth">
                   <Orders />
                 </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="/dashboard/categories"
-              element={
-                <ProtectedRoute>
+              } />
+              
+              <Route path="/dashboard/products" element={
+                <ProtectedRoute redirectTo="/auth">
+                  <Products />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/dashboard/categories" element={
+                <ProtectedRoute redirectTo="/auth">
                   <Categories />
                 </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="/dashboard/customers"
-              element={
-                <ProtectedRoute>
+              } />
+              
+              <Route path="/dashboard/customers" element={
+                <ProtectedRoute redirectTo="/auth">
                   <Customers />
                 </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="/dashboard/payments"
-              element={
-                <ProtectedRoute>
+              } />
+              
+              <Route path="/dashboard/payments" element={
+                <ProtectedRoute redirectTo="/auth">
                   <Payments />
                 </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="/dashboard/coupons"
-              element={
-                <ProtectedRoute>
+              } />
+              
+              <Route path="/dashboard/coupons" element={
+                <ProtectedRoute redirectTo="/auth">
                   <Coupons />
                 </ProtectedRoute>
-              }
-            />
-            
-            {/* Catch-all route for 404 */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+              } />
+              
+              <Route path="/dashboard/settings" element={
+                <ProtectedRoute redirectTo="/auth">
+                  <Settings />
+                </ProtectedRoute>
+              } />
+              
+              {/* Admin Panel Routes */}
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="stores" element={<AdminStoresPage />} />
+                <Route path="activity-logs" element={<ActivityLogsPage />} />
+              </Route>
+              
+              <Route path="*" element={<Navigate to="/not-found" />} />
+            </Routes>
+          </Router>
+        </StoreDataProvider>
       </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
+  );
+}
 
 export default App;
