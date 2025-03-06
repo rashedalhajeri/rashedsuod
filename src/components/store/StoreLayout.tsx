@@ -4,6 +4,7 @@ import StoreNavbar from "@/components/store/StoreNavbar";
 import StoreFooter from "@/components/store/StoreFooter";
 import { StoreFilterProvider } from "@/context/StoreFilterContext";
 import "@/styles/responsive.css";
+import "@/styles/animations.css";
 
 interface StoreLayoutProps {
   children: ReactNode;
@@ -17,7 +18,7 @@ const StoreLayout: React.FC<StoreLayoutProps> = ({ children, storeData }) => {
         <StoreNavbar storeName={storeData?.store_name} logoUrl={storeData?.logo_url} />
         
         {/* Add top padding to account for fixed header */}
-        <main className="flex-grow container mx-auto px-4 pt-32 categories-content">
+        <main className="flex-grow container mx-auto px-4 pt-24 categories-content">
           {children}
         </main>
         

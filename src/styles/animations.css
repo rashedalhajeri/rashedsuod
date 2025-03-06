@@ -170,6 +170,7 @@
 
 .header-scrolled {
   animation: headerSlideDown 0.3s ease-out forwards;
+  background-color: #2563eb; /* blue-600 */
 }
 
 .header-transition {
