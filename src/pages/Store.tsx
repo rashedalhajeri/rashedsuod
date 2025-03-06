@@ -7,24 +7,29 @@ import { ErrorState } from "@/components/ui/error-state";
 import StoreLayout from "@/components/store/StoreLayout";
 import StoreContent from "@/components/store/StoreContent";
 
+// Mock data for development (will be replaced with actual data from the API)
+const mockProducts = []; 
+const mockCategories = [];
+const mockFeaturedProducts = [];
+const mockBestSellingProducts = [];
+
 const Store = () => {
   const { storeDomain } = useParams<{ storeDomain: string }>();
-  const {
-    storeData,
-    products,
-    categories,
-    featuredProducts,
-    bestSellingProducts,
-    loading,
-    error
-  } = useStoreData(storeDomain);
+  const { storeData, isLoading, error } = useStoreData();
 
-  if (loading) {
+  // In a real implementation, we would fetch these from the API
+  // This is just a placeholder until we implement the actual data fetching
+  const products = mockProducts;
+  const categories = mockCategories;
+  const featuredProducts = mockFeaturedProducts;
+  const bestSellingProducts = mockBestSellingProducts;
+
+  if (isLoading) {
     return <LoadingState message="جاري تحميل المتجر..." />;
   }
 
   if (error) {
-    return <ErrorState title="خطأ" message={error} />;
+    return <ErrorState title="خطأ" message={error.message || "حدث خطأ أثناء تحميل المتجر"} />;
   }
 
   return (
