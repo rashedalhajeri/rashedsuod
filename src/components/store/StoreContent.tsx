@@ -6,7 +6,7 @@ import StoreBanner from "@/components/store/StoreBanner";
 import CategoryNavigation from "@/components/store/CategoryNavigation";
 import AllProductsSection from "@/components/store/sections/AllProductsSection";
 import SearchBar from "@/components/store/navbar/SearchBar";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 
@@ -27,6 +27,7 @@ const StoreContent: React.FC<StoreContentProps> = ({
   featuredProducts,
   bestSellingProducts
 }) => {
+  const navigate = useNavigate();
   const { 
     searchQuery, 
     setSearchQuery, 
@@ -82,6 +83,20 @@ const StoreContent: React.FC<StoreContentProps> = ({
 
   // Only show navigation if there are categories or sections
   const showNavigation = categories.length > 0 || sections.length > 0;
+  
+  // Custom category change handler for navigation
+  const handleCategoryChangeWithNavigation = (category: string) => {
+    if (!storeDomain) return;
+    
+    if (category === "الكل") {
+      // If "All" category is selected, stay on main page and update filter state
+      handleCategoryChange(category);
+    } else {
+      // For other categories, navigate to category page
+      const categorySlug = encodeURIComponent(category.toLowerCase());
+      navigate(`/store/${storeDomain}/category/${categorySlug}`);
+    }
+  };
 
   return (
     <>
@@ -133,7 +148,7 @@ const StoreContent: React.FC<StoreContentProps> = ({
         <CategoryNavigation 
           activeCategory={activeCategory}
           activeSection={activeSection}
-          onCategoryChange={handleCategoryChange}
+          onCategoryChange={handleCategoryChangeWithNavigation}
           onSectionChange={handleSectionChange}
           categories={categories}
           sections={sections}

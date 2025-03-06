@@ -74,10 +74,18 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
     "الإلكترونيات": "/public/lovable-uploads/827a00fa-f421-45c3-96d7-b9305fb217d1.jpg",
   };
 
-  // Handle category click with smooth transitions
+  // Handle category click with navigation to category page
   const handleCategoryClick = (category: string) => {
     if (!storeDomain) return;
-    onCategoryChange(category);
+    
+    if (category === "الكل") {
+      // If "All" category, just go to main store page
+      navigate(`/store/${storeDomain}`);
+    } else {
+      // For other categories, navigate to category page
+      const categorySlug = encodeURIComponent(category.toLowerCase());
+      navigate(`/store/${storeDomain}/category/${categorySlug}`);
+    }
   };
 
   return (

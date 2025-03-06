@@ -51,8 +51,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
     }).format(price);
   };
   
-  // Default placeholder for products without images
-  const defaultPlaceholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%23222222'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='system-ui, sans-serif' font-size='14' fill='%23ffffff'%3ENo Image%3C/text%3E%3C/svg%3E";
+  // Default placeholder for products without images - black background
+  const defaultPlaceholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%23000000'/%3E%3C/svg%3E";
   
   // Show loading state
   if (isLoading) {
@@ -120,7 +120,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
               to={`/store/${storeDomain}/product/${product.id}`}
               className="relative block mb-2"
             >
-              <div className="relative rounded-xl overflow-hidden shadow-sm bg-gray-100">
+              <div className="relative rounded-xl overflow-hidden shadow-sm bg-black">
                 <img 
                   src={product.image_url || defaultPlaceholder} 
                   alt={product.name || `${brandName} ${modelNumber}`} 
