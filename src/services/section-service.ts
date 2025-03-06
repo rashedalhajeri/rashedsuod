@@ -9,6 +9,8 @@ export interface Section {
   store_id?: string;
   section_type: string;
   is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export const fetchSections = async (storeId: string) => {

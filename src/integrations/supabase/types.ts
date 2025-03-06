@@ -391,6 +391,7 @@ export type Database = {
       products: {
         Row: {
           additional_images: Json | null
+          category_id: string | null
           created_at: string
           description: string | null
           id: string
@@ -403,6 +404,7 @@ export type Database = {
         }
         Insert: {
           additional_images?: Json | null
+          category_id?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -415,6 +417,7 @@ export type Database = {
         }
         Update: {
           additional_images?: Json | null
+          category_id?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -427,6 +430,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_products_category"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "products_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
@@ -434,6 +444,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sections: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          section_type: string
+          sort_order: number
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          section_type?: string
+          sort_order?: number
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          section_type?: string
+          sort_order?: number
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       store_settings: {
         Row: {

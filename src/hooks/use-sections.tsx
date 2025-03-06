@@ -36,7 +36,7 @@ export const useSections = () => {
         const { data, error } = await fetchSections(userStoreId);
         if (error) throw error;
         
-        setSections(data);
+        setSections(data as Section[]);
       } catch (err: any) {
         console.error("Error fetching store and sections:", err);
         toast.error("حدث خطأ أثناء تحميل الأقسام");
@@ -66,7 +66,7 @@ export const useSections = () => {
       
       if (error) throw error;
       if (data) {
-        setSections([...sections, data]);
+        setSections([...sections, data as Section]);
         setNewSection("");
         toast.success("تم إضافة القسم بنجاح");
       }
