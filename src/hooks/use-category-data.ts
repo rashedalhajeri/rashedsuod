@@ -61,7 +61,7 @@ export const useCategoryData = (categoryName?: string, searchQuery: string = "")
             .order('sort_order');
             
           if (categoriesData) {
-            // Filter out categories with no products
+            // Filter out categories with no products - explicitly check for product count > 0
             const categoriesWithProducts = categoriesData
               .filter(cat => cat.products.length > 0)
               .map(cat => cat.name);
