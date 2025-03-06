@@ -8,8 +8,16 @@ import StoreLayout from "@/components/store/StoreLayout";
 import StoreContent from "@/components/store/StoreContent";
 
 // Mock data for development (will be replaced with actual data from the API)
-const mockProducts = []; 
-const mockCategories = [];
+const mockProducts = [
+  { id: '1', name: 'منتج 1', price: 100, category: 'ملابس', section: 'مميز' },
+  { id: '2', name: 'منتج 2', price: 200, category: 'إلكترونيات', section: 'جديد' },
+  { id: '3', name: 'منتج 3', price: 300, category: 'منزل', section: 'مميز' },
+  { id: '4', name: 'منتج 4', price: 400, category: 'ملابس', section: 'الأكثر مبيعًا' },
+  { id: '5', name: 'منتج 5', price: 500, category: 'إلكترونيات', section: 'جديد' },
+]; 
+
+const mockCategories = ['ملابس', 'إلكترونيات', 'منزل', 'مطبخ', 'رياضة'];
+const mockSections = ['مميز', 'جديد', 'الأكثر مبيعًا', 'خصومات', 'العروض'];
 const mockFeaturedProducts = [];
 const mockBestSellingProducts = [];
 
@@ -21,6 +29,7 @@ const Store = () => {
   // This is just a placeholder until we implement the actual data fetching
   const products = mockProducts;
   const categories = mockCategories;
+  const sections = mockSections;
   const featuredProducts = mockFeaturedProducts;
   const bestSellingProducts = mockBestSellingProducts;
 
@@ -38,6 +47,7 @@ const Store = () => {
         storeData={storeData}
         products={products}
         categories={categories}
+        sections={sections}
         featuredProducts={featuredProducts}
         bestSellingProducts={bestSellingProducts}
       />

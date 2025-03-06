@@ -1,3 +1,4 @@
+
 // Product filtering utility functions
 
 export const filterProductsBySearch = (products: any[], searchQuery: string) => {
@@ -23,8 +24,20 @@ export const filterProductsByCategory = (
   
   // Then filter by category if one is selected
   if (activeCategory) {
-    // Filter by real category (later will be linked to product category field)
-    return filtered;
+    // Category filtering (will be linked to product category field)
+    filtered = filtered.filter(product => 
+      product.category === activeCategory || 
+      product.category_id === activeCategory
+    );
+  }
+  
+  // Then filter by section if one is selected
+  if (activeSection) {
+    // Section filtering (will be linked to product section field)
+    filtered = filtered.filter(product => 
+      product.section === activeSection || 
+      product.section_id === activeSection
+    );
   }
   
   return filtered;

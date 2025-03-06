@@ -6,7 +6,10 @@ interface StoreFilterContextType {
   setSearchQuery: (query: string) => void;
   activeCategory: string;
   setActiveCategory: (category: string) => void;
+  activeSection: string;
+  setActiveSection: (section: string) => void;
   handleCategoryChange: (category: string) => void;
+  handleSectionChange: (section: string) => void;
   handleClearSearch: () => void;
 }
 
@@ -27,9 +30,26 @@ interface StoreFilterProviderProps {
 export const StoreFilterProvider: React.FC<StoreFilterProviderProps> = ({ children }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("");
+  const [activeSection, setActiveSection] = useState("");
 
   const handleCategoryChange = (category: string) => {
-    setActiveCategory(category);
+    // If clicking the same category again, clear it
+    if (category === activeCategory) {
+      setActiveCategory("");
+    } else {
+      setActiveCategory(category);
+    }
+    // Clear section when category changes
+    setActiveSection("");
+  };
+
+  const handleSectionChange = (section: string) => {
+    // If clicking the same section again, clear it
+    if (section === activeSection) {
+      setActiveSection("");
+    } else {
+      setActiveSection(section);
+    }
   };
 
   const handleClearSearch = () => {
@@ -41,7 +61,10 @@ export const StoreFilterProvider: React.FC<StoreFilterProviderProps> = ({ childr
     setSearchQuery,
     activeCategory,
     setActiveCategory,
+    activeSection,
+    setActiveSection,
     handleCategoryChange,
+    handleSectionChange,
     handleClearSearch
   };
 

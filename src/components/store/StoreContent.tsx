@@ -10,6 +10,7 @@ interface StoreContentProps {
   storeData: any;
   products: any[];
   categories: string[];
+  sections: string[];
   featuredProducts: any[];
   bestSellingProducts: any[];
 }
@@ -18,6 +19,7 @@ const StoreContent: React.FC<StoreContentProps> = ({
   storeData,
   products,
   categories,
+  sections,
   featuredProducts,
   bestSellingProducts
 }) => {
@@ -25,18 +27,20 @@ const StoreContent: React.FC<StoreContentProps> = ({
     searchQuery, 
     setSearchQuery, 
     activeCategory,
+    activeSection,
     handleCategoryChange,
+    handleSectionChange,
     handleClearSearch
   } = useStoreFilter();
 
   // Filter products by search query
   const filteredBySearch = filterProductsBySearch(products, searchQuery);
 
-  // Filter products by category
+  // Filter products by category and section
   const displayProducts = filterProductsByCategory(
     filteredBySearch,
     activeCategory,
-    "", // No active section anymore
+    activeSection,
     bestSellingProducts,
     searchQuery
   );
@@ -53,11 +57,14 @@ const StoreContent: React.FC<StoreContentProps> = ({
         bannerUrl={storeData?.banner_url}
       />
       
-      {/* Category Quick Links - Now only showing categories */}
+      {/* Category and Section Navigation */}
       <CategoryNavigation 
         activeCategory={activeCategory}
+        activeSection={activeSection}
         onCategoryChange={handleCategoryChange}
+        onSectionChange={handleSectionChange}
         categories={categories}
+        sections={sections}
       />
       
       {/* All Products Section */}
