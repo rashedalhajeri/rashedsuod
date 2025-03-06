@@ -29,7 +29,7 @@ const StoreBanner: React.FC<StoreBannerProps> = ({
   const initials = getInitials(storeName || "Store");
 
   return (
-    <div className="bg-gradient-to-r from-blue-700 to-green-500 py-4 px-4 relative overflow-hidden">
+    <div className="bg-gradient-to-r from-blue-700 to-green-500 py-6 px-4 relative overflow-hidden rounded-b-[2rem] shadow-lg">
       {/* Decorative elements */}
       <div className="absolute inset-0 opacity-10 bg-pattern"></div>
       
@@ -41,10 +41,10 @@ const StoreBanner: React.FC<StoreBannerProps> = ({
       >
         <div className="flex justify-between items-center">
           {/* Greeting and Username */}
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-3 ml-auto">
             <div className="text-right">
               <motion.p 
-                className="text-white/80 text-sm"
+                className="text-white/90 text-sm font-medium"
                 initial={{ y: -5, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.4 }}
@@ -52,7 +52,7 @@ const StoreBanner: React.FC<StoreBannerProps> = ({
                 حياكم في
               </motion.p>
               <motion.h1 
-                className="text-lg font-bold text-white"
+                className="text-xl font-bold text-white"
                 initial={{ y: -5, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.4, delay: 0.1 }}
@@ -68,14 +68,12 @@ const StoreBanner: React.FC<StoreBannerProps> = ({
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.4, delay: 0.2 }}
             >
-              <div className="h-12 w-12 rounded-full bg-white flex items-center justify-center text-xl font-bold text-blue-600 shadow-sm">
+              <div className="h-14 w-14 rounded-full bg-white flex items-center justify-center text-xl font-bold text-blue-600 shadow-md border-2 border-white/30">
                 {initials}
               </div>
             </motion.div>
           </div>
         </div>
-        
-        {/* Search bar - will be shown elsewhere */}
       </motion.div>
     </div>
   );
