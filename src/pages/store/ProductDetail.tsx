@@ -1,7 +1,7 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, getCurrentUser } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -15,10 +15,23 @@ import ProductGallery from "@/features/store/product-detail/ProductGallery";
 import ProductInformation from "@/features/store/product-detail/ProductInformation";
 import ProductActions from "@/features/store/product-detail/ProductActions";
 import { useProductDetail } from "@/features/store/product-detail/useProductDetail";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const ProductDetail = () => {
   const { storeId, productId } = useParams();
   const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState(null);
+  
+  // جلب معلومات المستخدم الحالي
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const user = await getCurrentUser();
+      setCurrentUser(user);
+      console.log("Current user:", user);
+    };
+    
+    fetchCurrentUser();
+  }, []);
   
   // استعلام لجلب بيانات المتجر
   const { data: storeData, isLoading: storeLoading, error: storeError, refetch: refetchStore } = useQuery({
@@ -104,6 +117,24 @@ const ProductDetail = () => {
   return (
     <div dir="rtl">
       <StoreHeader storeData={storeData} isLoading={storeLoading} />
+      
+      {/* بطاقة عرض معلومات المستخدم الحالي */}
+      {currentUser && (
+        <div className="container mx-auto px-4 py-4">
+          <Card className="bg-primary/5 border-primary/20">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">معلومات المستخدم الحالي</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <p><strong>البريد الإلكتروني:</strong> {currentUser.email}</p>
+                <p><strong>معرف المستخدم:</strong> {currentUser.id}</p>
+                <p><strong>آخر تسجيل دخول:</strong> {new Date(currentUser.last_sign_in_at).toLocaleString('ar')}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
       
       <main className="container mx-auto px-4 py-8">
         {productLoading || storeLoading ? (
