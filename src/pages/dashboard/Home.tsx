@@ -19,8 +19,16 @@ interface DashboardStats {
 
 const DashboardHome = () => {
   const { data: storeData } = useStoreData();
-  const { user } = useAuthState();
-  const isAdminUser = isAdmin(user);
+  const { userId } = useAuthState();
+  const isAdminUser = useQuery({
+    queryKey: ['isAdmin', userId],
+    queryFn: async () => {
+      if (!userId) return false;
+      const { data: userData } = await supabase.auth.getUser();
+      return isAdmin(userData?.user || null);
+    },
+    enabled: !!userId,
+  });
   
   const { data: stats } = useQuery({
     queryKey: ['dashboardStats', storeData?.id],
@@ -94,7 +102,7 @@ const DashboardHome = () => {
     <div className="container py-6 max-w-screen-2xl mx-auto">
       <WelcomeSection
         storeName={storeData.store_name}
-        ownerName={user?.user_metadata?.name || user?.email || ""}
+        ownerName={userId || ""}
         newOrdersCount={stats.newOrdersCount}
         lowStockCount={stats.lowStockCount}
         storeId={storeData.id}
@@ -132,7 +140,7 @@ const DashboardHome = () => {
       </div>
       
       {/* عرض قسم إحصائيات المنصة فقط للمشرفين */}
-      {isAdminUser && <PlatformStatsSection />}
+      {isAdminUser.data && <PlatformStatsSection />}
     </div>
   );
 };
