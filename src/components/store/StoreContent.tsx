@@ -4,8 +4,6 @@ import { useStoreFilter } from "@/context/StoreFilterContext";
 import { filterProductsBySearch, filterProductsByCategory } from "@/utils/product-filters";
 import StoreBanner from "@/components/store/StoreBanner";
 import CategoryNavigation from "@/components/store/CategoryNavigation";
-import FeaturedProductsSection from "@/components/store/sections/FeaturedProductsSection";
-import BestSellingProductsSection from "@/components/store/sections/BestSellingProductsSection";
 import AllProductsSection from "@/components/store/sections/AllProductsSection";
 
 interface StoreContentProps {
@@ -26,28 +24,22 @@ const StoreContent: React.FC<StoreContentProps> = ({
   const { 
     searchQuery, 
     setSearchQuery, 
-    activeCategory, 
-    activeSection,
+    activeCategory,
     handleCategoryChange,
-    handleClearSearch,
-    sections
+    handleClearSearch
   } = useStoreFilter();
 
   // Filter products by search query
   const filteredBySearch = filterProductsBySearch(products, searchQuery);
 
-  // Filter products by category or section
+  // Filter products by category
   const displayProducts = filterProductsByCategory(
     filteredBySearch,
     activeCategory,
-    activeSection,
+    "", // No active section anymore
     bestSellingProducts,
     searchQuery
   );
-
-  const handleViewAllBestSelling = () => {
-    handleCategoryChange("الأكثر مبيعاً");
-  };
 
   return (
     <>
@@ -61,34 +53,17 @@ const StoreContent: React.FC<StoreContentProps> = ({
         bannerUrl={storeData?.banner_url}
       />
       
-      {/* Category Quick Links - نمرر كلا من الأقسام والفئات */}
+      {/* Category Quick Links - Now only showing categories */}
       <CategoryNavigation 
-        activeCategory={activeCategory || activeSection}
+        activeCategory={activeCategory}
         onCategoryChange={handleCategoryChange}
         categories={categories}
-        sections={sections}
       />
-      
-      {/* Featured Products Section */}
-      {activeSection === "جميع المنتجات" && !activeCategory && (
-        <FeaturedProductsSection 
-          products={featuredProducts} 
-          onViewAll={() => {}} 
-        />
-      )}
-      
-      {/* Best Selling Products Section */}
-      {activeSection === "جميع المنتجات" && !activeCategory && (
-        <BestSellingProductsSection 
-          products={bestSellingProducts} 
-          onViewAll={handleViewAllBestSelling} 
-        />
-      )}
       
       {/* All Products Section */}
       <AllProductsSection 
         products={displayProducts}
-        activeCategory={activeCategory || activeSection}
+        activeCategory={activeCategory}
         searchQuery={searchQuery}
         onClearSearch={handleClearSearch}
       />

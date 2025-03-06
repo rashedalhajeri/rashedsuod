@@ -1,4 +1,3 @@
-
 // Product filtering utility functions
 
 export const filterProductsBySearch = (products: any[], searchQuery: string) => {
@@ -19,25 +18,13 @@ export const filterProductsByCategory = (
   bestSellingProducts: any[],
   searchQuery: string
 ) => {
-  // أولاً نفلتر حسب البحث
+  // First filter by search
   let filtered = products;
   
-  // ثم حسب القسم أو الفئة
+  // Then filter by category if one is selected
   if (activeCategory) {
-    // فلترة حسب الفئة الحقيقية (لاحقاً سيتم ربطها بحقل التصنيف في المنتجات)
+    // Filter by real category (later will be linked to product category field)
     return filtered;
-  } else if (activeSection) {
-    // فلترة حسب القسم
-    if (activeSection === "جميع المنتجات") return filtered;
-    if (activeSection === "العروض") 
-      return filtered.filter(p => p.discount_percentage > 0 || (p.original_price && p.original_price > p.price));
-    if (activeSection === "الأكثر مبيعاً") 
-      return bestSellingProducts.filter(p => 
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
-    if (activeSection === "الجديد") 
-      return filtered.slice(0, 8); // Most recent products
   }
   
   return filtered;

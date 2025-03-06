@@ -7,14 +7,12 @@ interface CategoryNavigationProps {
   activeCategory: string;
   onCategoryChange: (category: string) => void;
   categories: string[];
-  sections: string[];
 }
 
 const CategoryNavigation: React.FC<CategoryNavigationProps> = ({
   activeCategory,
   onCategoryChange,
-  categories = [],
-  sections = ["جميع المنتجات"]
+  categories = []
 }) => {
   const [isFixed, setIsFixed] = useState(false);
   
@@ -57,36 +55,6 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = ({
     >
       <div className="container mx-auto">
         <div className="scroll-container hide-scrollbar px-4">
-          {/* Sections */}
-          {sections.map((section, index) => (
-            <motion.div
-              key={`section-${section}`}
-              className="scroll-item"
-              initial="hidden"
-              animate="visible"
-              custom={index}
-              variants={itemVariants}
-              layout
-            >
-              <Button 
-                variant={activeCategory === section ? "default" : "outline"} 
-                className={`rounded-full whitespace-nowrap ${
-                  activeCategory === section 
-                    ? "bg-blue-600 text-white hover:bg-blue-700 shadow-sm border-none" 
-                    : "bg-white hover:bg-blue-50 hover:text-blue-600 border-gray-200"
-                } transition-all min-w-24 font-medium text-sm`}
-                onClick={handleCategoryClick(section)}
-              >
-                {section}
-              </Button>
-            </motion.div>
-          ))}
-
-          {/* Divider - Only show if we have categories */}
-          {categories.length > 0 && (
-            <div className="mx-2 border-r border-gray-300 h-6"></div>
-          )}
-          
           {/* Categories */}
           {categories.length > 0 && categories.map((category, index) => (
             <motion.div
@@ -94,7 +62,7 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = ({
               className="scroll-item"
               initial="hidden"
               animate="visible"
-              custom={index + sections.length}
+              custom={index}
               variants={itemVariants}
               layout
             >

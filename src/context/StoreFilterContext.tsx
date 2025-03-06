@@ -6,12 +6,8 @@ interface StoreFilterContextType {
   setSearchQuery: (query: string) => void;
   activeCategory: string;
   setActiveCategory: (category: string) => void;
-  activeSection: string;
-  setActiveSection: (section: string) => void;
   handleCategoryChange: (category: string) => void;
-  handleSectionChange: (section: string) => void;
   handleClearSearch: () => void;
-  sections: string[];
 }
 
 const StoreFilterContext = createContext<StoreFilterContextType | undefined>(undefined);
@@ -31,26 +27,9 @@ interface StoreFilterProviderProps {
 export const StoreFilterProvider: React.FC<StoreFilterProviderProps> = ({ children }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("");
-  const [activeSection, setActiveSection] = useState("جميع المنتجات");
-
-  // الأقسام الثابتة في المتجر
-  const sections = ["جميع المنتجات", "الأكثر مبيعاً", "العروض", "الجديد"];
 
   const handleCategoryChange = (category: string) => {
-    // إذا كانت الفئة المختارة من الأقسام
-    if (sections.includes(category)) {
-      setActiveSection(category);
-      setActiveCategory("");
-    } else {
-      // إذا كانت فئة حقيقية
-      setActiveCategory(category);
-      setActiveSection("");
-    }
-  };
-
-  const handleSectionChange = (section: string) => {
-    setActiveSection(section);
-    setActiveCategory("");
+    setActiveCategory(category);
   };
 
   const handleClearSearch = () => {
@@ -62,12 +41,8 @@ export const StoreFilterProvider: React.FC<StoreFilterProviderProps> = ({ childr
     setSearchQuery,
     activeCategory,
     setActiveCategory,
-    activeSection,
-    setActiveSection,
     handleCategoryChange,
-    handleSectionChange,
-    handleClearSearch,
-    sections
+    handleClearSearch
   };
 
   return (
