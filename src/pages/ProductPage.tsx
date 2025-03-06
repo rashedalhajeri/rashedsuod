@@ -6,8 +6,7 @@ import { useCart } from "@/hooks/use-cart";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { toast } from "sonner";
-import { ArrowLeft, ShoppingCart, Share } from "lucide-react";
-import { Link } from "react-router-dom";
+import StoreHeader from "@/components/store/unified/StoreHeader";
 
 // Import refactored components
 import ProductImage from "@/components/product/ProductImage";
@@ -118,18 +117,11 @@ const ProductPage = () => {
   
   return (
     <div className="min-h-screen flex flex-col" dir="rtl">
-      {/* Header with gradient background */}
-      <header className="bg-gradient-to-r from-blue-700 to-cyan-500 text-white p-4 relative">
-        <div className="container mx-auto flex justify-between items-center">
-          <Link to={`/store/${storeDomain}`} className="text-white">
-            <ArrowLeft className="h-6 w-6" />
-          </Link>
-          <h1 className="text-xl font-bold text-center">تفاصيل المنتج</h1>
-          <Link to={`/store/${storeDomain}/cart`} className="text-white">
-            <ShoppingCart className="h-6 w-6" />
-          </Link>
-        </div>
-      </header>
+      <StoreHeader
+        title="تفاصيل المنتج"
+        storeDomain={storeDomain}
+        showBackButton={true}
+      />
       
       <main className="flex-grow bg-gray-50">
         {/* Product Card */}
@@ -145,11 +137,12 @@ const ProductPage = () => {
           />
           
           {/* Product Info */}
-          <ProductInfo 
-            product={product} 
-            formatCurrency={formatCurrency} 
-            storeData={storeData}
-          />
+          <div className="p-4">
+            <ProductInfo 
+              product={product} 
+              formatCurrency={formatCurrency} 
+            />
+          </div>
         </div>
         
         {/* Product Overview Section */}
@@ -183,12 +176,30 @@ const ProductPage = () => {
           <div className="text-2xl font-bold text-gray-800">
             {formatCurrency(product.price)} <span className="text-sm font-normal">KWD</span>
           </div>
-          <button 
-            onClick={handleAddToCart}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-          >
-            إضافة للسلة
-          </button>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden mr-2">
+              <button
+                onClick={() => handleQuantityChange('decrease')}
+                disabled={quantity <= 1}
+                className="px-3 py-2 bg-gray-50 text-gray-600 hover:bg-gray-100"
+              >
+                -
+              </button>
+              <span className="w-10 text-center font-medium">{quantity}</span>
+              <button
+                onClick={() => handleQuantityChange('increase')}
+                className="px-3 py-2 bg-gray-50 text-gray-600 hover:bg-gray-100"
+              >
+                +
+              </button>
+            </div>
+            <button 
+              onClick={handleAddToCart}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            >
+              إضافة للسلة
+            </button>
+          </div>
         </div>
       </main>
     </div>
