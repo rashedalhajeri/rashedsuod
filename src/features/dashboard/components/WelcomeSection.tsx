@@ -1,11 +1,12 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, Copy, ExternalLink } from "lucide-react";
+import { Sparkles, Copy, Store } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { getStoreUrl } from "@/utils/url-utils";
+import { Link } from "react-router-dom";
 
 interface WelcomeSectionProps {
   storeName: string;
@@ -46,6 +47,13 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
   
   console.log("Generated store URL:", finalStoreUrl); // Debugging log
   
+  // Get the internal route path for the store
+  const getInternalStorePath = () => {
+    if (!storeId && !storeDomain) return "";
+    
+    return `/store/${storeDomain || storeId}`;
+  };
+  
   // Copy store link to clipboard
   const copyStoreLink = () => {
     if (!finalStoreUrl) return;
@@ -63,17 +71,6 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
       .finally(() => {
         setTimeout(() => setCopying(false), 1000);
       });
-  };
-  
-  // Navigate to store
-  const visitStore = () => {
-    if (!finalStoreUrl) {
-      toast.error("لا يمكن الوصول إلى رابط المتجر");
-      return;
-    }
-    
-    console.log("Opening store URL:", finalStoreUrl);
-    window.open(finalStoreUrl, '_blank');
   };
   
   return (
@@ -111,10 +108,12 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
                   variant="outline"
                   size="sm"
                   className="bg-white hover:bg-primary-50 gap-1.5"
-                  onClick={visitStore}
+                  asChild
                 >
-                  <ExternalLink className="h-4 w-4" />
-                  <span>مشاهدة متجري</span>
+                  <Link to={getInternalStorePath()}>
+                    <Store className="h-4 w-4" />
+                    <span>مشاهدة متجري</span>
+                  </Link>
                 </Button>
               </div>
             )}
