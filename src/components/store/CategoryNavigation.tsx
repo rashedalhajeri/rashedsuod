@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
@@ -14,8 +14,25 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = ({
   onCategoryChange,
   categories = ["جميع المنتجات", "الأكثر مبيعاً", "العروض", "الجديد", "الأكسسوارات"]
 }) => {
+  const [isFixed, setIsFixed] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 100) {
+        setIsFixed(true);
+      } else {
+        setIsFixed(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <div className="bg-white py-4 border-b sticky top-0 left-0 right-0 z-50 shadow-sm">
+    <div 
+      className={`categories-bar ${isFixed ? "fixed-bar" : ""} bg-white py-4 border-b shadow-sm w-full z-50`}
+    >
       <div className="container mx-auto">
         <div className="scroll-container hide-scrollbar px-4">
           {categories.map((category, index) => (
