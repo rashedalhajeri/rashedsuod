@@ -1,9 +1,10 @@
 
-import React, { useRef } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProductGridProps {
   products: any[];
@@ -12,6 +13,35 @@ interface ProductGridProps {
 const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
   const { storeDomain } = useParams<{ storeDomain: string }>();
   const gridRef = useRef<HTMLDivElement>(null);
+  const [realProducts, setRealProducts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchRealProducts = async () => {
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .order('created_at', { ascending: false });
+          
+        if (error) {
+          console.error("Error fetching products:", error);
+          return;
+        }
+        
+        if (data && data.length > 0) {
+          setRealProducts(data);
+        }
+      } catch (err) {
+        console.error("Error in fetchRealProducts:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchRealProducts();
+  }, []);
   
   // Format currency with proper locale and format
   const formatCurrency = (price: number) => {
@@ -21,8 +51,25 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
     }).format(price);
   };
   
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-2 gap-4">
+        {[...Array(4)].map((_, index) => (
+          <div key={`loading-${index}`} className="flex flex-col">
+            <div className="relative rounded-xl overflow-hidden shadow-sm bg-gray-100 w-full aspect-square animate-pulse"></div>
+            <div className="h-5 bg-gray-200 rounded mt-2 w-3/4 mx-auto animate-pulse"></div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  
+  // Use real products if available, otherwise use provided products
+  const displayProducts = realProducts.length > 0 ? realProducts : products;
+  
   // Show a professional empty state when no products are available
-  if (products.length === 0) {
+  if (displayProducts.length === 0) {
     return (
       <div className="text-center py-16 bg-white rounded-lg border border-gray-100 shadow-sm">
         <p className="text-gray-800 font-medium text-lg mb-2">لا توجد منتجات متاحة حالياً</p>
@@ -51,12 +98,12 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
       ref={gridRef}
       className="grid grid-cols-2 gap-4"
     >
-      {products.map((product, index) => {
+      {displayProducts.map((product, index) => {
         const { brandName, brandLogo } = getBrandInfo(product.id);
         const productPrice = formatCurrency(product.price);
         
         // Generate vehicle model number based on product id
-        const modelNumber = product.id % 2 === 0 ? "CX-30" : "CX-90";
+        const modelNumber = product.id.length > 5 ? "CX-30" : "CX-90";
         
         return (
           <motion.div
@@ -109,7 +156,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
             
             {/* Product name below the image */}
             <h3 className="text-center font-bold text-lg text-gray-800">
-              {brandName} {modelNumber}
+              {product.name || `${brandName} ${modelNumber}`}
             </h3>
           </motion.div>
         );
