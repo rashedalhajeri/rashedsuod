@@ -49,13 +49,24 @@ export const useCategoryData = (categoryName?: string, searchQuery: string = "")
         setIsLoadingProducts(true);
         
         try {
+          // Fetch categories with product counts
           const { data: categoriesData } = await supabase
             .from('categories')
-            .select('name')
-            .eq('store_id', storeData.id);
+            .select(`
+              id,
+              name,
+              products:products(count)
+            `)
+            .eq('store_id', storeData.id)
+            .order('sort_order');
             
           if (categoriesData) {
-            setCategories(categoriesData.map(cat => cat.name));
+            // Filter out categories with no products
+            const categoriesWithProducts = categoriesData
+              .filter(cat => cat.products.length > 0)
+              .map(cat => cat.name);
+              
+            setCategories(categoriesWithProducts);
           }
           
           // Fetch all products if category is "الكل"

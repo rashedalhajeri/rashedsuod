@@ -14,6 +14,11 @@ interface CategoryNavigationProps {
   storeDomain?: string;
 }
 
+interface CategoryWithProductCount {
+  name: string;
+  product_count: number;
+}
+
 const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
   categories,
   sections,
@@ -24,16 +29,34 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
   storeDomain
 }) => {
   const navigate = useNavigate();
-  const [realCategories, setRealCategories] = useState<string[]>([]);
+  const [categoriesWithProducts, setCategoriesWithProducts] = useState<CategoryWithProductCount[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    const fetchRealCategories = async () => {
+    const fetchCategoriesWithProducts = async () => {
       try {
         setIsLoading(true);
+        
+        // Get store ID first by domain
+        const { data: storeData, error: storeError } = await supabase
+          .from('stores')
+          .select('id')
+          .eq('domain_name', storeDomain)
+          .single();
+          
+        if (storeError || !storeData) {
+          console.error("Error fetching store:", storeError);
+          return;
+        }
+        
+        // Fetch categories with product counts
         const { data, error } = await supabase
           .from('categories')
-          .select('name')
+          .select(`
+            name,
+            products:products(count)
+          `)
+          .eq('store_id', storeData.id)
           .order('sort_order');
           
         if (error) {
@@ -42,21 +65,32 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
         }
         
         if (data && data.length > 0) {
-          const categoryNames = data.map(cat => cat.name);
-          setRealCategories(categoryNames);
+          // Transform data to include product counts
+          const categoriesWithCounts = data.map(category => ({
+            name: category.name,
+            product_count: category.products.length
+          }));
+          
+          // Filter out categories with no products
+          const filteredCategories = categoriesWithCounts.filter(cat => cat.product_count > 0);
+          
+          setCategoriesWithProducts(filteredCategories);
         }
       } catch (err) {
-        console.error("Error in fetchRealCategories:", err);
+        console.error("Error in fetchCategoriesWithProducts:", err);
       } finally {
         setIsLoading(false);
       }
     };
     
-    fetchRealCategories();
-  }, []);
+    if (storeDomain) {
+      fetchCategoriesWithProducts();
+    }
+  }, [storeDomain]);
   
-  // Filter out empty arrays
-  const hasCategories = realCategories.length > 0 || categories.length > 0;
+  // Filter out empty arrays and prepare display categories
+  const displayCategories = ["الكل", ...categoriesWithProducts.map(cat => cat.name)];
+  const hasCategories = displayCategories.length > 1; // At least "All" and one other category
   const hasSections = sections.length > 0;
 
   // If no data, don't render the component
@@ -64,9 +98,6 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
     return null;
   }
 
-  // Prepare categories with "All" option at the beginning
-  const allCategories = ["الكل", ...realCategories.length > 0 ? realCategories : categories];
-  
   // Category images mapping
   const categoryImageMap = {
     "الكل": "/public/lovable-uploads/76b54a01-0b01-4389-87c4-99406ba4e5ca.png",
@@ -108,7 +139,7 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
             </motion.div>
           ))
         ) : (
-          allCategories.map((category, index) => {
+          displayCategories.map((category, index) => {
             // Get appropriate image
             const imagePath = categoryImageMap[category as keyof typeof categoryImageMap] || "/placeholder.svg";
             const isActive = (category === "الكل" && activeCategory === "الكل") || 
