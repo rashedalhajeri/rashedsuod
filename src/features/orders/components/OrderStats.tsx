@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShoppingBag, Box, TruckIcon, CheckCircle2, XCircle } from "lucide-react";
@@ -5,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+
 interface OrderStats {
   total: number;
   processing: number;
@@ -12,10 +14,12 @@ interface OrderStats {
   delivered: number;
   cancelled: number;
 }
+
 interface OrderStatsProps {
   stats: OrderStats;
   isLoading?: boolean;
 }
+
 const OrderStats: React.FC<OrderStatsProps> = ({
   stats,
   isLoading = false
@@ -81,9 +85,40 @@ const OrderStats: React.FC<OrderStatsProps> = ({
     href: "/dashboard/orders?tab=cancelled",
     hoverBgColor: "hover:bg-red-200"
   }];
-  return <Card className="border-primary-100">
-      
-      
-    </Card>;
+
+  return (
+    <Card className="border-primary-100">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg font-medium">إحصائيات الطلبات</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-5 gap-3">
+          {statsItems.map((item, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              <Link to={item.href} className="block">
+                <div className={cn(
+                  "flex flex-col items-center justify-center p-3 rounded-lg transition-all",
+                  item.bgColor,
+                  item.hoverBgColor
+                )}>
+                  <div className={cn("p-2 rounded-full mb-2", `${item.bgColor}/60`)}>
+                    <span className={item.textColor}>{item.icon}</span>
+                  </div>
+                  <span className="text-xs font-medium mb-1">{item.label}</span>
+                  <span className={cn("text-lg font-bold", item.textColor)}>{item.value}</span>
+                </div>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
 };
+
 export default OrderStats;
