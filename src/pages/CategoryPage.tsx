@@ -11,11 +11,30 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 
+interface Product {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  category: string;
+  store_id: string;
+  image_url?: string;
+  [key: string]: any;
+}
+
+interface CategoryDetails {
+  id: string;
+  name: string;
+  description?: string;
+  store_id: string;
+  [key: string]: any;
+}
+
 const CategoryPage = () => {
   const { storeDomain, categoryName } = useParams<{ storeDomain: string; categoryName: string }>();
   const { storeData, isLoading, error } = useStoreData();
-  const [products, setProducts] = useState([]);
-  const [categoryDetails, setCategoryDetails] = useState<any>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categoryDetails, setCategoryDetails] = useState<CategoryDetails | null>(null);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [productNames, setProductNames] = useState<string[]>([]);
