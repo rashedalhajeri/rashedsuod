@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -5,9 +6,9 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, ShoppingBag, Package, Tags, Users, CreditCard, Settings, ChevronLeft, ChevronRight, LogOut, Menu, FileText, X } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { useAuthState } from "@/hooks/use-auth-state";
+import { useContext } from "react";
+import { AuthContext } from "@/App";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import AdminNavigation from "./AdminNavigation";
 
 interface SidebarLinkProps {
   to: string;
@@ -42,8 +43,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
   const location = useLocation();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
-  const { signOut } = useAuthState();
+  const {
+    signOut
+  } = useContext(AuthContext);
 
+  // إعادة تعيين حالة القائمة عند تغيير حجم الشاشة
   useEffect(() => {
     setIsCollapsed(isMobile && !isMobileMenuOpen);
   }, [isMobile, isMobileMenuOpen]);
@@ -54,6 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
 
   const closeMobileMenu = () => {
     if (isMobile) {
+      // فقط إغلاق في حال العرض المحمول
     }
   };
 
@@ -121,6 +126,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
     }
   };
 
+  // تحديد النمط المناسب للقائمة الجانبية
   const currentVariant = isMobile 
     ? "mobile" 
     : isCollapsed 
@@ -129,6 +135,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
 
   return (
     <AnimatePresence>
+      {/* طبقة التعتيم عند فتح القائمة في الجوال */}
       {isMobile && isMobileMenuOpen && (
         <motion.div
           className="fixed inset-0 bg-black/50 z-30"
@@ -195,8 +202,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
                 onClick={closeMobileMenu}
               />
             ))}
-            
-            <AdminNavigation />
           </div>
 
           <div className="p-4 border-t border-gray-200">

@@ -7,14 +7,14 @@ import Features from "@/components/Features";
 import PricingPlans from "@/components/PricingPlans";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
+import { Session } from "@supabase/supabase-js";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { LogIn, UserPlus } from "lucide-react";
-import { useAuthState } from "@/hooks/use-auth-state";
 
 const Index: React.FC = () => {
-  const { authenticated, signOut } = useAuthState();
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -30,10 +30,46 @@ const Index: React.FC = () => {
     };
   }, []);
 
+  // Check for auth state changes
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) {
+          throw error;
+        }
+        setSession(data.session);
+      } catch (error) {
+        console.error("Error fetching session:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSession();
+
+    // Set up listener for auth changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, newSession) => {
+        setSession(newSession);
+        if (event === "SIGNED_IN") {
+          toast.success("تم تسجيل الدخول بنجاح");
+        } else if (event === "SIGNED_OUT") {
+          toast.info("تم تسجيل الخروج بنجاح");
+        }
+      }
+    );
+
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
+  }, []);
+
   // Function to handle logout
   const handleLogout = async () => {
     try {
-      await signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
     } catch (error: any) {
       console.error("Error signing out:", error.message);
       toast.error("حدث خطأ أثناء تسجيل الخروج");
@@ -53,7 +89,7 @@ const Index: React.FC = () => {
   return (
     <AnimatePresence>
       <div className="min-h-screen bg-white overflow-hidden">
-        <Header />
+        <Header session={session} onLogout={handleLogout} />
         
         <motion.main
           initial={{ opacity: 0 }}
@@ -77,7 +113,7 @@ const Index: React.FC = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.7 }}
               >
-                {authenticated ? "مرحباً بك في متجرك" : "جاهز لإطلاق متجرك الإلكتروني في الكويت؟"}
+                {session ? "مرحباً بك في متجرك" : "جاهز لإطلاق متجرك الإلكتروني في الكويت؟"}
               </motion.h2>
               <motion.p 
                 className="text-xl text-white/90 max-w-2xl mx-auto mb-8"
@@ -86,7 +122,7 @@ const Index: React.FC = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.7, delay: 0.2 }}
               >
-                {authenticated 
+                {session 
                   ? "إدارة متجرك أصبحت أسهل. انتقل إلى لوحة التحكم للبدء" 
                   : "انضم إلى آلاف التجار الناجحين وابدأ رحلتك في عالم التجارة الإلكترونية في السوق الكويتي اليوم"}
               </motion.p>
@@ -97,7 +133,7 @@ const Index: React.FC = () => {
                 transition={{ duration: 0.5, delay: 0.4 }}
                 className="flex flex-wrap gap-4 justify-center"
               >
-                {authenticated ? (
+                {session ? (
                   <Button 
                     onClick={navigateToDashboard} 
                     size="lg"
@@ -126,7 +162,7 @@ const Index: React.FC = () => {
                     </Button>
                   </>
                 )}
-                {authenticated && (
+                {session && (
                   <Button 
                     onClick={handleLogout}
                     size="lg"

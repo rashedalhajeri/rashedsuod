@@ -114,7 +114,7 @@ const mockRecentProducts = [
   },
   {
     id: "prod-3",
-    name: "حذاء ري���ضي",
+    name: "حذاء رياضي",
     thumbnail: null,
     price: 210,
     stock: 0,
@@ -232,6 +232,14 @@ const Dashboard: React.FC = () => {
   // Format currency based on store settings
   const formatCurrency = getCurrencyFormatter(storeData?.currency || 'SAR');
   
+  // Stats data for demonstration
+  const statsData = {
+    products: 54,
+    orders: 128,
+    customers: 35,
+    revenue: 8425
+  };
+
   // Advanced stats data
   const advancedStatsData = {
     revenue: 8425,
@@ -241,91 +249,72 @@ const Dashboard: React.FC = () => {
     lowStockCount: mockEnhancedProducts.filter(p => p.status !== 'in_stock').length
   };
   
-  // Create stats data for the legacy DashboardStats component
-  const statsData = {
-    products: 54,
-    orders: advancedStatsData.orderCount,
-    customers: 35,
-    revenue: advancedStatsData.revenue
-  };
+  // Subscription plan status - use basic as default
+  const subscriptionPlan = storeData?.subscription_plan || "basic";
   
   return (
     <DashboardLayout>
-      <div className="space-y-4">
-        {/* Top section with welcome and notifications */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          {/* Welcome Section with store actions */}
-          <WelcomeSection 
-            storeName={storeData?.store_name || "متجرك"} 
-            ownerName={userName}
-            newOrdersCount={7}
-            lowStockCount={5}
-            storeId={storeData?.id}
-            storeDomain={storeData?.domain_name}
-          />
-          
-          {/* Notification Center */}
-          <div className="w-full md:w-auto">
-            <NotificationCenter />
-          </div>
-        </div>
+      <div className="flex justify-between items-center mb-4">
+        {/* Welcome Section */}
+        <WelcomeSection 
+          storeName={storeData?.store_name || "متجرك"} 
+          ownerName={userName}
+          newOrdersCount={7}
+          lowStockCount={5}
+        />
         
-        {/* Advanced Stats Cards */}
-        <div className="pt-2">
-          <AdvancedStats 
-            revenue={advancedStatsData.revenue}
-            orderCount={advancedStatsData.orderCount}
-            conversionRate={advancedStatsData.conversionRate}
-            avgOrderValue={advancedStatsData.avgOrderValue}
-            lowStockCount={advancedStatsData.lowStockCount}
-            formatCurrency={formatCurrency}
-          />
+        {/* Notification Center */}
+        <div className="flex items-center gap-2">
+          <NotificationCenter />
         </div>
+      </div>
+      
+      {/* Advanced Stats Cards */}
+      <AdvancedStats 
+        revenue={advancedStatsData.revenue}
+        orderCount={advancedStatsData.orderCount}
+        conversionRate={advancedStatsData.conversionRate}
+        avgOrderValue={advancedStatsData.avgOrderValue}
+        lowStockCount={advancedStatsData.lowStockCount}
+        formatCurrency={formatCurrency}
+      />
+      
+      {/* Enhanced Sales Chart */}
+      <div className="mb-6">
+        <EnhancedSalesChart 
+          currency={storeData?.currency || "SAR"}
+        />
+      </div>
+      
+      {/* Quick Actions */}
+      <QuickActions />
+      
+      {/* Two-column layout for Inventory and Activity */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* Inventory Tracking */}
+        <InventoryTracker 
+          products={mockEnhancedProducts}
+          currency={storeData?.currency || "SAR"}
+          formatCurrency={formatCurrency}
+        />
         
-        {/* Quick Actions Section */}
-        <div className="py-2">
-          <h3 className="text-lg font-medium mb-2">الإجراءات السريعة</h3>
-          <QuickActions />
-        </div>
-        
-        {/* Enhanced Sales Chart */}
-        <div className="py-2">
-          <h3 className="text-lg font-medium mb-2">المبيعات والإيرادات</h3>
-          <EnhancedSalesChart 
-            currency={storeData?.currency || "SAR"}
-          />
-        </div>
-        
-        {/* Two-column layout for Inventory and Activity */}
-        <div className="py-2">
-          <h3 className="text-lg font-medium mb-2">نظرة عامة على المتجر</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Inventory Tracking */}
-            <InventoryTracker 
-              products={mockEnhancedProducts}
-              currency={storeData?.currency || "SAR"}
-              formatCurrency={formatCurrency}
-            />
-            
-            {/* Activity Summary Section */}
-            <ActivitySummary 
-              orders={mockRecentOrders}
-              products={mockRecentProducts}
-              currency={storeData?.currency || "SAR"}
-            />
-          </div>
-        </div>
-        
-        {/* Legacy Stats - can be removed or kept for compatibility */}
-        <div className="hidden">
-          <DashboardStats 
-            products={statsData.products}
-            orders={statsData.orders}
-            customers={statsData.customers}
-            revenue={statsData.revenue}
-            formatCurrency={formatCurrency}
-          />
-        </div>
+        {/* Activity Summary Section */}
+        <ActivitySummary 
+          orders={mockRecentOrders}
+          products={mockRecentProducts}
+          currency={storeData?.currency || "SAR"}
+        />
+      </div>
+      
+      {/* Legacy Stats - can be removed or kept for compatibility */}
+      <div className="hidden">
+        <DashboardStats 
+          products={statsData.products}
+          orders={statsData.orders}
+          customers={statsData.customers}
+          revenue={statsData.revenue}
+          formatCurrency={formatCurrency}
+        />
       </div>
     </DashboardLayout>
   );

@@ -7,16 +7,23 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useAuthState } from "@/hooks/use-auth-state";
-import { supabase } from "@/integrations/supabase/client";
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  session: Session | null;
+  onLogout?: () => Promise<void>;
+}
+
+const Header: React.FC<HeaderProps> = ({
+  session,
+  onLogout
+}) => {
   const navigate = useNavigate();
-  const { loading, authenticated, user, signOut } = useAuthState();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [language, setLanguage] = useState("ar"); // 'ar' for Arabic, 'en' for English
@@ -33,12 +40,12 @@ const Header: React.FC = () => {
 
     // Check if user has a store when session changes
     const checkUserStore = async () => {
-      if (authenticated && user) {
+      if (session) {
         try {
           const { data, error } = await supabase
             .from('stores')
             .select('id')
-            .eq('user_id', user.id)
+            .eq('user_id', session.user.id)
             .maybeSingle();
             
           if (error) throw error;
@@ -54,7 +61,7 @@ const Header: React.FC = () => {
     
     checkUserStore();
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [authenticated, user]);
+  }, [session]);
 
   const toggleLanguage = () => {
     setLanguage(prev => prev === "ar" ? "en" : "ar");
@@ -67,7 +74,15 @@ const Header: React.FC = () => {
   const handleLogout = async () => {
     try {
       setIsLoading(true);
-      await signOut();
+      
+      if (onLogout) {
+        await onLogout();
+      } else {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+        toast.success(language === "ar" ? "تم تسجيل الخروج بنجاح" : "Logged out successfully");
+        navigate("/");
+      }
     } catch (error: any) {
       console.error("Error logging out:", error);
       toast.error(language === "ar" ? "حدث خطأ أثناء تسجيل الخروج" : "An error occurred during logout");
@@ -96,11 +111,13 @@ const Header: React.FC = () => {
         )}
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between">
+          {/* Logo Section */}
           <div className="flex items-center gap-1.5">
             <span className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent transition-all duration-300 hover:scale-105">Linok</span>
             <span className="text-lg md:text-xl font-medium text-gray-700">.me</span>
           </div>
           
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
             {showSearch ? (
               <div className="relative w-64 ml-6 transition-all duration-300 animate-fade-in">
@@ -143,7 +160,7 @@ const Header: React.FC = () => {
               <ChevronDown className="h-4 w-4 mr-0 ml-1" />
             </Button>
             
-            {authenticated ? (
+            {session ? (
               <div className="flex items-center space-x-3">
                 <Button 
                   variant="ghost" 
@@ -206,6 +223,7 @@ const Header: React.FC = () => {
             )}
           </nav>
           
+          {/* Mobile Menu Button */}
           <Button 
             variant="ghost" 
             size="icon" 
@@ -216,6 +234,7 @@ const Header: React.FC = () => {
           </Button>
         </div>
         
+        {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <div className="absolute top-full left-0 right-0 bg-white shadow-lg p-5 md:hidden flex flex-col space-y-4 animate-slide-down rounded-b-xl border-t border-gray-100">
             <div className="relative mb-3">
@@ -247,7 +266,7 @@ const Header: React.FC = () => {
             
             <div className="h-px w-full bg-gray-100 my-2"></div>
             
-            {authenticated ? (
+            {session ? (
               <>
                 <Button 
                   variant="ghost" 

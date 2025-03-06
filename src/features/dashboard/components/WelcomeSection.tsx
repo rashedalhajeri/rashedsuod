@@ -1,34 +1,23 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
-import { Sparkles, Copy, Store } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { getStoreUrl } from "@/utils/url-utils";
-import { Link } from "react-router-dom";
 
 interface WelcomeSectionProps {
   storeName: string;
   ownerName: string;
   newOrdersCount: number;
   lowStockCount: number;
-  storeUrl?: string;
-  storeId?: string;
-  storeDomain?: string;
 }
 
 const WelcomeSection: React.FC<WelcomeSectionProps> = ({
   storeName,
   ownerName,
   newOrdersCount,
-  lowStockCount,
-  storeUrl,
-  storeId,
-  storeDomain
+  lowStockCount
 }) => {
   const currentHour = new Date().getHours();
-  const [copying, setCopying] = useState(false);
   
   let greeting = "مرحباً";
   if (currentHour < 12) {
@@ -39,50 +28,15 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
     greeting = "مساء الخير";
   }
   
-  // Generate store URL using the utility function with proper domain name
-  const finalStoreUrl = storeUrl || getStoreUrl({ 
-    id: storeId,
-    domain_name: storeDomain
-  });
-  
-  console.log("Generated store URL:", finalStoreUrl); // Debugging log
-  
-  // Get the internal route path for the store
-  const getInternalStorePath = () => {
-    if (!storeId && !storeDomain) return "";
-    
-    return `/store/${storeDomain || storeId}`;
-  };
-  
-  // Copy store link to clipboard
-  const copyStoreLink = () => {
-    if (!finalStoreUrl) return;
-    
-    setCopying(true);
-    
-    navigator.clipboard.writeText(finalStoreUrl)
-      .then(() => {
-        toast.success("تم نسخ رابط المتجر بنجاح");
-      })
-      .catch((err) => {
-        console.error("Failed to copy:", err);
-        toast.error("حدث خطأ أثناء نسخ الرابط");
-      })
-      .finally(() => {
-        setTimeout(() => setCopying(false), 1000);
-      });
-  };
-  
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="w-full"
     >
       <Card className="bg-gradient-to-r from-primary-50/80 to-primary-100/50 border-primary-100">
         <CardContent className="pt-6">
-          <div className="flex items-start justify-between flex-wrap gap-4">
+          <div className="flex items-start justify-between">
             <div>
               <h2 className="text-2xl font-bold flex items-center">
                 {greeting}, {ownerName}
@@ -92,31 +46,6 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
                 مرحباً بك في لوحة تحكم {storeName}
               </p>
             </div>
-            
-            {finalStoreUrl && (
-              <div className="flex gap-2 mr-auto ml-0">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="bg-white hover:bg-primary-50 gap-1.5"
-                  onClick={copyStoreLink}
-                >
-                  <Copy className="h-4 w-4" />
-                  <span>{copying ? "تم النسخ!" : "نسخ الرابط"}</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-white hover:bg-primary-50 gap-1.5"
-                  asChild
-                >
-                  <Link to={getInternalStorePath()}>
-                    <Store className="h-4 w-4" />
-                    <span>مشاهدة متجري</span>
-                  </Link>
-                </Button>
-              </div>
-            )}
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">

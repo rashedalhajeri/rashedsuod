@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { isValidDomainName } from "@/utils/url-utils";
 
 const CreateStore: React.FC = () => {
   const navigate = useNavigate();
@@ -50,9 +50,10 @@ const CreateStore: React.FC = () => {
       return;
     }
 
-    // Validate domain name format (alphanumeric and hyphens only)
-    if (!isValidDomainName(formData.domainName)) {
-      toast.error("اسم ا��نطاق يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط");
+    // Validate domain name (alphanumeric and hyphens only)
+    const domainRegex = /^[a-zA-Z0-9-]+$/;
+    if (!domainRegex.test(formData.domainName)) {
+      toast.error("اسم النطاق يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط");
       return;
     }
 
