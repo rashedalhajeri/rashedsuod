@@ -1,25 +1,25 @@
 
 import React, { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/use-cart";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
-import { Textarea } from "@/components/ui/textarea";
-import { 
-  Check, ChevronRight, CreditCard, Banknote, ArrowLeft, ShoppingCart, 
-  User, Phone, HomeIcon, MapPin, Mail, ClipboardList, LogIn, UserPlus 
-} from "lucide-react";
+import { LogIn, UserPlus } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
+
 import StoreNavbar from "@/components/store/StoreNavbar";
 import StoreFooter from "@/components/store/StoreFooter";
-import { toast } from "sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import CheckoutHeader from "@/components/checkout/CheckoutHeader";
+import CustomerInfoForm from "@/components/checkout/CustomerInfoForm";
+import LoginForm from "@/components/checkout/LoginForm";
+import ShippingAddressForm from "@/components/checkout/ShippingAddressForm";
+import PaymentMethodSelector from "@/components/checkout/PaymentMethodSelector";
+import OrderSummary from "@/components/checkout/OrderSummary";
+import CartItemsPreview from "@/components/checkout/CartItemsPreview";
+import EmptyCheckout from "@/components/checkout/EmptyCheckout";
 
 const CheckoutPage = () => {
   const { storeDomain } = useParams<{ storeDomain: string }>();
@@ -175,9 +175,7 @@ const CheckoutPage = () => {
     setFormData(prev => ({ ...prev, paymentMethod: value }));
   };
   
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleSubmit = async () => {
     // Form validation
     if (!formData.customerName || !formData.customerPhone || !formData.shippingAddress) {
       toast.error("يرجى ملء جميع الحقول المطلوبة");
@@ -296,37 +294,10 @@ const CheckoutPage = () => {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50" dir="rtl">
         <StoreNavbar storeName={storeData?.store_name} logoUrl={storeData?.logo_url} />
-        
-        <div className="bg-gradient-to-b from-primary/10 to-transparent py-6">
-          <div className="container mx-auto">
-            <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-              <Link to={`/store/${storeDomain}`} className="hover:text-primary transition-colors">
-                الرئيسية
-              </Link>
-              <ChevronRight className="h-3 w-3" />
-              <span className="font-medium text-primary">إتمام الطلب</span>
-            </div>
-            <h1 className="text-3xl font-bold text-gray-800">
-              إتمام الطلب <ShoppingCart className="inline-block h-7 w-7 mr-2 text-primary" />
-            </h1>
-          </div>
-        </div>
-        
+        <CheckoutHeader storeDomain={storeDomain || ""} />
         <main className="flex-grow container mx-auto py-8 px-4">
-          <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300">
-            <CardContent className="flex flex-col items-center justify-center py-16">
-              <h2 className="text-xl font-semibold mb-4">السلة فارغة</h2>
-              <p className="text-gray-500 mb-6">لا يمكن إتمام الطلب، السلة فارغة</p>
-              <Button asChild size="lg" className="gap-2">
-                <Link to={`/store/${storeDomain}`}>
-                  <ArrowLeft className="h-5 w-5" />
-                  تصفح المنتجات
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+          <EmptyCheckout storeDomain={storeDomain || ""} />
         </main>
-        
         <StoreFooter storeName={storeData?.store_name} />
       </div>
     );
@@ -335,113 +306,27 @@ const CheckoutPage = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50" dir="rtl">
       <StoreNavbar storeName={storeData?.store_name} logoUrl={storeData?.logo_url} />
-      
-      <div className="bg-gradient-to-b from-primary/10 to-transparent py-6">
-        <div className="container mx-auto">
-          <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-            <Link to={`/store/${storeDomain}`} className="hover:text-primary transition-colors">
-              الرئيسية
-            </Link>
-            <ChevronRight className="h-3 w-3" />
-            <Link to={`/store/${storeDomain}/cart`} className="hover:text-primary transition-colors">
-              سلة التسوق
-            </Link>
-            <ChevronRight className="h-3 w-3" />
-            <span className="font-medium text-primary">إتمام الطلب</span>
-          </div>
-          <h1 className="text-3xl font-bold text-gray-800">
-            إتمام الطلب <ClipboardList className="inline-block h-7 w-7 mr-2 text-primary" />
-          </h1>
-        </div>
-      </div>
+      <CheckoutHeader storeDomain={storeDomain || ""} />
       
       <main className="flex-grow container mx-auto py-8 px-4">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
+            {/* Customer Information Section */}
             <Card className="border-0 shadow-md overflow-hidden">
               <div className="bg-primary/5 px-6 py-4 border-b">
                 <h2 className="font-semibold text-lg flex items-center gap-2">
-                  <User className="h-5 w-5 text-primary" />
                   معلومات الشخصية
                 </h2>
               </div>
               <CardContent className="p-6">
                 {isAuthenticated ? (
-                  <div className="space-y-4">
-                    <div className="bg-green-50 border border-green-200 rounded-md p-4 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-green-100 p-2 rounded-full">
-                          <Check className="h-5 w-5 text-green-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium">تم تسجيل الدخول</p>
-                          <p className="text-sm text-gray-600">{userData?.email}</p>
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleLogout}
-                        className="text-gray-500 hover:text-red-500"
-                      >
-                        تسجيل الخروج
-                      </Button>
-                    </div>
-                    
-                    <form onSubmit={handleSubmit} id="checkout-form">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <Label htmlFor="customerName">الاسم الكامل <span className="text-red-500">*</span></Label>
-                          <div className="relative">
-                            <Input
-                              id="customerName"
-                              name="customerName"
-                              value={formData.customerName}
-                              onChange={handleChange}
-                              className="pr-10"
-                              required
-                              placeholder="محمد أحمد"
-                            />
-                            <User className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="customerPhone">رقم الهاتف <span className="text-red-500">*</span></Label>
-                          <div className="relative">
-                            <Input
-                              id="customerPhone"
-                              name="customerPhone"
-                              value={formData.customerPhone}
-                              onChange={handleChange}
-                              className="pr-10"
-                              required
-                              placeholder="5xxxxxxxx"
-                              type="tel"
-                            />
-                            <Phone className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-2 md:col-span-2">
-                          <Label htmlFor="customerEmail">البريد الإلكتروني</Label>
-                          <div className="relative">
-                            <Input
-                              id="customerEmail"
-                              name="customerEmail"
-                              type="email"
-                              value={formData.customerEmail}
-                              onChange={handleChange}
-                              className="pr-10"
-                              placeholder="example@example.com"
-                              readOnly
-                            />
-                            <Mail className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                          </div>
-                        </div>
-                      </div>
-                    </form>
-                  </div>
+                  <CustomerInfoForm 
+                    formData={formData}
+                    isAuthenticated={isAuthenticated}
+                    userData={userData}
+                    handleChange={handleChange}
+                    handleLogout={handleLogout}
+                  />
                 ) : (
                   <Tabs value={checkoutMode} onValueChange={(value) => setCheckoutMode(value as "guest" | "login")} className="w-full">
                     <TabsList className="grid w-full grid-cols-2 mb-6">
@@ -456,374 +341,120 @@ const CheckoutPage = () => {
                     </TabsList>
                     
                     <TabsContent value="guest">
-                      <form onSubmit={handleSubmit} id="checkout-form">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="space-y-2">
-                            <Label htmlFor="customerName">الاسم الكامل <span className="text-red-500">*</span></Label>
-                            <div className="relative">
-                              <Input
-                                id="customerName"
-                                name="customerName"
-                                value={formData.customerName}
-                                onChange={handleChange}
-                                className="pr-10"
-                                required
-                                placeholder="محمد أحمد"
-                              />
-                              <User className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <Label htmlFor="customerPhone">رقم الهاتف <span className="text-red-500">*</span></Label>
-                            <div className="relative">
-                              <Input
-                                id="customerPhone"
-                                name="customerPhone"
-                                value={formData.customerPhone}
-                                onChange={handleChange}
-                                className="pr-10"
-                                required
-                                placeholder="5xxxxxxxx"
-                                type="tel"
-                              />
-                              <Phone className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-2 md:col-span-2">
-                            <Label htmlFor="customerEmail">البريد الإلكتروني</Label>
-                            <div className="relative">
-                              <Input
-                                id="customerEmail"
-                                name="customerEmail"
-                                type="email"
-                                value={formData.customerEmail}
-                                onChange={handleChange}
-                                className="pr-10"
-                                placeholder="example@example.com"
-                              />
-                              <Mail className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="mt-4 text-sm text-gray-500">
-                          لديك حساب بالفعل؟{" "}
-                          <button
-                            type="button"
-                            onClick={() => setCheckoutMode("login")}
-                            className="text-primary hover:underline"
-                          >
-                            تسجيل الدخول
-                          </button>
-                        </div>
-                      </form>
+                      <CustomerInfoForm 
+                        formData={formData}
+                        isAuthenticated={false}
+                        userData={null}
+                        handleChange={handleChange}
+                        handleLogout={handleLogout}
+                      />
+                      
+                      <div className="mt-4 text-sm text-gray-500">
+                        لديك حساب بالفعل؟{" "}
+                        <button
+                          type="button"
+                          onClick={() => setCheckoutMode("login")}
+                          className="text-primary hover:underline"
+                        >
+                          تسجيل الدخول
+                        </button>
+                      </div>
                     </TabsContent>
                     
                     <TabsContent value="login">
-                      <form onSubmit={handleLogin} className="space-y-4">
-                        {loginError && (
-                          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
-                            {loginError}
-                          </div>
-                        )}
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="email">البريد الإلكتروني</Label>
-                          <div className="relative">
-                            <Input
-                              id="email"
-                              name="email"
-                              type="email"
-                              value={loginData.email}
-                              onChange={handleLoginDataChange}
-                              className="pr-10"
-                              required
-                              placeholder="your@email.com"
-                            />
-                            <Mail className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="password">كلمة المرور</Label>
-                          <Input
-                            id="password"
-                            name="password"
-                            type="password"
-                            value={loginData.password}
-                            onChange={handleLoginDataChange}
-                            required
-                          />
-                        </div>
-                        
-                        <div className="flex flex-col space-y-4">
-                          <Button 
-                            type="submit" 
-                            className="w-full"
-                            disabled={submitting}
-                          >
-                            {submitting ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
-                          </Button>
-                          
-                          <div className="text-center text-sm">
-                            <Link 
-                              to={`/store/${storeDomain}/forgot-password`} 
-                              className="text-primary hover:underline"
-                            >
-                              نسيت كلمة المرور؟
-                            </Link>
-                          </div>
-                          
-                          <div className="text-center text-sm">
-                            ليس لديك حساب؟{" "}
-                            <Link 
-                              to={`/store/${storeDomain}/register`} 
-                              className="text-primary hover:underline"
-                            >
-                              إنشاء حساب جديد
-                            </Link>
-                          </div>
-                          
-                          <div className="text-center mt-2">
-                            <button
-                              type="button"
-                              onClick={() => setCheckoutMode("guest")}
-                              className="text-gray-500 hover:text-gray-700 text-sm"
-                            >
-                              متابعة كزائر
-                            </button>
-                          </div>
-                        </div>
-                      </form>
+                      <LoginForm 
+                        loginData={loginData}
+                        loginError={loginError}
+                        submitting={submitting}
+                        storeDomain={storeDomain || ""}
+                        handleLoginDataChange={handleLoginDataChange}
+                        handleLogin={handleLogin}
+                        setCheckoutMode={setCheckoutMode}
+                      />
                     </TabsContent>
                   </Tabs>
                 )}
               </CardContent>
             </Card>
             
+            {/* Shipping Address Section */}
             <Card className="border-0 shadow-md overflow-hidden">
               <div className="bg-primary/5 px-6 py-4 border-b">
                 <h2 className="font-semibold text-lg flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-primary" />
                   عنوان التوصيل
                 </h2>
               </div>
               <CardContent className="p-6">
-                <div className="space-y-2">
-                  <Label htmlFor="shippingAddress">العنوان التفصيلي <span className="text-red-500">*</span></Label>
-                  <div className="relative">
-                    <Textarea
-                      id="shippingAddress"
-                      name="shippingAddress"
-                      value={formData.shippingAddress}
-                      onChange={handleChange}
-                      required
-                      rows={3}
-                      placeholder="المنطقة، الشارع، البناية، الطابق، رقم الشقة"
-                      className="resize-none pr-10 pt-3"
-                    />
-                    <HomeIcon className="absolute right-3 top-3 h-5 w-5 text-gray-400" />
-                  </div>
-                </div>
-                
-                <div className="mt-4 space-y-2">
-                  <Label htmlFor="notes">ملاحظات للطلب</Label>
-                  <Textarea
-                    id="notes"
-                    name="notes"
-                    value={formData.notes}
-                    onChange={handleChange}
-                    rows={2}
-                    placeholder="أي تعليمات إضافية للتوصيل أو الطلب؟"
-                    className="resize-none"
-                  />
-                </div>
+                <ShippingAddressForm 
+                  formData={formData} 
+                  handleChange={handleChange} 
+                />
               </CardContent>
             </Card>
             
+            {/* Payment Method Section */}
             <Card className="border-0 shadow-md overflow-hidden">
               <div className="bg-primary/5 px-6 py-4 border-b">
                 <h2 className="font-semibold text-lg flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-primary" />
                   طريقة الدفع
                 </h2>
               </div>
               <CardContent className="p-6">
-                <RadioGroup 
-                  value={formData.paymentMethod} 
-                  onValueChange={handlePaymentMethodChange}
-                  className="space-y-3"
-                >
-                  <div className="flex items-center space-x-3 space-x-reverse border rounded-md p-4 hover:bg-gray-50 transition-colors cursor-pointer">
-                    <RadioGroupItem value="cash_on_delivery" id="cash_on_delivery" />
-                    <Label htmlFor="cash_on_delivery" className="flex items-center cursor-pointer">
-                      <div className="bg-green-100 p-2 rounded-full ml-3">
-                        <Banknote className="h-5 w-5 text-green-600" />
-                      </div>
-                      <div>
-                        <span className="font-medium">الدفع عند الاستلام</span>
-                        <p className="text-sm text-gray-500">ادفع نقداً عند استلام الطلب</p>
-                      </div>
-                    </Label>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3 space-x-reverse border rounded-md p-4 hover:bg-gray-50 transition-colors cursor-pointer">
-                    <RadioGroupItem value="card_payment" id="card_payment" />
-                    <Label htmlFor="card_payment" className="flex items-center cursor-pointer">
-                      <div className="bg-blue-100 p-2 rounded-full ml-3">
-                        <CreditCard className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <span className="font-medium">بطاقة ائتمان أو بطاقة مدى</span>
-                        <p className="text-sm text-gray-500">سيتم توجيهك لبوابة الدفع بعد تأكيد الطلب</p>
-                      </div>
-                    </Label>
-                  </div>
-                </RadioGroup>
-                
-                <div className="flex items-center justify-center gap-3 mt-6">
-                  <img src="/payment-icons/visa-master.png" alt="Visa/Mastercard" className="h-8" />
-                  <img src="/payment-icons/mada.png" alt="Mada" className="h-7" />
-                  <img src="/payment-icons/knet.png" alt="KNet" className="h-7" />
-                  <img src="/payment-icons/benefit.png" alt="Benefit" className="h-6" />
-                </div>
+                <PaymentMethodSelector 
+                  selectedMethod={formData.paymentMethod}
+                  onMethodChange={handlePaymentMethodChange}
+                />
               </CardContent>
             </Card>
             
+            {/* Mobile Order Summary (visible only on mobile) */}
             <div className="lg:hidden">
               <Card className="border-0 shadow-md overflow-hidden">
                 <div className="bg-primary/5 px-6 py-4 border-b">
                   <h2 className="font-semibold text-lg">ملخص الطلب</h2>
                 </div>
                 <CardContent className="p-6">
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">المجموع الفرعي</span>
-                      <span>{totalPrice(filteredCartItems).toFixed(2)} {storeData?.currency || "KWD"}</span>
-                    </div>
-                    
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">الشحن</span>
-                      <span className="text-green-600">مجاني</span>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex justify-between font-semibold text-lg">
-                      <span>الإجمالي</span>
-                      <span className="text-primary">{totalPrice(filteredCartItems).toFixed(2)} {storeData?.currency || "KWD"}</span>
-                    </div>
-                  </div>
-                  
-                  <Button 
-                    type="submit" 
-                    form="checkout-form"
-                    className="w-full mt-6 py-6 text-base shadow-lg hover:shadow-xl transition-all" 
-                    size="lg"
-                    disabled={submitting}
-                    onClick={handleSubmit}
-                  >
-                    {submitting ? (
-                      <>
-                        <span className="animate-pulse">جاري تأكيد الطلب...</span>
-                      </>
-                    ) : (
-                      "تأكيد الطلب"
-                    )}
-                  </Button>
+                  <OrderSummary 
+                    totalAmount={totalPrice(filteredCartItems)}
+                    currency={storeData?.currency || "KWD"}
+                    submitting={submitting}
+                    storeDomain={storeDomain || ""}
+                    onSubmit={handleSubmit}
+                  />
                 </CardContent>
               </Card>
             </div>
           </div>
           
+          {/* Right Sidebar: Cart and Order Summary */}
           <div>
             <div className="lg:sticky lg:top-6 space-y-6">
+              {/* Cart Items Preview */}
               <Card className="border-0 shadow-md overflow-hidden">
                 <div className="bg-primary/5 px-6 py-4 border-b">
                   <h2 className="font-semibold text-lg">المنتجات ({filteredCartItems.reduce((acc, item) => acc + item.quantity, 0)})</h2>
                 </div>
                 <CardContent className="p-0 max-h-80 overflow-y-auto">
-                  <div className="divide-y">
-                    {filteredCartItems.map(item => (
-                      <div key={item.id} className="p-4 hover:bg-gray-50 transition-colors">
-                        <div className="flex items-start space-x-3 space-x-reverse">
-                          <div className="h-16 w-16 bg-gray-100 rounded-md overflow-hidden border flex-shrink-0">
-                            <img 
-                              src={item.image_url || "/placeholder.svg"} 
-                              alt={item.name}
-                              className="h-full w-full object-cover"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = "/placeholder.svg";
-                              }}
-                            />
-                          </div>
-                          
-                          <div className="flex-grow">
-                            <h4 className="font-medium text-sm line-clamp-1">{item.name}</h4>
-                            <div className="flex justify-between items-center mt-1">
-                              <div className="text-gray-600 text-sm">
-                                {item.quantity} × {item.price} {storeData?.currency || "KWD"}
-                              </div>
-                              
-                              <div className="font-semibold text-primary">
-                                {(item.price * item.quantity).toFixed(2)} {storeData?.currency || "KWD"}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <CartItemsPreview 
+                    items={filteredCartItems}
+                    currency={storeData?.currency || "KWD"}
+                  />
                 </CardContent>
               </Card>
               
+              {/* Order Summary - Desktop */}
               <Card className="border-0 shadow-md overflow-hidden">
                 <div className="bg-primary/5 px-6 py-4 border-b">
                   <h2 className="font-semibold text-lg">ملخص الطلب</h2>
                 </div>
                 <CardContent className="p-6">
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">المجموع الفرعي</span>
-                      <span>{totalPrice(filteredCartItems).toFixed(2)} {storeData?.currency || "KWD"}</span>
-                    </div>
-                    
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">الشحن</span>
-                      <span className="text-green-600">مجاني</span>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex justify-between font-semibold text-lg">
-                      <span>الإجمالي</span>
-                      <span className="text-primary">{totalPrice(filteredCartItems).toFixed(2)} {storeData?.currency || "KWD"}</span>
-                    </div>
-                  </div>
-                  
-                  <Button 
-                    onClick={handleSubmit}
-                    className="w-full mt-6 py-6 text-base shadow-lg hover:shadow-xl transition-all" 
-                    size="lg"
-                    disabled={submitting}
-                  >
-                    {submitting ? (
-                      <>
-                        <span className="animate-pulse">جاري تأكيد الطلب...</span>
-                      </>
-                    ) : (
-                      "تأكيد الطلب"
-                    )}
-                  </Button>
-                  
-                  <div className="mt-4 text-center text-sm text-gray-500">
-                    <Link to={`/store/${storeDomain}/cart`} className="text-primary hover:underline inline-flex items-center gap-1">
-                      <ArrowLeft className="h-4 w-4" />
-                      العودة للسلة
-                    </Link>
-                  </div>
+                  <OrderSummary 
+                    totalAmount={totalPrice(filteredCartItems)}
+                    currency={storeData?.currency || "KWD"}
+                    submitting={submitting}
+                    storeDomain={storeDomain || ""}
+                    onSubmit={handleSubmit}
+                  />
                 </CardContent>
               </Card>
             </div>
