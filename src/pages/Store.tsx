@@ -2,15 +2,15 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import StoreNavbar from "@/components/store/StoreNavbar";
 import StoreFooter from "@/components/store/StoreFooter";
-import ProductGrid from "@/components/store/ProductGrid";
 import StoreBanner from "@/components/store/StoreBanner";
 import CategoryNavigation from "@/components/store/CategoryNavigation";
+import FeaturedProductsSection from "@/components/store/sections/FeaturedProductsSection";
+import BestSellingProductsSection from "@/components/store/sections/BestSellingProductsSection";
+import AllProductsSection from "@/components/store/sections/AllProductsSection";
 
 const Store = () => {
   const { storeDomain } = useParams<{ storeDomain: string }>();
@@ -86,6 +86,15 @@ const Store = () => {
     setActiveCategory(category);
   };
 
+  const handleClearSearch = () => {
+    setSearchQuery("");
+  };
+
+  const handleViewAllBestSelling = () => {
+    setActiveCategory("الأكثر مبيعاً");
+  };
+
+  // Filter products by search query
   const filteredProducts = products.filter(
     (product) =>
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -111,14 +120,6 @@ const Store = () => {
   };
 
   const displayProducts = getCategoryProducts();
-
-  const formatCurrency = (price: number) => {
-    if (!storeData) return price;
-    return new Intl.NumberFormat('ar-SA', {
-      style: 'currency',
-      currency: storeData.currency || 'SAR'
-    }).format(price);
-  };
 
   if (loading) {
     return <LoadingState message="جاري تحميل المتجر..." />;
@@ -149,83 +150,28 @@ const Store = () => {
         />
         
         {/* Featured Products Section */}
-        {featuredProducts.length > 0 && activeCategory === "جميع المنتجات" && (
-          <section className="py-12 bg-white">
-            <div className="container mx-auto px-4">
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="store-section-title">منتجات مميزة</h2>
-                <Button variant="ghost" className="text-primary hover:bg-primary/5">عرض الكل</Button>
-              </div>
-              
-              <ProductGrid products={featuredProducts} />
-            </div>
-          </section>
+        {activeCategory === "جميع المنتجات" && (
+          <FeaturedProductsSection 
+            products={featuredProducts} 
+            onViewAll={() => {}} 
+          />
         )}
         
-        {/* Best Selling Products */}
-        {bestSellingProducts.length > 0 && activeCategory === "جميع المنتجات" && (
-          <section className="py-12 bg-gray-50">
-            <div className="container mx-auto px-4">
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="store-section-title">الأكثر مبيعاً</h2>
-                <Button 
-                  variant="ghost" 
-                  className="text-primary hover:bg-primary/5"
-                  onClick={() => setActiveCategory("الأكثر مبيعاً")}
-                >
-                  عرض الكل
-                </Button>
-              </div>
-              
-              <ProductGrid products={bestSellingProducts} />
-            </div>
-          </section>
+        {/* Best Selling Products Section */}
+        {activeCategory === "جميع المنتجات" && (
+          <BestSellingProductsSection 
+            products={bestSellingProducts} 
+            onViewAll={handleViewAllBestSelling} 
+          />
         )}
         
         {/* All Products Section */}
-        <section className="py-12 bg-white">
-          <div className="container mx-auto px-4">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="store-section-title">
-                {activeCategory === "جميع المنتجات" ? "جميع المنتجات" : activeCategory}
-              </h2>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">
-                  {displayProducts.length} منتج
-                </span>
-              </div>
-            </div>
-            
-            {searchQuery && (
-              <p className="mb-6 text-gray-500">
-                نتائج البحث عن: <span className="font-medium text-primary">{searchQuery}</span>
-              </p>
-            )}
-            
-            {displayProducts.length > 0 ? (
-              <ProductGrid products={displayProducts} />
-            ) : (
-              <div className="text-center py-16 bg-gray-50 rounded-lg">
-                <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">لا توجد منتجات</h3>
-                <p className="text-gray-500">
-                  {searchQuery
-                    ? `لا توجد نتائج مطابقة لـ "${searchQuery}"`
-                    : "لا توجد منتجات متاحة حالياً"}
-                </p>
-                {searchQuery && (
-                  <Button
-                    onClick={() => setSearchQuery("")}
-                    variant="outline"
-                    className="mt-4"
-                  >
-                    عرض جميع المنتجات
-                  </Button>
-                )}
-              </div>
-            )}
-          </div>
-        </section>
+        <AllProductsSection 
+          products={displayProducts}
+          activeCategory={activeCategory}
+          searchQuery={searchQuery}
+          onClearSearch={handleClearSearch}
+        />
       </main>
       
       <StoreFooter storeName={storeData?.store_name} />
