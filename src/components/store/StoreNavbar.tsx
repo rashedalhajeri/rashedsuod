@@ -41,24 +41,29 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
       <div className="container mx-auto py-3 px-4">
         <div className="flex items-center justify-between">
           {/* Logo and Store Name */}
-          <Link to={`/store/${storeDomain}`} className="flex items-center gap-2">
+          <Link to={`/store/${storeDomain}`} className="flex items-center gap-3">
             {logoUrl ? (
-              <img 
-                src={logoUrl} 
-                alt={storeName} 
-                className="h-10 w-auto object-contain" 
-                onError={e => {
-                  (e.target as HTMLImageElement).src = "/placeholder.svg";
-                }} 
-              />
+              <div className="h-12 w-12 rounded-full overflow-hidden border border-gray-200 flex items-center justify-center bg-white shadow-sm">
+                <img 
+                  src={logoUrl} 
+                  alt={storeName} 
+                  className="h-10 w-10 object-contain" 
+                  onError={e => {
+                    (e.target as HTMLImageElement).src = "/placeholder.svg";
+                  }} 
+                />
+              </div>
             ) : (
-              <div className="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center">
+              <div className="h-12 w-12 bg-gray-100 rounded-full flex items-center justify-center border border-gray-200 shadow-sm">
                 <span className="text-lg font-bold text-gray-700">
                   {storeName ? storeName.charAt(0).toUpperCase() : "S"}
                 </span>
               </div>
             )}
-            <span className="font-bold text-xl text-gray-800">{storeName}</span>
+            <div className="flex flex-col">
+              <span className="font-bold text-xl text-gray-800">{storeName}</span>
+              <span className="text-xs text-gray-500">متجر إلكتروني</span>
+            </div>
           </Link>
           
           {/* Desktop Navigation - hidden on mobile */}
