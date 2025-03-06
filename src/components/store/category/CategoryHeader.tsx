@@ -33,23 +33,25 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({
   };
 
   return (
-    <header className="bg-gradient-to-l from-blue-500 to-blue-600 text-white relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-40 h-40 bg-blue-400/10 rounded-full -mt-20 -mr-20 blur-xl"></div>
-      <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full -mb-16 -ml-16 blur-lg"></div>
+    <header className="bg-gradient-to-r from-blue-600 to-blue-500 text-white relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400/20 rounded-full -mt-32 -mr-32 blur-2xl"></div>
+      <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -mb-24 -ml-24 blur-xl"></div>
+      <div className="absolute top-1/4 left-1/3 w-16 h-16 bg-blue-300/20 rounded-full blur-lg"></div>
       
-      <div className="container mx-auto px-4 py-5 relative z-10">
-        <div className="flex items-center justify-between mb-2">
+      <div className="container mx-auto px-4 py-4 relative z-10">
+        <div className="flex items-center justify-between mb-3">
           {/* Left Side: Cart button with badge */}
           <Link to={`/store/${storeDomain}/cart`} className="block">
             <Button 
               variant="ghost" 
               size="sm" 
-              className="relative text-white p-1 sm:p-1.5 h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
+              className="relative text-white p-1.5 h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors shadow-sm"
               aria-label="عربة التسوق"
             >
-              <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6" />
+              <ShoppingCart className="h-5 w-5" />
               {totalItems > 0 && (
-                <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] sm:text-xs h-4 min-w-4 sm:h-5 sm:min-w-5 flex items-center justify-center rounded-full px-1 border border-white/20 shadow-md">
+                <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] h-5 min-w-5 flex items-center justify-center rounded-full px-1 border border-white/20 shadow-md">
                   {totalItems}
                 </Badge>
               )}
@@ -60,7 +62,7 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({
             {/* Back button */}
             <Button 
               variant="ghost" 
-              className="text-white bg-white/10 hover:bg-white/20 p-0 h-9 w-9 rounded-full"
+              className="text-white bg-white/15 hover:bg-white/25 p-0 h-10 w-10 rounded-full shadow-sm flex items-center justify-center"
               onClick={handleNavigateToStore}
             >
               <ChevronRight className="h-5 w-5" />
@@ -72,30 +74,30 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="text-white p-1 sm:p-1.5 h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
+                  className="text-white p-1.5 h-10 w-10 rounded-full bg-white/15 hover:bg-white/25 active:bg-white/30 transition-colors shadow-sm"
                   aria-label="حسابي"
                 >
-                  <User className="h-5 w-5 sm:h-6 sm:w-6" />
+                  <User className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent dir="rtl" align="end" className="w-48 sm:w-56 mt-2 border-none shadow-lg rounded-xl overflow-hidden">
-                <div className="p-3 pb-2 text-center bg-gradient-to-l from-blue-50 to-blue-100">
+              <DropdownMenuContent dir="rtl" align="end" className="w-56 mt-2 border-none shadow-lg rounded-xl overflow-hidden">
+                <div className="p-3 pb-2 text-center bg-gradient-to-br from-blue-50 to-blue-100">
                   <h3 className="font-semibold text-blue-600">حسابي</h3>
                 </div>
                 <DropdownMenuSeparator />
                 <Link to={`/store/${storeDomain}/login`}>
-                  <DropdownMenuItem className="cursor-pointer py-2.5 hover:bg-gray-50 text-xs sm:text-sm">
+                  <DropdownMenuItem className="cursor-pointer py-2.5 hover:bg-gray-50 text-sm">
                     تسجيل الدخول
                   </DropdownMenuItem>
                 </Link>
                 <Link to={`/store/${storeDomain}/register`}>
-                  <DropdownMenuItem className="cursor-pointer py-2.5 hover:bg-gray-50 text-xs sm:text-sm">
+                  <DropdownMenuItem className="cursor-pointer py-2.5 hover:bg-gray-50 text-sm">
                     إنشاء حساب جديد
                   </DropdownMenuItem>
                 </Link>
                 <DropdownMenuSeparator />
                 <Link to={`/store/${storeDomain}/cart`}>
-                  <DropdownMenuItem className="cursor-pointer py-2.5 text-gray-600 hover:text-blue-600 hover:bg-gray-50 text-xs sm:text-sm">
+                  <DropdownMenuItem className="cursor-pointer py-2.5 text-gray-600 hover:text-blue-600 hover:bg-gray-50 text-sm">
                     متابعة كزائر
                   </DropdownMenuItem>
                 </Link>
@@ -104,13 +106,18 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({
           </div>
         </div>
         
-        <div className="text-center py-3">
-          <h1 className="text-2xl font-bold text-white tracking-wide mb-1">{headerTitle}</h1>
-          <div className="h-1 w-20 bg-white/30 rounded-full mx-auto"></div>
-        </div>
+        <motion.div 
+          className="text-center py-5"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <h1 className="text-2xl font-bold text-white tracking-wide mb-2 text-shadow">{headerTitle}</h1>
+          <div className="h-1 w-24 bg-white/30 rounded-full mx-auto transform transition-all duration-300 hover:w-32"></div>
+        </motion.div>
       </div>
       
-      <div className="h-5 bg-gray-50 rounded-t-3xl -mb-1"></div>
+      <div className="h-6 bg-gray-50 rounded-t-3xl -mb-1 shadow-inner"></div>
     </header>
   );
 };
