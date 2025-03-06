@@ -5,6 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { ThemeSettings } from '../../../types/theme-types';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Info } from 'lucide-react';
 
 // Font options
 const fontOptions = [
@@ -29,10 +31,34 @@ const FontsCard: React.FC<FontsCardProps> = ({
   return (
     <Card>
       <CardContent className="pt-6">
-        <h3 className="text-lg font-medium mb-4">الخطوط</h3>
+        <div className="flex items-center gap-2 mb-4">
+          <h3 className="text-lg font-medium">الخطوط</h3>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p className="max-w-xs">اختر نوع الخط المناسب لمتجرك لتحسين قابلية القراءة ومطابقة هوية علامتك التجارية</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
         <div className="space-y-4">
           <div>
-            <Label htmlFor="font-family">نوع الخط</Label>
+            <div className="flex items-center gap-2 mb-1">
+              <Label htmlFor="font-family">نوع الخط</Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p className="max-w-xs">هذا الخط سيُطبق على جميع النصوص في متجرك</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <Select 
               value={themeSettings.font_family} 
               onValueChange={(value) => onFontChange(value)}
@@ -51,7 +77,19 @@ const FontsCard: React.FC<FontsCardProps> = ({
           </div>
           
           <div className="pt-4">
-            <Label htmlFor="custom-css">CSS مخصص</Label>
+            <div className="flex items-center gap-2 mb-1">
+              <Label htmlFor="custom-css">CSS مخصص</Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p className="max-w-xs">أضف أكواد CSS مخصصة لتعديل مظهر متجرك بشكل متقدم - متاح فقط في الباقات المدفوعة</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <Input 
               id="custom-css" 
               placeholder="أضف CSS مخصص هنا" 

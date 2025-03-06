@@ -8,6 +8,8 @@ import { RefreshCw } from 'lucide-react';
 import ColorSchemesGrid from './ColorSchemesGrid';
 import IndividualColorPicker from './IndividualColorPicker';
 import ColorPreview from './ColorPreview';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Info } from 'lucide-react';
 
 // Define the color schemes
 const colorSchemes = [
@@ -116,22 +118,51 @@ const ThemeColorCustomizer: React.FC<ThemeColorCustomizerProps> = ({
         <TabsList className="grid grid-cols-2 w-full mb-4">
           <TabsTrigger value="scheme" className="flex items-center gap-2">
             <span>مجموعات الألوان</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p className="max-w-xs">اختر مجموعة ألوان متناسقة لمتجرك من المجموعات الجاهزة</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </TabsTrigger>
           <TabsTrigger value="individual" className="flex items-center gap-2">
             <span>الألوان الفردية</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p className="max-w-xs">خصص كل لون من ألوان متجرك بشكل منفصل</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </TabsTrigger>
         </TabsList>
         
         <TabsContent value="scheme" className="space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-base font-medium">اختر مجموعة ألوان متناسقة</h3>
-            <button 
-              onClick={setRandomColorScheme}
-              className="text-xs flex items-center gap-1 text-gray-600 hover:text-primary py-1 px-2 rounded hover:bg-gray-100"
-            >
-              <RefreshCw className="h-3 w-3" />
-              <span>عشوائي</span>
-            </button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button 
+                    onClick={setRandomColorScheme}
+                    className="text-xs flex items-center gap-1 text-gray-600 hover:text-primary py-1 px-2 rounded hover:bg-gray-100"
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                    <span>عشوائي</span>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p className="max-w-xs">اختيار مجموعة ألوان عشوائية</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           
           <ColorSchemesGrid 
@@ -158,6 +189,7 @@ const ThemeColorCustomizer: React.FC<ThemeColorCustomizerProps> = ({
                   value={themeSettings.primary_color}
                   options={colorOptions}
                   onChange={handlePrimaryColorChange}
+                  tooltip="اللون الأساسي للمتجر، يستخدم للعناوين والأزرار والعناصر البارزة"
                 />
                 
                 <IndividualColorPicker
@@ -166,6 +198,7 @@ const ThemeColorCustomizer: React.FC<ThemeColorCustomizerProps> = ({
                   value={themeSettings.secondary_color}
                   options={secondaryColorOptions}
                   onChange={handleSecondaryColorChange}
+                  tooltip="يستخدم للخلفيات والمناطق الثانوية في متجرك"
                 />
                 
                 <IndividualColorPicker
@@ -174,6 +207,7 @@ const ThemeColorCustomizer: React.FC<ThemeColorCustomizerProps> = ({
                   value={themeSettings.accent_color}
                   options={accentColorOptions}
                   onChange={handleAccentColorChange}
+                  tooltip="يستخدم لإبراز العناصر المهمة مثل الأيقونات والشارات والتنبيهات"
                 />
               </div>
               
