@@ -26,12 +26,25 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
   // Get current time
   const [currentTime, setCurrentTime] = useState(new Date());
   
+  // Rotating greeting message
+  const greetingMessages = ["اطلب", "منتجاتك", "وتوصل باب بيتك"];
+  const [currentGreetingIndex, setCurrentGreetingIndex] = useState(0);
+  
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 60000); // Update every minute
     
     return () => clearInterval(timer);
+  }, []);
+  
+  // Set up the rotating greeting message
+  useEffect(() => {
+    const greetingInterval = setInterval(() => {
+      setCurrentGreetingIndex(prevIndex => (prevIndex + 1) % greetingMessages.length);
+    }, 2000); // Change message every 2 seconds
+    
+    return () => clearInterval(greetingInterval);
   }, []);
   
   // Format time as HH:MM in Arabic/Eastern format
@@ -65,9 +78,9 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
   const initials = getInitials(storeName || "Store");
 
   return (
-    <header className="relative">
-      {/* Main Header with gradient background */}
-      <div className="bg-gradient-to-r from-blue-700 to-green-500 pt-10 pb-20 px-4">
+    <header className="relative" dir="rtl">
+      {/* Main Header with gradient background and curved bottom edge */}
+      <div className="bg-gradient-to-r from-blue-700 to-green-500 pt-10 pb-20 px-4 rounded-b-3xl">
         <div className="container mx-auto">
           <div className="flex items-center justify-between">
             {/* Left: Notification and Cart */}
@@ -79,7 +92,7 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
             {/* Right: User info and avatar */}
             <div className="flex items-center gap-3 text-white">
               <div className="text-right">
-                <p className="text-sm">مرحباً،</p>
+                <p className="text-sm">{greetingMessages[currentGreetingIndex]}،</p>
                 <h2 className="font-bold text-lg tracking-wide">{storeName}</h2>
               </div>
               
