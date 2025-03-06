@@ -7,7 +7,6 @@ import { ErrorState } from "@/components/ui/error-state";
 import StoreLayout from "@/components/store/StoreLayout";
 import StoreContent from "@/components/store/StoreContent";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 const Store = () => {
   const { storeDomain } = useParams<{ storeDomain: string }>();
@@ -63,12 +62,8 @@ const Store = () => {
           // In a real implementation, you'd filter products based on section data
           setFeaturedProducts([]);
           setBestSellingProducts([]);
-          
-          // Show success toast
-          toast.success("تم تحميل المتجر بنجاح");
         } catch (err) {
           console.error("Error fetching store data:", err);
-          toast.error("حدث خطأ أثناء تحميل بيانات المتجر");
         } finally {
           setIsLoadingData(false);
         }

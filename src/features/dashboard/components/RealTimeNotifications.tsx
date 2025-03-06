@@ -1,10 +1,7 @@
 
 import React, { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Bell } from "lucide-react";
 import OrderNotifications from "@/features/orders/components/OrderNotifications";
-import { useStoreData } from "@/hooks/use-store-data";
 
 interface RealTimeNotificationsProps {
   storeId?: string;
@@ -15,7 +12,7 @@ const RealTimeNotifications: React.FC<RealTimeNotificationsProps> = ({ storeId }
   const [isRealtimeConnected, setIsRealtimeConnected] = useState(false);
   
   useEffect(() => {
-    // تفعيل الإشعارات فقط عندما يكون لدينا معرف متجر
+    // تفعيل الإشعارات فقط عندما يكون لدينا معرف متجر ونكون في لوحة التحكم
     if (storeId && notificationsEnabled) {
       try {
         console.log("جاري تفعيل الإشعارات لمتجر:", storeId);
@@ -34,13 +31,6 @@ const RealTimeNotifications: React.FC<RealTimeNotificationsProps> = ({ storeId }
       }
     };
   }, [storeId, notificationsEnabled]);
-  
-  // دالة لتفعيل أو إلغاء تفعيل الإشعارات
-  const toggleNotifications = () => {
-    const newState = !notificationsEnabled;
-    setNotificationsEnabled(newState);
-    toast.success(newState ? "تم تفعيل الإشعارات" : "تم إيقاف الإشعارات");
-  };
   
   // عدم عرض أي شيء إذا لم يكن هناك معرف متجر
   if (!storeId) {

@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Bell, ExternalLink } from "lucide-react";
+import { Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Order } from "@/types/orders";
 import { useNavigate } from "react-router-dom";
@@ -15,8 +15,15 @@ const OrderNotifications: React.FC<OrderNotificationsProps> = ({ storeId }) => {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    if (!storeId) {
-      console.warn("لم يتم توفير معرف المتجر لإشعارات الطلبات");
+    // تأكد من أننا في لوحة التحكم، وليس في صفحة المتجر العامة
+    const isDashboard = window.location.pathname.includes('/dashboard');
+    
+    if (!storeId || !isDashboard) {
+      if (!isDashboard) {
+        console.info("تم تعطيل الإشعارات في واجهة المتجر العامة");
+      } else {
+        console.warn("لم يتم توفير معرف المتجر لإشعارات الطلبات");
+      }
       return;
     }
 
