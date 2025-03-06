@@ -198,9 +198,19 @@ export const getProductById = async (productId: string) => {
 // Helper function to create a new product
 export const createProduct = async (productData: any) => {
   try {
+    // تأكد من تحويل البيانات بالشكل الصحيح للتخزين
+    const processedProductData = {
+      ...productData,
+      image_url: productData.images && productData.images.length > 0 ? productData.images[0] : null,
+      additional_images: productData.images && productData.images.length > 1 ? productData.images.slice(1) : []
+    };
+    
+    // إزالة حقل الصور المصدري من البيانات
+    delete processedProductData.images;
+    
     const { data, error } = await supabase
       .from('products')
-      .insert([productData])
+      .insert([processedProductData])
       .select();
     
     if (error) {
@@ -218,6 +228,13 @@ export const createProduct = async (productData: any) => {
 // Helper function to update a product
 export const updateProduct = async (productId: string, updates: any) => {
   try {
+    // إذا كان هناك حقل images في التحديثات، قم بمعالجته
+    if (updates.images) {
+      updates.image_url = updates.images.length > 0 ? updates.images[0] : null;
+      updates.additional_images = updates.images.length > 1 ? updates.images.slice(1) : [];
+      delete updates.images;
+    }
+    
     const { data, error } = await supabase
       .from('products')
       .update(updates)

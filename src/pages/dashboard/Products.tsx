@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,13 +22,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Link } from "react-router-dom";
 import LoadingState from "@/components/ui/loading-state";
 import useStoreData, { getCurrencyFormatter } from "@/hooks/use-store-data";
+import ImageUploadGrid from "@/components/ui/image-upload-grid";
 
 interface ProductFormData {
   name: string;
   description: string;
   price: number;
   stock_quantity: number;
-  image_url: string | null;
+  images: string[];
 }
 
 const Products: React.FC = () => {
@@ -42,13 +42,12 @@ const Products: React.FC = () => {
     description: "",
     price: 0,
     stock_quantity: 0,
-    image_url: null
+    images: []
   });
   
   const { data: storeData } = useStoreData();
   const formatCurrency = getCurrencyFormatter(storeData?.currency || 'SAR');
   
-  // فتشت بيانات المنتجات
   const { data: products, isLoading, refetch } = useQuery({
     queryKey: ['products'],
     queryFn: async () => {
@@ -73,13 +72,11 @@ const Products: React.FC = () => {
     }
   });
   
-  // تصفية المنتجات حسب البحث
   const filteredProducts = products?.filter(product => 
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase()))
   );
   
-  // إضافة منتج جديد
   const handleAddProduct = async () => {
     try {
       const { data: storeData } = await useStoreData().refetch();
@@ -103,7 +100,8 @@ const Products: React.FC = () => {
             description: formData.description,
             price: formData.price,
             stock_quantity: formData.stock_quantity,
-            image_url: formData.image_url
+            image_url: formData.images[0] || null,
+            additional_images: formData.images.length > 1 ? formData.images.slice(1) : []
           }
         ])
         .select();
@@ -121,7 +119,7 @@ const Products: React.FC = () => {
         description: "",
         price: 0,
         stock_quantity: 0,
-        image_url: null
+        images: []
       });
       
       refetch();
@@ -131,7 +129,6 @@ const Products: React.FC = () => {
     }
   };
   
-  // حذف منتج
   const handleDeleteProduct = async () => {
     if (!selectedProduct) return;
     
@@ -157,7 +154,6 @@ const Products: React.FC = () => {
     }
   };
   
-  // تغيير قيم النموذج
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -166,7 +162,13 @@ const Products: React.FC = () => {
     }));
   };
   
-  // عرض حالة فارغة إذا لم تكن هناك منتجات
+  const handleImagesChange = (images: string[]) => {
+    setFormData(prev => ({
+      ...prev,
+      images
+    }));
+  };
+  
   const renderEmptyState = () => (
     <div className="text-center py-12">
       <Package className="h-12 w-12 mx-auto text-muted-foreground" />
@@ -181,7 +183,6 @@ const Products: React.FC = () => {
     </div>
   );
   
-  // عرض المنتجات في الجدول
   const renderProductsList = () => (
     <div className="grid gap-4">
       {filteredProducts?.map((product) => (
@@ -302,9 +303,8 @@ const Products: React.FC = () => {
         </Card>
       </div>
       
-      {/* مربع حوار إضافة منتج */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>إضافة منتج جديد</DialogTitle>
             <DialogDescription>
@@ -313,8 +313,9 @@ const Products: React.FC = () => {
           </DialogHeader>
           
           <Tabs defaultValue="details" className="mt-4">
-            <TabsList className="grid grid-cols-2">
+            <TabsList className="grid grid-cols-3">
               <TabsTrigger value="details">معلومات المنتج</TabsTrigger>
+              <TabsTrigger value="images">الصور</TabsTrigger>
               <TabsTrigger value="inventory">المخزون والسعر</TabsTrigger>
             </TabsList>
             
@@ -342,15 +343,17 @@ const Products: React.FC = () => {
                     rows={4}
                   />
                 </div>
-                
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="images" className="space-y-4 mt-4">
+              <div className="grid gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="image_url">رابط الصورة</Label>
-                  <Input 
-                    id="image_url" 
-                    name="image_url" 
-                    placeholder="أدخل رابط صورة المنتج (اختياري)" 
-                    value={formData.image_url || ''} 
-                    onChange={handleInputChange} 
+                  <Label>صور المنتج <span className="text-red-500">*</span></Label>
+                  <ImageUploadGrid 
+                    images={formData.images}
+                    onImagesChange={handleImagesChange}
+                    maxImages={5}
                   />
                 </div>
               </div>
@@ -386,17 +389,22 @@ const Products: React.FC = () => {
           </Tabs>
           
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-              إلغاء
-            </Button>
-            <Button onClick={handleAddProduct}>
-              إضافة المنتج
-            </Button>
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 w-full">
+              <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                إلغاء
+              </Button>
+              <Button 
+                onClick={handleAddProduct}
+                disabled={!formData.name || formData.price <= 0 || formData.images.length === 0}
+                className="w-full sm:w-auto"
+              >
+                إضافة المنتج
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
       
-      {/* مربع حوار حذف منتج */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>

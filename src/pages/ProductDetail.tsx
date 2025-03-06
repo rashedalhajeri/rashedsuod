@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import SaveButton from "@/components/ui/save-button";
+import ImageUploadGrid from "@/components/ui/image-upload-grid";
 
 const ProductDetail: React.FC = () => {
   const { productId } = useParams<{ productId: string }>();
@@ -28,7 +29,7 @@ const ProductDetail: React.FC = () => {
     description: "",
     price: 0,
     stock_quantity: 0,
-    image_url: ""
+    images: [] as string[]
   });
 
   useEffect(() => {
@@ -46,12 +47,19 @@ const ProductDetail: React.FC = () => {
         }
         
         setProduct(data);
+        
+        // جمع كل الصور (الصورة الرئيسية والصور الإضافية)
+        const allImages = [
+          ...(data.image_url ? [data.image_url] : []),
+          ...(data.additional_images || [])
+        ];
+        
         setFormData({
           name: data.name || "",
           description: data.description || "",
           price: data.price || 0,
           stock_quantity: data.stock_quantity || 0,
-          image_url: data.image_url || ""
+          images: allImages
         });
       } catch (err) {
         console.error("Error fetching product:", err);
@@ -74,6 +82,13 @@ const ProductDetail: React.FC = () => {
         value
     }));
   };
+  
+  const handleImagesChange = (images: string[]) => {
+    setFormData(prev => ({
+      ...prev,
+      images
+    }));
+  };
 
   const handleSave = async () => {
     if (!productId || !product) return;
@@ -83,6 +98,8 @@ const ProductDetail: React.FC = () => {
       
       const updates = {
         ...formData,
+        image_url: formData.images[0] || null,
+        additional_images: formData.images.length > 1 ? formData.images.slice(1) : [],
         updated_at: new Date().toISOString()
       };
       
@@ -219,32 +236,22 @@ const ProductDetail: React.FC = () => {
               <CardTitle>صور المنتج</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                <Label htmlFor="image_url">رابط الصورة</Label>
-                <Input
-                  id="image_url"
-                  name="image_url"
-                  value={formData.image_url || ""}
-                  onChange={handleChange}
-                  placeholder="أدخل رابط صورة المنتج"
-                />
-              </div>
-              
-              {formData.image_url && (
-                <div className="mt-4">
-                  <p className="text-sm text-gray-500 mb-2">معاينة الصورة:</p>
-                  <div className="border rounded-md overflow-hidden w-40 h-40">
-                    <img 
-                      src={formData.image_url} 
-                      alt={formData.name}
-                      className="w-full h-full object-cover" 
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/placeholder.svg";
-                      }}
-                    />
-                  </div>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>صور المنتج</Label>
+                  <ImageUploadGrid 
+                    images={formData.images}
+                    onImagesChange={handleImagesChange}
+                    maxImages={5}
+                  />
                 </div>
-              )}
+                
+                {formData.images.length === 0 && (
+                  <div className="p-4 border rounded-md border-yellow-200 bg-yellow-50 text-yellow-700 text-sm">
+                    لم يتم إضافة أي صور للمنتج. يوصى بإضافة صورة واحدة على الأقل.
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
