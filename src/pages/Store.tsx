@@ -16,13 +16,17 @@ const Store = () => {
   const { storeDomain } = useParams<{ storeDomain: string }>();
   const [storeData, setStoreData] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
-  const [categories, setCategories] = useState<string[]>(["جميع المنتجات"]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
   const [bestSellingProducts, setBestSellingProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState("جميع المنتجات");
+  const [activeCategory, setActiveCategory] = useState("");
+  const [activeSection, setActiveSection] = useState("جميع المنتجات");
+
+  // الأقسام الثابتة في المتجر
+  const sections = ["جميع المنتجات", "الأكثر مبيعاً", "العروض", "الجديد"];
 
   useEffect(() => {
     const fetchStoreData = async () => {
@@ -53,17 +57,13 @@ const Store = () => {
         
         if (categoriesError) throw categoriesError;
         
-        // Add default categories and any stored categories
-        const defaultCategories = ["جميع المنتجات", "الأكثر مبيعاً", "العروض", "الجديد"];
+        // Set categories from database
         const dbCategories = storeCategories?.map(cat => cat.name) || [];
+        setCategories(dbCategories);
         
-        // Combine default categories with database categories (avoiding duplicates)
-        const combinedCategories = [
-          ...defaultCategories,
-          ...dbCategories.filter(cat => !defaultCategories.includes(cat))
-        ];
-        
-        setCategories(combinedCategories);
+        // Set default active category/section
+        setActiveSection("جميع المنتجات");
+        setActiveCategory(dbCategories.length > 0 ? "" : "");
 
         // Get products from this store
         const { data: storeProducts, error: productsError } = await supabase
@@ -105,7 +105,20 @@ const Store = () => {
   };
 
   const handleCategoryChange = (category: string) => {
-    setActiveCategory(category);
+    // إذا كانت الفئة المختارة من الأقسام
+    if (sections.includes(category)) {
+      setActiveSection(category);
+      setActiveCategory("");
+    } else {
+      // إذا كانت فئة حقيقية
+      setActiveCategory(category);
+      setActiveSection("");
+    }
+  };
+
+  const handleSectionChange = (section: string) => {
+    setActiveSection(section);
+    setActiveCategory("");
   };
 
   const handleClearSearch = () => {
@@ -113,7 +126,8 @@ const Store = () => {
   };
 
   const handleViewAllBestSelling = () => {
-    setActiveCategory("الأكثر مبيعاً");
+    setActiveSection("الأكثر مبيعاً");
+    setActiveCategory("");
   };
 
   // Filter products by search query
@@ -124,24 +138,33 @@ const Store = () => {
         product.description.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  // Filter products by category
-  const getCategoryProducts = () => {
-    if (activeCategory === "جميع المنتجات") return filteredProducts;
-    if (activeCategory === "العروض") 
-      return filteredProducts.filter(p => p.discount_percentage > 0 || (p.original_price && p.original_price > p.price));
-    if (activeCategory === "الأكثر مبيعاً") 
-      return bestSellingProducts.filter(p => 
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
-    if (activeCategory === "الجديد") 
-      return filteredProducts.slice(0, 8); // Most recent products
+  // Filter products by category or section
+  const getDisplayProducts = () => {
+    // أولاً نفلتر حسب البحث
+    let filtered = filteredProducts;
     
-    // Custom category filter - filter by category name (future enhancement)
-    return filteredProducts;
+    // ثم حسب القسم أو الفئة
+    if (activeCategory) {
+      // فلترة حسب الفئة الحقيقية (لاحقاً سيتم ربطها بحقل التصنيف في المنتجات)
+      return filtered;
+    } else if (activeSection) {
+      // فلترة حسب القسم
+      if (activeSection === "جميع المنتجات") return filtered;
+      if (activeSection === "العروض") 
+        return filtered.filter(p => p.discount_percentage > 0 || (p.original_price && p.original_price > p.price));
+      if (activeSection === "الأكثر مبيعاً") 
+        return bestSellingProducts.filter(p => 
+          p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()))
+        );
+      if (activeSection === "الجديد") 
+        return filtered.slice(0, 8); // Most recent products
+    }
+    
+    return filtered;
   };
 
-  const displayProducts = getCategoryProducts();
+  const displayProducts = getDisplayProducts();
 
   if (loading) {
     return <LoadingState message="جاري تحميل المتجر..." />;
@@ -166,15 +189,16 @@ const Store = () => {
           bannerUrl={storeData?.banner_url}
         />
         
-        {/* Category Quick Links */}
+        {/* Category Quick Links - نمرر كلا من الأقسام والفئات */}
         <CategoryNavigation 
-          activeCategory={activeCategory}
+          activeCategory={activeCategory || activeSection}
           onCategoryChange={handleCategoryChange}
           categories={categories}
+          sections={sections}
         />
         
         {/* Featured Products Section */}
-        {activeCategory === "جميع المنتجات" && (
+        {activeSection === "جميع المنتجات" && !activeCategory && (
           <FeaturedProductsSection 
             products={featuredProducts} 
             onViewAll={() => {}} 
@@ -182,7 +206,7 @@ const Store = () => {
         )}
         
         {/* Best Selling Products Section */}
-        {activeCategory === "جميع المنتجات" && (
+        {activeSection === "جميع المنتجات" && !activeCategory && (
           <BestSellingProductsSection 
             products={bestSellingProducts} 
             onViewAll={handleViewAllBestSelling} 
@@ -192,7 +216,7 @@ const Store = () => {
         {/* All Products Section */}
         <AllProductsSection 
           products={displayProducts}
-          activeCategory={activeCategory}
+          activeCategory={activeCategory || activeSection}
           searchQuery={searchQuery}
           onClearSearch={handleClearSearch}
         />

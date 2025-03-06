@@ -61,3 +61,25 @@
 .categories-content {
   padding-top: 70px;
 }
+
+/* تصميم لشريط التمرير الأفقي داخل شريط الفئات */
+.scroll-container {
+  display: flex;
+  overflow-x: auto;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+  scroll-behavior: smooth;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* لمتصفحات إنترنت إكسبلورر وإيدج */
+  scrollbar-width: none;  /* لمتصفح فايرفوكس */
+}
+
+.scroll-item {
+  flex: 0 0 auto;
+}
