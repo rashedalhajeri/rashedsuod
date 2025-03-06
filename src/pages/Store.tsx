@@ -133,14 +133,7 @@ const Store = () => {
     <div className="min-h-screen flex flex-col bg-gray-50" dir="rtl">
       <StoreNavbar storeName={storeData?.store_name} logoUrl={storeData?.logo_url} />
       
-      {/* Category Navigation - now fixed to the top */}
-      <CategoryNavigation 
-        activeCategory={activeCategory}
-        onCategoryChange={handleCategoryChange}
-        categories={["جميع المنتجات", "الأكثر مبيعاً", "العروض", "الجديد", "الأكسسوارات"]}
-      />
-      
-      <main className="flex-grow container mx-auto px-4 pt-20">
+      <main className="flex-grow container mx-auto px-4 pt-16"> {/* Added pt-16 for proper spacing below fixed navbar */}
         {/* App Banner - Now conditional based on bannerUrl existence */}
         <StoreBanner 
           storeName={storeData?.store_name}
@@ -149,6 +142,13 @@ const Store = () => {
           onSearchChange={handleSearchChange}
           logoUrl={storeData?.logo_url}
           bannerUrl={storeData?.banner_url} // Pass banner URL to component
+        />
+        
+        {/* Category Quick Links */}
+        <CategoryNavigation 
+          activeCategory={activeCategory}
+          onCategoryChange={handleCategoryChange}
+          categories={["جميع المنتجات", "الأكثر مبيعاً", "العروض", "الجديد", "الأكسسوارات"]}
         />
         
         {/* Featured Products Section */}

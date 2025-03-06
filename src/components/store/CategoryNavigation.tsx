@@ -15,7 +15,7 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = ({
   categories = ["جميع المنتجات", "الأكثر مبيعاً", "العروض", "الجديد", "الأكسسوارات"]
 }) => {
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 glass-nav py-3 border-b bg-white/95 backdrop-blur-sm transition-all duration-300">
+    <div className="bg-white py-4 border-b sticky top-0 left-0 right-0 z-50 shadow-sm">
       <div className="container mx-auto">
         <div className="scroll-container hide-scrollbar px-4">
           {categories.map((category, index) => (
@@ -34,7 +34,7 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = ({
                 variant={activeCategory === category ? "default" : "outline"} 
                 className={`rounded-full whitespace-nowrap ${
                   activeCategory === category 
-                    ? "bg-blue-600 text-white hover:bg-blue-700 shadow-md border-none" 
+                    ? "bg-blue-600 text-white hover:bg-blue-700 shadow-sm border-none" 
                     : "bg-white hover:bg-blue-50 hover:text-blue-600 border-gray-200"
                 } transition-all min-w-24 font-medium text-sm`}
                 onClick={() => onCategoryChange(category)}
