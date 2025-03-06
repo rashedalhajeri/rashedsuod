@@ -1,3 +1,4 @@
+
 import React, { memo, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -101,9 +102,9 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
     return null;
   }
 
-  // Category images mapping - Updated with a dedicated image for "الكل" (ALL)
+  // Category images mapping - Ensure dedicated image for "الكل" (ALL)
   const categoryImageMap = {
-    "الكل": "/public/lovable-uploads/458d1c93-d142-4466-9f1a-1085922105f5.png", // Updated with a dedicated image for ALL
+    "الكل": "/public/lovable-uploads/458d1c93-d142-4466-9f1a-1085922105f5.png", // Dedicated image for ALL
     "العيادات": "/public/lovable-uploads/c8a5c4e7-628d-4c52-acca-e8f603036b6b.png",
     "الإلكترونيات": "/public/lovable-uploads/827a00fa-f421-45c3-96d7-b9305fb217d1.jpg",
   };
@@ -141,7 +142,7 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
           ))
         ) : (
           displayCategories.map((category, index) => {
-            // Get appropriate image
+            // Get appropriate image - ensure "الكل" has the correct image
             const imagePath = categoryImageMap[category as keyof typeof categoryImageMap] || "/placeholder.svg";
             const isActive = (category === "الكل" && activeCategory === "الكل") || 
                            (category.toLowerCase() === activeCategory.toLowerCase());
