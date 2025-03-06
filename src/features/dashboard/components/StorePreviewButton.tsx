@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Eye, Copy, CheckCheck, X } from 'lucide-react';
+import { Eye, Copy, CheckCheck, X, ExternalLink } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -33,6 +33,14 @@ const StorePreviewButton = () => {
       setPreviewOpen(true);
     } else {
       toast.error("عذراً، لا يمكن مشاهدة المتجر حالياً");
+    }
+  };
+  
+  const openExternalLink = () => {
+    if (storeUrl) {
+      window.open(storeUrl, '_blank');
+    } else {
+      toast.error("عذراً، لا يمكن فتح المتجر حالياً");
     }
   };
   
@@ -77,6 +85,25 @@ const StorePreviewButton = () => {
             </TooltipTrigger>
             <TooltipContent>
               <p>مشاهدة المتجر داخل لوحة التحكم</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2 border-primary-200 hover:bg-primary-50"
+                onClick={openExternalLink}
+              >
+                <ExternalLink className="h-4 w-4" />
+                <span>فتح المتجر</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>فتح المتجر في نافذة جديدة</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
