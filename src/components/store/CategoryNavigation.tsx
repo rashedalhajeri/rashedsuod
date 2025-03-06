@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect, useCallback, memo } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 
 interface CategoryNavigationProps {
@@ -20,23 +19,6 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
   onCategoryChange,
   onSectionChange
 }) => {
-  const [stickyNav, setStickyNav] = useState(false);
-  const [activeTab, setActiveTab] = useState<"categories" | "sections">("categories");
-
-  // Listen to scroll to make navigation bar sticky on scroll
-  const handleScroll = useCallback(() => {
-    const categorySection = document.querySelector('.categories-content');
-    if (categorySection) {
-      const position = categorySection.getBoundingClientRect();
-      setStickyNav(position.top <= 0);
-    }
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [handleScroll]);
-
   // Filter out empty arrays
   const hasCategories = categories.length > 0;
   const hasSections = sections.length > 0;
@@ -46,83 +28,46 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
     return null;
   }
 
-  // Default to whichever tab has content
-  useEffect(() => {
-    if (!hasCategories && hasSections) {
-      setActiveTab("sections");
-    }
-  }, [hasCategories, hasSections]);
-
   // Prepare categories with "All" option at the beginning for RTL display
   const categoriesWithAll = ["الكل", ...categories];
 
   return (
-    <div className={`bg-white py-3 z-10 transition-all duration-300 ${
-      stickyNav ? 'sticky top-0 shadow-md' : ''
-    }`}>
+    <div className="bg-gray-50 py-4 z-10 transition-all duration-300">
       <div className="container mx-auto px-3">
-        <h2 className="text-lg font-bold mb-3 text-right pr-1.5">تصفح المتجر</h2>
-        
-        <Tabs 
-          value={activeTab}
-          onValueChange={(value) => setActiveTab(value as "categories" | "sections")}
-          className="w-full"
-          dir="rtl"
-        >
-          {/* Only show tabs if both categories and sections exist */}
-          {hasCategories && hasSections && (
-            <TabsList className="mb-3 bg-gray-100 rounded-full p-0.5 border-0 mx-auto w-fit">
-              <TabsTrigger className="rounded-full text-sm data-[state=active]:bg-primary data-[state=active]:text-white px-4 py-1" value="categories">الفئات</TabsTrigger>
-              <TabsTrigger className="rounded-full text-sm data-[state=active]:bg-primary data-[state=active]:text-white px-4 py-1" value="sections">الأقسام</TabsTrigger>
-            </TabsList>
-          )}
-          
-          {hasCategories && (
-            <TabsContent value="categories" className="mt-0">
-              <div className="flex overflow-x-auto gap-2.5 pb-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 flex-row-reverse">
-                {categoriesWithAll.map((category, index) => (
-                  <motion.button
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    key={index}
-                    onClick={() => onCategoryChange(category === "الكل" ? "" : category)}
-                    className={`px-3.5 py-1.5 text-sm rounded-full whitespace-nowrap transition-all ${
-                      (category === "الكل" && !activeCategory) || activeCategory === category
-                        ? 'bg-primary text-white shadow-sm font-medium'
-                        : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
-                    }`}
-                  >
-                    {category}
-                  </motion.button>
-                ))}
-              </div>
-            </TabsContent>
-          )}
-          
-          {hasSections && (
-            <TabsContent value="sections" className="mt-0">
-              <div className="flex overflow-x-auto gap-2.5 pb-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 flex-row-reverse">
-                {sections.map((section, index) => (
-                  <motion.button
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    key={index}
-                    onClick={() => onSectionChange(section)}
-                    className={`px-3.5 py-1.5 text-sm rounded-full whitespace-nowrap transition-all ${
-                      activeSection === section
-                        ? 'bg-primary text-white shadow-sm font-medium'
-                        : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
-                    }`}
-                  >
-                    {section}
-                  </motion.button>
-                ))}
-              </div>
-            </TabsContent>
-          )}
-        </Tabs>
+        <div className="flex overflow-x-auto gap-3 pb-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 flex-row-reverse">
+          {categoriesWithAll.map((category, index) => (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+              key={index}
+              className="flex-shrink-0 rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden"
+            >
+              <button
+                onClick={() => onCategoryChange(category === "الكل" ? "" : category)}
+                className={`w-full h-full flex flex-col items-center p-3 ${
+                  (category === "الكل" && !activeCategory) || activeCategory === category
+                    ? 'text-blue-600 font-medium'
+                    : 'text-gray-700'
+                }`}
+              >
+                {/* أيقونة افتراضية للفئة - يمكن استبدالها بأيقونات حقيقية */}
+                <div className="w-16 h-16 mb-2 flex items-center justify-center bg-gray-50 rounded-lg">
+                  {index === 0 && (
+                    <img src="/placeholder.svg" alt="الكل" className="w-12 h-12 object-contain" />
+                  )}
+                  {index === 1 && categories.length > 0 && (
+                    <img src="/placeholder.svg" alt={category} className="w-12 h-12 object-contain" />
+                  )}
+                  {index === 2 && categories.length > 1 && (
+                    <img src="/placeholder.svg" alt={category} className="w-12 h-12 object-contain" />
+                  )}
+                </div>
+                <span className="text-sm whitespace-nowrap">{category}</span>
+              </button>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </div>
   );

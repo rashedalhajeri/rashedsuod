@@ -69,10 +69,10 @@
   background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%232d75d9' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
 }
 
-/* Store UI enhancements - Optimized and professional */
+/* Store UI enhancements - التحسينات الجديدة */
 .store-card {
-  @apply rounded-xl border border-gray-100 bg-white shadow-sm transition-all duration-300 overflow-hidden hover:shadow-md;
-  will-change: transform, box-shadow; /* Performance optimization */
+  @apply rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-300 overflow-hidden hover:shadow-md;
+  will-change: transform, box-shadow; /* تحسين الأداء */
 }
 
 .store-card-image {
@@ -82,7 +82,7 @@
 .store-card-image img {
   @apply w-full h-full object-cover transition duration-500;
   transform: scale(1);
-  will-change: transform; /* Performance optimization */
+  will-change: transform; /* تحسين الأداء */
 }
 
 .store-card-image:hover img {
@@ -90,15 +90,15 @@
 }
 
 .store-card-content {
-  @apply p-4 space-y-2;
+  @apply p-3 space-y-1;
 }
 
 .store-card-title {
-  @apply font-bold text-lg line-clamp-1 transition-colors hover:text-primary;
+  @apply font-bold text-sm line-clamp-2 transition-colors hover:text-primary;
 }
 
 .store-card-price {
-  @apply font-bold text-primary text-lg;
+  @apply font-bold text-lg;
 }
 
 .store-card-original-price {
@@ -106,7 +106,7 @@
 }
 
 .product-badge {
-  @apply absolute top-2 left-2 px-2 py-1 text-sm font-medium rounded-md;
+  @apply absolute top-2 left-2 px-2 py-1 text-xs font-medium rounded-md;
 }
 
 .badge-discount {
@@ -122,7 +122,7 @@
 }
 
 .store-section-title {
-  @apply text-2xl font-bold mb-6 relative pb-3 inline-block;
+  @apply text-xl font-bold mb-4 relative pb-2 inline-block;
 }
 
 .store-section-title::after {
@@ -130,49 +130,73 @@
   @apply absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-full w-3/4 mx-auto;
 }
 
-/* Category pills */
+/* Category pills - تحسين مظهر الفئات */
 .category-pill {
-  @apply px-4 py-2 rounded-full bg-white shadow-sm text-gray-700 hover:bg-primary hover:text-white transition-colors border border-gray-100 whitespace-nowrap;
+  @apply px-3 py-2 rounded-xl bg-white shadow-sm text-gray-700 border border-gray-100 whitespace-nowrap flex flex-col items-center;
 }
 
 .category-pill.active {
-  @apply bg-primary text-white;
+  @apply text-blue-600 font-medium;
 }
 
-/* Image loading optimization */
-.lazy-image {
-  @apply opacity-0 transition-opacity duration-300;
+.category-pill-icon {
+  @apply w-12 h-12 flex items-center justify-center bg-gray-50 rounded-lg mb-1;
 }
 
-.lazy-image.loaded {
-  @apply opacity-100;
+/* تحسينات شريط البحث */
+.search-bar-modern {
+  @apply h-14 rounded-full bg-white shadow-md border border-gray-100 px-4 flex items-center;
 }
 
-/* Professional product grid layout */
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.5rem;
-  will-change: opacity, transform; /* Performance optimization */
+.search-icon {
+  @apply h-5 w-5 text-gray-400 mr-3;
 }
 
-/* Enhanced page transitions */
-.page-transition-enter {
-  opacity: 0;
-  transform: translateY(10px);
+.search-input {
+  @apply w-full h-full bg-transparent border-0 text-gray-700 placeholder-gray-400 focus:outline-none text-base;
 }
 
-.page-transition-enter-active {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 300ms, transform 300ms;
+/* تحسين شكل المنتجات في عرض المنتجات */
+.product-grid-modern {
+  @apply grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4;
 }
 
-.page-transition-exit {
-  opacity: 1;
+.product-card-modern {
+  @apply bg-white rounded-2xl overflow-hidden shadow-sm h-full pb-3;
 }
 
-.page-transition-exit-active {
-  opacity: 0;
-  transition: opacity 300ms;
+.product-image-container {
+  @apply relative;
+}
+
+.product-image {
+  @apply w-full aspect-square object-cover;
+}
+
+.favorite-button {
+  @apply absolute top-2 right-2 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-gray-600 hover:text-rose-500 transition-colors;
+}
+
+.product-info {
+  @apply p-3;
+}
+
+.product-price-container {
+  @apply flex items-center justify-between mb-2;
+}
+
+.product-price {
+  @apply font-bold text-lg text-left;
+}
+
+.store-logo {
+  @apply w-7 h-7 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center;
+}
+
+.product-name {
+  @apply text-right font-semibold text-gray-800 mb-1 text-sm leading-tight line-clamp-2;
+}
+
+.store-name {
+  @apply text-right text-gray-500 text-xs;
 }
