@@ -51,6 +51,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
     }).format(price);
   };
   
+  // Default placeholder for products without images
+  const defaultPlaceholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%23222222'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='system-ui, sans-serif' font-size='14' fill='%23ffffff'%3ENo Image%3C/text%3E%3C/svg%3E";
+  
   // Show loading state
   if (isLoading) {
     return (
@@ -96,7 +99,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
   return (
     <div 
       ref={gridRef}
-      className="grid grid-cols-2 gap-4"
+      className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4"
     >
       {displayProducts.map((product, index) => {
         const { brandName, brandLogo } = getBrandInfo(product.id);
@@ -111,41 +114,49 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: index * 0.05 }}
-            className="flex flex-col"
+            className="flex flex-col card-float"
           >
             <Link 
               to={`/store/${storeDomain}/product/${product.id}`}
               className="relative block mb-2"
             >
-              <div className="relative rounded-xl overflow-hidden shadow-sm">
+              <div className="relative rounded-xl overflow-hidden shadow-sm bg-gray-100">
                 <img 
-                  src={product.image_url || "/placeholder.svg"} 
-                  alt={product.name} 
+                  src={product.image_url || defaultPlaceholder} 
+                  alt={product.name || `${brandName} ${modelNumber}`} 
                   className="w-full aspect-square object-cover"
+                  onError={(e) => {
+                    // Fallback if image fails to load
+                    (e.target as HTMLImageElement).src = defaultPlaceholder;
+                  }}
                 />
                 
-                {/* Heart button */}
-                <button className="absolute top-3 right-3 w-10 h-10 rounded-full bg-gray-600/60 flex items-center justify-center text-white">
-                  <Heart className="h-5 w-5" />
+                {/* Heart button with improved styling */}
+                <button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white transition-all hover:bg-black/60">
+                  <Heart className="h-4 w-4" />
                 </button>
                 
-                {/* Price overlaid on the bottom */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 pt-8">
+                {/* Price overlay with enhanced design */}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 pt-10">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-white text-xl font-bold">
-                        {productPrice} <span className="text-sm">KWD</span>
+                      <p className="text-white text-lg font-bold">
+                        {productPrice} <span className="text-xs font-normal">KWD</span>
                       </p>
                     </div>
                     
                     {/* Brand info at bottom right */}
                     <div className="flex items-center">
-                      <span className="text-white mr-2">{brandName}</span>
-                      <div className="w-8 h-8 rounded-full bg-white overflow-hidden flex items-center justify-center">
+                      <span className="text-white mr-2 text-sm">{brandName}</span>
+                      <div className="w-7 h-7 rounded-full bg-white overflow-hidden flex items-center justify-center">
                         <img 
                           src={brandLogo} 
                           alt={brandName} 
-                          className="h-6 w-6 object-contain"
+                          className="h-5 w-5 object-contain"
+                          onError={(e) => {
+                            // Fallback if brand logo fails to load
+                            (e.target as HTMLImageElement).src = defaultPlaceholder;
+                          }}
                         />
                       </div>
                     </div>
@@ -154,8 +165,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
               </div>
             </Link>
             
-            {/* Product name below the image */}
-            <h3 className="text-center font-bold text-lg text-gray-800">
+            {/* Product name with improved typography */}
+            <h3 className="text-center font-bold text-md text-gray-800 line-clamp-1">
               {product.name || `${brandName} ${modelNumber}`}
             </h3>
           </motion.div>
