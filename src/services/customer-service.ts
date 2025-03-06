@@ -85,10 +85,18 @@ export const createCustomer = async (storeId: string, customerData: Partial<Cust
       return { success: false, error: "Customer name is required" };
     }
 
+    // Create a typed customer object with required fields
     const customerToInsert = {
-      ...customerData,
       store_id: storeId,
-      status: ensureValidStatus(customerData.status || 'active')
+      name: customerData.name, // Ensure name is included and not optional
+      status: ensureValidStatus(customerData.status || 'active'),
+      // Include optional fields if they exist
+      ...(customerData.email && { email: customerData.email }),
+      ...(customerData.phone && { phone: customerData.phone }),
+      ...(customerData.city && { city: customerData.city }),
+      ...(customerData.total_orders && { total_orders: customerData.total_orders }),
+      ...(customerData.total_spent && { total_spent: customerData.total_spent }),
+      ...(customerData.last_order_date && { last_order_date: customerData.last_order_date })
     };
 
     const { data, error } = await supabase
