@@ -19,7 +19,11 @@ const ThemeColorsCard: React.FC<ThemeColorsCardProps> = ({
         <h3 className="text-lg font-medium mb-4">الألوان</h3>
         <ThemeColorCustomizer 
           themeSettings={themeSettings}
-          setThemeSettings={(newSettings) => onLayoutChange('', newSettings)}
+          setThemeSettings={(newSettings) => {
+            if (newSettings) {
+              onLayoutChange('', newSettings);
+            }
+          }}
         />
       </CardContent>
     </Card>
