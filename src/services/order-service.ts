@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Order, OrderStatus } from "@/types/orders";
 
@@ -208,6 +207,47 @@ export const fetchOrderStats = async (storeId: string) => {
     };
   } catch (error) {
     console.error("Error in fetchOrderStats:", error);
+    return null;
+  }
+};
+
+// Create a new order with items
+export const createOrder = async (storeId: string, orderData: Omit<Order, "id" | "created_at" | "updated_at">, orderItems: Omit<OrderItem, "id" | "created_at" | "order_id">[]) => {
+  try {
+    // Insert the order
+    const { data: orderResult, error: orderError } = await supabase
+      .from('orders')
+      .insert({ ...orderData, store_id: storeId })
+      .select()
+      .single();
+
+    if (orderError) {
+      console.error("Error creating order:", orderError);
+      return null;
+    }
+
+    const order = orderResult;
+
+    // Insert order items
+    if (orderItems && orderItems.length > 0) {
+      const itemsWithOrderId = orderItems.map(item => ({
+        ...item,
+        order_id: order.id
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(itemsWithOrderId);
+
+      if (itemsError) {
+        console.error("Error creating order items:", itemsError);
+        // Consider rolling back the order here if needed
+      }
+    }
+
+    return order;
+  } catch (error) {
+    console.error("Error in createOrder:", error);
     return null;
   }
 };

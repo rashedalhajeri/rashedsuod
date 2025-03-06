@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,7 +63,15 @@ const DashboardHome: React.FC = () => {
   // Fetch recent orders
   const { data: ordersData, isLoading: isOrdersLoading, error: ordersError } = useQuery({
     queryKey: ['recentOrders', storeData?.id],
-    queryFn: () => fetchOrders(storeData?.id, { pageSize: 5 }),
+    queryFn: async () => {
+      const result = await fetchOrders(storeData?.id, { pageSize: 5 });
+      // Ensure order status conforms to OrderStatus type
+      const typedOrders = result.orders.map(order => ({
+        ...order,
+        status: order.status as OrderStatus // Type assertion to fix TypeScript error
+      }));
+      return { ...result, orders: typedOrders };
+    },
     enabled: !!storeData?.id,
   });
 

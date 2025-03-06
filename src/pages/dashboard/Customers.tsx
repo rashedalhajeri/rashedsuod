@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/layouts/DashboardLayout";
@@ -226,7 +225,6 @@ const Customers: React.FC = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const { toast } = useToast();
   
-  // Fetch customers data from Supabase
   const { data: customersData, isLoading, error, refetch } = useQuery({
     queryKey: ['customers', storeData?.id],
     queryFn: () => fetchCustomers(storeData?.id || ''),
@@ -259,12 +257,10 @@ const Customers: React.FC = () => {
       const result = await updateCustomer(customerId, { status });
       
       if (result.success) {
-        // Update the selected customer if it's the one being modified
         if (selectedCustomer && selectedCustomer.id === customerId) {
           setSelectedCustomer({ ...selectedCustomer, status });
         }
         
-        // Refetch customers list
         refetch();
         
         toast({
@@ -311,7 +307,6 @@ const Customers: React.FC = () => {
           </Button>
         </div>
         
-        {/* Search and filter bar */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -338,7 +333,6 @@ const Customers: React.FC = () => {
           </Select>
         </div>
         
-        {/* Customers list */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">
@@ -372,7 +366,6 @@ const Customers: React.FC = () => {
           </CardContent>
         </Card>
         
-        {/* Customer details dialog */}
         <Dialog open={!!selectedCustomer} onOpenChange={(open) => !open && setSelectedCustomer(null)}>
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>

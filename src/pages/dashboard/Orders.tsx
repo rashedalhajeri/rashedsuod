@@ -24,6 +24,23 @@ import ErrorState from "@/components/ui/error-state";
 import useStoreData from "@/hooks/use-store-data";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
+const ensureOrderStatus = (status: string): OrderStatus => {
+  switch(status) {
+    case "processing": return "processing";
+    case "shipped": return "shipped";
+    case "delivered": return "delivered";
+    case "cancelled": return "cancelled";
+    default: return "processing";
+  }
+};
+
+const mapToOrderType = (dbOrder: any): Order => {
+  return {
+    ...dbOrder,
+    status: ensureOrderStatus(dbOrder.status)
+  };
+};
+
 const OrdersPage: React.FC = () => {
   const { storeData } = useStoreData();
   const storeId = storeData?.id || "";
@@ -58,14 +75,18 @@ const OrdersPage: React.FC = () => {
     refetch
   } = useQuery({
     queryKey: ["orders", storeId, activeTab, debouncedQuery, currentPage, pageSize, orderBy, orderDirection],
-    queryFn: () => fetchOrders(storeId, {
-      status: activeTab, 
-      searchQuery: debouncedQuery,
-      page: currentPage,
-      pageSize,
-      orderBy,
-      orderDirection
-    }),
+    queryFn: async () => {
+      const result = await fetchOrders(storeId, {
+        status: activeTab, 
+        searchQuery: debouncedQuery,
+        page: currentPage,
+        pageSize,
+        orderBy,
+        orderDirection
+      });
+      const typedOrders = result.orders.map(order => mapToOrderType(order));
+      return { ...result, orders: typedOrders };
+    },
     enabled: !!storeId,
   });
 
@@ -83,7 +104,7 @@ const OrdersPage: React.FC = () => {
       if (!order.items) {
         const detailedOrder = await fetchOrderDetails(order.id);
         if (detailedOrder) {
-          setSelectedOrder(detailedOrder);
+          setSelectedOrder(mapToOrderType(detailedOrder));
         } else {
           setSelectedOrder(order);
           toast.error("تعذر تحميل تفاصيل المنتجات للطلب");

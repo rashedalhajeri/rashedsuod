@@ -15,6 +15,21 @@ export interface Customer {
   updated_at: string;
 }
 
+// Type guard to ensure status is 'active' or 'inactive'
+const ensureValidStatus = (status: string): "active" | "inactive" => {
+  return status === "active" ? "active" : "inactive";
+};
+
+// Transform database result to match Customer interface
+const mapDbCustomerToCustomer = (dbCustomer: any): Customer => {
+  return {
+    ...dbCustomer,
+    status: ensureValidStatus(dbCustomer.status),
+    total_orders: Number(dbCustomer.total_orders || 0),
+    total_spent: Number(dbCustomer.total_spent || 0),
+  };
+};
+
 // Fetch customers for a store
 export const fetchCustomers = async (storeId: string, filters = {}) => {
   try {
@@ -29,8 +44,10 @@ export const fetchCustomers = async (storeId: string, filters = {}) => {
       return { customers: [], totalCount: 0 };
     }
 
+    const mappedCustomers = (data || []).map(customer => mapDbCustomerToCustomer(customer));
+
     return {
-      customers: data || [],
+      customers: mappedCustomers,
       totalCount: count || 0
     };
   } catch (error) {
@@ -53,7 +70,7 @@ export const fetchCustomerDetails = async (customerId: string) => {
       return null;
     }
 
-    return data;
+    return data ? mapDbCustomerToCustomer(data) : null;
   } catch (error) {
     console.error("Error in fetchCustomerDetails:", error);
     return null;
@@ -63,9 +80,18 @@ export const fetchCustomerDetails = async (customerId: string) => {
 // Create a new customer
 export const createCustomer = async (storeId: string, customerData: Partial<Customer>) => {
   try {
+    // Make sure name is provided as it's required in the database
+    if (!customerData.name) {
+      return { success: false, error: "Customer name is required" };
+    }
+
     const { data, error } = await supabase
       .from('customers')
-      .insert([{ ...customerData, store_id: storeId }])
+      .insert([{
+        ...customerData,
+        store_id: storeId,
+        status: ensureValidStatus(customerData.status || 'active')
+      }])
       .select();
 
     if (error) {
@@ -73,7 +99,7 @@ export const createCustomer = async (storeId: string, customerData: Partial<Cust
       return { success: false, error };
     }
 
-    return { success: true, customer: data[0] };
+    return { success: true, customer: data?.[0] ? mapDbCustomerToCustomer(data[0]) : null };
   } catch (error) {
     console.error("Error in createCustomer:", error);
     return { success: false, error };
@@ -83,9 +109,15 @@ export const createCustomer = async (storeId: string, customerData: Partial<Cust
 // Update a customer
 export const updateCustomer = async (customerId: string, updates: Partial<Customer>) => {
   try {
+    // Ensure status is valid if provided
+    const updatesWithValidStatus = {
+      ...updates,
+      ...(updates.status && { status: ensureValidStatus(updates.status) })
+    };
+
     const { data, error } = await supabase
       .from('customers')
-      .update(updates)
+      .update(updatesWithValidStatus)
       .eq('id', customerId)
       .select();
 
@@ -94,7 +126,10 @@ export const updateCustomer = async (customerId: string, updates: Partial<Custom
       return { success: false, error };
     }
 
-    return { success: true, customer: data[0] };
+    return { 
+      success: true, 
+      customer: data?.[0] ? mapDbCustomerToCustomer(data[0]) : null 
+    };
   } catch (error) {
     console.error("Error in updateCustomer:", error);
     return { success: false, error };
