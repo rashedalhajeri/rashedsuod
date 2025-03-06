@@ -25,6 +25,12 @@ import Payments from "./pages/dashboard/Payments";
 import Coupons from "./pages/dashboard/Coupons";
 import Settings from "./pages/dashboard/Settings";
 
+// Import store pages
+import StoreHome from "./pages/store/Home";
+import StoreProducts from "./pages/store/Products";
+import StoreProductDetail from "./pages/store/ProductDetail";
+import Cart from "./pages/store/Cart";
+
 // Create a new query client with retry disabled
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -105,7 +111,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// Fixed ProtectedRoute to not use Navigate directly as a component
 const ProtectedRoute = ({ children, redirectIfStore = false }: { children: React.ReactNode, redirectIfStore?: boolean }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [hasStore, setHasStore] = useState<boolean | null>(null);
@@ -286,6 +291,12 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            
+            {/* Store Routes - Using storeId in URL */}
+            <Route path="/store/:storeId" element={<StoreHome />} />
+            <Route path="/store/:storeId/products" element={<StoreProducts />} />
+            <Route path="/store/:storeId/products/:productId" element={<StoreProductDetail />} />
+            <Route path="/store/:storeId/cart" element={<Cart />} />
             
             {/* Catch-all route for 404 */}
             <Route path="*" element={<NotFound />} />
