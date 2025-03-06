@@ -9,30 +9,33 @@ interface StoreLogoProps {
 }
 
 const StoreLogo: React.FC<StoreLogoProps> = ({ storeName, logoUrl, storeDomain }) => {
+  // Create initials for the avatar if no logo
+  const initials = storeName
+    .split(' ')
+    .map(name => name[0])
+    .join('')
+    .toUpperCase();
+
   return (
-    <Link to={`/store/${storeDomain}`} className="flex items-center gap-3">
-      {logoUrl ? (
-        <div className="h-12 w-12 rounded-full overflow-hidden border border-white/20 flex items-center justify-center bg-white/10 shadow-sm">
-          <img 
-            src={logoUrl} 
-            alt={storeName} 
-            className="h-10 w-10 object-contain" 
-            onError={e => {
-              (e.target as HTMLImageElement).onerror = null;
-              (e.target as HTMLImageElement).src = "/placeholder.svg";
-            }} 
-          />
+    <Link to={`/store/${storeDomain}`} className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
+        <div className="h-10 w-10 bg-white rounded-full flex items-center justify-center shadow-sm overflow-hidden">
+          {logoUrl ? (
+            <img 
+              src={logoUrl} 
+              alt={storeName} 
+              className="h-full w-full object-cover" 
+              onError={e => {
+                (e.target as HTMLImageElement).onerror = null;
+                (e.target as HTMLImageElement).src = "/placeholder.svg";
+              }} 
+            />
+          ) : (
+            <span className="text-lg font-bold text-blue-600">
+              {initials}
+            </span>
+          )}
         </div>
-      ) : (
-        <div className="h-12 w-12 bg-white rounded-full flex items-center justify-center border border-white/20 shadow-sm">
-          <span className="text-lg font-bold text-blue-600">
-            {storeName ? storeName.charAt(0).toUpperCase() : "S"}
-          </span>
-        </div>
-      )}
-      <div className="flex flex-col">
-        <span className="font-bold text-xl text-white">{storeName}</span>
-        <span className="text-xs text-white/80">متجر إلكتروني احترافي</span>
       </div>
     </Link>
   );

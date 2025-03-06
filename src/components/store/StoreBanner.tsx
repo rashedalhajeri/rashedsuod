@@ -2,7 +2,6 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
 
 interface StoreBannerProps {
   storeName: string;
@@ -17,54 +16,66 @@ const StoreBanner: React.FC<StoreBannerProps> = ({
   searchQuery,
   onSearchChange
 }) => {
+  // Extract initial for avatar display
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  };
+
+  const initials = getInitials(storeName || "Store");
+
   return (
-    <div className="bg-gradient-to-r from-blue-700 to-green-500 py-12 px-4 relative overflow-hidden mt-0">
+    <div className="bg-gradient-to-r from-blue-700 to-green-500 py-4 px-4 relative overflow-hidden">
       {/* Decorative elements */}
-      <div className="absolute inset-0 opacity-20 bg-pattern"></div>
-      <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-white/5 -mr-32 -mt-32"></div>
-      <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-white/5 -ml-24 -mb-24"></div>
+      <div className="absolute inset-0 opacity-10 bg-pattern"></div>
       
       <motion.div 
         className="container mx-auto relative z-10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: 0.6 }}
       >
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between mb-8">
-            <div className="mb-4 sm:mb-0">
+        <div className="flex justify-between items-center">
+          {/* Greeting and Username */}
+          <div className="flex items-center gap-2 ml-auto">
+            <div className="text-right">
               <motion.p 
-                className="text-white/80 mb-2"
-                initial={{ y: -10, opacity: 0 }}
+                className="text-white/80 text-sm"
+                initial={{ y: -5, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.4 }}
               >
                 مرحبًا
               </motion.p>
               <motion.h1 
-                className="text-3xl md:text-4xl font-bold text-white leading-tight"
-                initial={{ y: -20, opacity: 0 }}
+                className="text-lg font-bold text-white"
+                initial={{ y: -5, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
               >
                 {storeName}
               </motion.h1>
             </div>
             
+            {/* User Avatar */}
             <motion.div
               className="flex-shrink-0"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
             >
-              <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center text-xl font-bold text-blue-600">
-                {storeName.split(" ").map(word => word[0]).join("")}
+              <div className="h-12 w-12 rounded-full bg-white flex items-center justify-center text-xl font-bold text-blue-600 shadow-sm">
+                {initials}
               </div>
             </motion.div>
           </div>
-          
-          {/* Search Bar - Will be shown in navbar instead */}
         </div>
+        
+        {/* Search bar - will be shown elsewhere */}
       </motion.div>
     </div>
   );

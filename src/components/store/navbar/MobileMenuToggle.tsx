@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface MobileMenuToggleProps {
@@ -16,14 +16,14 @@ const MobileMenuToggle: React.FC<MobileMenuToggleProps> = ({
     <Button 
       variant="ghost" 
       size="sm" 
-      className="md:hidden text-white bg-transparent hover:bg-white/10 rounded-full" 
+      className="md:hidden text-white bg-transparent hover:bg-white/10 rounded-full p-2" 
       onClick={onToggle}
       aria-label={isOpen ? "إغلاق القائمة" : "فتح القائمة"}
     >
       {isOpen ? (
-        <X className="h-5 w-5" />
+        <X className="h-6 w-6" />
       ) : (
-        <Menu className="h-5 w-5" />
+        <Bell className="h-6 w-6" />
       )}
     </Button>
   );

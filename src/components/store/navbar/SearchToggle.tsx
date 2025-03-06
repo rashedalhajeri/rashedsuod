@@ -17,10 +17,10 @@ const SearchToggle: React.FC<SearchToggleProps> = ({
       variant="ghost" 
       size="sm" 
       onClick={() => setShowSearch(!showSearch)} 
-      className="text-white bg-transparent hover:bg-white/10 rounded-full"
+      className="text-white bg-transparent hover:bg-white/10 rounded-full p-2"
       aria-label={showSearch ? "إغلاق البحث" : "فتح البحث"}
     >
-      <Search className="h-5 w-5" />
+      <Search className="h-6 w-6" />
     </Button>
   );
 };
