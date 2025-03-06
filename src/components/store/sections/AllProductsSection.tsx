@@ -64,33 +64,38 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
       try {
         setIsLoading(true);
         
-        let query = supabase
+        // Use explicit typing for the query to avoid deep instantiation
+        const baseQuery = supabase
           .from('products')
           .select('*');
         
+        // Apply different filters based on section type
+        let finalQuery;
+        
         // If we have a specific section type, filter accordingly
         if (sectionType === 'category' && categoryId) {
-          query = query.eq('category_id', categoryId);
+          finalQuery = baseQuery.eq('category_id', categoryId);
         } else if (sectionType === 'featured') {
           // Fetch featured products (example only - implement as needed)
-          query = query.eq('is_featured', true);
+          finalQuery = baseQuery.eq('is_featured', true);
         } else if (sectionType === 'best_selling') {
           // For best selling, we would normally have a sales count
-          // This is a placeholder logic - implement properly with your data model
-          query = query.order('sales_count', { ascending: false });
+          finalQuery = baseQuery.order('sales_count', { ascending: false });
         } else if (sectionType === 'new_arrivals') {
-          query = query.order('created_at', { ascending: false });
+          finalQuery = baseQuery.order('created_at', { ascending: false });
         } else if (sectionType === 'on_sale') {
-          // For sale items, we would need a discounted_price field or similar
-          query = query.not('discount_price', 'is', null);
+          // For sale items, would need a discounted_price field
+          finalQuery = baseQuery.not('discount_price', 'is', null);
         } else if (sectionType === 'custom' && sectionId) {
-          // For custom section, we would need a join table between products and sections
-          // This is a placeholder - implement properly with your data model
-          query = query.eq('section_id', sectionId);
+          // For custom section, would need a join table between products and sections
+          finalQuery = baseQuery.eq('section_id', sectionId);
+        } else {
+          // Default case - all products
+          finalQuery = baseQuery;
         }
         
-        // Execute query
-        const { data, error } = await query.order('created_at', { ascending: false });
+        // Execute query with final order
+        const { data, error } = await finalQuery.order('created_at', { ascending: false });
           
         if (error) {
           console.error("Error fetching products:", error);
