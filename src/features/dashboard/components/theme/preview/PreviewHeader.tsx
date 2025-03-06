@@ -21,8 +21,8 @@ const PreviewHeader: React.FC<PreviewHeaderProps> = ({
 
   return (
     <div 
-      className={`${getHeaderStyle()} px-4 border-b flex justify-between items-center`}
-      style={{ backgroundColor: secondaryColor }}
+      className={`${getHeaderStyle()} px-4 border-b border-gray-800/30 backdrop-blur-md flex justify-between items-center`}
+      style={{ backgroundColor: `${secondaryColor}CC` }} // Adding some transparency
     >
       <div className="flex-1">
         <div className="font-bold text-lg">متجر alhajeri</div>
