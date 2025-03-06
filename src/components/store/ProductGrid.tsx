@@ -81,32 +81,13 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
     );
   }
   
-  // Brand information
-  const getBrandInfo = (productId: string) => {
-    const id = parseInt(productId);
-    
-    // Brand name based on product ID
-    const brandName = id % 3 === 0 ? "مازدا" : 
-                     id % 3 === 1 ? "مازدا" : 
-                     "مازدا";
-    
-    // Brand logo
-    const brandLogo = "/public/lovable-uploads/9bdce759-607e-417a-b056-f23d54b1d8f3.png";
-      
-    return { brandName, brandLogo };
-  };
-  
   return (
     <div 
       ref={gridRef}
       className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4"
     >
       {displayProducts.map((product, index) => {
-        const { brandName, brandLogo } = getBrandInfo(product.id);
         const productPrice = formatCurrency(product.price);
-        
-        // Generate vehicle model number based on product id
-        const modelNumber = product.id.length > 5 ? "CX-30" : "CX-90";
         
         return (
           <motion.div
@@ -123,7 +104,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
               <div className="relative rounded-xl overflow-hidden shadow-sm bg-black">
                 <img 
                   src={product.image_url || defaultPlaceholder} 
-                  alt={product.name || `${brandName} ${modelNumber}`} 
+                  alt={product.name} 
                   className="w-full aspect-square object-cover"
                   onError={(e) => {
                     // Fallback if image fails to load
@@ -144,22 +125,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
                         {productPrice} <span className="text-xs font-normal">KWD</span>
                       </p>
                     </div>
-                    
-                    {/* Brand info at bottom right */}
-                    <div className="flex items-center">
-                      <span className="text-white mr-2 text-sm">{brandName}</span>
-                      <div className="w-7 h-7 rounded-full bg-white overflow-hidden flex items-center justify-center">
-                        <img 
-                          src={brandLogo} 
-                          alt={brandName} 
-                          className="h-5 w-5 object-contain"
-                          onError={(e) => {
-                            // Fallback if brand logo fails to load
-                            (e.target as HTMLImageElement).src = defaultPlaceholder;
-                          }}
-                        />
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -167,7 +132,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
             
             {/* Product name with improved typography */}
             <h3 className="text-center font-bold text-md text-gray-800 line-clamp-1">
-              {product.name || `${brandName} ${modelNumber}`}
+              {product.name}
             </h3>
           </motion.div>
         );
