@@ -92,6 +92,34 @@ export const isValidDomainName = (domainName: string): boolean => {
 };
 
 /**
+ * Extract the subdomain from the current URL
+ * @returns The subdomain or null if not a subdomain URL
+ */
+export const extractSubdomain = (): string | null => {
+  const hostname = window.location.hostname;
+  
+  console.log('Extracting subdomain from:', hostname);
+  
+  // In development or non-linok.me domains, return null
+  if (hostname === 'localhost' || 
+      hostname.includes('lovableproject.com') || 
+      hostname.includes('lovable.app') || 
+      !hostname.includes('linok.me')) {
+    return null;
+  }
+  
+  // Parse the hostname to get subdomain in production
+  const parts = hostname.split('.');
+  
+  // Valid subdomain pattern: subdomain.linok.me (3 parts)
+  if (parts.length === 3 && parts[1] === 'linok' && parts[2] === 'me') {
+    return parts[0];
+  }
+  
+  return null;
+};
+
+/**
  * Get store data from the URL storeId parameter (either ID or domain name)
  * @param storeId The storeId from URL params (could be UUID or domain name)
  * @param supabase Supabase client instance
@@ -152,4 +180,32 @@ export const getStoreFromUrl = async (storeId: string, supabase: any) => {
     console.error("Error in getStoreFromUrl:", err);
     return { data: null, error: err };
   }
+};
+
+/**
+ * Detect store from current URL (either from path parameter or subdomain)
+ * @param supabase Supabase client instance
+ * @param storeIdFromPath Optional storeId from URL path parameter
+ * @returns Promise with the store data or error
+ */
+export const detectStoreFromUrl = async (supabase: any, storeIdFromPath?: string) => {
+  console.log('Detecting store from URL, path param:', storeIdFromPath);
+  
+  // First, try to detect from subdomain in production
+  const subdomain = extractSubdomain();
+  
+  console.log('Extracted subdomain:', subdomain);
+  
+  if (subdomain) {
+    console.log('Trying to find store by subdomain:', subdomain);
+    return await getStoreFromUrl(subdomain, supabase);
+  }
+  
+  // If no subdomain or in development, try from path parameter
+  if (storeIdFromPath) {
+    console.log('Trying to find store by path parameter:', storeIdFromPath);
+    return await getStoreFromUrl(storeIdFromPath, supabase);
+  }
+  
+  return { data: null, error: { message: "لم يتم العثور على معرف المتجر" } };
 };

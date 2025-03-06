@@ -2,12 +2,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { supabase, getProductById } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { useStoreData } from "@/hooks/use-store-data";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
+import { extractSubdomain, detectStoreFromUrl } from "@/utils/url-utils";
 
 const ProductDetail: React.FC = () => {
   const { productId } = useParams<{ productId: string }>();
@@ -17,16 +18,42 @@ const ProductDetail: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // This component is being accessed through a legacy URL, redirect to new structure
-    if (productId && storeData?.id) {
-      // Redirect to the new URL structure
-      navigate(`/store/${storeData.id}/products/${productId}`, { replace: true });
-    } else if (!storeData) {
-      setError("لا يمكن عرض المنتج بدون معلومات المتجر");
-      setLoading(false);
-    } else {
-      setLoading(false);
-    }
+    const handleRedirect = async () => {
+      try {
+        setLoading(true);
+        
+        // First check if we're on a subdomain
+        const subdomain = extractSubdomain();
+        
+        if (subdomain) {
+          // If we're on a subdomain, use it to find the store
+          const { data: storeFromSubdomain } = await detectStoreFromUrl(supabase);
+          
+          if (storeFromSubdomain && productId) {
+            // Redirect to the proper URL structure
+            navigate(`/store/${storeFromSubdomain.id}/products/${productId}`, { replace: true });
+            return;
+          }
+        }
+        
+        // Fallback to using the store data from the user's context
+        if (productId && storeData?.id) {
+          // Redirect to the new URL structure
+          navigate(`/store/${storeData.id}/products/${productId}`, { replace: true });
+        } else if (!storeData) {
+          setError("لا يمكن عرض المنتج بدون معلومات المتجر");
+          setLoading(false);
+        } else {
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error("Error in redirect logic:", err);
+        setError("حدث خطأ أثناء محاولة التوجيه");
+        setLoading(false);
+      }
+    };
+    
+    handleRedirect();
   }, [productId, storeData, navigate]);
 
   if (loading) {

@@ -1,37 +1,47 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { getProductById } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { getCurrencyFormatter } from "@/hooks/use-store-data";
+import { useStoreDetection } from "@/hooks/use-store-detection";
 
 export const useProductDetail = () => {
-  const { storeId, productId } = useParams<{ storeId: string; productId: string }>();
+  const { productId } = useParams<{ productId: string }>();
   const [product, setProduct] = useState<any>(null);
+  const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState(1);
   
-  const formatCurrency = getCurrencyFormatter("SAR");
+  // Use the store detection hook
+  const { store, loading: storeLoading, error: storeError } = useStoreDetection();
+  
+  // Handle combined loading and error states
+  const isLoading = loading || storeLoading;
+  const combinedError = error || storeError;
 
   useEffect(() => {
     const fetchProduct = async () => {
-      if (!productId) {
-        setError("معرف المنتج غير متوفر");
-        setLoading(false);
-        return;
-      }
-
+      if (!store || !productId) return;
+      
       try {
-        const { data, error } = await getProductById(productId);
-
+        setLoading(true);
+        
+        const { data, error } = await supabase
+          .from("products")
+          .select("*")
+          .eq("id", productId)
+          .eq("store_id", store.id)
+          .maybeSingle();
+        
         if (error) throw error;
+        
         if (!data) {
-          setError("المنتج غير موجود");
-          return;
+          throw new Error("المنتج غير موجود");
         }
-
+        
         setProduct(data);
+        setError(null);
       } catch (err) {
         console.error("Error fetching product:", err);
         setError("حدث خطأ أثناء تحميل المنتج");
@@ -39,25 +49,33 @@ export const useProductDetail = () => {
         setLoading(false);
       }
     };
-
+    
     fetchProduct();
-  }, [productId]);
+  }, [productId, store]);
 
-  const handleQuantityChange = (value: number) => {
-    const newQuantity = Math.max(1, Math.min(product?.stock_quantity || 10, value));
-    setQuantity(newQuantity);
+  const handleQuantityChange = (newQuantity: number) => {
+    if (product && newQuantity > 0 && newQuantity <= product.stock_quantity) {
+      setQuantity(newQuantity);
+    }
   };
 
   const handleAddToCart = () => {
-    toast.success("تمت إضافة المنتج إلى سلة التسوق");
+    // This is a placeholder for actual cart functionality
+    toast.success(`تمت إضافة ${product.name} إلى السلة`);
+  };
+
+  const formatCurrency = (price: number) => {
+    return getCurrencyFormatter(store?.currency)(price);
   };
 
   const getAllImages = () => {
-    if (!product) return [];
-    
     const images = [];
-    if (product.image_url) images.push(product.image_url);
-    if (product.additional_images && Array.isArray(product.additional_images)) {
+    
+    if (product?.image_url) {
+      images.push(product.image_url);
+    }
+    
+    if (product?.additional_images && Array.isArray(product.additional_images)) {
       images.push(...product.additional_images);
     }
     
@@ -65,10 +83,10 @@ export const useProductDetail = () => {
   };
 
   return {
-    storeId,
+    storeId: store?.id,
     product,
-    loading,
-    error,
+    loading: isLoading,
+    error: combinedError,
     quantity,
     formatCurrency,
     handleQuantityChange,
@@ -76,3 +94,5 @@ export const useProductDetail = () => {
     getAllImages
   };
 };
+
+export default useProductDetail;

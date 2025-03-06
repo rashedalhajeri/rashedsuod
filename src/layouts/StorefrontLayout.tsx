@@ -1,65 +1,24 @@
 
-import React, { ReactNode, useEffect, useState } from "react";
+import React, { ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ShoppingCart, Search, User, Menu, X, Store as StoreIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
-import { getStoreUrl, getStoreFromUrl } from "@/utils/url-utils";
+import { useStoreDetection } from "@/hooks/use-store-detection";
+import { LoadingState } from "@/components/ui/loading-state";
+import { ErrorState } from "@/components/ui/error-state";
 
 interface StorefrontLayoutProps {
   children: ReactNode;
 }
 
 const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
-  const { storeId } = useParams<{ storeId: string }>();
+  const { storeId: storeIdFromPath } = useParams<{ storeId?: string }>();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-  const [storeData, setStoreData] = useState<{
-    id: string;
-    store_name: string;
-    logo_url: string | null;
-    domain_name: string | null;
-  } | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Fetch store data on mount
-  useEffect(() => {
-    const fetchStoreData = async () => {
-      if (!storeId) {
-        setError("معرف المتجر غير متوفر");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        console.log("StorefrontLayout: Fetching store data for:", storeId);
-        // Use the utility function to get store data
-        const { data, error } = await getStoreFromUrl(storeId, supabase);
-
-        if (error) {
-          console.error("Error fetching store data:", error);
-          throw error;
-        }
-        
-        if (!data) {
-          console.error("Store not found for ID:", storeId);
-          throw new Error("المتجر غير موجود");
-        }
-        
-        console.log("Store found:", data);
-        setStoreData(data);
-      } catch (error) {
-        console.error("Error fetching store data:", error);
-        setError("حدث خطأ في تحميل بيانات المتجر");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStoreData();
-  }, [storeId]);
+  
+  // Use our new hook to detect the store automatically
+  const { store: storeData, loading, error } = useStoreDetection();
 
   // Toggle menu open/close
   const toggleMenu = () => {
@@ -67,7 +26,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
   };
 
   // Generate store URL for navigation
-  const baseUrl = storeData ? `/store/${storeData.id}` : `/store/${storeId}`;
+  const baseUrl = storeData ? `/store/${storeData.id}` : `/store/${storeIdFromPath}`;
 
   // Menu items with proper URLs
   const menuItems = [
@@ -81,8 +40,8 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
     }
   ];
 
-  // If there's an error, show a simplified header with error message
-  if (error) {
+  // If there's an error or still loading, show a simplified header
+  if (error || loading) {
     return (
       <div className="flex flex-col min-h-screen bg-gray-50 rtl">
         <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
@@ -96,6 +55,15 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
           </div>
         </header>
         <main className="flex-1">
+          {loading ? (
+            <LoadingState message="جاري تحميل بيانات المتجر..." />
+          ) : (
+            <ErrorState 
+              title="خطأ في تحميل المتجر"
+              message={error || "لم نتمكن من العثور على المتجر"}
+              onRetry={() => window.location.reload()}
+            />
+          )}
           {children}
         </main>
         <footer className="bg-white border-t py-6">
@@ -131,7 +99,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
               </div>
             )}
             <span className="font-bold text-xl text-gray-900">
-              {loading ? "جاري التحميل..." : storeData?.store_name || "متجر"}
+              {storeData?.store_name || "متجر"}
             </span>
           </Link>
 
@@ -184,7 +152,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
                         </div>
                       )}
                       <span className="font-bold text-lg">
-                        {loading ? "جاري التحميل..." : storeData?.store_name || "متجر"}
+                        {storeData?.store_name || "متجر"}
                       </span>
                     </div>
                     <nav className="flex flex-col space-y-4">

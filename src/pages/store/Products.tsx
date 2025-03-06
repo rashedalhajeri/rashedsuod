@@ -1,55 +1,37 @@
 
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import StorefrontLayout from "@/layouts/StorefrontLayout";
-import { getStoreFromUrl } from "@/utils/url-utils";
+import { useStoreDetection } from "@/hooks/use-store-detection";
 
 const StoreProducts: React.FC = () => {
-  const { storeId } = useParams<{ storeId: string }>();
-  const [store, setStore] = useState<any>(null);
+  // Use the store detection hook
+  const { store, loading: storeLoading, error: storeError } = useStoreDetection();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
-      if (!storeId) {
-        setError("معرف المتجر غير متوفر");
-        setLoading(false);
-        return;
-      }
+      if (!store) return;
       
       try {
-        console.log("Fetching products for store:", storeId);
-        // Use the utility function to get store data
-        const { data: storeData, error: storeError } = await getStoreFromUrl(storeId, supabase);
-        
-        if (storeError) {
-          console.error("Error fetching store:", storeError);
-          throw storeError;
-        }
-        
-        if (!storeData) {
-          console.error("Store not found for ID:", storeId);
-          throw new Error("المتجر غير موجود");
-        }
-        
-        console.log("Store found:", storeData);
-        setStore(storeData);
+        setLoading(true);
         
         // Fetch products with the store ID from database
         const { data, error } = await supabase
           .from("products")
           .select("*")
-          .eq("store_id", storeData.id);
+          .eq("store_id", store.id);
         
         if (error) throw error;
         
         setProducts(data || []);
+        setError(null);
       } catch (err) {
         console.error("Error fetching products:", err);
         setError("حدث خطأ أثناء تحميل المنتجات");
@@ -59,22 +41,24 @@ const StoreProducts: React.FC = () => {
     };
     
     fetchProducts();
-  }, [storeId]);
+  }, [store]);
 
-  if (loading) {
+  // Show loading state while store is being detected
+  if (storeLoading || loading) {
     return (
       <StorefrontLayout>
-        <LoadingState message="جاري تحميل المنتجات..." />
+        <LoadingState message={storeLoading ? "جاري تحميل بيانات المتجر..." : "جاري تحميل المنتجات..."} />
       </StorefrontLayout>
     );
   }
 
-  if (error) {
+  // Show error if store detection failed
+  if (storeError || error) {
     return (
       <StorefrontLayout>
         <ErrorState 
-          title="خطأ في تحميل المنتجات"
-          message={error}
+          title="خطأ في التحميل"
+          message={storeError || error || "حدث خطأ غير متوقع"}
           onRetry={() => window.location.reload()}
         />
       </StorefrontLayout>

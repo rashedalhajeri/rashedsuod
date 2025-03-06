@@ -1,81 +1,65 @@
 
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import StorefrontLayout from "@/layouts/StorefrontLayout";
-import { getStoreFromUrl } from "@/utils/url-utils";
+import { useStoreDetection } from "@/hooks/use-store-detection";
 
 const StoreHome: React.FC = () => {
-  const { storeId } = useParams<{ storeId: string }>();
-  const [store, setStore] = useState<any>(null);
+  // Use the store detection hook
+  const { store, loading: storeLoading, error: storeError } = useStoreDetection();
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchStoreData = async () => {
-      if (!storeId) {
-        setError("معرف المتجر غير متوفر");
-        setLoading(false);
-        return;
-      }
+    const fetchProducts = async () => {
+      if (!store) return;
       
       try {
-        console.log("Fetching store data for:", storeId);
-        // Use the utility function to get store data
-        const { data: storeData, error: storeError } = await getStoreFromUrl(storeId, supabase);
-        
-        if (storeError) {
-          console.error("Error fetching store:", storeError);
-          throw storeError;
-        }
-        
-        if (!storeData) {
-          console.error("Store not found for ID:", storeId);
-          throw new Error("المتجر غير موجود");
-        }
-        
-        console.log("Store found:", storeData);
-        setStore(storeData);
+        setLoading(true);
         
         // Fetch featured products
         const { data: productsData, error: productsError } = await supabase
           .from("products")
           .select("*")
-          .eq("store_id", storeData.id)
+          .eq("store_id", store.id)
           .limit(4);
         
         if (productsError) throw productsError;
         
         setFeaturedProducts(productsData || []);
+        setError(null);
       } catch (err) {
-        console.error("Error fetching store data:", err);
-        setError("حدث خطأ أثناء تحميل بيانات المتجر");
+        console.error("Error fetching products:", err);
+        setError("حدث خطأ أثناء تحميل المنتجات");
       } finally {
         setLoading(false);
       }
     };
     
-    fetchStoreData();
-  }, [storeId]);
+    fetchProducts();
+  }, [store]);
 
-  if (loading) {
+  // Show loading state while store is being detected
+  if (storeLoading || loading) {
     return (
       <StorefrontLayout>
-        <LoadingState message="جاري تحميل بيانات المتجر..." />
+        <LoadingState message={storeLoading ? "جاري تحميل بيانات المتجر..." : "جاري تحميل المنتجات..."} />
       </StorefrontLayout>
     );
   }
 
-  if (error) {
+  // Show error if store detection failed
+  if (storeError || error) {
     return (
       <StorefrontLayout>
         <ErrorState 
-          title="خطأ في تحميل المتجر"
-          message={error}
+          title="خطأ في التحميل"
+          message={storeError || error || "حدث خطأ غير متوقع"}
           onRetry={() => window.location.reload()}
         />
       </StorefrontLayout>
