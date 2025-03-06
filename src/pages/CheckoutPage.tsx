@@ -12,11 +12,14 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { Textarea } from "@/components/ui/textarea";
-import { Check, ChevronRight, CreditCard, Banknote, ArrowLeft, ShoppingCart, User, Phone, HomeIcon, MapPin, Mail, ClipboardList } from "lucide-react";
+import { 
+  Check, ChevronRight, CreditCard, Banknote, ArrowLeft, ShoppingCart, 
+  User, Phone, HomeIcon, MapPin, Mail, ClipboardList, LogIn, UserPlus 
+} from "lucide-react";
 import StoreNavbar from "@/components/store/StoreNavbar";
 import StoreFooter from "@/components/store/StoreFooter";
 import { toast } from "sonner";
-import { v4 as uuidv4 } from "uuid";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const CheckoutPage = () => {
   const { storeDomain } = useParams<{ storeDomain: string }>();
@@ -26,6 +29,14 @@ const CheckoutPage = () => {
   const [error, setError] = useState<string | null>(null);
   const { cart, totalPrice, clearCart } = useCart();
   const navigate = useNavigate();
+  const [checkoutMode, setCheckoutMode] = useState<"guest" | "login">("guest");
+  const [loginData, setLoginData] = useState({
+    email: "",
+    password: ""
+  });
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
   
   const [formData, setFormData] = useState({
     customerName: "",
@@ -46,7 +57,7 @@ const CheckoutPage = () => {
           .from('stores')
           .select('*')
           .eq('domain_name', storeDomain)
-          .single();
+          .maybeSingle();
         
         if (storeError) throw storeError;
         if (!store) {
@@ -67,11 +78,97 @@ const CheckoutPage = () => {
     if (storeDomain) {
       fetchStoreData();
     }
+    
+    // Check if user is already logged in
+    const checkAuthStatus = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        setIsAuthenticated(true);
+        setUserData(user);
+        
+        // Pre-fill form with user data if available
+        try {
+          const { data: profile } = await supabase
+            .from('customers')
+            .select('*')
+            .eq('email', user.email)
+            .maybeSingle();
+            
+          if (profile) {
+            setFormData(prev => ({
+              ...prev,
+              customerName: profile.name || prev.customerName,
+              customerEmail: user.email || prev.customerEmail,
+              customerPhone: profile.phone || prev.customerPhone,
+              shippingAddress: profile.city || prev.shippingAddress,
+            }));
+          } else {
+            setFormData(prev => ({
+              ...prev,
+              customerEmail: user.email || prev.customerEmail,
+            }));
+          }
+        } catch (err) {
+          console.error("Error fetching customer profile:", err);
+        }
+      }
+    };
+    
+    checkAuthStatus();
   }, [storeDomain]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleLoginDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setLoginData(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError(null);
+    
+    try {
+      setSubmitting(true);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: loginData.email,
+        password: loginData.password,
+      });
+      
+      if (error) throw error;
+      
+      if (data.user) {
+        setIsAuthenticated(true);
+        setUserData(data.user);
+        setFormData(prev => ({
+          ...prev,
+          customerEmail: data.user?.email || prev.customerEmail,
+        }));
+        toast.success("تم تسجيل الدخول بنجاح");
+      }
+    } catch (err: any) {
+      console.error("Login error:", err);
+      setLoginError(err.message || "حدث خطأ أثناء تسجيل الدخول");
+      toast.error("فشل تسجيل الدخول. يرجى التحقق من بيانات الاعتماد الخاصة بك");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+  
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Logout error:", error);
+      toast.error("حدث خطأ أثناء تسجيل الخروج");
+    } else {
+      setIsAuthenticated(false);
+      setUserData(null);
+      toast.success("تم تسجيل الخروج بنجاح");
+    }
   };
   
   const handlePaymentMethodChange = (value: string) => {
@@ -87,7 +184,7 @@ const CheckoutPage = () => {
       return;
     }
     
-    const filteredCartItems = cart.filter(item => item.store_id === storeData.id);
+    const filteredCartItems = cart.filter(item => !storeData || item.store_id === storeData.id);
     if (filteredCartItems.length === 0) {
       toast.error("السلة فارغة");
       return;
@@ -128,6 +225,37 @@ const CheckoutPage = () => {
       
       if (createOrderError) throw createOrderError;
       
+      // Store customer information if user is authenticated
+      if (isAuthenticated && userData && formData.customerEmail) {
+        try {
+          // Check if customer exists
+          const { data: existingCustomer } = await supabase
+            .from('customers')
+            .select('id')
+            .eq('email', formData.customerEmail)
+            .eq('store_id', storeData.id)
+            .maybeSingle();
+            
+          if (!existingCustomer) {
+            // Create new customer
+            await supabase.from('customers').insert([
+              {
+                name: formData.customerName,
+                email: formData.customerEmail,
+                phone: formData.customerPhone,
+                city: formData.shippingAddress,
+                store_id: storeData.id,
+                total_orders: 1,
+                total_spent: totalPrice(filteredCartItems)
+              }
+            ]);
+          }
+        } catch (err) {
+          console.error("Error storing customer information:", err);
+          // Non-blocking error, continue with checkout
+        }
+      }
+      
       // Order created successfully
       clearCart(); // Clear the cart
       
@@ -147,10 +275,22 @@ const CheckoutPage = () => {
   }
   
   if (error) {
-    return <ErrorState title="خطأ" message={error} />;
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50" dir="rtl">
+        <StoreNavbar storeName={storeDomain?.charAt(0).toUpperCase() + storeDomain?.slice(1) || "المتجر"} logoUrl={null} />
+        <div className="flex-grow container mx-auto py-8 px-4">
+          <ErrorState 
+            title="خطأ" 
+            message={error} 
+            onRetry={() => window.location.reload()}
+          />
+        </div>
+        <StoreFooter storeName={storeDomain?.charAt(0).toUpperCase() + storeDomain?.slice(1) || "المتجر"} />
+      </div>
+    );
   }
   
-  const filteredCartItems = cart.filter(item => item.store_id === storeData.id);
+  const filteredCartItems = cart.filter(item => !storeData || item.store_id === storeData.id);
   
   if (filteredCartItems.length === 0) {
     return (
@@ -226,58 +366,240 @@ const CheckoutPage = () => {
                 </h2>
               </div>
               <CardContent className="p-6">
-                <form onSubmit={handleSubmit} id="checkout-form">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="customerName">الاسم الكامل <span className="text-red-500">*</span></Label>
-                      <div className="relative">
-                        <Input
-                          id="customerName"
-                          name="customerName"
-                          value={formData.customerName}
-                          onChange={handleChange}
-                          className="pr-10"
-                          required
-                          placeholder="محمد أحمد"
-                        />
-                        <User className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                {isAuthenticated ? (
+                  <div className="space-y-4">
+                    <div className="bg-green-50 border border-green-200 rounded-md p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-green-100 p-2 rounded-full">
+                          <Check className="h-5 w-5 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium">تم تسجيل الدخول</p>
+                          <p className="text-sm text-gray-600">{userData?.email}</p>
+                        </div>
                       </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleLogout}
+                        className="text-gray-500 hover:text-red-500"
+                      >
+                        تسجيل الخروج
+                      </Button>
                     </div>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="customerPhone">رقم الهاتف <span className="text-red-500">*</span></Label>
-                      <div className="relative">
-                        <Input
-                          id="customerPhone"
-                          name="customerPhone"
-                          value={formData.customerPhone}
-                          onChange={handleChange}
-                          className="pr-10"
-                          required
-                          placeholder="5xxxxxxxx"
-                          type="tel"
-                        />
-                        <Phone className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <form onSubmit={handleSubmit} id="checkout-form">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="customerName">الاسم الكامل <span className="text-red-500">*</span></Label>
+                          <div className="relative">
+                            <Input
+                              id="customerName"
+                              name="customerName"
+                              value={formData.customerName}
+                              onChange={handleChange}
+                              className="pr-10"
+                              required
+                              placeholder="محمد أحمد"
+                            />
+                            <User className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="customerPhone">رقم الهاتف <span className="text-red-500">*</span></Label>
+                          <div className="relative">
+                            <Input
+                              id="customerPhone"
+                              name="customerPhone"
+                              value={formData.customerPhone}
+                              onChange={handleChange}
+                              className="pr-10"
+                              required
+                              placeholder="5xxxxxxxx"
+                              type="tel"
+                            />
+                            <Phone className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2 md:col-span-2">
+                          <Label htmlFor="customerEmail">البريد الإلكتروني</Label>
+                          <div className="relative">
+                            <Input
+                              id="customerEmail"
+                              name="customerEmail"
+                              type="email"
+                              value={formData.customerEmail}
+                              onChange={handleChange}
+                              className="pr-10"
+                              placeholder="example@example.com"
+                              readOnly
+                            />
+                            <Mail className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="customerEmail">البريد الإلكتروني</Label>
-                      <div className="relative">
-                        <Input
-                          id="customerEmail"
-                          name="customerEmail"
-                          type="email"
-                          value={formData.customerEmail}
-                          onChange={handleChange}
-                          className="pr-10"
-                          placeholder="example@example.com"
-                        />
-                        <Mail className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                      </div>
-                    </div>
+                    </form>
                   </div>
-                </form>
+                ) : (
+                  <Tabs value={checkoutMode} onValueChange={(value) => setCheckoutMode(value as "guest" | "login")} className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-6">
+                      <TabsTrigger value="guest" className="flex items-center gap-2">
+                        <UserPlus className="h-4 w-4" />
+                        <span>الدفع كزائر</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="login" className="flex items-center gap-2">
+                        <LogIn className="h-4 w-4" />
+                        <span>تسجيل الدخول</span>
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="guest">
+                      <form onSubmit={handleSubmit} id="checkout-form">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="customerName">الاسم الكامل <span className="text-red-500">*</span></Label>
+                            <div className="relative">
+                              <Input
+                                id="customerName"
+                                name="customerName"
+                                value={formData.customerName}
+                                onChange={handleChange}
+                                className="pr-10"
+                                required
+                                placeholder="محمد أحمد"
+                              />
+                              <User className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="customerPhone">رقم الهاتف <span className="text-red-500">*</span></Label>
+                            <div className="relative">
+                              <Input
+                                id="customerPhone"
+                                name="customerPhone"
+                                value={formData.customerPhone}
+                                onChange={handleChange}
+                                className="pr-10"
+                                required
+                                placeholder="5xxxxxxxx"
+                                type="tel"
+                              />
+                              <Phone className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2 md:col-span-2">
+                            <Label htmlFor="customerEmail">البريد الإلكتروني</Label>
+                            <div className="relative">
+                              <Input
+                                id="customerEmail"
+                                name="customerEmail"
+                                type="email"
+                                value={formData.customerEmail}
+                                onChange={handleChange}
+                                className="pr-10"
+                                placeholder="example@example.com"
+                              />
+                              <Mail className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="mt-4 text-sm text-gray-500">
+                          لديك حساب بالفعل؟{" "}
+                          <button
+                            type="button"
+                            onClick={() => setCheckoutMode("login")}
+                            className="text-primary hover:underline"
+                          >
+                            تسجيل الدخول
+                          </button>
+                        </div>
+                      </form>
+                    </TabsContent>
+                    
+                    <TabsContent value="login">
+                      <form onSubmit={handleLogin} className="space-y-4">
+                        {loginError && (
+                          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+                            {loginError}
+                          </div>
+                        )}
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="email">البريد الإلكتروني</Label>
+                          <div className="relative">
+                            <Input
+                              id="email"
+                              name="email"
+                              type="email"
+                              value={loginData.email}
+                              onChange={handleLoginDataChange}
+                              className="pr-10"
+                              required
+                              placeholder="your@email.com"
+                            />
+                            <Mail className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="password">كلمة المرور</Label>
+                          <Input
+                            id="password"
+                            name="password"
+                            type="password"
+                            value={loginData.password}
+                            onChange={handleLoginDataChange}
+                            required
+                          />
+                        </div>
+                        
+                        <div className="flex flex-col space-y-4">
+                          <Button 
+                            type="submit" 
+                            className="w-full"
+                            disabled={submitting}
+                          >
+                            {submitting ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
+                          </Button>
+                          
+                          <div className="text-center text-sm">
+                            <Link 
+                              to={`/store/${storeDomain}/forgot-password`} 
+                              className="text-primary hover:underline"
+                            >
+                              نسيت كلمة المرور؟
+                            </Link>
+                          </div>
+                          
+                          <div className="text-center text-sm">
+                            ليس لديك حساب؟{" "}
+                            <Link 
+                              to={`/store/${storeDomain}/register`} 
+                              className="text-primary hover:underline"
+                            >
+                              إنشاء حساب جديد
+                            </Link>
+                          </div>
+                          
+                          <div className="text-center mt-2">
+                            <button
+                              type="button"
+                              onClick={() => setCheckoutMode("guest")}
+                              className="text-gray-500 hover:text-gray-700 text-sm"
+                            >
+                              متابعة كزائر
+                            </button>
+                          </div>
+                        </div>
+                      </form>
+                    </TabsContent>
+                  </Tabs>
+                )}
               </CardContent>
             </Card>
             
@@ -401,6 +723,7 @@ const CheckoutPage = () => {
                     className="w-full mt-6 py-6 text-base shadow-lg hover:shadow-xl transition-all" 
                     size="lg"
                     disabled={submitting}
+                    onClick={handleSubmit}
                   >
                     {submitting ? (
                       <>

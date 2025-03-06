@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,9 +31,13 @@ const CartPage = () => {
           .from('stores')
           .select('*')
           .eq('domain_name', storeDomain)
-          .single();
+          .maybeSingle();
         
-        if (storeError) throw storeError;
+        if (storeError) {
+          console.error("Error fetching store data:", storeError);
+          throw storeError;
+        }
+        
         if (!store) {
           setError("لم يتم العثور على المتجر");
           return;
@@ -64,10 +67,22 @@ const CartPage = () => {
   }
   
   if (error) {
-    return <ErrorState title="خطأ" message={error} />;
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50" dir="rtl">
+        <StoreNavbar storeName={storeDomain?.charAt(0).toUpperCase() + storeDomain?.slice(1) || "المتجر"} logoUrl={null} />
+        <div className="flex-grow container mx-auto py-8 px-4">
+          <ErrorState 
+            title="خطأ" 
+            message={error} 
+            onRetry={() => window.location.reload()}
+          />
+        </div>
+        <StoreFooter storeName={storeDomain?.charAt(0).toUpperCase() + storeDomain?.slice(1) || "المتجر"} />
+      </div>
+    );
   }
   
-  const filteredCartItems = cart.filter(item => item.store_id === storeData.id);
+  const filteredCartItems = cart.filter(item => !storeData || item.store_id === storeData.id);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50" dir="rtl">
