@@ -16,7 +16,11 @@ export const formatStoreUrl = (domainName: string): string => {
   
   // Check if we're in development environment (localhost or lovableproject.com)
   const isDevelopment = window.location.hostname === 'localhost' || 
-                        window.location.hostname.includes('lovableproject.com');
+                        window.location.hostname.includes('lovableproject.com') ||
+                        window.location.hostname.includes('lovable.app');
+  
+  console.log('Current hostname:', window.location.hostname);
+  console.log('Is development environment:', isDevelopment);
   
   // If it already includes linok.me, ensure it's properly formatted
   if (cleanDomain.includes('linok.me')) {
@@ -31,10 +35,12 @@ export const formatStoreUrl = (domainName: string): string => {
   // In development environment, format as a path instead of subdomain
   if (isDevelopment) {
     // Use current origin for development
+    console.log('Creating development URL with path:', `${window.location.origin}/store/${cleanDomain}`);
     return `${window.location.origin}/store/${cleanDomain}`;
   }
   
   // In production, format as subdomain
+  console.log('Creating production URL with subdomain:', `https://${cleanDomain}.linok.me`);
   return `https://${cleanDomain}.linok.me`;
 };
 
@@ -48,7 +54,10 @@ export const getStoreUrl = (storeData: any): string => {
   
   // Check if we're in development environment
   const isDevelopment = window.location.hostname === 'localhost' || 
-                        window.location.hostname.includes('lovableproject.com');
+                        window.location.hostname.includes('lovableproject.com') ||
+                        window.location.hostname.includes('lovable.app');
+  
+  console.log('Getting store URL for:', storeData);
   
   // If domain name exists, use it to create the URL
   if (storeData.domain_name) {
@@ -59,11 +68,13 @@ export const getStoreUrl = (storeData: any): string => {
   if (storeData.id) {
     // In development, use path-based URL
     if (isDevelopment) {
+      console.log('Creating development URL with ID:', `${window.location.origin}/store/${storeData.id}`);
       return `${window.location.origin}/store/${storeData.id}`;
     }
     
     // In production with no domain name yet, use full URL with path
-    return `${window.location.origin}/store/${storeData.id}`;
+    console.log('Creating production URL with ID path:', `https://linok.me/store/${storeData.id}`);
+    return `https://linok.me/store/${storeData.id}`;
   }
   
   return '';
@@ -92,24 +103,30 @@ export const getStoreFromUrl = async (storeId: string, supabase: any) => {
   try {
     // Remove any `:` character that might be in the param (from useParams)
     const cleanId = storeId.replace(/:/g, '');
+    console.log('Clean store ID/domain:', cleanId);
     
     // First try to fetch by domain name (more likely in production)
-    // Using ILIKE instead of EQ for case-insensitive matching
+    // Using ILIKE for case-insensitive matching
     let { data, error } = await supabase
       .from("stores")
       .select("*")
       .ilike("domain_name", cleanId)
-      .maybeSingle();
+      .maybeSingle(); // Use maybeSingle instead of single to avoid errors
+    
+    console.log('Search by domain result:', data, error);
     
     // If not found by domain, try by UUID
     if (!data && !error) {
       // Only try UUID lookup if the cleanId looks like a UUID
       if (cleanId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+        console.log('Trying to fetch by UUID:', cleanId);
         ({ data, error } = await supabase
           .from("stores")
           .select("*")
           .eq("id", cleanId)
           .maybeSingle());
+          
+        console.log('Search by UUID result:', data, error);
       }
     }
     
