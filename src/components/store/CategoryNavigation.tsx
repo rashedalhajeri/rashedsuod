@@ -57,11 +57,11 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
   const categoriesWithAll = ["الكل", ...categories];
 
   return (
-    <div className={`bg-white py-4 z-10 transition-all duration-300 ${
+    <div className={`bg-white py-3 z-10 transition-all duration-300 ${
       stickyNav ? 'sticky top-0 shadow-md' : ''
     }`}>
-      <div className="container mx-auto px-4">
-        <h2 className="text-xl font-bold mb-4 text-right pr-2">تصفح المتجر</h2>
+      <div className="container mx-auto px-3">
+        <h2 className="text-lg font-bold mb-3 text-right pr-1.5">تصفح المتجر</h2>
         
         <Tabs 
           value={activeTab}
@@ -71,15 +71,15 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
         >
           {/* Only show tabs if both categories and sections exist */}
           {hasCategories && hasSections && (
-            <TabsList className="mb-4 bg-gray-100 rounded-full p-1 border mx-auto w-fit">
-              <TabsTrigger className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white px-6" value="categories">الفئات</TabsTrigger>
-              <TabsTrigger className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white px-6" value="sections">الأقسام</TabsTrigger>
+            <TabsList className="mb-3 bg-gray-100 rounded-full p-0.5 border-0 mx-auto w-fit">
+              <TabsTrigger className="rounded-full text-sm data-[state=active]:bg-primary data-[state=active]:text-white px-4 py-1" value="categories">الفئات</TabsTrigger>
+              <TabsTrigger className="rounded-full text-sm data-[state=active]:bg-primary data-[state=active]:text-white px-4 py-1" value="sections">الأقسام</TabsTrigger>
             </TabsList>
           )}
           
           {hasCategories && (
             <TabsContent value="categories" className="mt-0">
-              <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 flex-row-reverse">
+              <div className="flex overflow-x-auto gap-2.5 pb-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 flex-row-reverse">
                 {categoriesWithAll.map((category, index) => (
                   <motion.button
                     initial={{ opacity: 0, y: 10 }}
@@ -87,10 +87,10 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
                     transition={{ duration: 0.3, delay: index * 0.05 }}
                     key={index}
                     onClick={() => onCategoryChange(category === "الكل" ? "" : category)}
-                    className={`px-5 py-2 rounded-full whitespace-nowrap transition-all ${
+                    className={`px-3.5 py-1.5 text-sm rounded-full whitespace-nowrap transition-all ${
                       (category === "الكل" && !activeCategory) || activeCategory === category
-                        ? 'bg-primary text-white shadow-md font-medium'
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                        ? 'bg-primary text-white shadow-sm font-medium'
+                        : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
                     }`}
                   >
                     {category}
@@ -102,7 +102,7 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
           
           {hasSections && (
             <TabsContent value="sections" className="mt-0">
-              <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 flex-row-reverse">
+              <div className="flex overflow-x-auto gap-2.5 pb-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 flex-row-reverse">
                 {sections.map((section, index) => (
                   <motion.button
                     initial={{ opacity: 0, y: 10 }}
@@ -110,10 +110,10 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
                     transition={{ duration: 0.3, delay: index * 0.05 }}
                     key={index}
                     onClick={() => onSectionChange(section)}
-                    className={`px-5 py-2 rounded-full whitespace-nowrap transition-all ${
+                    className={`px-3.5 py-1.5 text-sm rounded-full whitespace-nowrap transition-all ${
                       activeSection === section
-                        ? 'bg-primary text-white shadow-md font-medium'
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                        ? 'bg-primary text-white shadow-sm font-medium'
+                        : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
                     }`}
                   >
                     {section}
