@@ -32,7 +32,7 @@ const StorePreviewButton = () => {
     if (storeUrl) {
       setPreviewOpen(true);
     } else {
-      toast.error("عذراً، لا يمكن معاينة المتجر حالياً");
+      toast.error("عذراً، لا يمكن مشاهدة المتجر حالياً");
     }
   };
   
@@ -72,11 +72,11 @@ const StorePreviewButton = () => {
                 onClick={openStorePreview}
               >
                 <Eye className="h-4 w-4" />
-                <span>معاينة المتجر</span>
+                <span>مشاهدة متجري</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>معاينة المتجر داخل لوحة التحكم</p>
+              <p>مشاهدة المتجر داخل لوحة التحكم</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -85,7 +85,7 @@ const StorePreviewButton = () => {
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
         <DialogContent className="max-w-5xl h-[80vh] p-0">
           <DialogHeader className="p-4 bg-gray-50 border-b flex flex-row items-center justify-between">
-            <DialogTitle>معاينة المتجر</DialogTitle>
+            <DialogTitle>مشاهدة متجري</DialogTitle>
             <Button 
               variant="ghost" 
               size="icon" 
@@ -98,7 +98,7 @@ const StorePreviewButton = () => {
           <div className="w-full h-full overflow-hidden">
             <iframe 
               src={storeUrl} 
-              title="معاينة المتجر"
+              title="مشاهدة متجري"
               className="w-full h-full border-0"
               sandbox="allow-same-origin allow-scripts"
             />
