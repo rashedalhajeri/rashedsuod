@@ -1,9 +1,9 @@
 
 import React, { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getStoreFromUrl } from "@/utils/url-utils";
-import { ShoppingBag, ChevronRight, Search } from "lucide-react";
+import { ShoppingBag, ChevronRight, Search, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,6 +16,7 @@ import { ErrorState } from "@/components/ui/error-state";
 
 const StoreHome: React.FC = () => {
   const { storeId } = useParams();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   
   // استعلام لجلب بيانات المتجر
@@ -85,11 +86,11 @@ const StoreHome: React.FC = () => {
     if (searchQuery.trim()) {
       toast.info("البحث عن: " + searchQuery);
       // التوجيه إلى صفحة البحث
-      window.location.href = `/store/${storeId}/products?search=${encodeURIComponent(searchQuery)}`;
+      navigate(`/store/${storeId}/products?search=${encodeURIComponent(searchQuery)}`);
     }
   };
-  
-  // عرض رسالة خطأ محسنة في حالة عدم العثور على المتجر
+
+  // التعامل مع حالة وجود خطأ أو عدم وجود المتجر
   if (storeError) {
     return (
       <div className="min-h-screen flex items-center justify-center flex-col p-4" dir="rtl">
@@ -98,17 +99,53 @@ const StoreHome: React.FC = () => {
           message={storeError.message || "لم نتمكن من العثور على المتجر المطلوب. تأكد من صحة الرابط المستخدم."}
           onRetry={() => refetchStore()}
         />
-        <div className="mt-4">
+        
+        <div className="mt-4 flex flex-col md:flex-row gap-3">
           <Button asChild variant="outline">
             <Link to="/">العودة للصفحة الرئيسية</Link>
           </Button>
+          
+          <Button asChild variant="default">
+            <Link to="/dashboard">الذهاب إلى لوحة التحكم</Link>
+          </Button>
         </div>
+        
         <div className="mt-8 text-sm text-gray-500 max-w-md text-center">
-          <p>للوصول إلى المتجر، استخدم أحد الروابط التالية:</p>
+          <p>للوصول إلى المتجر، يمكنك استخدام أحد روابط المتاجر المتاحة:</p>
           <ul className="mt-2 space-y-1">
-            <li><code className="bg-gray-100 px-2 py-1 rounded">/store/fhad</code> - للمتجر الأول</li>
-            <li><code className="bg-gray-100 px-2 py-1 rounded">/store/rashed</code> - للمتجر الثاني</li>
-            <li><code className="bg-gray-100 px-2 py-1 rounded">/store/Alhajeri</code> - للمتجر الثالث</li>
+            <li className="flex items-center justify-center gap-2">
+              <code className="bg-gray-100 px-2 py-1 rounded">/store/fhad</code>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 p-0 text-blue-600"
+                onClick={() => navigate('/store/fhad')}
+              >
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </li>
+            <li className="flex items-center justify-center gap-2">
+              <code className="bg-gray-100 px-2 py-1 rounded">/store/rashed</code>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 p-0 text-blue-600"
+                onClick={() => navigate('/store/rashed')}
+              >
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </li>
+            <li className="flex items-center justify-center gap-2">
+              <code className="bg-gray-100 px-2 py-1 rounded">/store/Alhajeri</code>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 p-0 text-blue-600"
+                onClick={() => navigate('/store/Alhajeri')}
+              >
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </li>
           </ul>
         </div>
       </div>

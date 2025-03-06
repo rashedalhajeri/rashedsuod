@@ -150,44 +150,43 @@ export const getStoreFromUrl = async (storeId: string, supabase: any) => {
     if (!cleanId) {
       return { data: null, error: { message: "معرف المتجر غير صالح" } };
     }
+
+    // First try to find by domain name (case insensitive)
+    console.log('Looking up store by domain name:', cleanId);
+    const { data: domainResult, error: domainError } = await supabase
+      .from("stores")
+      .select("*")
+      .ilike("domain_name", cleanId)
+      .maybeSingle();
     
-    // First check if this is a domain name (non-UUID format)
+    console.log('Domain search result:', domainResult, domainError);
+    
+    if (domainResult) {
+      console.log('Store found by domain name:', domainResult);
+      return { data: domainResult, error: null };
+    }
+    
+    // Check if this looks like a UUID
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanId);
     
-    // If it's not a UUID, try to find by domain name (case insensitive)
-    if (!isUUID) {
-      console.log('Looking up store by domain name:', cleanId);
-      const { data: domainResult, error: domainError } = await supabase
+    // If it looks like a UUID, try to find by ID
+    if (isUUID) {
+      console.log('Looking up store with ID:', cleanId);
+      const { data: idResult, error: idError } = await supabase
         .from("stores")
         .select("*")
-        .ilike("domain_name", cleanId)
+        .eq("id", cleanId)
         .maybeSingle();
+        
+      console.log('ID search result:', idResult, idError);
       
-      console.log('Domain search result:', domainResult, domainError);
-      
-      if (domainResult) {
-        console.log('Store found by domain name:', domainResult);
-        return { data: domainResult, error: null };
+      if (idResult) {
+        console.log('Store found by ID:', idResult);
+        return { data: idResult, error: null };
       }
     }
     
-    // If it's a UUID or domain search failed, try with exact ID match
-    console.log('Looking up store with ID:', cleanId);
-    const { data: idResult, error: idError } = await supabase
-      .from("stores")
-      .select("*")
-      .eq("id", cleanId)
-      .maybeSingle();
-      
-    console.log('ID search result:', idResult, idError);
-    
-    if (idResult) {
-      console.log('Store found by ID:', idResult);
-      return { data: idResult, error: null };
-    }
-    
-    // If still not found, do a more thorough search
-    // Get all stores to check for partial matches or display available options
+    // If still not found, try a more flexible approach for domain matching
     const { data: allStores, error: storesError } = await supabase
       .from("stores")
       .select("*");
@@ -213,7 +212,7 @@ export const getStoreFromUrl = async (storeId: string, supabase: any) => {
         return { data: matchingStore, error: null };
       }
       
-      // If we have stores but couldn't find a match, show available options
+      // Generate a list of available store domains to help the user
       const availableDomains = allStores
         .filter((store: any) => store.domain_name)
         .map((store: any) => store.domain_name)
