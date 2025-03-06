@@ -15,8 +15,8 @@ export const validateStep = (step: number, formData: StoreFormData, domainAvaila
       toast.error("الرجاء إدخال اسم النطاق");
       return false;
     }
-    if (!domainAvailable) {
-      toast.error("الرجاء التحقق من توفر اسم النطاق أولاً");
+    if (domainAvailable !== true) {
+      toast.error("اسم النطاق غير متاح أو لم يتم التحقق منه");
       return false;
     }
     if (!formData.phoneNumber) {

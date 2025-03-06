@@ -1,12 +1,10 @@
 
-import React from "react";
-import { toast } from "sonner";
+import React, { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, XCircle } from "lucide-react";
 import { StoreFormData } from "../types";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -15,7 +13,9 @@ interface BasicInfoStepProps {
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleSelectChange: (name: string, value: string) => void;
   domainAvailable: boolean | null;
+  setDomainAvailable: (available: boolean | null) => void;
   checkingDomain: boolean;
+  setCheckingDomain: (checking: boolean) => void;
 }
 
 const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
@@ -23,42 +23,66 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
   handleChange,
   handleSelectChange,
   domainAvailable,
+  setDomainAvailable,
   checkingDomain,
+  setCheckingDomain,
 }) => {
-  const checkDomainAvailability = async () => {
-    if (!formData.domainName.trim()) {
-      toast.error("الرجاء إدخال اسم النطاق أولاً");
+  const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  // Automatically check domain availability when domainName changes
+  useEffect(() => {
+    if (!formData.domainName || formData.domainName.length < 3) {
+      setDomainAvailable(null);
       return;
     }
 
-    // Validate domain name (alphanumeric and hyphens only)
+    // Validate domain name format first (alphanumeric and hyphens only)
     const domainRegex = /^[a-zA-Z0-9-]+$/;
     if (!domainRegex.test(formData.domainName)) {
-      toast.error("اسم النطاق يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط");
+      setDomainAvailable(false);
       return;
     }
 
-    toast.loading("جاري التحقق من توفر اسم النطاق...");
-    try {
-      // Check if domain already exists in database
-      const { data, error } = await supabase
-        .from('stores')
-        .select('domain_name')
-        .eq('domain_name', formData.domainName)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      // If data is null, domain is available
-      if (!data) {
-        toast.success("اسم النطاق متاح");
-      } else {
-        toast.error("اسم النطاق غير متاح، الرجاء اختيار اسم آخر");
-      }
-    } catch (error) {
-      console.error("Error checking domain:", error);
-      toast.error("حدث خطأ أثناء التحقق من توفر اسم النطاق");
+    // Debounce the domain availability check to avoid too many requests
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout);
     }
+
+    setCheckingDomain(true);
+    const timeout = setTimeout(async () => {
+      try {
+        // Check if domain already exists in database
+        const { data, error } = await supabase
+          .from('stores')
+          .select('domain_name')
+          .eq('domain_name', formData.domainName)
+          .maybeSingle();
+
+        if (error) throw error;
+        
+        // If data is null, domain is available
+        setDomainAvailable(!data);
+      } catch (error) {
+        console.error("Error checking domain:", error);
+        setDomainAvailable(null);
+      } finally {
+        setCheckingDomain(false);
+      }
+    }, 500); // 500ms debounce delay
+
+    setDebounceTimeout(timeout);
+
+    // Cleanup on unmount
+    return () => {
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+      }
+    };
+  }, [formData.domainName, setDomainAvailable, setCheckingDomain]);
+
+  // Handle domain name input change
+  const handleDomainChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleChange(e);
   };
 
   return (
@@ -79,35 +103,44 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
         
         <div className="space-y-2">
           <Label htmlFor="domainName">اسم النطاق <span className="text-red-500">*</span></Label>
-          <div className="flex space-x-2 items-center">
-            <Input
-              id="domainName"
-              name="domainName"
-              value={formData.domainName}
-              onChange={handleChange}
-              placeholder="example"
-              className="flex-1 ml-2"
-              required
-            />
-            <span className="text-gray-500 whitespace-nowrap">.linok.me</span>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={checkDomainAvailability}
-              disabled={checkingDomain || !formData.domainName}
-              className="whitespace-nowrap"
-            >
-              {checkingDomain ? "جاري التحقق..." : "تحقق من التوفر"}
-            </Button>
+          <div className="flex items-center">
+            <div className={`flex flex-1 items-center rounded-md border ${
+              domainAvailable === true 
+                ? 'border-green-500 bg-green-50' 
+                : domainAvailable === false 
+                  ? 'border-red-500 bg-red-50' 
+                  : 'border-gray-300'
+            }`}>
+              <Input
+                id="domainName"
+                name="domainName"
+                value={formData.domainName}
+                onChange={handleDomainChange}
+                placeholder="example"
+                className={`flex-1 border-0 rounded-none focus-visible:ring-0 ${
+                  domainAvailable === true 
+                    ? 'bg-green-50 text-green-800' 
+                    : domainAvailable === false 
+                      ? 'bg-red-50 text-red-800' 
+                      : 'bg-white'
+                }`}
+                required
+              />
+              <span className="px-3 text-gray-500 whitespace-nowrap">.linok.me</span>
+            </div>
           </div>
-          {domainAvailable === true && (
+          {checkingDomain && (
+            <p className="text-gray-500 text-sm">جاري التحقق...</p>
+          )}
+          {domainAvailable === true && !checkingDomain && (
             <p className="text-green-600 text-sm flex items-center">
               <CheckCircle className="h-4 w-4 mr-1" /> اسم النطاق متاح
             </p>
           )}
-          {domainAvailable === false && (
-            <p className="text-red-600 text-sm">✗ اسم النطاق غير متاح</p>
+          {domainAvailable === false && !checkingDomain && (
+            <p className="text-red-600 text-sm flex items-center">
+              <XCircle className="h-4 w-4 mr-1" /> اسم النطاق غير متاح، الرجاء اختيار اسم آخر
+            </p>
           )}
         </div>
         

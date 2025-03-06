@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { StoreFormData } from "@/features/store-creation/types";
 import { validateStep } from "@/features/store-creation/utils/validation";
-import { createStore, checkDomainAvailability } from "@/features/store-creation/utils/store-api";
+import { createStore } from "@/features/store-creation/utils/store-api";
 import StepIndicator from "@/features/store-creation/components/StepIndicator";
 import BasicInfoStep from "@/features/store-creation/components/BasicInfoStep";
 import StoreSettingsStep from "@/features/store-creation/components/StoreSettingsStep";
@@ -39,11 +39,6 @@ const CreateStore: React.FC = () => {
       ...formData,
       [name]: value
     });
-
-    // Reset domain availability check when domain name changes
-    if (name === "domainName") {
-      setDomainAvailable(null);
-    }
   };
 
   // Handle select changes
@@ -60,35 +55,6 @@ const CreateStore: React.FC = () => {
       ...formData,
       [name]: checked
     });
-  };
-
-  // Check domain availability
-  const checkDomain = async () => {
-    if (!formData.domainName.trim()) {
-      toast.error("الرجاء إدخال اسم النطاق أولاً");
-      return;
-    }
-
-    // Validate domain name (alphanumeric and hyphens only)
-    const domainRegex = /^[a-zA-Z0-9-]+$/;
-    if (!domainRegex.test(formData.domainName)) {
-      toast.error("اسم النطاق يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط");
-      return;
-    }
-
-    setCheckingDomain(true);
-    try {
-      const isAvailable = await checkDomainAvailability(formData.domainName);
-      setDomainAvailable(isAvailable);
-      
-      if (isAvailable) {
-        toast.success("اسم النطاق متاح");
-      } else {
-        toast.error("اسم النطاق غير متاح، الرجاء اختيار اسم آخر");
-      }
-    } finally {
-      setCheckingDomain(false);
-    }
   };
 
   // Go to next step
@@ -141,7 +107,9 @@ const CreateStore: React.FC = () => {
               handleChange={handleChange}
               handleSelectChange={handleSelectChange}
               domainAvailable={domainAvailable}
+              setDomainAvailable={setDomainAvailable}
               checkingDomain={checkingDomain}
+              setCheckingDomain={setCheckingDomain}
             />
           )}
           

@@ -4,26 +4,6 @@ import { StoreFormData } from "../types";
 import { toast } from "sonner";
 
 /**
- * Checks if a domain name is available
- */
-export const checkDomainAvailability = async (domainName: string): Promise<boolean | null> => {
-  try {
-    // Check if domain already exists in database
-    const { data, error } = await supabase
-      .from('stores')
-      .select('domain_name')
-      .eq('domain_name', domainName)
-      .maybeSingle();
-
-    if (error) throw error;
-    return !data; // If data is null, domain is available
-  } catch (error) {
-    console.error("Error checking domain:", error);
-    return null;
-  }
-};
-
-/**
  * Creates a store with the provided form data
  */
 export const createStore = async (formData: StoreFormData): Promise<boolean> => {
