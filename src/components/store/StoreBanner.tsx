@@ -11,7 +11,7 @@ interface StoreBannerProps {
   searchQuery: string;
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   logoUrl?: string | null;
-  bannerUrl?: string | null; // Added banner URL prop
+  bannerUrl?: string | null; // Banner URL prop
 }
 
 const StoreBanner: React.FC<StoreBannerProps> = ({
@@ -22,11 +22,17 @@ const StoreBanner: React.FC<StoreBannerProps> = ({
 }) => {
   const isMobile = useIsMobile();
   
-  // Don't render the banner at all if there's no valid banner URL
-  if (!bannerUrl) return null;
-  
+  // Always render the banner now with the placeholder
   return (
     <div className="relative bg-gradient-to-l from-indigo-50 to-purple-50 py-6 px-4 sm:px-5 rounded-xl shadow-md mt-4 mb-6 overflow-hidden border border-indigo-100/80 w-full">
+      {/* Background image - using the bannerUrl if provided, otherwise a gradient */}
+      {bannerUrl && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center opacity-10 mix-blend-overlay"
+          style={{ backgroundImage: `url(${bannerUrl})` }}
+        />
+      )}
+      
       {/* Decorative elements - made less pronounced on mobile */}
       <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-purple-200/20 rounded-full -mt-10 -mr-10 blur-2xl"></div>
       <div className="absolute bottom-0 left-0 w-16 sm:w-24 h-16 sm:h-24 bg-indigo-300/10 rounded-full -mb-8 -ml-8 blur-xl"></div>

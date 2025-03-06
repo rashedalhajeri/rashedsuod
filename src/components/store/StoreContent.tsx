@@ -83,17 +83,30 @@ const StoreContent: React.FC<StoreContentProps> = ({
   // Only show navigation if there are categories or sections
   const showNavigation = categories.length > 0 || sections.length > 0;
 
+  // Placeholder banner URL - a sample URL that we're treating as if it exists
+  const placeholderBannerUrl = "/placeholder.svg";
+
   return (
     <>
-      {/* Store banner with search functionality */}
+      {/* Store banner with placeholder for now */}
       <StoreBanner 
         storeName={storeData?.store_name}
         storeDescription={storeData?.description}
         searchQuery={searchQuery}
         onSearchChange={(e) => setSearchQuery(e.target.value)}
         logoUrl={storeData?.logo_url}
-        bannerUrl={storeData?.banner_url}
+        bannerUrl={placeholderBannerUrl}  {/* Using placeholder banner */}
       />
+      
+      {/* Search Bar - Now positioned above categories */}
+      <div className="mt-4 mb-6 px-3 sm:px-5 w-full max-w-3xl mx-auto">
+        <SearchBar 
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          handleSearchSubmit={handleSearchSubmit}
+          productNames={productNames.length > 0 ? productNames : undefined}
+        />
+      </div>
       
       {/* Only show navigation if there are categories or sections */}
       {showNavigation && (
@@ -106,16 +119,6 @@ const StoreContent: React.FC<StoreContentProps> = ({
           sections={sections}
         />
       )}
-      
-      {/* Search Bar - Now positioned right after the categories */}
-      <div className="mt-4 mb-6 px-3 sm:px-5 w-full max-w-3xl mx-auto">
-        <SearchBar 
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          handleSearchSubmit={handleSearchSubmit}
-          productNames={productNames.length > 0 ? productNames : undefined}
-        />
-      </div>
       
       {/* Products section */}
       <AllProductsSection 
