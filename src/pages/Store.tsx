@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -129,11 +130,11 @@ const Store = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" dir="rtl">
+    <div className="min-h-screen flex flex-col bg-gray-50" dir="rtl">
       <StoreNavbar storeName={storeData?.store_name} logoUrl={storeData?.logo_url} />
       
-      <main className="flex-grow">
-        {/* Hero Banner */}
+      <main className="flex-grow container mx-auto px-4">
+        {/* App Banner (previously Hero Banner) */}
         <StoreBanner 
           storeName={storeData?.store_name}
           storeDescription={storeData?.description}

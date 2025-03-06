@@ -1,20 +1,17 @@
 
 import React from "react";
-import { Heart, Bell } from "lucide-react";
+import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useIsMobile } from "@/hooks/use-media-query";
 
 const FavoritesButton: React.FC = () => {
-  const isMobile = useIsMobile();
-  
   return (
     <Button 
       variant="ghost" 
       size="sm" 
-      className="text-white bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full p-2 transition-all duration-300 shadow-sm"
+      className="text-white p-0 hover:bg-transparent"
       aria-label="الإشعارات"
     >
-      <Bell className="h-6 w-6" />
+      <Bell className="h-7 w-7" />
     </Button>
   );
 };

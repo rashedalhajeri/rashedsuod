@@ -1,8 +1,6 @@
 
 import React from "react";
 import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 
 interface SearchBarProps {
   searchQuery: string;
@@ -16,29 +14,21 @@ const SearchBar: React.FC<SearchBarProps> = ({
   handleSearchSubmit
 }) => {
   return (
-    <div className="mt-4 mb-2 animate-slide-down px-4 sm:px-0">
-      <form onSubmit={handleSearchSubmit} className="relative">
-        <div className="relative w-full rounded-full overflow-hidden bg-white shadow-md border border-gray-100">
-          <Input 
-            type="search" 
-            placeholder="ابحث حسب المتجر أو المنتج" 
-            className="w-full bg-transparent border-0 text-gray-700 placeholder-gray-400 pr-12 pl-14 py-6 rounded-full text-lg focus-visible:ring-0" 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400" />
-          <Button 
-            type="submit" 
-            variant="ghost"
-            size="sm" 
-            className="absolute left-1 top-1/2 -translate-y-1/2 rounded-full h-8 px-3 text-sm"
-            disabled={!searchQuery.trim()}
-          >
-            بحث
-          </Button>
+    <form onSubmit={handleSearchSubmit} className="relative w-full">
+      <div className="relative w-full h-12 rounded-full overflow-hidden bg-white shadow-lg border border-gray-100">
+        <input 
+          type="search" 
+          placeholder="ابحث حسب المتجر أو المنتج" 
+          className="w-full h-full bg-transparent border-0 text-gray-700 placeholder-gray-400 pr-12 pl-4 py-3 rounded-full text-sm focus:outline-none"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          dir="rtl"
+        />
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+          <Search className="h-5 w-5" />
         </div>
-      </form>
-    </div>
+      </div>
+    </form>
   );
 };
 

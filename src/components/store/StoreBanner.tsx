@@ -1,8 +1,6 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Search } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface StoreBannerProps {
   storeName: string;
@@ -15,71 +13,44 @@ interface StoreBannerProps {
 const StoreBanner: React.FC<StoreBannerProps> = ({
   storeName,
   storeDescription,
-  searchQuery,
-  onSearchChange,
   logoUrl
 }) => {
-  // Extract initial for avatar display
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(part => part[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
-  };
-
-  const initials = getInitials(storeName || "Store");
-
   return (
-    <div className="bg-gradient-to-r from-blue-700 to-green-500 py-10 px-4 relative overflow-hidden rounded-b-[2rem] shadow-lg">
-      {/* Decorative elements */}
-      <div className="absolute inset-0 opacity-10 bg-pattern"></div>
-      
+    <div className="bg-white py-6 px-4 rounded-lg shadow-sm mt-4 mb-6">
       <motion.div 
-        className="container mx-auto relative z-10"
+        className="flex flex-col items-center justify-center space-y-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="flex flex-col items-center justify-center text-center">
-          {/* Store Logo */}
-          <motion.div
-            className="mb-4"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-          >
-            <Avatar className="h-24 w-24 border-4 border-white/30 shadow-xl">
-              {logoUrl ? (
-                <AvatarImage src={logoUrl} alt={storeName} />
-              ) : (
-                <AvatarFallback className="bg-white text-blue-600 text-3xl font-bold">
-                  {initials}
-                </AvatarFallback>
-              )}
-            </Avatar>
-          </motion.div>
+        {/* App Download Section */}
+        <div className="flex flex-col items-end text-right w-full mb-4">
+          <h3 className="text-blue-600 font-bold text-xl mb-2">حمل التطبيق الآن</h3>
+          <p className="text-gray-600 mb-3 text-sm">
+            أكبر منصة للخدمات الطبية والصحية والعلاجية في الكويت
+          </p>
           
-          {/* Store Name & Welcome */}
-          <div className="text-center">
-            <motion.p 
-              className="text-white/90 text-sm font-medium mb-1"
-              initial={{ y: -5, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.4 }}
-            >
-              حياكم في
-            </motion.p>
-            <motion.h1 
-              className="text-3xl font-bold text-white tracking-wide"
-              initial={{ y: -5, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-            >
-              {storeName}
-            </motion.h1>
+          <h4 className="text-blue-600 font-medium mb-3">حمل تطبيق المتجر</h4>
+          
+          <div className="flex space-x-3 rtl:space-x-reverse">
+            <a href="#" className="inline-block border border-blue-500 text-blue-600 rounded-md py-2 px-3 text-xs font-medium">
+              GET IT ON<br />
+              <span className="font-bold">Google Play</span>
+            </a>
+            <a href="#" className="inline-block border border-blue-500 text-blue-600 rounded-md py-2 px-3 text-xs font-medium">
+              Download on the<br />
+              <span className="font-bold">App Store</span>
+            </a>
           </div>
+        </div>
+        
+        {/* Indicator Dots */}
+        <div className="flex items-center justify-center space-x-2 rtl:space-x-reverse">
+          <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+          <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+          <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+          <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+          <div className="w-2 h-2 rounded-full bg-blue-500"></div>
         </div>
       </motion.div>
     </div>
