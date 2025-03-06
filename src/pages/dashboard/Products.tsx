@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -51,8 +52,7 @@ const Products: React.FC = () => {
   const { data: products, isLoading, refetch } = useQuery({
     queryKey: ['products'],
     queryFn: async () => {
-      const { data: storeData } = await useStoreData().refetch();
-      
+      // قم بجلب بيانات المتجر من الحالة المخزنة بدلاً من استدعاء useStoreData
       if (!storeData?.id) {
         return [];
       }
@@ -69,7 +69,8 @@ const Products: React.FC = () => {
       }
       
       return data || [];
-    }
+    },
+    enabled: !!storeData?.id, // فقط قم بتنفيذ الاستعلام عندما تكون بيانات المتجر متاحة
   });
   
   const filteredProducts = products?.filter(product => 
@@ -79,8 +80,7 @@ const Products: React.FC = () => {
   
   const handleAddProduct = async () => {
     try {
-      const { data: storeData } = await useStoreData().refetch();
-      
+      // استخدام بيانات المتجر من الحالة بدلاً من استدعاء useStoreData
       if (!storeData?.id) {
         toast.error("لم يتم العثور على معرف المتجر");
         return;
