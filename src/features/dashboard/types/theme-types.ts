@@ -1,3 +1,4 @@
+
 export interface ThemeOption {
   id: string;
   name: string;
@@ -38,6 +39,18 @@ export interface ThemeSettings {
   image_style?: string;
   header_style?: string;
   footer_style?: string;
+  banner_image?: string;
+  logo_url?: string;
+  sections?: StoreSection[];
+}
+
+export interface StoreSection {
+  id: string;
+  type: 'banner' | 'featured-products' | 'categories' | 'info' | 'custom';
+  title?: string;
+  enabled: boolean;
+  order: number;
+  settings?: Record<string, any>;
 }
 
 export interface ColorOption {

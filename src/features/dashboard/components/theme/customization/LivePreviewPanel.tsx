@@ -3,11 +3,12 @@ import React from 'react';
 import { ThemeSettings } from '../../../types/theme-types';
 import ThemePreview from '../../ThemePreview';
 import { Card } from "@/components/ui/card";
-import { Eye, Smartphone, Tablet, Monitor } from 'lucide-react';
+import { Eye, Smartphone, Tablet, Monitor, ExternalLink } from 'lucide-react';
 import { Toggle } from "@/components/ui/toggle";
 import { Button } from "@/components/ui/button";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import useStoreData from '@/hooks/use-store-data';
 
 interface LivePreviewPanelProps {
   themeSettings: ThemeSettings;
@@ -21,6 +22,7 @@ const LivePreviewPanel: React.FC<LivePreviewPanelProps> = ({
   const [previewDevice, setPreviewDevice] = React.useState<'mobile' | 'tablet' | 'desktop'>('mobile');
   const [currentPage, setCurrentPage] = React.useState<'home' | 'product' | 'category'>('home');
   const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const { storeData } = useStoreData();
 
   if (!selectedTheme) return null;
 
@@ -45,60 +47,74 @@ const LivePreviewPanel: React.FC<LivePreviewPanelProps> = ({
           </TooltipProvider>
         </div>
         
-        <div className="flex space-x-1 rtl:space-x-reverse">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Toggle 
-                  pressed={previewDevice === 'mobile'} 
-                  onPressedChange={() => setPreviewDevice('mobile')}
-                  aria-label="عرض الجوال"
-                  size="sm"
-                >
-                  <Smartphone className="h-4 w-4" />
-                </Toggle>
-              </TooltipTrigger>
-              <TooltipContent side="top">
-                <p>معاينة على الهاتف المحمول</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        <div className="flex items-center gap-2">
+          {storeData?.domain && (
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="text-xs h-7 px-2"
+              onClick={() => window.open(`/store/${storeData.domain}`, '_blank')}
+            >
+              <ExternalLink className="h-3 w-3 mr-1" /> 
+              فتح المتجر
+            </Button>
+          )}
           
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Toggle 
-                  pressed={previewDevice === 'tablet'} 
-                  onPressedChange={() => setPreviewDevice('tablet')}
-                  aria-label="عرض اللوحي"
-                  size="sm"
-                >
-                  <Tablet className="h-4 w-4" />
-                </Toggle>
-              </TooltipTrigger>
-              <TooltipContent side="top">
-                <p>معاينة على الجهاز اللوحي</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Toggle 
-                  pressed={previewDevice === 'desktop'} 
-                  onPressedChange={() => setPreviewDevice('desktop')}
-                  aria-label="عرض سطح المكتب"
-                  size="sm"
-                >
-                  <Monitor className="h-4 w-4" />
-                </Toggle>
-              </TooltipTrigger>
-              <TooltipContent side="top">
-                <p>معاينة على سطح المكتب</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <div className="flex space-x-1 rtl:space-x-reverse">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Toggle 
+                    pressed={previewDevice === 'mobile'} 
+                    onPressedChange={() => setPreviewDevice('mobile')}
+                    aria-label="عرض الجوال"
+                    size="sm"
+                  >
+                    <Smartphone className="h-4 w-4" />
+                  </Toggle>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p>معاينة على الهاتف المحمول</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Toggle 
+                    pressed={previewDevice === 'tablet'} 
+                    onPressedChange={() => setPreviewDevice('tablet')}
+                    aria-label="عرض اللوحي"
+                    size="sm"
+                  >
+                    <Tablet className="h-4 w-4" />
+                  </Toggle>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p>معاينة على الجهاز اللوحي</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Toggle 
+                    pressed={previewDevice === 'desktop'} 
+                    onPressedChange={() => setPreviewDevice('desktop')}
+                    aria-label="عرض سطح المكتب"
+                    size="sm"
+                  >
+                    <Monitor className="h-4 w-4" />
+                  </Toggle>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p>معاينة على سطح المكتب</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
       </div>
       
