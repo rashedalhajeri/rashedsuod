@@ -23,6 +23,15 @@ export const validateStep = (step: number, formData: StoreFormData, domainAvaila
       toast.error("الرجاء إدخال رقم الهاتف");
       return false;
     }
+  } else if (step === 2) {
+    if (!formData.country) {
+      toast.error("الرجاء اختيار الدولة");
+      return false;
+    }
+    if (!formData.currency) {
+      toast.error("الرجاء اختيار العملة");
+      return false;
+    }
   } else if (step === 3) {
     if (!formData.acceptTerms) {
       toast.error("الرجاء الموافقة على شروط الخدمة");
