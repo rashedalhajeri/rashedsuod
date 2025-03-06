@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { X, ChevronLeft } from "lucide-react";
@@ -64,38 +63,34 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
       try {
         setIsLoading(true);
         
-        // Use explicit typing for the query to avoid deep instantiation
-        const baseQuery = supabase
-          .from('products')
-          .select('*');
+        // Create a reusable fetch function to avoid deep type instantiation
+        const fetchProductsWithFilter = async (filterFn: (query: any) => any) => {
+          const query = supabase.from('products').select('*');
+          const filteredQuery = filterFn(query);
+          return await filteredQuery.order('created_at', { ascending: false });
+        };
+        
+        let result;
         
         // Apply different filters based on section type
-        let finalQuery;
-        
-        // If we have a specific section type, filter accordingly
         if (sectionType === 'category' && categoryId) {
-          finalQuery = baseQuery.eq('category_id', categoryId);
+          result = await fetchProductsWithFilter(q => q.eq('category_id', categoryId));
         } else if (sectionType === 'featured') {
-          // Fetch featured products (example only - implement as needed)
-          finalQuery = baseQuery.eq('is_featured', true);
+          result = await fetchProductsWithFilter(q => q.eq('is_featured', true));
         } else if (sectionType === 'best_selling') {
-          // For best selling, we would normally have a sales count
-          finalQuery = baseQuery.order('sales_count', { ascending: false });
+          result = await fetchProductsWithFilter(q => q.order('sales_count', { ascending: false }));
         } else if (sectionType === 'new_arrivals') {
-          finalQuery = baseQuery.order('created_at', { ascending: false });
+          result = await fetchProductsWithFilter(q => q);
         } else if (sectionType === 'on_sale') {
-          // For sale items, would need a discounted_price field
-          finalQuery = baseQuery.not('discount_price', 'is', null);
+          result = await fetchProductsWithFilter(q => q.not('discount_price', 'is', null));
         } else if (sectionType === 'custom' && sectionId) {
-          // For custom section, would need a join table between products and sections
-          finalQuery = baseQuery.eq('section_id', sectionId);
+          result = await fetchProductsWithFilter(q => q.eq('section_id', sectionId));
         } else {
           // Default case - all products
-          finalQuery = baseQuery;
+          result = await fetchProductsWithFilter(q => q);
         }
         
-        // Execute query with final order
-        const { data, error } = await finalQuery.order('created_at', { ascending: false });
+        const { data, error } = result;
           
         if (error) {
           console.error("Error fetching products:", error);
