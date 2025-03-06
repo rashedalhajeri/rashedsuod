@@ -49,12 +49,12 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
           return;
         }
         
-        // Fetch categories with product counts
+        // Fetch categories with product counts and actual products
         const { data, error } = await supabase
           .from('categories')
           .select(`
             name,
-            products:products(count)
+            products:products(id)
           `)
           .eq('store_id', storeData.id)
           .order('sort_order');
@@ -88,7 +88,6 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
     }
   }, [storeDomain]);
   
-  // Filter out empty arrays and prepare display categories
   // Only include "الكل" and categories with products
   const displayCategories = ["الكل", ...categoriesWithProducts.map(cat => cat.name)];
   const hasCategories = displayCategories.length > 1; // At least "All" and one other category
