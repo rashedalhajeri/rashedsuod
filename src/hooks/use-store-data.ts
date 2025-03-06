@@ -44,14 +44,16 @@ const fetchStoreData = async (): Promise<StoreData | null> => {
   
   // Map store_name to name and domain_name to domain for interface compatibility
   if (data) {
-    return {
+    const mappedData: StoreData = {
       ...data,
-      name: data.store_name,
-      domain: data.domain_name
+      name: data.store_name || '',
+      domain: data.domain_name || ''
     };
+    
+    return mappedData;
   }
   
-  return data;
+  return null;
 };
 
 export const useStoreData = () => {
