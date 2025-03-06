@@ -1,29 +1,38 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { useStoreData, getCurrencyFormatter } from "@/hooks/use-store-data";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { fetchPaymentChartData } from "@/services/payments";
+import { fetchPaymentChartData, fetchDailyPaymentTrend } from "@/services/payments";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const PaymentChartCard: React.FC = () => {
   const { data: storeData } = useStoreData();
   const formatCurrency = getCurrencyFormatter(storeData?.currency || 'KWD');
   const [period, setPeriod] = useState("monthly");
+  const [view, setView] = useState("bar");
   
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['paymentChartData', storeData?.id, period],
     queryFn: () => fetchPaymentChartData(storeData?.id || '', period),
     enabled: !!storeData?.id,
   });
   
+  const { data: dailyTrendData, isLoading: isDailyTrendLoading } = useQuery({
+    queryKey: ['dailyPaymentTrend', storeData?.id],
+    queryFn: () => fetchDailyPaymentTrend(storeData?.id || ''),
+    enabled: !!storeData?.id && period === 'hourly',
+  });
+  
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-3 border border-gray-200 shadow-md rounded-md" dir="rtl">
+        <div className="bg-white p-4 border border-gray-200 shadow-md rounded-lg" dir="rtl">
           <p className="font-medium text-sm">{label}</p>
-          <p className="text-primary-600 font-bold">
+          <p className="text-primary-600 font-bold mt-1">
             {formatCurrency(payload[0].value)}
           </p>
         </div>
@@ -37,7 +46,11 @@ const PaymentChartCard: React.FC = () => {
     setPeriod(value);
   };
   
-  if (isLoading) {
+  const handleViewChange = (value: string) => {
+    setView(value);
+  };
+  
+  if (isLoading || (period === 'hourly' && isDailyTrendLoading)) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -50,8 +63,8 @@ const PaymentChartCard: React.FC = () => {
             <CardTitle className="text-lg font-medium">تحليل المدفوعات</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-72 flex items-center justify-center">
-              <div className="animate-pulse text-gray-400">جاري تحميل البيانات...</div>
+            <div className="h-[300px] flex items-center justify-center">
+              <Skeleton className="h-[250px] w-full rounded" />
             </div>
           </CardContent>
         </Card>
@@ -59,11 +72,7 @@ const PaymentChartCard: React.FC = () => {
     );
   }
   
-  if (error) {
-    console.error("Error loading payment chart data:", error);
-  }
-  
-  const chartData = data || [];
+  const chartData = period === 'hourly' ? dailyTrendData : data || [];
   
   return (
     <motion.div
@@ -74,48 +83,85 @@ const PaymentChartCard: React.FC = () => {
     >
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-medium">تحليل المدفوعات</CardTitle>
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+            <CardTitle className="text-lg font-medium">تحليل المدفوعات</CardTitle>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Tabs defaultValue={view} onValueChange={handleViewChange} className="mr-2">
+                <TabsList className="h-8">
+                  <TabsTrigger value="bar" className="px-2 py-1 text-xs">عمودي</TabsTrigger>
+                  <TabsTrigger value="line" className="px-2 py-1 text-xs">خطي</TabsTrigger>
+                </TabsList>
+              </Tabs>
+              <Tabs defaultValue={period} onValueChange={handlePeriodChange}>
+                <TabsList className="h-8">
+                  <TabsTrigger value="hourly" className="px-2 py-1 text-xs">يومي</TabsTrigger>
+                  <TabsTrigger value="daily" className="px-2 py-1 text-xs">أسبوعي</TabsTrigger>
+                  <TabsTrigger value="weekly" className="px-2 py-1 text-xs">شهري</TabsTrigger>
+                  <TabsTrigger value="monthly" className="px-2 py-1 text-xs">سنوي</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="monthly" onValueChange={handlePeriodChange}>
-            <div className="flex justify-between items-center mb-4">
-              <TabsList>
-                <TabsTrigger value="daily">يومي</TabsTrigger>
-                <TabsTrigger value="weekly">أسبوعي</TabsTrigger>
-                <TabsTrigger value="monthly">شهري</TabsTrigger>
-              </TabsList>
+          {chartData.length === 0 ? (
+            <div className="h-[300px] flex items-center justify-center">
+              <p className="text-gray-500">لا توجد بيانات كافية للعرض</p>
             </div>
-            
-            {['daily', 'weekly', 'monthly'].map((periodValue) => (
-              <TabsContent key={periodValue} value={periodValue}>
-                {chartData.length === 0 ? (
-                  <div className="h-72 flex items-center justify-center">
-                    <p className="text-gray-500">لا توجد بيانات كافية للعرض</p>
-                  </div>
+          ) : (
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                {view === 'bar' ? (
+                  <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis 
+                      dataKey="name" 
+                      tick={{ textAnchor: 'middle' }}
+                      tickMargin={10}
+                      axisLine={{ stroke: '#e5e7eb' }}
+                      tickLine={false}
+                    />
+                    <YAxis 
+                      tickFormatter={(value) => `${value}`}
+                      axisLine={{ stroke: '#e5e7eb' }}
+                      tickLine={false}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar 
+                      dataKey="value" 
+                      fill="#8884d8" 
+                      radius={[4, 4, 0, 0]}
+                      maxBarSize={60}
+                    />
+                  </BarChart>
                 ) : (
-                  <div className="h-72">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={chartData} layout="vertical">
-                        <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                        <YAxis 
-                          dataKey="name" 
-                          type="category"
-                          width={60}
-                          tick={{ textAnchor: 'end' }}
-                        />
-                        <XAxis 
-                          type="number"
-                          tickFormatter={(value) => `${value}`}
-                        />
-                        <Tooltip content={<CustomTooltip />} />
-                        <Bar dataKey="value" fill="#9b87f5" radius={[0, 4, 4, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis 
+                      dataKey="name" 
+                      tick={{ textAnchor: 'middle' }}
+                      tickMargin={10}
+                      axisLine={{ stroke: '#e5e7eb' }}
+                      tickLine={false}
+                    />
+                    <YAxis 
+                      tickFormatter={(value) => `${value}`}
+                      axisLine={{ stroke: '#e5e7eb' }}
+                      tickLine={false}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Line 
+                      type="monotone" 
+                      dataKey="value" 
+                      stroke="#8884d8" 
+                      activeDot={{ r: 8 }}
+                      strokeWidth={2}
+                    />
+                  </LineChart>
                 )}
-              </TabsContent>
-            ))}
-          </Tabs>
+              </ResponsiveContainer>
+            </div>
+          )}
         </CardContent>
       </Card>
     </motion.div>

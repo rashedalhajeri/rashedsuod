@@ -1,9 +1,11 @@
+
 import React from "react";
-import { CreditCard, TrendingUp, TrendingDown, DollarSign, Clock } from "lucide-react";
+import { CreditCard, TrendingUp, TrendingDown, DollarSign, Clock, RefreshCcw, CreditCardIcon } from "lucide-react";
 import { useStoreData, getCurrencyFormatter } from "@/hooks/use-store-data";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { fetchPaymentStats } from "@/services/payments";
+import { fetchPaymentStats, fetchPaymentTrends } from "@/services/payments";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface PaymentStatProps {
   title: string;
@@ -43,7 +45,7 @@ const PaymentStat: React.FC<PaymentStatProps> = ({
             </p>
           )}
         </div>
-        <div className={`h-10 w-10 rounded-full flex items-center justify-center ${iconClassName || 'bg-primary-100 text-primary-600'}`}>
+        <div className={`h-12 w-12 rounded-full flex items-center justify-center ${iconClassName || 'bg-primary-100 text-primary-600'}`}>
           {icon}
         </div>
       </div>
@@ -52,19 +54,29 @@ const PaymentStat: React.FC<PaymentStatProps> = ({
 };
 
 const PaymentStats: React.FC = () => {
-  const { storeData } = useStoreData();
+  const { data: storeData } = useStoreData();
   const formatCurrency = getCurrencyFormatter(storeData?.currency || 'KWD');
   
-  const { data: stats, isLoading, error } = useQuery({
+  const { data: stats, isLoading: isStatsLoading } = useQuery({
     queryKey: ['paymentStats', storeData?.id],
     queryFn: () => fetchPaymentStats(storeData?.id || ''),
     enabled: !!storeData?.id,
   });
   
+  const { data: trends, isLoading: isTrendsLoading } = useQuery({
+    queryKey: ['paymentTrends', storeData?.id],
+    queryFn: () => fetchPaymentTrends(storeData?.id || ''),
+    enabled: !!storeData?.id,
+  });
+  
+  const isLoading = isStatsLoading || isTrendsLoading;
+  
   const defaultStats = {
     totalRevenue: 0,
     pendingAmount: 0,
+    refundedAmount: 0,
     successRate: 0,
+    avgTransactionValue: 0,
     avgTime: "24 ساعة"
   };
   
@@ -74,17 +86,19 @@ const PaymentStats: React.FC = () => {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6" dir="rtl">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="bg-white rounded-lg border border-gray-200 p-5 animate-pulse">
-            <div className="h-4 bg-gray-200 rounded mb-2 w-24"></div>
-            <div className="h-8 bg-gray-200 rounded w-20"></div>
+          <div key={i} className="bg-white rounded-lg border border-gray-200 p-5">
+            <div className="flex justify-between items-start">
+              <div className="w-full">
+                <Skeleton className="h-4 w-24 mb-2" />
+                <Skeleton className="h-8 w-32 mb-2" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+              <Skeleton className="h-12 w-12 rounded-full" />
+            </div>
           </div>
         ))}
       </div>
     );
-  }
-  
-  if (error) {
-    console.error("Error loading payment stats:", error);
   }
   
   return (
@@ -92,32 +106,41 @@ const PaymentStats: React.FC = () => {
       <PaymentStat 
         title="إجمالي الإيرادات"
         value={formatCurrency(statsData.totalRevenue)}
-        trend={{ value: 12, isPositive: true }}
-        icon={<DollarSign className="h-5 w-5" />}
+        trend={trends?.revenue}
+        icon={<DollarSign className="h-6 w-6" />}
         iconClassName="bg-green-100 text-green-600"
       />
       
       <PaymentStat 
         title="المبالغ المعلقة"
         value={formatCurrency(statsData.pendingAmount)}
-        icon={<Clock className="h-5 w-5" />}
+        icon={<Clock className="h-6 w-6" />}
         iconClassName="bg-amber-100 text-amber-600"
       />
       
       <PaymentStat 
         title="معدل النجاح"
         value={`${statsData.successRate}%`}
-        trend={{ value: 3, isPositive: true }}
-        icon={<TrendingUp className="h-5 w-5" />}
+        trend={trends?.successRate}
+        icon={<TrendingUp className="h-6 w-6" />}
         iconClassName="bg-blue-100 text-blue-600"
       />
       
-      <PaymentStat 
-        title="متوسط مدة المعالجة"
-        value={statsData.avgTime}
-        icon={<CreditCard className="h-5 w-5" />}
-        iconClassName="bg-purple-100 text-purple-600"
-      />
+      {statsData.refundedAmount !== undefined ? (
+        <PaymentStat 
+          title="المبالغ المستردة"
+          value={formatCurrency(statsData.refundedAmount)}
+          icon={<RefreshCcw className="h-6 w-6" />}
+          iconClassName="bg-red-100 text-red-600"
+        />
+      ) : (
+        <PaymentStat 
+          title="متوسط مدة المعالجة"
+          value={statsData.avgTime}
+          icon={<CreditCard className="h-6 w-6" />}
+          iconClassName="bg-purple-100 text-purple-600"
+        />
+      )}
     </div>
   );
 };

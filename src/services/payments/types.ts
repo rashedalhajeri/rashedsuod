@@ -27,11 +27,21 @@ export interface PaymentFilters {
 export interface PaymentStats {
   totalRevenue: number;
   pendingAmount: number;
+  refundedAmount?: number;
   successRate: number;
+  avgTransactionValue?: number;
   avgTime: string;
+  paymentMethodStats?: Record<string, number>;
 }
 
 export interface PaymentChartData {
   name: string;
   value: number;
+}
+
+export interface PaymentMethodSummary {
+  method: string;
+  count: number;
+  amount: number;
+  percentage: number;
 }

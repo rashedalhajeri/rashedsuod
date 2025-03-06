@@ -1,7 +1,7 @@
 
 import React from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, ChevronLeft } from "lucide-react";
 
 interface PaginationProps {
   page: number;
@@ -18,91 +18,94 @@ export const Pagination: React.FC<PaginationProps> = ({
   totalItems,
   pageSize = 10
 }) => {
-  // حساب نطاق العناصر المعروضة حالياً
-  const startItem = page * pageSize + 1;
-  const endItem = Math.min((page + 1) * pageSize, totalItems || (totalPages * pageSize));
-  
-  // إنشاء مصفوفة لعرض أرقام الصفحات
-  const getPageNumbers = () => {
-    const maxPageButtons = 5;
-    let startPage = Math.max(0, page - Math.floor(maxPageButtons / 2));
-    let endPage = Math.min(totalPages - 1, startPage + maxPageButtons - 1);
-    
-    // إعادة ضبط startPage إذا كنا قريبين من النهاية
-    if (endPage - startPage < maxPageButtons - 1) {
-      startPage = Math.max(0, endPage - maxPageButtons + 1);
+  const handlePrevious = () => {
+    if (page > 0) {
+      onPageChange(page - 1);
     }
-    
-    return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
   };
-  
+
+  const handleNext = () => {
+    if (page < totalPages - 1) {
+      onPageChange(page + 1);
+    }
+  };
+
+  // حساب نطاق العناصر المعروضة
+  const calculateRange = () => {
+    const start = page * pageSize + 1;
+    const end = Math.min((page + 1) * pageSize, totalItems || 0);
+    return `${start}-${end} من ${totalItems}`;
+  };
+
+  // توليد أرقام الصفحات بشكل ذكي
+  const generatePageNumbers = () => {
+    const MAX_DISPLAYED_PAGES = 5;
+
+    // عدد الصفحات قليل، عرض جميع الأرقام
+    if (totalPages <= MAX_DISPLAYED_PAGES) {
+      return Array.from({ length: totalPages }, (_, i) => i);
+    }
+
+    // عرض نطاق حول الصفحة الحالية
+    const pages = [];
+    let startPage = Math.max(0, page - Math.floor(MAX_DISPLAYED_PAGES / 2));
+    const endPage = Math.min(startPage + MAX_DISPLAYED_PAGES - 1, totalPages - 1);
+
+    // ضبط نطاق البداية إذا كنا قريبين من النهاية
+    startPage = Math.max(0, endPage - MAX_DISPLAYED_PAGES + 1);
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  };
+
+  if (totalPages <= 1) {
+    return null;
+  }
+
   return (
-    <div className="flex justify-between items-center" dir="rtl">
+    <div className="flex items-center justify-between" dir="rtl">
       {totalItems && (
         <div className="text-sm text-gray-500">
-          عرض <span className="font-medium">{startItem}</span> إلى <span className="font-medium">{endItem}</span> من <span className="font-medium">{totalItems}</span> عنصر
+          {calculateRange()}
         </div>
       )}
       
-      <div className="flex items-center gap-1">
+      <div className="flex items-center space-x-1 space-x-reverse">
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8"
-          onClick={() => onPageChange(0)}
+          onClick={handlePrevious}
           disabled={page === 0}
-        >
-          <ChevronRight className="h-4 w-4" />
-          <ChevronRight className="h-4 w-4 -mr-2" />
-          <span className="sr-only">الصفحة الأولى</span>
-        </Button>
-        
-        <Button
-          variant="outline"
-          size="icon"
           className="h-8 w-8"
-          onClick={() => onPageChange(page - 1)}
-          disabled={page === 0}
         >
           <ChevronRight className="h-4 w-4" />
           <span className="sr-only">الصفحة السابقة</span>
         </Button>
-        
-        <div className="flex items-center gap-1 mx-1">
-          {getPageNumbers().map((pageNum) => (
-            <Button
-              key={pageNum}
-              variant={pageNum === page ? "default" : "outline"}
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => onPageChange(pageNum)}
-            >
-              {pageNum + 1}
-            </Button>
-          ))}
-        </div>
-        
+
+        {generatePageNumbers().map((pageNumber) => (
+          <Button
+            key={pageNumber}
+            variant={pageNumber === page ? "default" : "outline"}
+            size="sm"
+            onClick={() => onPageChange(pageNumber)}
+            className="h-8 w-8 px-0"
+          >
+            {pageNumber + 1}
+          </Button>
+        ))}
+
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8"
-          onClick={() => onPageChange(page + 1)}
+          onClick={handleNext}
           disabled={page >= totalPages - 1}
+          className="h-8 w-8"
         >
           <ChevronLeft className="h-4 w-4" />
           <span className="sr-only">الصفحة التالية</span>
-        </Button>
-        
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-8 w-8"
-          onClick={() => onPageChange(totalPages - 1)}
-          disabled={page >= totalPages - 1}
-        >
-          <ChevronLeft className="h-4 w-4" />
-          <ChevronLeft className="h-4 w-4 -ml-2" />
-          <span className="sr-only">الصفحة الأخيرة</span>
         </Button>
       </div>
     </div>
