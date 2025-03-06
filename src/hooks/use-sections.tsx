@@ -74,6 +74,10 @@ export const useSections = () => {
       if (data) {
         setSections([...sections, data as Section]);
         setNewSection("");
+        setNewSectionType("best_selling");
+        setNewCategoryId(null);
+        setNewProductIds(null);
+        setNewDisplayStyle('grid');
         toast.success("تم إضافة القسم بنجاح");
       }
     } catch (err: any) {

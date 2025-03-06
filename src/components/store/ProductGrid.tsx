@@ -7,9 +7,14 @@ import ProductGridSkeleton from "@/components/store/skeletons/ProductGridSkeleto
 interface ProductGridProps {
   products: any[];
   isLoading?: boolean;
+  displayStyle?: 'grid' | 'list';
 }
 
-const ProductGrid: React.FC<ProductGridProps> = ({ products, isLoading = false }) => {
+const ProductGrid: React.FC<ProductGridProps> = ({ 
+  products, 
+  isLoading = false,
+  displayStyle = 'grid'
+}) => {
   const { storeDomain } = useParams<{ storeDomain: string }>();
   const gridRef = useRef<HTMLDivElement>(null);
   
@@ -28,10 +33,15 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, isLoading = false }
     );
   }
   
+  // Use different layout based on displayStyle
+  const gridClassName = displayStyle === 'list' 
+    ? "flex flex-col gap-4" 
+    : "grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4";
+  
   return (
     <div 
       ref={gridRef}
-      className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4"
+      className={gridClassName}
     >
       {products.map((product, index) => (
         <ProductItem 
@@ -39,6 +49,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, isLoading = false }
           product={product} 
           storeDomain={storeDomain}
           index={index}
+          displayStyle={displayStyle}
         />
       ))}
     </div>

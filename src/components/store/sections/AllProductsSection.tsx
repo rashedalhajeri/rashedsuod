@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { X, ChevronLeft } from "lucide-react";
@@ -6,8 +7,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
+interface Product {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  category_id?: string;
+  store_id: string;
+  image_url?: string;
+  additional_images?: any;
+  stock_quantity?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
 interface AllProductsSectionProps {
-  products: any[];
+  products: Product[];
   activeCategory?: string;
   searchQuery?: string;
   onClearSearch?: () => void;
@@ -31,7 +46,7 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
   sectionId,
   displayStyle = 'grid'
 }) => {
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
@@ -144,7 +159,11 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
       
       {/* Product grid without extra spacing */}
       <div className="bg-white p-4 rounded-b-lg shadow-sm border border-t-0 border-gray-100">
-        <ProductGrid products={products} isLoading={isLoading} displayStyle={displayStyle} />
+        <ProductGrid 
+          products={products} 
+          isLoading={isLoading} 
+          displayStyle={displayStyle} 
+        />
       </div>
     </motion.section>
   );
