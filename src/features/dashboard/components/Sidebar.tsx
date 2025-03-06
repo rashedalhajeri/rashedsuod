@@ -1,10 +1,8 @@
-
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { useContext } from "react";
-import { AuthContext } from "@/App";
+import useAuth from "@/hooks/useAuth";
 import SidebarHeader from "./SidebarHeader";
 import SidebarLinks from "./SidebarLinks";
 import LogoutButton from "./LogoutButton";
@@ -17,9 +15,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
   const location = useLocation();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
-  const { signOut } = useContext(AuthContext);
+  const { signOut } = useAuth();
 
-  // إعادة تعيين حالة القائمة عند تغيير حجم الشاشة
   useEffect(() => {
     setIsCollapsed(isMobile && !isMobileMenuOpen);
   }, [isMobile, isMobileMenuOpen]);
@@ -50,7 +47,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
     }
   };
 
-  // تحديد النمط المناسب للقائمة الجانبية
   const currentVariant = isMobile 
     ? "mobile" 
     : isCollapsed 
@@ -59,7 +55,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
 
   return (
     <AnimatePresence>
-      {/* طبقة التعتيم عند فتح القائمة في الجوال */}
       {isMobile && isMobileMenuOpen && (
         <motion.div
           className="fixed inset-0 bg-black/50 z-30"
@@ -111,7 +106,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
   );
 };
 
-// Import cn function which was used in the original Sidebar
 import { cn } from "@/lib/utils";
 
 export default Sidebar;
