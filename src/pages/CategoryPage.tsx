@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useStoreData } from "@/hooks/use-store-data";
@@ -12,7 +11,6 @@ import { motion } from "framer-motion";
 import { ShoppingCart, User, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// Define the Product interface to match what we're getting from Supabase
 interface Product {
   id: string;
   name: string;
@@ -46,14 +44,12 @@ const CategoryPage = () => {
   const [sections, setSections] = useState<string[]>([]);
   const navigate = useNavigate();
 
-  // Fetch store data and category products
   useEffect(() => {
     if (storeData?.id && categoryName) {
       const fetchCategoryData = async () => {
         setIsLoadingProducts(true);
         
         try {
-          // Get all categories for the store
           const { data: categoriesData } = await supabase
             .from('categories')
             .select('name')
@@ -63,7 +59,6 @@ const CategoryPage = () => {
             setCategories(categoriesData.map(cat => cat.name));
           }
           
-          // Get category details first
           const { data: categoryData } = await supabase
             .from('categories')
             .select('*')
@@ -74,7 +69,6 @@ const CategoryPage = () => {
           setCategoryDetails(categoryData);
           
           if (categoryData) {
-            // Fetch products in this category using category_id
             const { data: productsData } = await supabase
               .from('products')
               .select('*')
@@ -83,7 +77,6 @@ const CategoryPage = () => {
             
             setProducts(productsData || []);
             
-            // Get product names for search suggestions
             if (productsData && productsData.length > 0) {
               setProductNames(productsData.map(product => product.name));
             }
@@ -101,12 +94,10 @@ const CategoryPage = () => {
     }
   }, [storeData, categoryName]);
 
-  // Handle search
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
   };
   
-  // Handle category change - navigate without full page reload
   const handleCategoryChange = (category: string) => {
     if (!storeDomain) return;
     
@@ -117,12 +108,10 @@ const CategoryPage = () => {
     }
   };
   
-  // Handle section change
   const handleSectionChange = (section: string) => {
     console.log("Section changed:", section);
   };
   
-  // Filter products by search term
   const filteredProducts = searchQuery 
     ? products.filter(product => 
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -130,7 +119,6 @@ const CategoryPage = () => {
       ) 
     : products;
 
-  // Navigate to all deals / home
   const handleNavigateToAllDeals = () => {
     navigate(`/store/${storeDomain}`);
   };
@@ -143,36 +131,46 @@ const CategoryPage = () => {
     return <ErrorState title="خطأ" message={error.message || "حدث خطأ أثناء تحميل المتجر"} />;
   }
   
-  // Header title (جميع الصفقات or category name)
   const headerTitle = categoryDetails?.name || "جميع الصفقات";
 
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
-      {/* Gradient Header */}
-      <header className="bg-gradient-to-l from-blue-500 to-teal-500 text-white">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+      <header className="bg-gradient-to-l from-blue-500 to-blue-600 text-white relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-40 h-40 bg-blue-400/10 rounded-full -mt-20 -mr-20 blur-xl"></div>
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full -mb-16 -ml-16 blur-lg"></div>
+        
+        <div className="container mx-auto px-4 py-5 relative z-10">
+          <div className="flex items-center justify-between mb-2">
             <Link to={`/store/${storeDomain}/cart`} className="block">
-              <ShoppingCart className="h-6 w-6 text-white" />
+              <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                <ShoppingCart className="h-5 w-5 text-white" />
+              </div>
             </Link>
-            
-            <h1 className="text-xl font-bold">{headerTitle}</h1>
             
             <div className="flex items-center space-x-4 rtl:space-x-reverse">
               <Button 
                 variant="ghost" 
-                className="text-white bg-white/10 hover:bg-white/20 p-0 h-8 w-8 rounded-full"
+                className="text-white bg-white/10 hover:bg-white/20 p-0 h-9 w-9 rounded-full"
                 onClick={handleNavigateToAllDeals}
               >
                 <ChevronRight className="h-5 w-5" />
               </Button>
               
               <Link to={`/store/${storeDomain}/login`} className="block">
-                <User className="h-6 w-6 text-white" />
+                <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                  <User className="h-5 w-5 text-white" />
+                </div>
               </Link>
             </div>
           </div>
+          
+          <div className="text-center py-3">
+            <h1 className="text-2xl font-bold text-white tracking-wide mb-1">{headerTitle}</h1>
+            <div className="h-1 w-20 bg-white/30 rounded-full mx-auto"></div>
+          </div>
         </div>
+        
+        <div className="h-5 bg-gray-50 rounded-t-3xl -mb-1"></div>
       </header>
       
       <motion.div 
@@ -181,7 +179,6 @@ const CategoryPage = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
       >
-        {/* Search Bar with rounded design */}
         <div className="mb-4">
           <SearchBar 
             searchQuery={searchQuery}
@@ -191,7 +188,6 @@ const CategoryPage = () => {
           />
         </div>
         
-        {/* Category Navigation */}
         <CategoryNavigation
           categories={categories}
           sections={sections}
@@ -202,7 +198,6 @@ const CategoryPage = () => {
           storeDomain={storeDomain}
         />
         
-        {/* Products Grid */}
         <div className="mt-6">
           {isLoadingProducts ? (
             <div className="grid grid-cols-2 gap-4">
