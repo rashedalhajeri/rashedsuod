@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
@@ -6,7 +5,7 @@ import { useStoreData, getCurrencyFormatter } from "@/hooks/use-store-data";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { fetchPaymentChartData } from "@/services/payment-service";
+import { fetchPaymentChartData } from "@/services/payments";
 
 const PaymentChartCard: React.FC = () => {
   const { data: storeData } = useStoreData();

@@ -1,10 +1,9 @@
-
 import React from "react";
 import { CreditCard, TrendingUp, TrendingDown, DollarSign, Clock } from "lucide-react";
 import { useStoreData, getCurrencyFormatter } from "@/hooks/use-store-data";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { fetchPaymentStats } from "@/services/payment-service";
+import { fetchPaymentStats } from "@/services/payments";
 
 interface PaymentStatProps {
   title: string;
