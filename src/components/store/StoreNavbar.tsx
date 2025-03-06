@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useCart } from "@/hooks/use-cart";
 
-// Import the new components
+// Import components
 import StoreLogo from "./navbar/StoreLogo";
 import DesktopNavigation from "./navbar/DesktopNavigation";
 import NavActions from "./navbar/NavActions";
@@ -45,6 +45,18 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
   };
 
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+
+  // Close mobile menu when screen size changes to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768 && isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isMobileMenuOpen]);
 
   return (
     <header className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled ? "glass-nav py-2" : "bg-white py-4"}`}>
