@@ -74,7 +74,7 @@ const CategoryContent: React.FC<CategoryContentProps> = ({
             ))}
           </div>
         ) : filteredProducts.length > 0 ? (
-          <ProductGrid products={filteredProducts} />
+          <ProductGrid products={filteredProducts} storeDomain={storeDomain} />
         ) : (
           <div className="text-center py-12 bg-gray-50 rounded-xl">
             <h3 className="text-xl font-medium text-gray-600 mb-2">لا توجد منتجات</h3>

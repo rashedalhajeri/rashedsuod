@@ -36,7 +36,7 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
 
   return (
     <header className="relative w-full" dir="rtl">
-      {/* خلفية رأس الصفحة الأساسية باللون الأزرق الفاتح بدلاً من البنفسجي */}
+      {/* Blue gradient header */}
       <div className="bg-gradient-to-l from-blue-500 to-blue-600 pt-6 pb-10 px-3 sm:px-4 relative">
         <div className="absolute bottom-0 left-0 right-0 h-8 bg-gray-50" style={{ 
           borderTopLeftRadius: '2rem', 
