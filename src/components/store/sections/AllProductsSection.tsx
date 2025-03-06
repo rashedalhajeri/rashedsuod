@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { X, ChevronLeft } from "lucide-react";
@@ -6,7 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Json } from "@/integrations/supabase/types";
-import { PostgrestFilterBuilder } from "@supabase/postgrest-js";
 
 // Define Product interface to match database structure
 interface Product {
@@ -42,31 +42,39 @@ const fetchProductsWithFilters = async (
   categoryId?: string,
   sectionId?: string
 ): Promise<Product[]> => {
-  // Create base query
-  let baseQuery = supabase.from('products').select('*');
-  
-  // Apply filters based on section type
-  if (sectionType === 'category' && categoryId) {
-    baseQuery = baseQuery.eq('category_id', categoryId);
-  } else if (sectionType === 'featured') {
-    baseQuery = baseQuery.eq('is_featured', true);
-  } else if (sectionType === 'best_selling') {
-    baseQuery = baseQuery.order('sales_count', { ascending: false });
-  } else if (sectionType === 'on_sale') {
-    baseQuery = baseQuery.not('discount_price', 'is', null);
-  } else if (sectionType === 'custom' && sectionId) {
-    baseQuery = baseQuery.eq('section_id', sectionId);
-  }
-  
-  // Apply final ordering
-  const { data, error } = await baseQuery.order('created_at', { ascending: false });
-  
-  if (error) {
-    console.error("Error fetching products:", error);
+  try {
+    // Create the base query first
+    const query = supabase.from('products').select('*');
+    
+    // Apply filters based on section type
+    // Apply each filter separately to avoid deep type instantiation
+    let filteredQuery = query;
+    
+    if (sectionType === 'category' && categoryId) {
+      filteredQuery = query.eq('category_id', categoryId);
+    } else if (sectionType === 'featured') {
+      filteredQuery = query.eq('is_featured', true);
+    } else if (sectionType === 'best_selling') {
+      filteredQuery = query.order('sales_count', { ascending: false });
+    } else if (sectionType === 'on_sale') {
+      filteredQuery = query.not('discount_price', 'is', null);
+    } else if (sectionType === 'custom' && sectionId) {
+      filteredQuery = query.eq('section_id', sectionId);
+    }
+    
+    // Execute the query with final ordering
+    const { data, error } = await filteredQuery.order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error("Error fetching products:", error);
+      return [];
+    }
+    
+    return (data as Product[]) || [];
+  } catch (err) {
+    console.error("Error in fetchProductsWithFilters:", err);
     return [];
   }
-  
-  return (data as Product[]) || [];
 };
 
 const AllProductsSection: React.FC<AllProductsSectionProps> = ({

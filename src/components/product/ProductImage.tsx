@@ -1,7 +1,6 @@
 
 import React, { useState } from "react";
-import { Share } from "lucide-react";
-import { Heart } from "lucide-react";
+import { Share, Heart } from "lucide-react";
 
 interface ProductImageProps {
   imageUrl: string | null;
@@ -23,6 +22,9 @@ const ProductImage: React.FC<ProductImageProps> = ({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
+  // Default placeholder for products without images
+  const defaultPlaceholder = "/placeholder.svg";
+  
   // Placeholder for a gallery of images
   const images = [imageUrl];
   
@@ -30,13 +32,13 @@ const ProductImage: React.FC<ProductImageProps> = ({
     <div className="relative">
       <div className="aspect-w-16 aspect-h-9 bg-gray-100">
         <img 
-          src={imageUrl || "/placeholder.svg"} 
+          src={imageUrl || defaultPlaceholder} 
           alt={name}
           className={`w-full h-full object-contain ${imageLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
           onLoad={() => setImageLoaded(true)}
           onError={(e) => {
             (e.target as HTMLImageElement).onerror = null;
-            (e.target as HTMLImageElement).src = "/placeholder.svg";
+            (e.target as HTMLImageElement).src = defaultPlaceholder;
             setImageLoaded(true);
           }}
         />
@@ -80,6 +82,10 @@ const ProductImage: React.FC<ProductImageProps> = ({
                 src={storeLogo} 
                 alt={storeName || 'المتجر'} 
                 className="w-10 h-10 object-contain" 
+                onError={(e) => {
+                  (e.target as HTMLImageElement).onerror = null;
+                  (e.target as HTMLImageElement).src = defaultPlaceholder;
+                }}
               />
             ) : (
               <div className="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center text-white font-bold">
