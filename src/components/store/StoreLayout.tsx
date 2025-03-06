@@ -15,7 +15,7 @@ const StoreLayout: React.FC<StoreLayoutProps> = ({ children, storeData }) => {
       <div className="min-h-screen flex flex-col bg-gray-50" dir="rtl">
         <StoreNavbar storeName={storeData?.store_name} logoUrl={storeData?.logo_url} />
         
-        <main className="flex-grow container mx-auto px-4 pt-16 categories-content">
+        <main className="flex-grow container mx-auto px-4 pt-4 categories-content">
           {children}
         </main>
         

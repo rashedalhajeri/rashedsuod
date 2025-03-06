@@ -4,9 +4,7 @@ import { useParams, Link } from "react-router-dom";
 import { useCart } from "@/hooks/use-cart";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import NavActions from "./navbar/NavActions";
-import SearchBar from "./navbar/SearchBar";
 import { useIsMobile } from "@/hooks/use-media-query";
-import { supabase } from "@/integrations/supabase/client";
 
 interface StoreNavbarProps {
   storeName: string;
@@ -19,41 +17,10 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
 }) => {
   const { storeDomain } = useParams<{ storeDomain: string }>();
   const { cart } = useCart();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [productNames, setProductNames] = useState<string[]>([]);
   const isMobile = useIsMobile();
   
   const elegantMessage = "أهلاً بك";
   
-  useEffect(() => {
-    // Fetch some product names for the search animation
-    const fetchProductNames = async () => {
-      if (!storeDomain) return;
-      
-      try {
-        const { data } = await supabase
-          .from('products')
-          .select('name')
-          .limit(10);
-          
-        if (data && data.length > 0) {
-          setProductNames(data.map(product => product.name));
-        }
-      } catch (error) {
-        console.error("Error fetching product names:", error);
-      }
-    };
-    
-    fetchProductNames();
-  }, [storeDomain]);
-  
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      window.location.href = `/store/${storeDomain}?q=${encodeURIComponent(searchQuery)}`;
-    }
-  };
-
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
   
   const getInitials = (name: string) => {
@@ -108,15 +75,6 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
           <div className="absolute bottom-0 left-0 w-16 sm:w-24 h-16 sm:h-24 bg-white/5 rounded-full blur-xl -mb-8 -ml-8"></div>
           <div className="absolute bottom-0 right-0 w-20 sm:w-32 h-20 sm:h-32 bg-blue-500/10 rounded-full blur-xl -mb-10 -mr-10"></div>
         </div>
-      </div>
-      
-      <div className="w-full mx-auto px-3 sm:px-4 relative -mt-5">
-        <SearchBar 
-          searchQuery={searchQuery} 
-          setSearchQuery={setSearchQuery} 
-          handleSearchSubmit={handleSearchSubmit}
-          productNames={productNames.length > 0 ? productNames : undefined}
-        />
       </div>
     </header>
   );
