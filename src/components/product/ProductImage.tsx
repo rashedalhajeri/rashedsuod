@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Share, Heart } from "lucide-react";
 
 interface ProductImageProps {
@@ -20,25 +20,35 @@ const ProductImage: React.FC<ProductImageProps> = ({
   storeName
 }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   // Default placeholder for products without images
   const defaultPlaceholder = "/placeholder.svg";
   
+  // Reset image state when imageUrl changes
+  useEffect(() => {
+    setImageLoaded(false);
+    setImageError(false);
+  }, [imageUrl]);
+  
   // Placeholder for a gallery of images
   const images = [imageUrl];
+  
+  // Determine which image URL to use
+  const displayImageUrl = imageError || !imageUrl ? defaultPlaceholder : imageUrl;
   
   return (
     <div className="relative">
       <div className="aspect-w-16 aspect-h-9 bg-gray-100">
         <img 
-          src={imageUrl || defaultPlaceholder} 
+          src={displayImageUrl} 
           alt={name}
           className={`w-full h-full object-contain ${imageLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
           onLoad={() => setImageLoaded(true)}
-          onError={(e) => {
-            (e.target as HTMLImageElement).onerror = null;
-            (e.target as HTMLImageElement).src = defaultPlaceholder;
+          onError={() => {
+            console.log("Image failed to load:", imageUrl);
+            setImageError(true);
             setImageLoaded(true);
           }}
         />
@@ -83,7 +93,7 @@ const ProductImage: React.FC<ProductImageProps> = ({
                 alt={storeName || 'المتجر'} 
                 className="w-10 h-10 object-contain" 
                 onError={(e) => {
-                  (e.target as HTMLImageElement).onerror = null;
+                  console.log("Store logo failed to load:", storeLogo);
                   (e.target as HTMLImageElement).src = defaultPlaceholder;
                 }}
               />

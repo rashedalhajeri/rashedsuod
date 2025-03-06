@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Heart, ShoppingCart } from "lucide-react";
 import { motion } from "framer-motion";
@@ -17,6 +17,8 @@ const ProductItem: React.FC<ProductItemProps> = ({
   index,
   displayStyle = 'grid'
 }) => {
+  const [imageError, setImageError] = useState(false);
+  
   // Format currency with proper locale and format
   const formatCurrency = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -28,9 +30,12 @@ const ProductItem: React.FC<ProductItemProps> = ({
   // Default placeholder for products without images
   const defaultPlaceholder = "/placeholder.svg";
   
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    e.currentTarget.src = defaultPlaceholder;
-    e.currentTarget.onerror = null; // Prevent infinite callbacks
+  // Determine which image URL to use
+  const displayImageUrl = imageError || !product.image_url ? defaultPlaceholder : product.image_url;
+  
+  const handleImageError = () => {
+    console.log("Product image failed to load:", product.image_url);
+    setImageError(true);
   };
   
   // If in list mode, use a different layout
@@ -49,7 +54,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
         >
           <div className="relative overflow-hidden bg-gray-100 h-full">
             <img 
-              src={product.image_url || defaultPlaceholder} 
+              src={displayImageUrl} 
               alt={product.name} 
               className="w-full h-full object-cover"
               onError={handleImageError}
@@ -97,7 +102,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
       >
         <div className="relative rounded-xl overflow-hidden shadow-sm bg-gray-100">
           <img 
-            src={product.image_url || defaultPlaceholder} 
+            src={displayImageUrl} 
             alt={product.name} 
             className="w-full aspect-square object-cover"
             onError={handleImageError}
