@@ -4,12 +4,14 @@ import React from "react";
 interface ErrorStateProps {
   title?: string;
   message?: string;
+  details?: string;
   onRetry?: () => void;
 }
 
 export const ErrorState: React.FC<ErrorStateProps> = ({ 
   title = "حدث خطأ", 
   message = "لم نتمكن من تحميل البيانات المطلوبة", 
+  details,
   onRetry 
 }) => {
   return (
@@ -22,7 +24,10 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
         </svg>
       </div>
       <h3 className="text-xl font-bold text-gray-800 mb-2">{title}</h3>
-      <p className="text-gray-600 mb-4">{message}</p>
+      <p className="text-gray-600 mb-2">{message}</p>
+      {details && (
+        <p className="text-sm text-gray-500 mb-4 max-w-md text-center">{details}</p>
+      )}
       {onRetry && (
         <button 
           onClick={onRetry}

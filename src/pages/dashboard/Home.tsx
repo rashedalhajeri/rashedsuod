@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -107,24 +108,57 @@ const DashboardHome: React.FC = () => {
   });
   
   const isLoading = isStoreLoading || isStatsLoading || isSalesLoading || isOrdersLoading || isProductsLoading;
-  const error = storeError || statsError || salesError || ordersError || productsError;
+  
+  // More detailed error handling
+  if (storeError) {
+    let errorDetails = "تفاصيل الخطأ غير متوفرة";
+    
+    try {
+      if (typeof storeError === 'object' && storeError !== null) {
+        // Try to extract a meaningful error message
+        const errorObj = storeError as any;
+        errorDetails = errorObj.message || 
+                      (errorObj.error && errorObj.error.message) || 
+                      JSON.stringify(storeError);
+                      
+        // For common Supabase errors about multiple rows
+        if (errorDetails.includes("multiple (or no) rows returned")) {
+          errorDetails = "هناك أكثر من متجر مرتبط بحسابك. يرجى الاتصال بالدعم الفني.";
+        }
+      }
+    } catch (e) {
+      console.error("Error parsing error object:", e);
+    }
+    
+    return (
+      <ErrorState 
+        title="تعذر تحميل بيانات المتجر"
+        message="لم نتمكن من تحميل بيانات لوحة التحكم"
+        details={errorDetails}
+        onRetry={() => window.location.reload()}
+      />
+    );
+  }
   
   if (isLoading && (!storeData || !statsData)) {
     return <LoadingState message="جاري تحميل البيانات..." />;
   }
   
-  if (error) {
+  if (statsError || salesError || ordersError || productsError) {
+    const activeError = statsError || salesError || ordersError || productsError;
+    let errorMessage = "لم نتمكن من تحميل بعض البيانات. يرجى المحاولة مرة أخرى.";
+    
     return (
       <ErrorState 
         title="حدث خطأ"
-        message="لم نتمكن من تحميل بيانات لوحة التحكم"
+        message={errorMessage}
         onRetry={() => window.location.reload()}
       />
     );
   }
   
   // Format currency based on store settings (always using KWD)
-  const formatCurrency = getCurrencyFormatter('KWD');
+  const formatCurrency = getCurrencyFormatter(storeData?.currency || 'KWD');
   
   // Subscription plan status
   const subscriptionStatus = storeData?.subscription_plan || "free";
