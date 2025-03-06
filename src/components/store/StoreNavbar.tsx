@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ShoppingCart, Search, Menu, User } from "lucide-react";
@@ -14,14 +15,8 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
   storeName,
   logoUrl
 }) => {
-  const {
-    storeDomain
-  } = useParams<{
-    storeDomain: string;
-  }>();
-  const {
-    cart
-  } = useCart();
+  const { storeDomain } = useParams<{ storeDomain: string }>();
+  const { cart } = useCart();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -65,7 +60,27 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
             </div>
           </Link>
           
-          {/* REMOVED: Desktop Navigation - hidden on mobile */}
+          {/* Desktop Navigation - hidden on mobile */}
+          <nav className="hidden md:flex items-center space-x-6 ml-10">
+            <Link 
+              to={`/store/${storeDomain}`} 
+              className="text-gray-700 hover:text-primary transition-colors font-medium"
+            >
+              الرئيسية
+            </Link>
+            <Link 
+              to={`/store/${storeDomain}/products`} 
+              className="text-gray-700 hover:text-primary transition-colors font-medium"
+            >
+              المنتجات
+            </Link>
+            <Link 
+              to={`/store/${storeDomain}/about`} 
+              className="text-gray-700 hover:text-primary transition-colors font-medium"
+            >
+              عن المتجر
+            </Link>
+          </nav>
           
           {/* Actions */}
           <div className="flex items-center gap-4">

@@ -1,4 +1,3 @@
-
 import { Routes, Route } from "react-router-dom";
 import { ProtectedRoute, CreateStoreRoute } from "./ProtectedRoutes";
 
@@ -13,6 +12,11 @@ import ProductPage from "@/pages/ProductPage";
 import CartPage from "@/pages/CartPage";
 import CheckoutPage from "@/pages/CheckoutPage";
 import OrderSuccessPage from "@/pages/OrderSuccessPage";
+
+// Import store auth pages
+import StoreLogin from "@/pages/store/StoreLogin";
+import StoreRegister from "@/pages/store/StoreRegister";
+import StoreForgotPassword from "@/pages/store/StoreForgotPassword";
 
 // Import dashboard pages
 import DashboardHome from "@/pages/dashboard/Home";
@@ -36,6 +40,10 @@ const AppRoutes = () => {
       <Route path="/store/:storeDomain/cart" element={<CartPage />} />
       <Route path="/store/:storeDomain/checkout" element={<CheckoutPage />} />
       <Route path="/store/:storeDomain/order-success/:orderId" element={<OrderSuccessPage />} />
+      
+      <Route path="/store/:storeDomain/login" element={<StoreLogin />} />
+      <Route path="/store/:storeDomain/register" element={<StoreRegister />} />
+      <Route path="/store/:storeDomain/forgot-password" element={<StoreForgotPassword />} />
       
       <Route 
         path="/create-store" 
