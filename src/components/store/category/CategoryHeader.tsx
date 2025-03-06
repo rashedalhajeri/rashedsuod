@@ -33,11 +33,10 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({
   };
 
   return (
-    <header className="bg-gradient-to-br from-blue-700 to-blue-500 text-white relative overflow-hidden">
+    <header className="bg-gradient-to-l from-blue-600 to-blue-700 text-white relative overflow-hidden">
       {/* Decorative elements */}
-      <div className="absolute -top-24 right-0 w-72 h-72 rounded-full bg-white/10 blur-3xl"></div>
-      <div className="absolute -bottom-32 left-0 w-72 h-72 rounded-full bg-blue-800/30 blur-3xl"></div>
-      <div className="absolute top-1/2 left-1/4 w-24 h-24 rounded-full bg-blue-400/20 blur-xl"></div>
+      <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-white/5 blur-3xl"></div>
+      <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-blue-800/20 blur-3xl"></div>
       
       <div className="container mx-auto px-4 py-4 relative z-10">
         <div className="flex items-center justify-between mb-4">
@@ -55,8 +54,8 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({
             <Link to={`/store/${storeDomain}/cart`} className="block">
               <Button 
                 variant="ghost" 
-                size="sm" 
-                className="relative text-white p-1.5 h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors shadow-md"
+                size="icon" 
+                className="relative text-white rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors shadow-md"
                 aria-label="عربة التسوق"
               >
                 <ShoppingCart className="h-5 w-5" />
@@ -73,15 +72,15 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({
               <DropdownMenuTrigger asChild>
                 <Button 
                   variant="ghost" 
-                  size="sm" 
-                  className="text-white p-1.5 h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors shadow-md"
+                  size="icon" 
+                  className="text-white rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors shadow-md"
                   aria-label="حسابي"
                 >
                   <User className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent dir="rtl" align="end" className="w-56 mt-2 border-none shadow-lg rounded-xl overflow-hidden">
-                <div className="p-3 pb-2 text-center bg-gradient-to-br from-blue-50 to-blue-100">
+                <div className="p-3 pb-2 text-center bg-gradient-to-l from-blue-50 to-blue-100">
                   <h3 className="font-semibold text-blue-600">حسابي</h3>
                 </div>
                 <DropdownMenuSeparator />
@@ -112,10 +111,10 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <h1 className="text-3xl font-bold text-white mb-2 text-shadow-sm tracking-wide">
+          <h1 className="text-3xl font-bold text-white mb-3 tracking-wide">
             {headerTitle}
           </h1>
-          <div className="h-1.5 w-24 bg-white/30 rounded-full mx-auto transform transition-all duration-300 hover:w-32"></div>
+          <div className="h-1 w-20 bg-white/30 rounded-full mx-auto"></div>
         </motion.div>
       </div>
       
