@@ -11,9 +11,9 @@ import StoreFooter from "@/components/store/StoreFooter";
 import { ErrorState } from "@/components/ui/error-state";
 import { ArrowRight } from "lucide-react";
 import { getStoreFromUrl } from "@/utils/url-utils";
-import { ProductGallery } from "@/features/store/product-detail/ProductGallery";
-import { ProductInformation } from "@/features/store/product-detail/ProductInformation";
-import { ProductActions } from "@/features/store/product-detail/ProductActions";
+import ProductGallery from "@/features/store/product-detail/ProductGallery";
+import ProductInformation from "@/features/store/product-detail/ProductInformation";
+import ProductActions from "@/features/store/product-detail/ProductActions";
 import { useProductDetail } from "@/features/store/product-detail/useProductDetail";
 
 const ProductDetail = () => {
@@ -43,14 +43,15 @@ const ProductDetail = () => {
   // استخدام هوك تفاصيل المنتج
   const { 
     product, 
-    isLoading: productLoading, 
+    loading: productLoading, 
     error: productError,
     quantity,
-    setQuantity,
-    addToCart,
-    isAddingToCart,
-    refetchProduct
-  } = useProductDetail(productId, storeData);
+    formatCurrency,
+    handleQuantityChange,
+    handleAddToCart,
+    getAllImages,
+    refetch: refetchProduct
+  } = useProductDetail(productId || '', storeData);
   
   // التعامل مع حالة وجود خطأ في تحميل المتجر
   if (storeError) {
@@ -123,7 +124,7 @@ const ProductDetail = () => {
         <div className="container mx-auto px-4 py-12 flex items-center justify-center flex-col">
           <ErrorState 
             title="خطأ في تحميل المنتج"
-            message={productError.message || "لم نتمكن من العثور على المنتج المطلوب"}
+            message={productError || "لم نتمكن من العثور على المنتج المطلوب"}
             onRetry={() => refetchProduct()}
           />
           
@@ -168,9 +169,9 @@ const ProductDetail = () => {
               <ProductActions 
                 product={product}
                 quantity={quantity}
-                setQuantity={setQuantity}
-                addToCart={addToCart}
-                isAddingToCart={isAddingToCart}
+                setQuantity={handleQuantityChange}
+                addToCart={handleAddToCart}
+                isAddingToCart={false}
                 currency={storeData?.currency || 'KWD'}
               />
             </div>
