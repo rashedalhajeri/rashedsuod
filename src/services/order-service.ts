@@ -1,5 +1,6 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import { Order, OrderStatus } from "@/types/orders";
+import { Order, OrderStatus, OrderItem } from "@/types/orders";
 
 interface OrderFilters {
   status?: OrderStatus | "all";
@@ -232,7 +233,11 @@ export const createOrder = async (storeId: string, orderData: Omit<Order, "id" |
     if (orderItems && orderItems.length > 0) {
       const itemsWithOrderId = orderItems.map(item => ({
         ...item,
-        order_id: order.id
+        order_id: order.id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        total_price: item.total_price
       }));
 
       const { error: itemsError } = await supabase

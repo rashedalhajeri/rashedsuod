@@ -6,6 +6,7 @@ import { secureRetrieve } from "@/lib/encryption";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import LoadingState from "@/components/ui/loading-state";
 import ErrorState from "@/components/ui/error-state";
+import { OrderStatus } from "@/types/orders";
 
 // Import components
 import WelcomeSection from "@/features/dashboard/components/WelcomeSection";

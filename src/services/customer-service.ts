@@ -85,13 +85,15 @@ export const createCustomer = async (storeId: string, customerData: Partial<Cust
       return { success: false, error: "Customer name is required" };
     }
 
+    const customerToInsert = {
+      ...customerData,
+      store_id: storeId,
+      status: ensureValidStatus(customerData.status || 'active')
+    };
+
     const { data, error } = await supabase
       .from('customers')
-      .insert([{
-        ...customerData,
-        store_id: storeId,
-        status: ensureValidStatus(customerData.status || 'active')
-      }])
+      .insert(customerToInsert)
       .select();
 
     if (error) {
