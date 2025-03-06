@@ -70,6 +70,7 @@ const StorePreviewButton = () => {
           onOpenPreview={openStorePreview}
           onExternalLink={openExternalLink}
           onShare={handleShareStore}
+          storeDomain={storeData.domain_name}
         />
       </div>
 
@@ -78,6 +79,7 @@ const StorePreviewButton = () => {
         onOpenChange={setPreviewOpen}
         storeUrl={storeUrl}
         storeName={storeData?.store_name}
+        storeDomain={storeData.domain_name}
         onExternalLinkClick={openExternalLink}
       />
     </>

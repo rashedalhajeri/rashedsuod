@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Copy, CheckCheck, ExternalLink, Share2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Eye } from './PreviewDialog';
+import { useNavigate } from 'react-router-dom';
 
 interface ActionButtonsProps {
   copied: boolean;
@@ -11,6 +12,7 @@ interface ActionButtonsProps {
   onOpenPreview: () => void;
   onExternalLink: () => void;
   onShare: () => void;
+  storeDomain?: string;
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
@@ -18,8 +20,19 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   onCopyLink,
   onOpenPreview,
   onExternalLink,
-  onShare
+  onShare,
+  storeDomain
 }) => {
+  const navigate = useNavigate();
+
+  const handleOpenStore = () => {
+    if (storeDomain) {
+      navigate(`/store/${storeDomain}`);
+    } else {
+      onExternalLink();
+    }
+  };
+
   return (
     <div className="flex flex-wrap items-center gap-2 w-full">
       <TooltipProvider>
@@ -67,14 +80,14 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
               variant="outline" 
               size="sm" 
               className="gap-2 border-primary-200 hover:bg-primary-50"
-              onClick={onExternalLink}
+              onClick={handleOpenStore}
             >
               <ExternalLink className="h-4 w-4" />
               <span>فتح المتجر</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>فتح المتجر في نافذة جديدة</p>
+            <p>فتح المتجر في نفس النافذة</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
