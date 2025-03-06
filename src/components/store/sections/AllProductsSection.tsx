@@ -16,7 +16,7 @@ interface Product {
   category_id?: string | null;
   store_id: string;
   image_url?: string | null;
-  additional_images?: Json | null; // Changed to Json type to match database
+  additional_images?: Json | null;
   stock_quantity?: number | null;
   created_at?: string;
   updated_at?: string;
@@ -63,34 +63,25 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
       try {
         setIsLoading(true);
         
-        // Create a reusable fetch function to avoid deep type instantiation
-        const fetchProductsWithFilter = async (filterFn: (query: any) => any) => {
-          const query = supabase.from('products').select('*');
-          const filteredQuery = filterFn(query);
-          return await filteredQuery.order('created_at', { ascending: false });
-        };
-        
-        let result;
+        let query = supabase.from('products').select('*');
         
         // Apply different filters based on section type
         if (sectionType === 'category' && categoryId) {
-          result = await fetchProductsWithFilter(q => q.eq('category_id', categoryId));
+          query = query.eq('category_id', categoryId);
         } else if (sectionType === 'featured') {
-          result = await fetchProductsWithFilter(q => q.eq('is_featured', true));
+          query = query.eq('is_featured', true);
         } else if (sectionType === 'best_selling') {
-          result = await fetchProductsWithFilter(q => q.order('sales_count', { ascending: false }));
+          query = query.order('sales_count', { ascending: false });
         } else if (sectionType === 'new_arrivals') {
-          result = await fetchProductsWithFilter(q => q);
+          // Already ordered by created_at below
         } else if (sectionType === 'on_sale') {
-          result = await fetchProductsWithFilter(q => q.not('discount_price', 'is', null));
+          query = query.not('discount_price', 'is', null);
         } else if (sectionType === 'custom' && sectionId) {
-          result = await fetchProductsWithFilter(q => q.eq('section_id', sectionId));
-        } else {
-          // Default case - all products
-          result = await fetchProductsWithFilter(q => q);
+          query = query.eq('section_id', sectionId);
         }
         
-        const { data, error } = result;
+        // Final ordering
+        const { data, error } = await query.order('created_at', { ascending: false });
           
         if (error) {
           console.error("Error fetching products:", error);
@@ -98,8 +89,7 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
         }
         
         if (data) {
-          // Explicitly cast data to Product[] to avoid type issues
-          setProducts(data as unknown as Product[]);
+          setProducts(data as Product[]);
         }
       } catch (err) {
         console.error("Error in fetchProducts:", err);

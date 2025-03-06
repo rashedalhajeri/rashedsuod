@@ -147,7 +147,8 @@ const SectionForm: React.FC<SectionFormProps> = ({
               id="section-name"
               value={newSection}
               onChange={(e) => setNewSection(e.target.value)}
-              placeholder="اسم القسم الجديد..."
+              placeholder="أدخل اسم القسم الجديد..."
+              className="text-right"
             />
           </div>
           
@@ -157,7 +158,7 @@ const SectionForm: React.FC<SectionFormProps> = ({
               value={newSectionType}
               onValueChange={setNewSectionType}
             >
-              <SelectTrigger id="section-type">
+              <SelectTrigger id="section-type" className="text-right">
                 <SelectValue placeholder="اختر نوع القسم" />
               </SelectTrigger>
               <SelectContent>
@@ -178,7 +179,7 @@ const SectionForm: React.FC<SectionFormProps> = ({
                 value={newCategoryId || ""}
                 onValueChange={(value) => setNewCategoryId(value || null)}
               >
-                <SelectTrigger id="category-select">
+                <SelectTrigger id="category-select" className="text-right">
                   <SelectValue placeholder="اختر الفئة" />
                 </SelectTrigger>
                 <SelectContent>
@@ -207,7 +208,7 @@ const SectionForm: React.FC<SectionFormProps> = ({
                 ) : (
                   <div className="space-y-2">
                     {products.map(product => (
-                      <div key={product.id} className="flex items-center space-x-2 space-x-reverse p-2 hover:bg-gray-50 rounded-md">
+                      <div key={product.id} className="flex items-center space-x-2 space-x-reverse rtl p-2 hover:bg-gray-50 rounded-md">
                         <input 
                           type="checkbox" 
                           id={`product-${product.id}`} 
@@ -215,7 +216,7 @@ const SectionForm: React.FC<SectionFormProps> = ({
                           checked={!!selectedProducts[product.id]}
                           onChange={(e) => handleProductSelect(product.id, e.target.checked)}
                         />
-                        <Label htmlFor={`product-${product.id}`} className="flex items-center gap-2 cursor-pointer">
+                        <Label htmlFor={`product-${product.id}`} className="flex items-center gap-2 cursor-pointer flex-1">
                           {product.image_url && (
                             <img 
                               src={product.image_url} 
