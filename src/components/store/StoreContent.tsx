@@ -33,10 +33,10 @@ const StoreContent: React.FC<StoreContentProps> = ({
     handleClearSearch
   } = useStoreFilter();
 
-  // فلترة المنتجات حسب البحث
+  // Filter products by search
   const filteredBySearch = filterProductsBySearch(products, searchQuery);
 
-  // فلترة المنتجات حسب الفئة والقسم
+  // Filter products by category and section
   const displayProducts = filterProductsByCategory(
     filteredBySearch,
     activeCategory,
@@ -45,9 +45,12 @@ const StoreContent: React.FC<StoreContentProps> = ({
     searchQuery
   );
 
+  // Only show navigation if there are categories or sections
+  const showNavigation = categories.length > 0 || sections.length > 0;
+
   return (
     <>
-      {/* شعار المتجر - الآن شرطي بناءً على وجود عنوان URL للشعار */}
+      {/* Store banner with search functionality */}
       <StoreBanner 
         storeName={storeData?.store_name}
         storeDescription={storeData?.description}
@@ -57,17 +60,19 @@ const StoreContent: React.FC<StoreContentProps> = ({
         bannerUrl={storeData?.banner_url}
       />
       
-      {/* تنقل الفئات والأقسام */}
-      <CategoryNavigation 
-        activeCategory={activeCategory}
-        activeSection={activeSection}
-        onCategoryChange={handleCategoryChange}
-        onSectionChange={handleSectionChange}
-        categories={categories}
-        sections={sections}
-      />
+      {/* Only show navigation if there are categories or sections */}
+      {showNavigation && (
+        <CategoryNavigation 
+          activeCategory={activeCategory}
+          activeSection={activeSection}
+          onCategoryChange={handleCategoryChange}
+          onSectionChange={handleSectionChange}
+          categories={categories}
+          sections={sections}
+        />
+      )}
       
-      {/* قسم جميع المنتجات */}
+      {/* Products section */}
       <AllProductsSection 
         products={displayProducts}
         activeCategory={activeCategory}

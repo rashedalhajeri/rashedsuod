@@ -1,8 +1,9 @@
 
 import React from "react";
-import { Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 import ProductGrid from "@/components/store/ProductGrid";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 
 interface AllProductsSectionProps {
   products: any[];
@@ -11,60 +12,79 @@ interface AllProductsSectionProps {
   onClearSearch: () => void;
 }
 
-const AllProductsSection: React.FC<AllProductsSectionProps> = ({ 
-  products, 
+const AllProductsSection: React.FC<AllProductsSectionProps> = ({
+  products,
   activeCategory,
   searchQuery,
   onClearSearch
 }) => {
+  // Determine the section title
+  let sectionTitle = "جميع المنتجات";
+  if (activeCategory) {
+    sectionTitle = activeCategory;
+  } else if (searchQuery) {
+    sectionTitle = `نتائج البحث: "${searchQuery}"`;
+  }
+
+  const hasFilters = activeCategory || searchQuery;
+
   return (
-    <section className="py-8 bg-white">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold relative pr-3 before:content-[''] before:absolute before:right-0 before:top-0 before:bottom-0 before:w-1 before:bg-blue-600 before:rounded-full">
-            {activeCategory === "جميع المنتجات" ? "أحدث العروض" : activeCategory}
-          </h2>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">
-              {products.length} منتج
-            </span>
-          </div>
+    <section className="py-10 px-4 bg-gray-50">
+      <div className="container mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <motion.h2 
+            className="text-2xl font-bold"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {sectionTitle}
+          </motion.h2>
+          
+          {hasFilters && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onClearSearch}
+                className="flex items-center gap-1"
+              >
+                <X className="h-4 w-4" />
+                <span>إلغاء التصفية</span>
+              </Button>
+            </motion.div>
+          )}
         </div>
-        
-        {searchQuery && (
-          <p className="mb-6 text-gray-500">
-            نتائج البحث عن: <span className="font-medium text-blue-600">{searchQuery}</span>
-          </p>
-        )}
         
         {products.length > 0 ? (
           <ProductGrid products={products} />
         ) : (
-          <div className="text-center py-16 bg-gray-50 rounded-lg">
-            <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">لا توجد منتجات</h3>
-            <p className="text-gray-500">
-              {searchQuery
-                ? `لا توجد نتائج مطابقة لـ "${searchQuery}"`
-                : "لا توجد منتجات متاحة حالياً"}
+          <motion.div 
+            className="text-center py-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <p className="text-gray-500 text-lg mb-4">
+              {searchQuery 
+                ? "لا توجد منتجات تطابق بحثك" 
+                : activeCategory 
+                  ? "لا توجد منتجات في هذه الفئة" 
+                  : "لا توجد منتجات متاحة حالياً"
+              }
             </p>
-            {searchQuery && (
-              <Button
-                onClick={onClearSearch}
-                variant="outline"
-                className="mt-4"
-              >
+            
+            {hasFilters && (
+              <Button onClick={onClearSearch} variant="outline">
                 عرض جميع المنتجات
               </Button>
             )}
-          </div>
+          </motion.div>
         )}
-        
-        <div className="text-center mt-6">
-          <Button variant="outline" className="rounded-full px-6">
-            عرض الكل
-          </Button>
-        </div>
       </div>
     </section>
   );
