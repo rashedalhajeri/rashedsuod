@@ -13,3 +13,49 @@
 .dir-rtl {
   direction: rtl;
 }
+
+/* RTL-specific fixes */
+.rtl .space-x-reverse {
+  --tw-space-x-reverse: 1;
+}
+
+.rtl .ml-auto {
+  margin-right: auto;
+  margin-left: 0;
+}
+
+.rtl .mr-auto {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+/* Specific RTL fixes for components */
+.rtl .card-content {
+  text-align: right;
+}
+
+.rtl .form-field label {
+  text-align: right;
+}
+
+/* RTL table fixes */
+.rtl th, .rtl td {
+  text-align: right;
+}
+
+/* Dropdown alignment in RTL */
+.rtl .dropdown-menu {
+  left: auto;
+  right: 0;
+}
+
+/* Search icon placement in RTL */
+.rtl .search-input {
+  padding-right: 2.5rem;
+  padding-left: 1rem;
+}
+
+.rtl .search-icon {
+  right: 0.75rem;
+  left: auto;
+}

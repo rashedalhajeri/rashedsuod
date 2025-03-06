@@ -20,6 +20,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   formatCurrency 
 }) => {
   const { addToCart } = useCart();
+  const [isImageLoaded, setIsImageLoaded] = React.useState(false);
   
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -36,28 +37,27 @@ const ProductCard: React.FC<ProductCardProps> = ({
     
     toast.success("تمت إضافة المنتج إلى السلة");
   };
+
+  const discountPercentage = product.original_price && product.price 
+    ? Math.round(((product.original_price - product.price) / product.original_price) * 100) 
+    : product.discount_percentage || 0;
   
   return (
-    <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-100">
-      <Link to={`/store/${storeDomain}/product/${product.id}`}>
+    <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-100 h-full">
+      <Link to={`/store/${storeDomain}/product/${product.id}`} className="block h-full">
         <div className="aspect-square overflow-hidden bg-gray-50 relative">
           {/* Image with loading state */}
-          <div className="w-full h-full flex items-center justify-center bg-gray-100 animate-pulse">
+          <div className={`w-full h-full flex items-center justify-center bg-gray-100 ${!isImageLoaded ? 'animate-pulse' : ''}`}>
             <img 
               src={product.image_url || "/placeholder.svg"} 
               alt={product.name}
-              className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
+              className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
               onError={(e) => {
                 (e.target as HTMLImageElement).onerror = null;
                 (e.target as HTMLImageElement).src = "/placeholder.svg";
+                setIsImageLoaded(true);
               }}
-              onLoad={(e) => {
-                // Remove loading animation when image loads
-                const parent = (e.target as HTMLImageElement).parentElement;
-                if (parent) {
-                  parent.classList.remove('animate-pulse', 'bg-gray-100');
-                }
-              }}
+              onLoad={() => setIsImageLoaded(true)}
               loading="lazy"
             />
           </div>
@@ -70,73 +70,78 @@ const ProductCard: React.FC<ProductCardProps> = ({
           )}
           
           {/* Discount badge */}
-          {product.discount_percentage > 0 && (
+          {discountPercentage > 0 && (
             <Badge className="absolute top-2 left-2 bg-red-500 text-white">
-              خصم {product.discount_percentage}%
+              خصم {discountPercentage}%
             </Badge>
           )}
           
           {/* Wishlist button */}
-          <button className="absolute top-2 right-2 h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-gray-600 hover:text-red-500 transition-colors">
+          <button 
+            className="absolute top-2 right-2 h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-gray-600 hover:text-red-500 transition-colors"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toast.success("تمت إضافة المنتج للمفضلة");
+            }}
+          >
             <Heart className="h-4 w-4" />
           </button>
         </div>
-      </Link>
-      
-      <CardContent className="p-4">
-        {/* Rating */}
-        <div className="flex items-center gap-1 text-yellow-500 mb-1">
-          <Star className="h-4 w-4 fill-current" />
-          <Star className="h-4 w-4 fill-current" />
-          <Star className="h-4 w-4 fill-current" />
-          <Star className="h-4 w-4 fill-current" />
-          <Star className="h-4 w-4" />
-          <span className="text-xs text-gray-500 mr-1">(4.0)</span>
-        </div>
         
-        {/* Product Name */}
-        <Link 
-          to={`/store/${storeDomain}/product/${product.id}`}
-          className="font-bold text-lg hover:text-primary line-clamp-1 transition-colors block"
-        >
-          {product.name}
-        </Link>
-        
-        {/* Product Description */}
-        <p className="text-gray-600 my-2 line-clamp-2 text-sm h-10 overflow-hidden">
-          {product.description || ""}
-        </p>
-        
-        {/* Price and Status */}
-        <div className="mt-2 flex items-center justify-between">
-          <div>
-            <div className="font-bold text-lg text-primary">
-              {formatCurrency(product.price, product.currency)}
-            </div>
-            {product.original_price && product.original_price > product.price && (
-              <div className="text-sm text-gray-500 line-through">
-                {formatCurrency(product.original_price, product.currency)}
+        <CardContent className="p-4">
+          {/* Rating */}
+          <div className="flex items-center gap-1 text-yellow-500 mb-1">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star 
+                key={star} 
+                className={`h-4 w-4 ${star <= 4 ? 'fill-current' : ''}`} 
+              />
+            ))}
+            <span className="text-xs text-gray-500 mr-1">(4.0)</span>
+          </div>
+          
+          {/* Product Name */}
+          <h3 className="font-bold text-lg hover:text-primary line-clamp-1 transition-colors">
+            {product.name}
+          </h3>
+          
+          {/* Product Description */}
+          <p className="text-gray-600 my-2 line-clamp-2 text-sm min-h-[40px] overflow-hidden">
+            {product.description || ""}
+          </p>
+          
+          {/* Price and Status */}
+          <div className="mt-2 flex items-center justify-between">
+            <div className="flex flex-col">
+              <div className="font-bold text-lg text-primary">
+                {formatCurrency(product.price, product.currency)}
               </div>
+              {product.original_price && product.original_price > product.price && (
+                <div className="text-sm text-gray-500 line-through">
+                  {formatCurrency(product.original_price, product.currency)}
+                </div>
+              )}
+            </div>
+            {product.inventory_status && (
+              <Badge variant={product.inventory_status === "in_stock" ? "outline" : "secondary"} className="text-xs">
+                {product.inventory_status === "in_stock" ? "متوفر" : "نفذت الكمية"}
+              </Badge>
             )}
           </div>
-          {product.inventory_status && (
-            <Badge variant="outline" className="text-xs">
-              {product.inventory_status === "in_stock" ? "متوفر" : "نفذت الكمية"}
-            </Badge>
-          )}
-        </div>
-      </CardContent>
-      
-      <CardFooter className="p-4 pt-0">
-        <Button 
-          onClick={handleAddToCart} 
-          className="w-full gap-2 hover:shadow-md transition-all"
-          disabled={product.stock_quantity === 0}
-        >
-          <ShoppingCart className="h-4 w-4" /> 
-          إضافة للسلة
-        </Button>
-      </CardFooter>
+        </CardContent>
+        
+        <CardFooter className="p-4 pt-0">
+          <Button 
+            onClick={handleAddToCart} 
+            className="w-full gap-2 hover:shadow-md transition-all bg-primary hover:bg-primary/90"
+            disabled={product.stock_quantity === 0}
+          >
+            <ShoppingCart className="h-4 w-4" /> 
+            إضافة للسلة
+          </Button>
+        </CardFooter>
+      </Link>
     </Card>
   );
 };
