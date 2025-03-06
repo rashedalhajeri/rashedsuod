@@ -120,21 +120,10 @@ const CreateStore: React.FC = () => {
 
       if (error) throw error;
 
-      toast.success("تم إنشاء المتجر بنجاح، جاري تحويلك للمتجر الخاص بك");
-      
-      const storeUrl = formatStoreUrl(data.domain_name);
-      console.log("Redirecting to store URL:", storeUrl);
+      toast.success("تم إنشاء المتجر بنجاح، جاري تحويلك للوحة التحكم");
       
       setTimeout(() => {
-        const isDevelopment = window.location.hostname === 'localhost' || 
-                            window.location.hostname.includes('lovableproject.com') ||
-                            window.location.hostname.includes('lovable.app');
-        
-        if (isDevelopment) {
-          navigate(`/dashboard`);
-        } else {
-          window.location.href = storeUrl;
-        }
+        navigate("/dashboard");
       }, 1500);
     } catch (error) {
       console.error("Error creating store:", error);

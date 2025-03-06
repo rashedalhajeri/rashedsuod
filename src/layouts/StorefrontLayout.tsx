@@ -1,4 +1,3 @@
-
 import React, { ReactNode, useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { ShoppingCart, Search, User, Menu, X, Store as StoreIcon, AlertTriangle, RefreshCw } from "lucide-react";
@@ -28,23 +27,11 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
 
-  // Handle redirect to proper store domain
-  useEffect(() => {
-    if (storeData) {
-      const { shouldRedirect, targetUrl } = shouldRedirectToStoreDomain(storeData);
-      
-      if (shouldRedirect && targetUrl) {
-        console.log('Redirecting to proper store domain:', targetUrl);
-        // Use window.location for hard redirect to different domain
-        window.location.href = targetUrl;
-      }
-    }
-  }, [storeData]);
-
   // Fetch store data on mount or when retrying
   useEffect(() => {
     const fetchStoreData = async () => {
       if (!storeId) {
+        console.error("No storeId provided");
         setError("معرف المتجر غير متوفر");
         setLoading(false);
         return;
@@ -81,8 +68,10 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
         
         // If it's the first attempt, try again automatically once
         if (retryCount === 0) {
-          setRetryCount(prev => prev + 1);
-          return; // The effect will run again with increased retry count
+          console.log("First attempt failed, retrying...");
+          setTimeout(() => {
+            setRetryCount(prev => prev + 1);
+          }, 1500);
         }
       } finally {
         setLoading(false);
@@ -146,6 +135,10 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
               <Button onClick={handleRetry} className="flex items-center gap-2">
                 <RefreshCw className="h-4 w-4" />
                 إعادة المحاولة
+              </Button>
+              
+              <Button variant="outline" onClick={() => navigate("/dashboard")} className="flex items-center gap-2">
+                العودة للوحة التحكم
               </Button>
             </div>
           </div>

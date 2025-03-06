@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,7 +31,7 @@ const StoreHome: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        console.log("Fetching store data for:", storeId);
+        console.log("StoreHome: Fetching store data for:", storeId);
         
         // Use the utility function to get store data
         const { data: storeData, error: storeError } = await getStoreFromUrl(storeId, supabase);
@@ -49,6 +50,7 @@ const StoreHome: React.FC = () => {
         setStore(storeData);
         
         // Fetch featured products
+        console.log("Fetching products for store ID:", storeData.id);
         const { data: productsData, error: productsError } = await supabase
           .from("products")
           .select("*")
@@ -56,8 +58,12 @@ const StoreHome: React.FC = () => {
           .order('created_at', { ascending: false })
           .limit(4);
         
-        if (productsError) throw new Error(productsError.message || "حدث خطأ في تحميل المنتجات");
+        if (productsError) {
+          console.error("Error fetching products:", productsError);
+          throw new Error(productsError.message || "حدث خطأ في تحميل المنتجات");
+        }
         
+        console.log("Products found:", productsData);
         setFeaturedProducts(productsData || []);
         
         // If this was a retry that succeeded, show success toast
@@ -86,6 +92,10 @@ const StoreHome: React.FC = () => {
     setRetryAttempt(prev => prev + 1);
   };
 
+  const handleBackToDashboard = () => {
+    navigate("/dashboard");
+  };
+
   if (loading) {
     return (
       <StorefrontLayout>
@@ -103,11 +113,21 @@ const StoreHome: React.FC = () => {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
           
-          <ErrorState 
-            title="خطأ في تحميل المتجر"
-            message={error}
-            onRetry={handleRetry}
-          />
+          <div className="text-center py-8">
+            <h2 className="text-xl font-bold mb-4">تعذر تحميل صفحة المتجر</h2>
+            <p className="text-gray-600 mb-6">{error}</p>
+            
+            <div className="flex justify-center gap-4">
+              <Button onClick={handleRetry} className="flex items-center gap-2">
+                <RefreshCw className="h-4 w-4" />
+                إعادة المحاولة
+              </Button>
+              
+              <Button variant="outline" onClick={handleBackToDashboard}>
+                العودة للوحة التحكم
+              </Button>
+            </div>
+          </div>
         </div>
       </StorefrontLayout>
     );

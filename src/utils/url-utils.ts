@@ -31,7 +31,7 @@ export const formatStoreUrl = (domainName: string): string => {
     return `https://${cleanDomain}`;
   }
   
-  // In development environment, keep the current url structure
+  // In development environment, always use path-based URL format
   if (isDevelopment) {
     // Use current path structure for development
     return `${window.location.origin}/store/${cleanDomain}`;
@@ -151,11 +151,12 @@ export const getStoreFromUrl = async (storeId: string, supabase: any) => {
     }
     
     // Try to find the store with domain name (case insensitive)
+    console.log('Searching for store with domain name:', cleanId);
     const { data: domainResult, error: domainError } = await supabase
       .from("stores")
       .select("*")
       .ilike("domain_name", cleanId)
-      .maybeSingle();
+      .single();
       
     console.log('Domain search result:', domainResult, domainError);
     
@@ -163,13 +164,14 @@ export const getStoreFromUrl = async (storeId: string, supabase: any) => {
       return { data: domainResult, error: null };
     }
     
-    // Try as UUID if it looks like a UUID
+    // If domain search fails or returns no results, try as UUID if it looks like a UUID
+    console.log('Domain search failed, trying as UUID');
     if (cleanId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
       const { data: idResult, error: idError } = await supabase
         .from("stores")
         .select("*")
         .eq("id", cleanId)
-        .maybeSingle();
+        .single();
         
       console.log('ID search result:', idResult, idError);
       
@@ -178,25 +180,35 @@ export const getStoreFromUrl = async (storeId: string, supabase: any) => {
       }
     }
     
-    // Try exact domain match as final fallback
-    console.log('Trying exact domain match as fallback');
-    const { data: exactMatchResult, error: exactMatchError } = await supabase
+    // If all direct lookups fail, try doing a more general search
+    console.log('Both lookups failed, doing a general search');
+    const { data: allStores, error: storesError } = await supabase
       .from("stores")
-      .select("*")
-      .eq("domain_name", cleanId)
-      .maybeSingle();
+      .select("*");
       
-    console.log('Exact domain match result:', exactMatchResult, exactMatchError);
+    if (storesError) {
+      console.error('Error fetching stores:', storesError);
+      return { 
+        data: null, 
+        error: { message: "حدث خطأ أثناء البحث عن المتجر" }
+      };
+    }
     
-    if (exactMatchResult) {
-      return { data: exactMatchResult, error: null };
+    // Look for partial matches in domain names
+    const matchingStore = allStores.find((store: any) => 
+      store.domain_name && store.domain_name.toLowerCase().includes(cleanId.toLowerCase())
+    );
+    
+    if (matchingStore) {
+      console.log('Found store with partial domain match:', matchingStore);
+      return { data: matchingStore, error: null };
     }
     
     // If we've tried everything and still no result, return proper error
     return { 
       data: null, 
       error: { 
-        message: "لم يتم العثور على المتجر. الرجاء التحقق من اسم النطاق أو المعرف." 
+        message: "لم يتم العثور على المتجر. الرجاء التحقق من اسم النطاق أو المعرّف." 
       } 
     };
   } catch (err) {
