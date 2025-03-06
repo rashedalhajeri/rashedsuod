@@ -6,17 +6,19 @@ import ProductGrid from "@/components/store/ProductGrid";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Json } from "@/integrations/supabase/types";
 
+// Define Product interface to match database structure
 interface Product {
   id: string;
   name: string;
-  description?: string;
+  description?: string | null;
   price: number;
-  category_id?: string;
+  category_id?: string | null;
   store_id: string;
-  image_url?: string;
-  additional_images?: string[];
-  stock_quantity?: number;
+  image_url?: string | null;
+  additional_images?: Json | null; // Changed to Json type to match database
+  stock_quantity?: number | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -96,7 +98,8 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
         }
         
         if (data) {
-          setProducts(data);
+          // Explicitly cast data to Product[] to avoid type issues
+          setProducts(data as unknown as Product[]);
         }
       } catch (err) {
         console.error("Error in fetchProducts:", err);
