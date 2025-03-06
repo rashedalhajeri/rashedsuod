@@ -1,11 +1,12 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useCart } from "@/hooks/use-cart";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import NavActions from "./navbar/NavActions";
 import SearchBar from "./navbar/SearchBar";
 import { useIsMobile } from "@/hooks/use-media-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface StoreNavbarProps {
   storeName: string;
@@ -19,9 +20,33 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
   const { storeDomain } = useParams<{ storeDomain: string }>();
   const { cart } = useCart();
   const [searchQuery, setSearchQuery] = useState("");
+  const [productNames, setProductNames] = useState<string[]>([]);
   const isMobile = useIsMobile();
   
   const elegantMessage = "أهلاً بك";
+  
+  useEffect(() => {
+    // Fetch some product names for the search animation
+    const fetchProductNames = async () => {
+      if (!storeDomain) return;
+      
+      try {
+        const { data } = await supabase
+          .from('products')
+          .select('name')
+          .eq('store_domain', storeDomain)
+          .limit(10);
+          
+        if (data && data.length > 0) {
+          setProductNames(data.map(product => product.name));
+        }
+      } catch (error) {
+        console.error("Error fetching product names:", error);
+      }
+    };
+    
+    fetchProductNames();
+  }, [storeDomain]);
   
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,7 +115,8 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
         <SearchBar 
           searchQuery={searchQuery} 
           setSearchQuery={setSearchQuery} 
-          handleSearchSubmit={handleSearchSubmit} 
+          handleSearchSubmit={handleSearchSubmit}
+          productNames={productNames.length > 0 ? productNames : undefined}
         />
       </div>
     </header>
