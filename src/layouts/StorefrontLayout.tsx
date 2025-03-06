@@ -1,12 +1,14 @@
 
 import React, { ReactNode, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { ShoppingCart, Search, User, Menu, X, Store as StoreIcon } from "lucide-react";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import { ShoppingCart, Search, User, Menu, X, Store as StoreIcon, AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { getStoreUrl, getStoreFromUrl } from "@/utils/url-utils";
+import { toast } from "sonner";
 
 interface StorefrontLayoutProps {
   children: ReactNode;
@@ -14,6 +16,7 @@ interface StorefrontLayoutProps {
 
 const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
   const { storeId } = useParams<{ storeId: string }>();
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [storeData, setStoreData] = useState<{
     id: string;
@@ -23,8 +26,9 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // Fetch store data on mount
+  // Fetch store data on mount or when retrying
   useEffect(() => {
     const fetchStoreData = async () => {
       if (!storeId) {
@@ -34,32 +38,56 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
       }
 
       try {
+        setLoading(true);
+        setError(null);
         console.log("StorefrontLayout: Fetching store data for:", storeId);
+        
         // Use the utility function to get store data
         const { data, error } = await getStoreFromUrl(storeId, supabase);
 
         if (error) {
           console.error("Error fetching store data:", error);
-          throw error;
+          throw new Error(error.message || "حدث خطأ في تحميل بيانات المتجر");
         }
         
         if (!data) {
           console.error("Store not found for ID:", storeId);
-          throw new Error("المتجر غير موجود");
+          throw new Error("المتجر غير موجود. الرجاء التحقق من الرابط والمحاولة مرة أخرى.");
         }
         
         console.log("Store found:", data);
         setStoreData(data);
-      } catch (error) {
+        
+        // If we've retried and succeeded, show success toast
+        if (retryCount > 0) {
+          toast.success("تم تحميل بيانات المتجر بنجاح");
+        }
+      } catch (error: any) {
         console.error("Error fetching store data:", error);
-        setError("حدث خطأ في تحميل بيانات المتجر");
+        setError(error.message || "حدث خطأ في تحميل بيانات المتجر");
+        
+        // If it's the first attempt, try again automatically once
+        if (retryCount === 0) {
+          setRetryCount(prev => prev + 1);
+          return; // The effect will run again with increased retry count
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchStoreData();
-  }, [storeId]);
+  }, [storeId, retryCount]);
+
+  // Handle retry action
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
+  };
+
+  // Return to home page
+  const handleBackToHome = () => {
+    navigate('/');
+  };
 
   // Toggle menu open/close
   const toggleMenu = () => {
@@ -93,11 +121,67 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
               </div>
               <span className="font-bold text-xl text-gray-900">متجر</span>
             </div>
+            
+            <Button variant="ghost" size="sm" onClick={handleBackToHome}>
+              العودة للصفحة الرئيسية
+            </Button>
           </div>
         </header>
-        <main className="flex-1">
-          {children}
+        
+        <main className="flex-1 container mx-auto px-4 py-8">
+          <Alert variant="destructive" className="mb-6">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle className="mr-2">خطأ في تحميل المتجر</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+          
+          <div className="flex flex-col items-center justify-center mt-6">
+            <p className="text-gray-600 mb-4">تعذر تحميل المتجر. يرجى التحقق من الرابط أو المحاولة مرة أخرى.</p>
+            
+            <div className="flex gap-4">
+              <Button onClick={handleRetry} className="flex items-center gap-2">
+                <RefreshCw className="h-4 w-4" />
+                إعادة المحاولة
+              </Button>
+              
+              <Button variant="outline" onClick={handleBackToHome}>
+                العودة للصفحة الرئيسية
+              </Button>
+            </div>
+          </div>
         </main>
+        
+        <footer className="bg-white border-t py-6">
+          <div className="container mx-auto px-4 text-center text-gray-500 text-sm">
+            &copy; {new Date().getFullYear()} - جميع الحقوق محفوظة
+          </div>
+        </footer>
+      </div>
+    );
+  }
+
+  // If still loading, show a simplified loading state
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-gray-50 rtl">
+        <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
+          <div className="container mx-auto px-4 flex justify-between items-center h-16">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                <StoreIcon className="h-4 w-4 text-primary" />
+              </div>
+              <span className="font-bold text-xl text-gray-900">جاري التحميل...</span>
+            </div>
+          </div>
+        </header>
+        
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full inline-block mb-4"></div>
+            <p className="text-gray-600">جاري تحميل بيانات المتجر...</p>
+          </div>
+        </main>
+        
         <footer className="bg-white border-t py-6">
           <div className="container mx-auto px-4 text-center text-gray-500 text-sm">
             &copy; {new Date().getFullYear()} - جميع الحقوق محفوظة
@@ -131,7 +215,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
               </div>
             )}
             <span className="font-bold text-xl text-gray-900">
-              {loading ? "جاري التحميل..." : storeData?.store_name || "متجر"}
+              {storeData?.store_name || "متجر"}
             </span>
           </Link>
 
@@ -184,7 +268,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
                         </div>
                       )}
                       <span className="font-bold text-lg">
-                        {loading ? "جاري التحميل..." : storeData?.store_name || "متجر"}
+                        {storeData?.store_name || "متجر"}
                       </span>
                     </div>
                     <nav className="flex flex-col space-y-4">

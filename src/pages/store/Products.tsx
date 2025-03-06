@@ -1,19 +1,25 @@
 
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { RefreshCw } from "lucide-react";
 import StorefrontLayout from "@/layouts/StorefrontLayout";
 import { getStoreFromUrl } from "@/utils/url-utils";
+import { toast } from "sonner";
 
 const StoreProducts: React.FC = () => {
   const { storeId } = useParams<{ storeId: string }>();
+  const navigate = useNavigate();
   const [store, setStore] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryAttempt, setRetryAttempt] = useState(0);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -24,13 +30,16 @@ const StoreProducts: React.FC = () => {
       }
       
       try {
+        setLoading(true);
+        setError(null);
         console.log("Fetching products for store:", storeId);
+        
         // Use the utility function to get store data
         const { data: storeData, error: storeError } = await getStoreFromUrl(storeId, supabase);
         
         if (storeError) {
           console.error("Error fetching store:", storeError);
-          throw storeError;
+          throw new Error(storeError.message || "حدث خطأ في تحميل بيانات المتجر");
         }
         
         if (!storeData) {
@@ -45,21 +54,39 @@ const StoreProducts: React.FC = () => {
         const { data, error } = await supabase
           .from("products")
           .select("*")
-          .eq("store_id", storeData.id);
+          .eq("store_id", storeData.id)
+          .order('created_at', { ascending: false });
         
-        if (error) throw error;
+        if (error) throw new Error(error.message || "حدث خطأ في تحميل المنتجات");
         
         setProducts(data || []);
-      } catch (err) {
+        
+        // If this was a retry that succeeded, show success toast
+        if (retryAttempt > 0) {
+          toast.success("تم تحميل المنتجات بنجاح");
+        }
+      } catch (err: any) {
         console.error("Error fetching products:", err);
-        setError("حدث خطأ أثناء تحميل المنتجات");
+        setError(err.message || "حدث خطأ أثناء تحميل المنتجات");
+        
+        // If it's the first attempt, try again automatically once after a short delay
+        if (retryAttempt === 0) {
+          setTimeout(() => {
+            setRetryAttempt(prev => prev + 1);
+          }, 1500);
+        }
       } finally {
         setLoading(false);
       }
     };
     
     fetchProducts();
-  }, [storeId]);
+  }, [storeId, retryAttempt]);
+
+  // Retry loading function
+  const handleRetry = () => {
+    setRetryAttempt(prev => prev + 1);
+  };
 
   if (loading) {
     return (
@@ -72,11 +99,18 @@ const StoreProducts: React.FC = () => {
   if (error) {
     return (
       <StorefrontLayout>
-        <ErrorState 
-          title="خطأ في تحميل المنتجات"
-          message={error}
-          onRetry={() => window.location.reload()}
-        />
+        <div className="container mx-auto py-8 px-4">
+          <Alert variant="destructive" className="mb-6">
+            <AlertTitle>خطأ في تحميل المنتجات</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+          
+          <ErrorState 
+            title="خطأ في تحميل المنتجات"
+            message={error}
+            onRetry={handleRetry}
+          />
+        </div>
       </StorefrontLayout>
     );
   }
@@ -93,6 +127,14 @@ const StoreProducts: React.FC = () => {
           <Card>
             <CardContent className="text-center py-12">
               <p className="text-gray-500">لا توجد منتجات متاحة حالياً</p>
+              
+              <Button 
+                variant="outline" 
+                className="mt-4"
+                onClick={() => navigate(baseUrl)}
+              >
+                العودة للصفحة الرئيسية
+              </Button>
             </CardContent>
           </Card>
         ) : (

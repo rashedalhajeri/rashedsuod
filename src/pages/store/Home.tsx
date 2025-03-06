@@ -1,19 +1,24 @@
 
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { RefreshCw } from "lucide-react";
 import StorefrontLayout from "@/layouts/StorefrontLayout";
 import { getStoreFromUrl } from "@/utils/url-utils";
+import { toast } from "sonner";
 
 const StoreHome: React.FC = () => {
   const { storeId } = useParams<{ storeId: string }>();
+  const navigate = useNavigate();
   const [store, setStore] = useState<any>(null);
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryAttempt, setRetryAttempt] = useState(0);
 
   useEffect(() => {
     const fetchStoreData = async () => {
@@ -24,13 +29,16 @@ const StoreHome: React.FC = () => {
       }
       
       try {
+        setLoading(true);
+        setError(null);
         console.log("Fetching store data for:", storeId);
+        
         // Use the utility function to get store data
         const { data: storeData, error: storeError } = await getStoreFromUrl(storeId, supabase);
         
         if (storeError) {
           console.error("Error fetching store:", storeError);
-          throw storeError;
+          throw new Error(storeError.message || "حدث خطأ في تحميل بيانات المتجر");
         }
         
         if (!storeData) {
@@ -46,21 +54,39 @@ const StoreHome: React.FC = () => {
           .from("products")
           .select("*")
           .eq("store_id", storeData.id)
+          .order('created_at', { ascending: false })
           .limit(4);
         
-        if (productsError) throw productsError;
+        if (productsError) throw new Error(productsError.message || "حدث خطأ في تحميل المنتجات");
         
         setFeaturedProducts(productsData || []);
-      } catch (err) {
+        
+        // If this was a retry that succeeded, show success toast
+        if (retryAttempt > 0) {
+          toast.success("تم تحميل بيانات المتجر بنجاح");
+        }
+      } catch (err: any) {
         console.error("Error fetching store data:", err);
-        setError("حدث خطأ أثناء تحميل بيانات المتجر");
+        setError(err.message || "حدث خطأ أثناء تحميل بيانات المتجر");
+        
+        // If it's the first attempt, try again automatically once after a short delay
+        if (retryAttempt === 0) {
+          setTimeout(() => {
+            setRetryAttempt(prev => prev + 1);
+          }, 1500);
+        }
       } finally {
         setLoading(false);
       }
     };
     
     fetchStoreData();
-  }, [storeId]);
+  }, [storeId, retryAttempt]);
+
+  // Retry loading function
+  const handleRetry = () => {
+    setRetryAttempt(prev => prev + 1);
+  };
 
   if (loading) {
     return (
@@ -73,11 +99,18 @@ const StoreHome: React.FC = () => {
   if (error) {
     return (
       <StorefrontLayout>
-        <ErrorState 
-          title="خطأ في تحميل المتجر"
-          message={error}
-          onRetry={() => window.location.reload()}
-        />
+        <div className="container mx-auto py-8 px-4">
+          <Alert variant="destructive" className="mb-6">
+            <AlertTitle>خطأ في تحميل المتجر</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+          
+          <ErrorState 
+            title="خطأ في تحميل المتجر"
+            message={error}
+            onRetry={handleRetry}
+          />
+        </div>
       </StorefrontLayout>
     );
   }

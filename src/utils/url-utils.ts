@@ -110,46 +110,66 @@ export const getStoreFromUrl = async (storeId: string, supabase: any) => {
       return { data: null, error: { message: "معرف المتجر غير صالح" } };
     }
     
-    // First try to fetch by domain name (more likely in production)
-    // Using ILIKE for case-insensitive matching
-    let { data, error } = await supabase
+    // Try both domain name and ID approaches in parallel for faster response
+    const domainPromise = supabase
       .from("stores")
       .select("*")
       .ilike("domain_name", cleanId)
-      .maybeSingle(); // Use maybeSingle instead of single to avoid errors
-    
-    console.log('Search by domain result:', data, error);
-    
-    // If not found by domain, try by UUID
-    if (!data && !error) {
-      // Only try UUID lookup if the cleanId looks like a UUID
-      if (cleanId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-        console.log('Trying to fetch by UUID:', cleanId);
-        ({ data, error } = await supabase
-          .from("stores")
-          .select("*")
-          .eq("id", cleanId)
-          .maybeSingle());
-          
-        console.log('Search by UUID result:', data, error);
-      }
-    }
-    
-    // If we still don't have data, try again with exact matching (in case ilike returned multiple)
-    if (!data && !error) {
-      console.log('Trying exact domain match as fallback');
-      ({ data, error } = await supabase
+      .maybeSingle();
+      
+    // Only try UUID lookup if the cleanId looks like a UUID
+    let idPromise = { data: null, error: null };
+    if (cleanId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      idPromise = supabase
         .from("stores")
         .select("*")
-        .eq("domain_name", cleanId)
-        .maybeSingle());
-        
-      console.log('Exact domain match result:', data, error);
+        .eq("id", cleanId)
+        .maybeSingle();
     }
     
-    return { data, error };
+    // Wait for both queries to complete
+    const [domainResult, idResult] = await Promise.all([domainPromise, idPromise]);
+    
+    console.log('Domain search result:', domainResult.data, domainResult.error);
+    console.log('ID search result:', idResult.data, idResult.error);
+    
+    // Use the first result that has data
+    if (domainResult.data) {
+      return domainResult;
+    }
+    
+    if (idResult.data) {
+      return idResult;
+    }
+    
+    // If neither query found a result, try exact domain match as final fallback
+    console.log('Trying exact domain match as fallback');
+    const exactMatchResult = await supabase
+      .from("stores")
+      .select("*")
+      .eq("domain_name", cleanId)
+      .maybeSingle();
+      
+    console.log('Exact domain match result:', exactMatchResult.data, exactMatchResult.error);
+    
+    if (exactMatchResult.data) {
+      return exactMatchResult;
+    }
+    
+    // If we've tried everything and still no result, return proper error
+    return { 
+      data: null, 
+      error: { 
+        message: "لم يتم العثور على المتجر. الرجاء التحقق من اسم النطاق أو المعرف." 
+      } 
+    };
   } catch (err) {
     console.error("Error in getStoreFromUrl:", err);
-    return { data: null, error: err };
+    return { 
+      data: null, 
+      error: { 
+        message: "حدث خطأ أثناء البحث عن المتجر. الرجاء المحاولة مرة أخرى." 
+      } 
+    };
   }
 };
