@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { secureRetrieve } from "@/lib/encryption";
 import { toast } from "sonner";
 
 // Extended store type with subscription_plan and logo_url
@@ -23,7 +22,9 @@ type StoreData = {
 // Hook for fetching store data
 export const useStoreData = () => {
   const fetchStoreData = async () => {
-    const userId = await secureRetrieve('user-id');
+    // Get current user
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData?.user?.id;
     
     if (!userId) {
       throw new Error("لم يتم العثور على معرف المستخدم");
@@ -46,7 +47,6 @@ export const useStoreData = () => {
     }
     
     // Get user metadata for subscription info if not in store data
-    const { data: userData } = await supabase.auth.getUser();
     const userMetadata = userData?.user?.user_metadata;
     
     // Default to free plan if no subscription info is found

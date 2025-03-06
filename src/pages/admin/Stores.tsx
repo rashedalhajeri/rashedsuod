@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { useQuery } from "@tanstack/react-query";
@@ -329,7 +328,6 @@ const AdminStoresPage = () => {
           </CardContent>
         </Card>
         
-        {/* مربع حوار سبب التعليق */}
         <Dialog open={!!suspendedStoreId} onOpenChange={(open) => !open && setSuspendedStoreId(null)}>
           <DialogContent className="max-w-md">
             <DialogHeader>
