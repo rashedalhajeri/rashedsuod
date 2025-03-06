@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import SubscriptionPlans from "@/features/dashboard/components/SubscriptionPlans";
 import { Separator } from "@/components/ui/separator";
-import { Store, CreditCard, Bell, Shield, Globe, Truck, FileText, ChevronLeft, ChevronRight, Wallet, Calendar, Clock, Info, HelpCircle, Package, MapPin } from "lucide-react";
+import { Store, CreditCard, Bell, Shield, Globe, Truck, FileText, ChevronLeft, ChevronRight, Wallet, Calendar, Clock, Info, HelpCircle, Package, MapPin, PaintBucket } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import DashboardLayout from "@/layouts/DashboardLayout";
@@ -21,8 +21,9 @@ import ShippingMethodForm from "@/features/dashboard/components/ShippingMethodFo
 import useStoreData from "@/hooks/use-store-data";
 import SaveButton from "@/components/ui/save-button";
 import LogoUploader from "@/features/dashboard/components/LogoUploader";
+import StoreThemes from "@/features/dashboard/components/StoreThemes";
 
-type TabsType = 'general' | 'payment' | 'shipping' | 'integrations' | 'billing';
+type TabsType = 'general' | 'payment' | 'shipping' | 'design' | 'integrations' | 'billing';
 
 const Settings = () => {
   const location = useLocation();
@@ -172,10 +173,11 @@ const Settings = () => {
         <h1 className="text-2xl font-bold tracking-tight">إعدادات المتجر</h1>
         
         <Tabs defaultValue="general" value={activeTab} className="w-full" onValueChange={(tab) => handleTabChange(tab as TabsType)}>
-          <TabsList className="grid grid-cols-3 lg:grid-cols-5 w-full bg-white border">
+          <TabsList className="grid grid-cols-3 lg:grid-cols-6 w-full bg-white border">
             <TabsTrigger value="general">عام</TabsTrigger>
             <TabsTrigger value="payment">الدفع</TabsTrigger>
             <TabsTrigger value="shipping">الشحن</TabsTrigger>
+            <TabsTrigger value="design">التصميم</TabsTrigger>
             <TabsTrigger value="integrations">التكاملات</TabsTrigger>
             <TabsTrigger value="billing">الباقة</TabsTrigger>
           </TabsList>
@@ -369,6 +371,23 @@ const Settings = () => {
                 </CardHeader>
                 <CardContent>
                   <ShippingMethodForm isPaidPlan={isPaidPlan} />
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="design">
+            <div className="space-y-4">
+              <Card className="border-primary/10 bg-white shadow-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <PaintBucket className="h-5 w-5 text-primary" />
+                    <span>تصميم المتجر</span>
+                  </CardTitle>
+                  <CardDescription>قم بتخصيص مظهر متجرك وثيم التصميم الذي يناسب علامتك التجارية</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <StoreThemes storeId={storeData?.id} />
                 </CardContent>
               </Card>
             </div>
