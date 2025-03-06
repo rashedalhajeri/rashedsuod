@@ -1,4 +1,3 @@
-
 /**
  * Utility functions for handling store URLs with subdomains
  */
@@ -186,52 +185,11 @@ export const getStoreFromUrl = async (storeId: string, supabase: any) => {
       }
     }
     
-    // If still not found, try a more flexible approach for domain matching
-    const { data: allStores, error: storesError } = await supabase
-      .from("stores")
-      .select("*");
-      
-    if (storesError) {
-      console.error('Error fetching stores:', storesError);
-      return { 
-        data: null, 
-        error: { message: "حدث خطأ أثناء البحث عن المتجر" }
-      };
-    }
-    
-    console.log('Available stores for debugging:', allStores);
-    
-    if (allStores && allStores.length > 0) {
-      // Look for partial matches in domain names (case insensitive)
-      const matchingStore = allStores.find((store: any) => 
-        store.domain_name && store.domain_name.toLowerCase().includes(cleanId.toLowerCase())
-      );
-      
-      if (matchingStore) {
-        console.log('Found store with partial domain match:', matchingStore);
-        return { data: matchingStore, error: null };
-      }
-      
-      // Generate a list of available store domains to help the user
-      const availableDomains = allStores
-        .filter((store: any) => store.domain_name)
-        .map((store: any) => store.domain_name)
-        .join(', ');
-      
-      return { 
-        data: null, 
-        error: { 
-          message: `لم يتم العثور على المتجر "${cleanId}". المتاجر المتوفرة: ${availableDomains || 'لا توجد متاجر بأسماء نطاقات'}`,
-          availableStores: allStores
-        } 
-      };
-    }
-    
-    // No stores found at all
+    // If store is not found, return a clear error
     return { 
       data: null, 
       error: { 
-        message: "لا توجد متاجر مسجلة في النظام." 
+        message: `لم يتم العثور على المتجر "${cleanId}". تأكد من كتابة اسم المتجر بشكل صحيح.`
       } 
     };
     

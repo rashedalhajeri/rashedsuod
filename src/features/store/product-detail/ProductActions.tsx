@@ -1,6 +1,6 @@
 
 import React from "react";
-import { MinusCircle, PlusCircle, ShoppingCart, Share2, Heart } from "lucide-react";
+import { MinusCircle, PlusCircle, ShoppingCart, Share2, Heart, Truck, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -70,7 +70,7 @@ const ProductActions: React.FC<ProductActionsProps> = ({
   
   return (
     <div className="space-y-4 border-t pt-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
         <div className="flex items-center gap-2">
           <Button 
             variant="outline" 
@@ -131,9 +131,17 @@ const ProductActions: React.FC<ProductActionsProps> = ({
         </div>
       </div>
       
-      {/* إضافة بعض المعلومات المفيدة */}
-      <div className="mt-4 p-3 bg-blue-50 rounded-md text-sm text-blue-800">
-        <p>الشحن السريع متوفر لهذا المنتج</p>
+      {/* معلومات الشحن */}
+      <div className="mt-4 space-y-2">
+        <div className="p-3 bg-blue-50 rounded-md text-sm text-blue-800 flex items-center">
+          <Truck className="h-4 w-4 ml-2" />
+          <p>الشحن السريع متوفر لهذا المنتج</p>
+        </div>
+        
+        <div className="p-3 bg-gray-50 rounded-md text-sm text-gray-600 flex items-center">
+          <Clock className="h-4 w-4 ml-2" />
+          <p>التوصيل خلال 2-3 أيام عمل</p>
+        </div>
       </div>
     </div>
   );
