@@ -3,6 +3,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import StorePreviewButton from "./StorePreviewButton";
 
 interface WelcomeSectionProps {
   storeName: string;
@@ -36,7 +37,7 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
     >
       <Card className="bg-gradient-to-r from-primary-50/80 to-primary-100/50 border-primary-100">
         <CardContent className="pt-6">
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
               <h2 className="text-2xl font-bold flex items-center">
                 {greeting}, {ownerName}
@@ -46,6 +47,9 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
                 مرحباً بك في لوحة تحكم {storeName}
               </p>
             </div>
+            
+            {/* Add Store Preview Button */}
+            <StorePreviewButton />
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">

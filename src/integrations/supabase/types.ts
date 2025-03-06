@@ -9,6 +9,68 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_activity_logs: {
+        Row: {
+          action_type: string
+          admin_id: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          action_type: string
+          admin_id: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          action_type?: string
+          admin_id?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_activity_logs_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_users: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       delivery_areas: {
         Row: {
           created_at: string | null
@@ -148,8 +210,39 @@ export type Database = {
           },
         ]
       }
+      platform_stats: {
+        Row: {
+          active_stores: number | null
+          id: string
+          suspended_stores: number | null
+          total_orders: number | null
+          total_revenue: number | null
+          total_stores: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          active_stores?: number | null
+          id?: string
+          suspended_stores?: number | null
+          total_orders?: number | null
+          total_revenue?: number | null
+          total_stores?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          active_stores?: number | null
+          id?: string
+          suspended_stores?: number | null
+          total_orders?: number | null
+          total_revenue?: number | null
+          total_stores?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       products: {
         Row: {
+          additional_images: Json | null
           created_at: string
           description: string | null
           id: string
@@ -161,6 +254,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          additional_images?: Json | null
           created_at?: string
           description?: string | null
           id?: string
@@ -172,6 +266,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          additional_images?: Json | null
           created_at?: string
           description?: string | null
           id?: string
@@ -297,14 +392,17 @@ export type Database = {
           country: string
           created_at: string
           currency: string
+          description: string | null
           domain_name: string
           id: string
           logo_url: string | null
           phone_number: string
+          status: string | null
           store_name: string
           subscription_end_date: string | null
           subscription_plan: string
           subscription_start_date: string | null
+          suspension_reason: string | null
           updated_at: string
           user_id: string
         }
@@ -312,14 +410,17 @@ export type Database = {
           country?: string
           created_at?: string
           currency?: string
+          description?: string | null
           domain_name: string
           id?: string
           logo_url?: string | null
           phone_number: string
+          status?: string | null
           store_name: string
           subscription_end_date?: string | null
           subscription_plan?: string
           subscription_start_date?: string | null
+          suspension_reason?: string | null
           updated_at?: string
           user_id: string
         }
@@ -327,14 +428,17 @@ export type Database = {
           country?: string
           created_at?: string
           currency?: string
+          description?: string | null
           domain_name?: string
           id?: string
           logo_url?: string | null
           phone_number?: string
+          status?: string | null
           store_name?: string
           subscription_end_date?: string | null
           subscription_plan?: string
           subscription_start_date?: string | null
+          suspension_reason?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -345,6 +449,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_super_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      log_admin_action: {
+        Args: {
+          admin_id: string
+          action_type: string
+          target_type: string
+          target_id: string
+          details: Json
+        }
+        Returns: string
+      }
       user_owns_store: {
         Args: {
           store_id: string

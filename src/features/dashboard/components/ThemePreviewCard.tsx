@@ -103,14 +103,26 @@ const ThemePreviewCard: React.FC<ThemePreviewCardProps> = ({
         </div>
       </CardContent>
       
-      <CardFooter className="p-4 pt-0 flex justify-end">
+      <CardFooter className="p-4 pt-0 flex justify-between gap-2">
         <Button 
           variant={selected ? "default" : "outline"} 
           onClick={onSelect}
-          className="w-full"
+          className="flex-1"
         >
           {selected ? 'الثيم المحدد' : 'اختيار الثيم'}
         </Button>
+        
+        {onPreview && (
+          <Button 
+            variant="outline" 
+            onClick={onPreview}
+            className="flex-none"
+            size="icon"
+            title="معاينة الثيم"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );
