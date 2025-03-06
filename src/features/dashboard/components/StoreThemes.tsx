@@ -4,10 +4,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { ColorPicker } from "@/components/ui/color-picker";
 import { toast } from "sonner";
-import { PlusCircle, PaletteSwatch, Settings, EyeIcon, ChevronRight } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { PaintBrush, Settings, EyeIcon, ChevronRight } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -15,10 +14,11 @@ import { Switch } from "@/components/ui/switch";
 import ThemePreview from "./ThemePreview";
 import ThemePreviewCard from "./ThemePreviewCard";
 import ThemeColorCustomizer from "./ThemeColorCustomizer";
-import { getThemes, saveThemeSettings, getThemeSettings } from "@/features/dashboard/services/theme-service";
+import { fetchThemeSettings, saveThemeSettings } from "@/features/dashboard/services/theme-service";
 import { ThemeOption, ThemeSettings } from "@/features/dashboard/types/theme-types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
+import { themes } from "@/features/dashboard/data/theme-data";
 
 interface StoreThemesProps {
   storeId?: string;
@@ -43,16 +43,10 @@ const StoreThemes: React.FC<StoreThemesProps> = ({ storeId }) => {
   
   const queryClient = useQueryClient();
   
-  // Fetch available themes
-  const { data: themes, isLoading: isThemesLoading } = useQuery({
-    queryKey: ['themes'],
-    queryFn: getThemes,
-  });
-  
   // Fetch current theme settings
   const { data: currentThemeSettings, isLoading: isSettingsLoading } = useQuery({
     queryKey: ['themeSettings', storeId],
-    queryFn: () => getThemeSettings(storeId || ''),
+    queryFn: () => fetchThemeSettings(storeId || ''),
     enabled: !!storeId,
   });
   
@@ -78,50 +72,48 @@ const StoreThemes: React.FC<StoreThemesProps> = ({ storeId }) => {
   }, [currentThemeSettings]);
   
   useEffect(() => {
-    if (themes && selectedTheme) {
+    if (selectedTheme) {
       const theme = themes.find(t => t.id === selectedTheme);
       if (theme) setPreviewTheme(theme);
     }
-  }, [themes, selectedTheme]);
+  }, [selectedTheme]);
   
   const handleThemeSelect = (themeId: string) => {
     setSelectedTheme(themeId);
-    if (themes) {
-      const theme = themes.find(t => t.id === themeId);
-      if (theme) {
-        setThemeSettings(prev => {
-          if (!prev) return {
-            store_id: storeId || '',
-            theme_id: themeId,
-            primary_color: theme.colors.primary,
-            secondary_color: theme.colors.secondary,
-            accent_color: theme.colors.accent,
-            layout_type: theme.layout?.type || 'grid',
-            products_per_row: theme.layout?.productsPerRow || 3,
-            font_family: fontFamily,
-            layout_spacing: theme.layout?.spacing || 'normal',
-            button_style: theme.styles?.button || 'rounded',
-            image_style: theme.styles?.image || 'rounded',
-            header_style: theme.styles?.header || 'standard',
-            footer_style: theme.styles?.footer || 'standard',
-          };
-          
-          return {
-            ...prev,
-            theme_id: themeId,
-            primary_color: theme.colors.primary,
-            secondary_color: theme.colors.secondary,
-            accent_color: theme.colors.accent,
-            layout_type: theme.layout?.type || 'grid',
-            products_per_row: theme.layout?.productsPerRow || 3,
-            layout_spacing: theme.layout?.spacing || 'normal',
-            button_style: theme.styles?.button || 'rounded',
-            image_style: theme.styles?.image || 'rounded',
-            header_style: theme.styles?.header || 'standard',
-            footer_style: theme.styles?.footer || 'standard',
-          };
-        });
-      }
+    const theme = themes.find(t => t.id === themeId);
+    if (theme) {
+      setThemeSettings(prev => {
+        if (!prev) return {
+          store_id: storeId || '',
+          theme_id: themeId,
+          primary_color: theme.colors.primary,
+          secondary_color: theme.colors.secondary,
+          accent_color: theme.colors.accent,
+          layout_type: theme.layout?.type || 'grid',
+          products_per_row: theme.layout?.productsPerRow || 3,
+          font_family: fontFamily,
+          layout_spacing: theme.layout?.spacing || 'normal',
+          button_style: theme.styles?.button || 'rounded',
+          image_style: theme.styles?.image || 'rounded',
+          header_style: theme.styles?.header || 'standard',
+          footer_style: theme.styles?.footer || 'standard',
+        };
+        
+        return {
+          ...prev,
+          theme_id: themeId,
+          primary_color: theme.colors.primary,
+          secondary_color: theme.colors.secondary,
+          accent_color: theme.colors.accent,
+          layout_type: theme.layout?.type || 'grid',
+          products_per_row: theme.layout?.productsPerRow || 3,
+          layout_spacing: theme.layout?.spacing || 'normal',
+          button_style: theme.styles?.button || 'rounded',
+          image_style: theme.styles?.image || 'rounded',
+          header_style: theme.styles?.header || 'standard',
+          footer_style: theme.styles?.footer || 'standard',
+        };
+      });
     }
   };
   
@@ -173,7 +165,7 @@ const StoreThemes: React.FC<StoreThemesProps> = ({ storeId }) => {
     saveSettingsMutation.mutate(themeSettings);
   };
   
-  const isLoading = isThemesLoading || isSettingsLoading;
+  const isLoading = isSettingsLoading;
   
   const openPreview = (theme: ThemeOption) => {
     setPreviewTheme(theme);
@@ -185,7 +177,7 @@ const StoreThemes: React.FC<StoreThemesProps> = ({ storeId }) => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full">
           <TabsTrigger value="themes" className="flex-1">
-            <PaletteSwatch className="h-4 w-4 mr-2" />
+            <PaintBrush className="h-4 w-4 mr-2" />
             تصاميم المتجر
           </TabsTrigger>
           <TabsTrigger value="customize" className="flex-1">
@@ -213,7 +205,7 @@ const StoreThemes: React.FC<StoreThemesProps> = ({ storeId }) => {
               onValueChange={handleThemeSelect}
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             >
-              {themes?.map((theme) => (
+              {themes.map((theme) => (
                 <div key={theme.id} className="relative">
                   <div 
                     className={`absolute top-2 right-2 z-10 ${
@@ -239,8 +231,9 @@ const StoreThemes: React.FC<StoreThemesProps> = ({ storeId }) => {
                   >
                     <ThemePreviewCard
                       theme={theme}
-                      isSelected={selectedTheme === theme.id}
-                      onClick={() => handleThemeSelect(theme.id)}
+                      selected={selectedTheme === theme.id}
+                      onSelect={() => handleThemeSelect(theme.id)}
+                      onPreview={() => openPreview(theme)}
                     />
                     
                     <div className="flex items-center justify-between mt-2 px-2">
@@ -300,10 +293,8 @@ const StoreThemes: React.FC<StoreThemesProps> = ({ storeId }) => {
                   <CardContent className="pt-6">
                     <h3 className="text-lg font-medium mb-4">الألوان</h3>
                     <ThemeColorCustomizer 
-                      primaryColor={themeSettings.primary_color}
-                      secondaryColor={themeSettings.secondary_color}
-                      accentColor={themeSettings.accent_color}
-                      onColorChange={handleColorChange}
+                      themeSettings={themeSettings}
+                      setThemeSettings={setThemeSettings}
                     />
                   </CardContent>
                 </Card>
