@@ -5,7 +5,7 @@ import SettingsTabs from "@/features/dashboard/components/SettingsTabs";
 import useStoreData from "@/hooks/use-store-data";
 
 const Settings = () => {
-  const { data: storeData, isLoading, error } = useStoreData();
+  const { storeData, isLoading, error } = useStoreData();
   
   if (error) {
     return (

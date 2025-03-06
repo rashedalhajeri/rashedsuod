@@ -5,11 +5,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import GeneralTab from "./tabs/GeneralTab";
 import PaymentTab from "./tabs/PaymentTab";
 import ShippingTab from "./tabs/ShippingTab";
-import DesignTab from "./tabs/DesignTab";
 import IntegrationsTab from "./tabs/IntegrationsTab";
 import BillingTab from "./tabs/BillingTab";
 
-type TabsType = 'general' | 'payment' | 'shipping' | 'design' | 'integrations' | 'billing';
+type TabsType = 'general' | 'payment' | 'shipping' | 'integrations' | 'billing';
 
 interface SettingsTabsProps {
   storeData: any;
@@ -39,11 +38,10 @@ const SettingsTabs: React.FC<SettingsTabsProps> = ({ storeData }) => {
   
   return (
     <Tabs defaultValue="general" value={activeTab} className="w-full" onValueChange={(tab) => handleTabChange(tab as TabsType)}>
-      <TabsList className="grid grid-cols-3 lg:grid-cols-6 w-full bg-white border">
+      <TabsList className="grid grid-cols-3 lg:grid-cols-5 w-full bg-white border">
         <TabsTrigger value="general">عام</TabsTrigger>
         <TabsTrigger value="payment">الدفع</TabsTrigger>
         <TabsTrigger value="shipping">الشحن</TabsTrigger>
-        <TabsTrigger value="design">التصميم</TabsTrigger>
         <TabsTrigger value="integrations">التكاملات</TabsTrigger>
         <TabsTrigger value="billing">الباقة</TabsTrigger>
       </TabsList>
@@ -58,10 +56,6 @@ const SettingsTabs: React.FC<SettingsTabsProps> = ({ storeData }) => {
       
       <TabsContent value="shipping">
         <ShippingTab isPaidPlan={isPaidPlan} />
-      </TabsContent>
-      
-      <TabsContent value="design">
-        <DesignTab storeId={storeData?.id} />
       </TabsContent>
       
       <TabsContent value="integrations">
