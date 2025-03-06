@@ -18,7 +18,7 @@ const StoreBanner: React.FC<StoreBannerProps> = ({
   onSearchChange
 }) => {
   return (
-    <div className="bg-gradient-to-b from-indigo-50 via-purple-50 to-white py-24 px-4 relative overflow-hidden mt-14">
+    <div className="bg-gradient-to-b from-indigo-50 via-purple-50 to-white py-24 px-4 relative overflow-hidden mt-0">
       {/* Decorative elements */}
       <div className="absolute inset-0 opacity-20 bg-pattern"></div>
       <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-primary/5 -mr-32 -mt-32"></div>
