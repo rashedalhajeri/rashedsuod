@@ -3,13 +3,14 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useCart } from "@/hooks/use-cart";
 import { useIsMobile } from "@/hooks/use-media-query";
+import { User } from "lucide-react";
 
 // Import components
-import StoreLogo from "./navbar/StoreLogo";
-import DesktopNavigation from "./navbar/DesktopNavigation";
 import NavActions from "./navbar/NavActions";
 import SearchBar from "./navbar/SearchBar";
 import MobileMenu from "./navbar/MobileMenu";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 interface StoreNavbarProps {
   storeName: string;
@@ -48,65 +49,35 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
 
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
 
-  // Close mobile menu when screen size changes to desktop
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768 && isMobileMenuOpen) {
-        setIsMobileMenuOpen(false);
-      }
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [isMobileMenuOpen]);
-
   return (
     <header className={`sticky top-0 z-50 transition-all duration-300 ${
       isScrolled 
-        ? "bg-gradient-to-r from-blue-700 to-green-500 py-2 shadow-md" 
-        : "bg-gradient-to-r from-blue-700 to-green-500 py-4"
+        ? "bg-white/95 backdrop-blur-md shadow-md py-2" 
+        : "bg-transparent py-4"
     }`}>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
-          {/* Logo and Store Name */}
-          {!isMobile && (
-            <StoreLogo 
-              storeName={storeName} 
-              logoUrl={logoUrl} 
-              storeDomain={storeDomain || ''} 
-            />
-          )}
+          {/* Left: Account Button */}
+          <Link to={`/store/${storeDomain}/login`}>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-gray-700 hover:bg-gray-100/80 backdrop-blur-sm rounded-full p-2 transition-all duration-300 shadow-sm"
+              aria-label="حسابي"
+            >
+              <User className="h-6 w-6" />
+            </Button>
+          </Link>
           
-          {/* Mobile with centered cart icon and search */}
-          {isMobile && (
-            <div className="flex items-center justify-between w-full">
-              <NavActions 
-                storeDomain={storeDomain || ''} 
-                totalItems={totalItems}
-                showSearch={showSearch}
-                setShowSearch={setShowSearch}
-                isMobileMenuOpen={isMobileMenuOpen}
-                setIsMobileMenuOpen={setIsMobileMenuOpen}
-              />
-            </div>
-          )}
-          
-          {/* Desktop Navigation */}
-          {!isMobile && (
-            <>
-              <DesktopNavigation storeDomain={storeDomain || ''} />
-              
-              {/* Actions (Search, Cart, Mobile Menu) */}
-              <NavActions 
-                storeDomain={storeDomain || ''} 
-                totalItems={totalItems}
-                showSearch={showSearch}
-                setShowSearch={setShowSearch}
-                isMobileMenuOpen={isMobileMenuOpen}
-                setIsMobileMenuOpen={setIsMobileMenuOpen}
-              />
-            </>
-          )}
+          {/* Right side: Actions (Search, Cart) */}
+          <NavActions 
+            storeDomain={storeDomain || ''} 
+            totalItems={totalItems}
+            showSearch={showSearch}
+            setShowSearch={setShowSearch}
+            isMobileMenuOpen={isMobileMenuOpen}
+            setIsMobileMenuOpen={setIsMobileMenuOpen}
+          />
         </div>
         
         {/* Search bar - conditionally rendered */}

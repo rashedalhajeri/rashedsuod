@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import { Loader2, Eye, EyeOff, Mail, Lock, User, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import StoreNavbar from "@/components/store/StoreNavbar";
 import StoreFooter from "@/components/store/StoreFooter";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const StoreRegister = () => {
   const { storeDomain } = useParams<{ storeDomain: string }>();
@@ -24,7 +24,17 @@ const StoreRegister = () => {
     store_name: storeDomain?.charAt(0).toUpperCase() + storeDomain?.slice(1) || "المتجر"
   });
 
-  // Fetch basic store data for header/footer
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  };
+
+  const initials = getInitials(storeData.store_name || "Store");
+
   React.useEffect(() => {
     const fetchStoreData = async () => {
       if (!storeDomain) return;
@@ -125,8 +135,25 @@ const StoreRegister = () => {
       
       <main className="flex-grow py-12 px-4 bg-gray-50">
         <div className="max-w-md mx-auto">
+          <Link 
+            to={`/store/${storeDomain}`} 
+            className="inline-flex items-center text-gray-600 hover:text-primary mb-6 transition-colors"
+          >
+            <ArrowLeft className="ml-1 h-4 w-4" />
+            العودة إلى المتجر
+          </Link>
+
           <Card className="border-0 shadow-lg">
-            <CardHeader className="space-y-1">
+            <CardHeader className="space-y-1 items-center pb-2">
+              <Avatar className="h-20 w-20 mb-4">
+                {storeData.logo_url ? (
+                  <AvatarImage src={storeData.logo_url} alt={storeData.store_name} />
+                ) : (
+                  <AvatarFallback className="bg-primary text-white text-xl font-bold">
+                    {initials}
+                  </AvatarFallback>
+                )}
+              </Avatar>
               <CardTitle className="text-2xl text-center font-bold">إنشاء حساب جديد</CardTitle>
               <CardDescription className="text-center">
                 سجل الآن للتسوق في {storeData.store_name}

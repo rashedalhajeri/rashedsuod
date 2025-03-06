@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -140,6 +139,7 @@ const Store = () => {
           storeDescription={storeData?.description}
           searchQuery={searchQuery}
           onSearchChange={handleSearchChange}
+          logoUrl={storeData?.logo_url}
         />
         
         {/* Category Quick Links */}
