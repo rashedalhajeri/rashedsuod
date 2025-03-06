@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { X, ChevronLeft } from "lucide-react";
@@ -13,6 +12,7 @@ interface AllProductsSectionProps {
   searchQuery?: string;
   onClearSearch?: () => void;
   storeDomain?: string;
+  sectionTitle?: string;
 }
 
 const AllProductsSection: React.FC<AllProductsSectionProps> = ({
@@ -21,11 +21,20 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
   searchQuery,
   onClearSearch,
   storeDomain,
+  sectionTitle
 }) => {
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
+    // If we received products via props, use those
+    if (initialProducts && initialProducts.length > 0) {
+      setProducts(initialProducts);
+      setIsLoading(false);
+      return;
+    }
+
+    // Otherwise fetch products from the database
     const fetchRealProducts = async () => {
       try {
         setIsLoading(true);
@@ -55,18 +64,25 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
     };
     
     fetchRealProducts();
-  }, []);
+  }, [initialProducts]);
   
-  // Show category name if active
-  const sectionTitle = activeCategory ? 
-    activeCategory === 'الكل' ? 'كل المنتجات' : activeCategory 
-    : 'المنتجات';
+  // Determine section title
+  // 1. If we have a custom section title, use it
+  // 2. If we're showing search results, show "نتائج البحث"
+  // 3. If we have an active category, use that (or "كل المنتجات" for "الكل")
+  // 4. Default to "المنتجات"
+  const finalTitle = sectionTitle
+    ? sectionTitle
+    : searchQuery
+      ? 'نتائج البحث'
+      : activeCategory
+        ? activeCategory === 'الكل' ? 'كل المنتجات' : activeCategory
+        : 'المنتجات';
   
-  // If we have a search query, show the results title instead
-  const finalTitle = searchQuery ? 'نتائج البحث' : sectionTitle;
-  
-  // Determine which products to display (real products or props)
-  const displayProducts = products.length > 0 ? products : initialProducts;
+  // No products to display
+  if (!isLoading && products.length === 0) {
+    return null;
+  }
   
   return (
     <motion.section
@@ -92,7 +108,7 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
           )}
           
           {/* View All button */}
-          {!searchQuery && activeCategory && storeDomain && (
+          {!searchQuery && storeDomain && (sectionTitle || activeCategory) && (
             <Link to={`/store/${storeDomain}/category/الكل`} className="flex items-center text-blue-600 text-sm font-medium">
               مشاهدة الكل <ChevronLeft size={16} />
             </Link>
@@ -102,7 +118,7 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
       
       {/* Product grid without extra spacing */}
       <div className="bg-white p-4 rounded-b-lg shadow-sm border border-t-0 border-gray-100">
-        <ProductGrid products={displayProducts} isLoading={isLoading} />
+        <ProductGrid products={products} isLoading={isLoading} />
       </div>
     </motion.section>
   );

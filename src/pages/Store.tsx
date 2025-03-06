@@ -51,7 +51,7 @@ const Store = () => {
             
           setCategories(categoriesWithProducts);
           
-          // Fetch sections
+          // Fetch active sections
           const { data: sectionsData } = await supabase
             .from('sections')
             .select('name')
@@ -61,10 +61,27 @@ const Store = () => {
           const sectionNames = sectionsData?.map(sec => sec.name) || [];
           setSections(sectionNames);
           
-          // For now, use empty arrays for featured and best selling products
-          // In a real implementation, you'd filter products based on section data
-          setFeaturedProducts([]);
-          setBestSellingProducts([]);
+          // Fetch featured and best selling products
+          // In a real app, these would be based on actual sales data
+          // For now, we'll just grab some products as examples
+          
+          // Featured products
+          const { data: featuredProductsData } = await supabase
+            .from('products')
+            .select('*')
+            .eq('store_id', storeData.id)
+            .limit(4);
+          
+          setFeaturedProducts(featuredProductsData || []);
+          
+          // Best selling products
+          const { data: bestSellingProductsData } = await supabase
+            .from('products')
+            .select('*')
+            .eq('store_id', storeData.id)
+            .limit(8);
+          
+          setBestSellingProducts(bestSellingProductsData || []);
         } catch (err) {
           console.error("Error fetching store data:", err);
         } finally {

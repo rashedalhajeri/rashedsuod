@@ -1,10 +1,11 @@
-
 import React from "react";
 import { useStoreFilter } from "@/context/StoreFilterContext";
 import { filterProductsBySearch, filterProductsByCategory } from "@/utils/product-filters";
 import StoreBanner from "@/components/store/StoreBanner";
 import CategoryNavigation from "@/components/store/CategoryNavigation";
 import AllProductsSection from "@/components/store/sections/AllProductsSection";
+import FeaturedProductsSection from "@/components/store/sections/FeaturedProductsSection";
+import BestSellingProductsSection from "@/components/store/sections/BestSellingProductsSection";
 import SearchBar from "@/components/store/navbar/SearchBar";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,6 +42,7 @@ const StoreContent: React.FC<StoreContentProps> = ({
   const { storeDomain } = useParams<{ storeDomain: string }>();
   const [productNames, setProductNames] = useState<string[]>([]);
   const [showPromoBanner, setShowPromoBanner] = useState(false);
+  const [sectionProducts, setSectionProducts] = useState<{[key: string]: any[]}>({});
   
   useEffect(() => {
     // Fetch product names for the search animation
@@ -67,6 +69,66 @@ const StoreContent: React.FC<StoreContentProps> = ({
     
     fetchProductNames();
   }, [storeDomain]);
+
+  // Fetch store sections and related products
+  useEffect(() => {
+    const fetchSectionsWithProducts = async () => {
+      if (!storeData?.id) return;
+      
+      try {
+        // First get all active sections
+        const { data: activeSections } = await supabase
+          .from('sections')
+          .select('*')
+          .eq('store_id', storeData.id)
+          .eq('is_active', true);
+          
+        if (!activeSections || activeSections.length === 0) return;
+        
+        // For each section, get appropriate products
+        const sectionProductsObj: {[key: string]: any[]} = {};
+        
+        for (const section of activeSections) {
+          let productsQuery = supabase
+            .from('products')
+            .select('*')
+            .eq('store_id', storeData.id);
+            
+          // Apply different filters based on section type
+          switch (section.section_type) {
+            case 'best_selling':
+              // In a real app, you would sort by sales count
+              productsQuery = productsQuery.limit(8);
+              break;
+            case 'new_arrivals':
+              productsQuery = productsQuery.order('created_at', { ascending: false }).limit(8);
+              break;
+            case 'featured':
+              // For featured, you might have a "featured" flag in the future
+              productsQuery = productsQuery.limit(4);
+              break;
+            case 'on_sale':
+              // In a real app, you would filter by products with discounts
+              productsQuery = productsQuery.limit(6);
+              break;
+            case 'custom':
+            default:
+              productsQuery = productsQuery.limit(8);
+              break;
+          }
+          
+          const { data: sectionProductsData } = await productsQuery;
+          sectionProductsObj[section.name] = sectionProductsData || [];
+        }
+        
+        setSectionProducts(sectionProductsObj);
+      } catch (error) {
+        console.error("Error fetching sections with products:", error);
+      }
+    };
+    
+    fetchSectionsWithProducts();
+  }, [storeData]);
 
   // Handle search submission
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -102,6 +164,9 @@ const StoreContent: React.FC<StoreContentProps> = ({
       navigate(`/store/${storeDomain}/category/${categorySlug}`);
     }
   };
+
+  // Determine if we're showing search results
+  const isShowingSearchResults = searchQuery.trim().length > 0;
 
   return (
     <>
@@ -163,13 +228,38 @@ const StoreContent: React.FC<StoreContentProps> = ({
         />
       )}
       
-      {/* Products section */}
-      <AllProductsSection 
-        products={displayProducts}
-        activeCategory={activeCategory}
-        searchQuery={searchQuery}
-        onClearSearch={handleClearSearch}
-      />
+      {/* If showing search results, just show the filtered products */}
+      {isShowingSearchResults ? (
+        <AllProductsSection 
+          products={displayProducts}
+          activeCategory={activeCategory}
+          searchQuery={searchQuery}
+          onClearSearch={handleClearSearch}
+        />
+      ) : (
+        // Otherwise show section-specific products
+        <>
+          {/* Map through all available sections and display them */}
+          {Object.entries(sectionProducts).map(([sectionName, products]) => (
+            <div key={sectionName} className="mb-8">
+              <AllProductsSection 
+                products={products}
+                sectionTitle={sectionName}
+                storeDomain={storeDomain}
+              />
+            </div>
+          ))}
+          
+          {/* Show all products section at the bottom if no sections or as a fallback */}
+          {(Object.keys(sectionProducts).length === 0 || sections.length === 0) && (
+            <AllProductsSection 
+              products={displayProducts}
+              activeCategory={activeCategory}
+              storeDomain={storeDomain}
+            />
+          )}
+        </>
+      )}
     </>
   );
 };
