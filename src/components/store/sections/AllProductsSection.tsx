@@ -43,34 +43,35 @@ const fetchProductsWithFilters = async (
   sectionId?: string
 ): Promise<Product[]> => {
   try {
-    // Create the base query first
-    const query = supabase.from('products').select('*');
+    // Set up base query
+    let query = supabase.from('products').select('*');
     
-    // Apply filters based on section type
-    // Apply each filter separately to avoid deep type instantiation
-    let filteredQuery = query;
-    
+    // Apply different filters based on section type
     if (sectionType === 'category' && categoryId) {
-      filteredQuery = query.eq('category_id', categoryId);
-    } else if (sectionType === 'featured') {
-      filteredQuery = query.eq('is_featured', true);
-    } else if (sectionType === 'best_selling') {
-      filteredQuery = query.order('sales_count', { ascending: false });
-    } else if (sectionType === 'on_sale') {
-      filteredQuery = query.not('discount_price', 'is', null);
-    } else if (sectionType === 'custom' && sectionId) {
-      filteredQuery = query.eq('section_id', sectionId);
+      query = query.eq('category_id', categoryId);
+    } 
+    else if (sectionType === 'featured') {
+      query = query.eq('is_featured', true);
+    } 
+    else if (sectionType === 'best_selling') {
+      query = query.order('sales_count', { ascending: false });
+    } 
+    else if (sectionType === 'on_sale') {
+      query = query.not('discount_price', 'is', null);
+    } 
+    else if (sectionType === 'custom' && sectionId) {
+      query = query.eq('section_id', sectionId);
     }
     
-    // Execute the query with final ordering
-    const { data, error } = await filteredQuery.order('created_at', { ascending: false });
+    // Execute the final query with ordering
+    const { data, error } = await query.order('created_at', { ascending: false });
     
     if (error) {
       console.error("Error fetching products:", error);
       return [];
     }
     
-    return (data as Product[]) || [];
+    return data as Product[] || [];
   } catch (err) {
     console.error("Error in fetchProductsWithFilters:", err);
     return [];
