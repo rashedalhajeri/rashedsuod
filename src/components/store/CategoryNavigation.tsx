@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useCallback, memo } from "react";
 import { motion } from "framer-motion";
+import { Link, useNavigate } from "react-router-dom";
 
 interface CategoryNavigationProps {
   categories: string[];
@@ -9,6 +10,7 @@ interface CategoryNavigationProps {
   activeSection: string;
   onCategoryChange: (category: string) => void;
   onSectionChange: (section: string) => void;
+  storeDomain?: string;
 }
 
 const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
@@ -17,8 +19,11 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
   activeCategory,
   activeSection,
   onCategoryChange,
-  onSectionChange
+  onSectionChange,
+  storeDomain
 }) => {
+  const navigate = useNavigate();
+  
   // Filter out empty arrays
   const hasCategories = categories.length > 0;
   const hasSections = sections.length > 0;
@@ -31,12 +36,23 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
   // Prepare categories with "All" option at the beginning
   const categoriesWithAll = ["الكل", ...categories];
   
-  // Ejemplos de categorías con imágenes para coincidir con el diseño enviado por el usuario
+  // Category images with the uploaded image and placeholders
   const categoryImages = [
-    "/public/lovable-uploads/40f2878b-2f08-4165-b6f3-ef717990c0e1.png", // Imagen para "الكل"
-    "/placeholder.svg", // Imagen para clinics
-    "/placeholder.svg", // Imagen para electronics
+    "/public/lovable-uploads/76b54a01-0b01-4389-87c4-99406ba4e5ca.png", // الكل
+    "/public/lovable-uploads/c8a5c4e7-628d-4c52-acca-e8f603036b6b.png", // Clinics
+    "/public/lovable-uploads/827a00fa-f421-45c3-96d7-b9305fb217d1.jpg", // Electronics
   ];
+
+  // Handle category click
+  const handleCategoryClick = (category: string, index: number) => {
+    if (!storeDomain) return;
+    
+    if (category === "الكل") {
+      navigate(`/store/${storeDomain}`);
+    } else {
+      navigate(`/store/${storeDomain}/category/${encodeURIComponent(category.toLowerCase())}`);
+    }
+  };
 
   return (
     <div className="bg-white py-4 z-10 transition-all duration-300 mb-4" dir="rtl">
@@ -51,7 +67,7 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
               className="flex-shrink-0 rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden"
             >
               <button
-                onClick={() => onCategoryChange(category === "الكل" ? "" : category)}
+                onClick={() => handleCategoryClick(category, index)}
                 className={`w-full h-full flex flex-col items-center p-3 ${
                   (category === "الكل" && !activeCategory) || activeCategory === category
                     ? 'text-blue-600 font-medium'

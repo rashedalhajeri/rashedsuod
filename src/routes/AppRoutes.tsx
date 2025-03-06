@@ -1,3 +1,4 @@
+
 import { Routes, Route } from "react-router-dom";
 import { ProtectedRoute, CreateStoreRoute } from "./ProtectedRoutes";
 
@@ -12,6 +13,7 @@ import ProductPage from "@/pages/ProductPage";
 import CartPage from "@/pages/CartPage";
 import CheckoutPage from "@/pages/CheckoutPage";
 import OrderSuccessPage from "@/pages/OrderSuccessPage";
+import CategoryPage from "@/pages/CategoryPage";
 
 // Import store auth pages
 import StoreLogin from "@/pages/store/StoreLogin";
@@ -36,6 +38,7 @@ const AppRoutes = () => {
       <Route path="/reset-password" element={<Auth />} />
       
       <Route path="/store/:storeDomain" element={<Store />} />
+      <Route path="/store/:storeDomain/category/:categoryName" element={<CategoryPage />} />
       <Route path="/store/:storeDomain/product/:productId" element={<ProductPage />} />
       <Route path="/store/:storeDomain/cart" element={<CartPage />} />
       <Route path="/store/:storeDomain/checkout" element={<CheckoutPage />} />

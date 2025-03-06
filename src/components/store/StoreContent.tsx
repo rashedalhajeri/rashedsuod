@@ -137,6 +137,7 @@ const StoreContent: React.FC<StoreContentProps> = ({
           onSectionChange={handleSectionChange}
           categories={categories}
           sections={sections}
+          storeDomain={storeDomain}
         />
       )}
       
