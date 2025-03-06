@@ -7,6 +7,8 @@ import { ErrorState } from "@/components/ui/error-state";
 import StoreLayout from "@/components/store/StoreLayout";
 import StoreContent from "@/components/store/StoreContent";
 import { supabase } from "@/integrations/supabase/client";
+import { motion } from "framer-motion";
+import ProductGridSkeleton from "@/components/store/skeletons/ProductGridSkeleton";
 
 const Store = () => {
   const { storeDomain } = useParams<{ storeDomain: string }>();
@@ -17,6 +19,7 @@ const Store = () => {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [bestSellingProducts, setBestSellingProducts] = useState([]);
+  const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
     if (storeData?.id) {
@@ -65,7 +68,14 @@ const Store = () => {
         } catch (err) {
           console.error("Error fetching store data:", err);
         } finally {
-          setIsLoadingData(false);
+          // Add a small delay for smoother transitions
+          setTimeout(() => {
+            setIsLoadingData(false);
+            // Short delay before showing content for smooth transition
+            setTimeout(() => {
+              setShowContent(true);
+            }, 100);
+          }, 300);
         }
       };
       
@@ -73,24 +83,63 @@ const Store = () => {
     }
   }, [storeData]);
 
-  if (isLoading || isLoadingData) {
-    return <LoadingState message="جاري تحميل المتجر..." />;
-  }
-
   if (error) {
-    return <ErrorState title="خطأ" message={error.message || "حدث خطأ أثناء تحميل المتجر"} />;
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <ErrorState title="خطأ" message={error.message || "حدث خطأ أثناء تحميل المتجر"} />
+      </motion.div>
+    );
   }
 
+  // Instead of a loading state, render the layout with skeletons
   return (
-    <StoreLayout storeData={storeData}>
-      <StoreContent 
-        storeData={storeData}
-        products={products}
-        categories={categories}
-        sections={sections}
-        featuredProducts={featuredProducts}
-        bestSellingProducts={bestSellingProducts}
-      />
+    <StoreLayout storeData={storeData || {}}>
+      {isLoading || isLoadingData ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="container mx-auto px-4 py-6"
+        >
+          <div className="grid grid-cols-5 gap-1.5 mx-auto mb-6">
+            {[...Array(5)].map((_, index) => (
+              <div key={`cat-skeleton-${index}`} className="flex-shrink-0">
+                <div className="w-full flex flex-col items-center bg-white rounded-lg p-1.5 shadow-sm border border-gray-100">
+                  <div className="w-full aspect-square mb-1 bg-gray-200 rounded-lg animate-pulse"></div>
+                  <div className="h-2 w-12 bg-gray-200 rounded animate-pulse"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="mb-6">
+            <div className="flex justify-between items-center py-3 px-5 bg-white border-b border-gray-100 rounded-t-lg shadow-sm">
+              <div className="h-7 w-32 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+            <div className="bg-white p-4 rounded-b-lg shadow-sm border border-t-0 border-gray-100">
+              <ProductGridSkeleton count={8} />
+            </div>
+          </div>
+        </motion.div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: showContent ? 1 : 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <StoreContent 
+            storeData={storeData}
+            products={products}
+            categories={categories}
+            sections={sections}
+            featuredProducts={featuredProducts}
+            bestSellingProducts={bestSellingProducts}
+          />
+        </motion.div>
+      )}
     </StoreLayout>
   );
 };

@@ -2,6 +2,7 @@
 import React, { useRef } from "react";
 import { useParams } from "react-router-dom";
 import ProductItem from "@/components/store/unified/ProductItem";
+import ProductGridSkeleton from "@/components/store/skeletons/ProductGridSkeleton";
 
 interface ProductGridProps {
   products: any[];
@@ -12,18 +13,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, isLoading = false }
   const { storeDomain } = useParams<{ storeDomain: string }>();
   const gridRef = useRef<HTMLDivElement>(null);
   
-  // Show loading state
+  // Show skeleton loading state
   if (isLoading) {
-    return (
-      <div className="grid grid-cols-2 gap-4">
-        {[...Array(4)].map((_, index) => (
-          <div key={`loading-${index}`} className="flex flex-col">
-            <div className="relative rounded-xl overflow-hidden shadow-sm bg-gray-100 w-full aspect-square animate-pulse"></div>
-            <div className="h-5 bg-gray-200 rounded mt-2 w-3/4 mx-auto animate-pulse"></div>
-          </div>
-        ))}
-      </div>
-    );
+    return <ProductGridSkeleton count={8} />;
   }
   
   // Show a professional empty state when no products are available

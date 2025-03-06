@@ -1,15 +1,18 @@
+
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/use-cart";
-import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { toast } from "sonner";
 import StoreHeader from "@/components/store/unified/StoreHeader";
+import { motion } from "framer-motion";
 
 import ProductImage from "@/components/product/ProductImage";
 import ProductInfo from "@/components/product/ProductInfo";
 import ProductActions from "@/components/product/ProductActions";
+import ProductImageSkeleton from "@/components/product/ProductImageSkeleton";
+import ProductInfoSkeleton from "@/components/product/ProductInfoSkeleton";
 
 const ProductPage = () => {
   const { productId, storeDomain } = useParams<{ productId: string; storeDomain: string }>();
@@ -19,6 +22,7 @@ const ProductPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
+  const [showContent, setShowContent] = useState(false);
   
   useEffect(() => {
     const fetchProductData = async () => {
@@ -58,7 +62,14 @@ const ProductPage = () => {
         console.error("Error fetching product data:", err);
         setError("حدث خطأ أثناء تحميل بيانات المنتج");
       } finally {
-        setLoading(false);
+        // Add delay for smoother transitions
+        setTimeout(() => {
+          setLoading(false);
+          // Short delay before showing content for smooth transition
+          setTimeout(() => {
+            setShowContent(true);
+          }, 100);
+        }, 300);
       }
     };
     
@@ -105,12 +116,16 @@ const ProductPage = () => {
     }).format(price);
   };
   
-  if (loading) {
-    return <LoadingState message="جاري تحميل المنتج..." />;
-  }
-  
   if (error) {
-    return <ErrorState title="خطأ" message={error} />;
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <ErrorState title="خطأ" message={error} />
+      </motion.div>
+    );
   }
   
   return (
@@ -122,77 +137,106 @@ const ProductPage = () => {
       />
       
       <main className="flex-grow bg-gray-50">
-        <div className="bg-white rounded-3xl shadow-sm mx-4 -mt-4 overflow-hidden">
-          <ProductImage 
-            imageUrl={product.image_url} 
-            name={product.name}
-            discount_percentage={product.discount_percentage}
-            is_new={product.is_new}
-            storeLogo={storeData?.logo_url}
-            storeName={storeData?.store_name}
-          />
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: loading ? 0 : 1, y: loading ? 20 : 0 }}
+          transition={{ duration: 0.4 }}
+          className="bg-white rounded-3xl shadow-sm mx-4 -mt-4 overflow-hidden"
+        >
+          {loading ? (
+            <ProductImageSkeleton />
+          ) : (
+            <ProductImage 
+              imageUrl={product.image_url} 
+              name={product.name}
+              discount_percentage={product.discount_percentage}
+              is_new={product.is_new}
+              storeLogo={storeData?.logo_url}
+              storeName={storeData?.store_name}
+            />
+          )}
           
           <div className="p-4">
-            <ProductInfo 
-              product={product} 
-              formatCurrency={formatCurrency} 
-            />
-          </div>
-        </div>
-        
-        <div className="mt-4 mx-4 bg-white rounded-xl shadow-sm overflow-hidden">
-          <div className="border-b border-gray-100">
-            <h2 className="text-xl font-bold p-4">نظرة عامة</h2>
-          </div>
-          <div className="p-4">
-            <h3 className="font-medium mb-2">وصف المنتج</h3>
-            <p className="text-gray-700">
-              {product.description || "لا يوجد وصف متاح لهذا المنتج"}
-            </p>
-            
-            {product.highlights && product.highlights.length > 0 && (
-              <div className="mt-4">
-                <ul className="space-y-2">
-                  {product.highlights.map((highlight: string, index: number) => (
-                    <li key={index} className="text-gray-700">
-                      {highlight}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            {loading ? (
+              <ProductInfoSkeleton />
+            ) : (
+              <ProductInfo 
+                product={product} 
+                formatCurrency={formatCurrency} 
+              />
             )}
           </div>
-        </div>
+        </motion.div>
         
-        <div className="fixed bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 flex justify-between items-center">
-          <div className="text-2xl font-bold text-gray-800">
-            {formatCurrency(product.price)} <span className="text-sm font-normal">KWD</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden mr-2">
-              <button
-                onClick={() => handleQuantityChange('decrease')}
-                disabled={quantity <= 1}
-                className="px-3 py-2 bg-gray-50 text-gray-600 hover:bg-gray-100"
-              >
-                -
-              </button>
-              <span className="w-10 text-center font-medium">{quantity}</span>
-              <button
-                onClick={() => handleQuantityChange('increase')}
-                className="px-3 py-2 bg-gray-50 text-gray-600 hover:bg-gray-100"
-              >
-                +
-              </button>
+        {!loading && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: showContent ? 1 : 0, y: showContent ? 0 : 20 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className="mt-4 mx-4 bg-white rounded-xl shadow-sm overflow-hidden"
+          >
+            <div className="border-b border-gray-100">
+              <h2 className="text-xl font-bold p-4">نظرة عامة</h2>
             </div>
-            <button 
-              onClick={handleAddToCart}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-            >
-              إضافة للسلة
-            </button>
-          </div>
-        </div>
+            <div className="p-4">
+              <h3 className="font-medium mb-2">وصف المنتج</h3>
+              <p className="text-gray-700">
+                {product.description || "لا يوجد وصف متاح لهذا المنتج"}
+              </p>
+              
+              {product.highlights && product.highlights.length > 0 && (
+                <div className="mt-4">
+                  <ul className="space-y-2">
+                    {product.highlights.map((highlight: string, index: number) => (
+                      <li key={index} className="text-gray-700">
+                        {highlight}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+        
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: showContent ? 1 : 0, y: showContent ? 0 : 20 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+          className="fixed bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 flex justify-between items-center"
+        >
+          {!loading && (
+            <>
+              <div className="text-2xl font-bold text-gray-800">
+                {formatCurrency(product.price)} <span className="text-sm font-normal">KWD</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden mr-2">
+                  <button
+                    onClick={() => handleQuantityChange('decrease')}
+                    disabled={quantity <= 1}
+                    className="px-3 py-2 bg-gray-50 text-gray-600 hover:bg-gray-100"
+                  >
+                    -
+                  </button>
+                  <span className="w-10 text-center font-medium">{quantity}</span>
+                  <button
+                    onClick={() => handleQuantityChange('increase')}
+                    className="px-3 py-2 bg-gray-50 text-gray-600 hover:bg-gray-100"
+                  >
+                    +
+                  </button>
+                </div>
+                <button 
+                  onClick={handleAddToCart}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                >
+                  إضافة للسلة
+                </button>
+              </div>
+            </>
+          )}
+        </motion.div>
       </main>
     </div>
   );

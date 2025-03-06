@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { X, ChevronLeft } from "lucide-react";
 import ProductGrid from "@/components/store/ProductGrid";
 import { supabase } from "@/integrations/supabase/client";
-import { LoadingState } from "@/components/ui/loading-state";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 interface AllProductsSectionProps {
   products: any[];
@@ -47,7 +47,10 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
       } catch (err) {
         console.error("Error in fetchRealProducts:", err);
       } finally {
-        setIsLoading(false);
+        // Add a small delay to make the transition smoother
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 300);
       }
     };
     
@@ -62,24 +65,16 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
   // If we have a search query, show the results title instead
   const finalTitle = searchQuery ? 'نتائج البحث' : sectionTitle;
   
-  if (isLoading) {
-    return (
-      <section className="mb-6 bg-white rounded-lg shadow-sm border border-gray-100">
-        <div className="p-4 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-gray-800">{finalTitle}</h2>
-        </div>
-        <div className="p-6">
-          <LoadingState message="جاري تحميل المنتجات..." />
-        </div>
-      </section>
-    );
-  }
-  
   // Determine which products to display (real products or props)
   const displayProducts = products.length > 0 ? products : initialProducts;
   
   return (
-    <section className="mb-6">
+    <motion.section
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="mb-6"
+    >
       <div className="flex justify-between items-center py-3 px-5 bg-white border-b border-gray-100 rounded-t-lg shadow-sm">
         <h2 className="text-xl font-bold text-gray-800">{finalTitle}</h2>
         
@@ -107,16 +102,9 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
       
       {/* Product grid without extra spacing */}
       <div className="bg-white p-4 rounded-b-lg shadow-sm border border-t-0 border-gray-100">
-        {displayProducts.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 font-medium">لا توجد منتجات متوفرة حالياً</p>
-            <p className="text-sm text-gray-400 mt-1">يرجى المحاولة لاحقاً</p>
-          </div>
-        ) : (
-          <ProductGrid products={displayProducts} />
-        )}
+        <ProductGrid products={displayProducts} isLoading={isLoading} />
       </div>
-    </section>
+    </motion.section>
   );
 };
 

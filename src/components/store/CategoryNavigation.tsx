@@ -3,6 +3,7 @@ import React, { memo, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import CategorySkeleton from "@/components/store/skeletons/CategorySkeleton";
 
 interface CategoryNavigationProps {
   categories: string[];
@@ -79,7 +80,10 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
       } catch (err) {
         console.error("Error in fetchCategoriesWithProducts:", err);
       } finally {
-        setIsLoading(false);
+        // Add a small delay for smoother transition
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 200);
       }
     };
     
@@ -123,20 +127,18 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
   };
 
   return (
-    <div className="py-2 z-10 transition-all duration-300" dir="rtl">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="py-2 z-10 transition-all duration-300"
+      dir="rtl"
+    >
       <div className="grid grid-cols-5 gap-1.5 mx-auto">
         {isLoading ? (
-          // Placeholder for loading state
+          // Placeholder for loading state using CategorySkeleton
           [...Array(5)].map((_, index) => (
-            <motion.div
-              key={`loading-${index}`}
-              className="flex-shrink-0"
-            >
-              <div className="w-full h-full flex flex-col items-center bg-white rounded-lg p-1.5 shadow-sm border border-gray-100 animate-pulse">
-                <div className="w-full aspect-square mb-1 bg-gray-200 rounded-lg"></div>
-                <div className="h-2 w-12 bg-gray-200 rounded"></div>
-              </div>
-            </motion.div>
+            <CategorySkeleton key={`category-skeleton-${index}`} index={index} />
           ))
         ) : (
           displayCategories.map((category, index) => {
@@ -181,7 +183,7 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
           })
         )}
       </div>
-    </div>
+    </motion.div>
   );
 });
 
