@@ -26,9 +26,8 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
   // Get current time
   const [currentTime, setCurrentTime] = useState(new Date());
   
-  // Rotating greeting message
-  const greetingMessages = ["اطلب", "منتجاتك", "وتوصل باب بيتك"];
-  const [currentGreetingIndex, setCurrentGreetingIndex] = useState(0);
+  // Single elegant greeting message (instead of rotating)
+  const elegantMessage = "أهلاً بك";
   
   useEffect(() => {
     const timer = setInterval(() => {
@@ -36,15 +35,6 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
     }, 60000); // Update every minute
     
     return () => clearInterval(timer);
-  }, []);
-  
-  // Set up the rotating greeting message
-  useEffect(() => {
-    const greetingInterval = setInterval(() => {
-      setCurrentGreetingIndex(prevIndex => (prevIndex + 1) % greetingMessages.length);
-    }, 2000); // Change message every 2 seconds
-    
-    return () => clearInterval(greetingInterval);
   }, []);
   
   // Format time as HH:MM in Arabic/Eastern format
@@ -79,30 +69,28 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
 
   return (
     <header className="relative" dir="rtl">
-      {/* Main Header with gradient background and curved bottom edge */}
-      <div className="bg-gradient-to-r from-blue-700 to-green-500 pt-8 pb-16 px-4 rounded-b-3xl shadow-lg">
+      {/* Elegant header with gradient background and curved bottom edge */}
+      <div className="bg-gradient-to-l from-purple-600 to-indigo-700 pt-8 pb-16 px-4 rounded-b-[2.5rem] shadow-xl">
         <div className="container mx-auto">
           <div className="flex items-center justify-between">
-            {/* Right: User info and avatar */}
+            {/* Right: Store logo and info */}
             <div className="flex items-center gap-3 text-white">
               <Link to={`/store/${storeDomain}/login`}>
-                <Avatar className="h-12 w-12 bg-white text-blue-600 border-2 border-white/30 shadow-md transition-transform hover:scale-105">
+                <Avatar className="h-12 w-12 bg-white/10 backdrop-blur-sm text-white border-2 border-white/40 shadow-lg transition-transform hover:scale-105">
                   {logoUrl ? (
                     <AvatarImage src={logoUrl} alt={storeName} />
                   ) : (
-                    <AvatarFallback className="bg-white text-blue-600 text-xl font-bold">
+                    <AvatarFallback className="bg-indigo-500/80 text-white text-xl font-bold backdrop-blur-sm">
                       {initials}
                     </AvatarFallback>
                   )}
                 </Avatar>
               </Link>
               <div className="text-right">
-                <div className="flex items-center">
-                  <span className="text-sm font-medium bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-sm animate-fade-in">
-                    {greetingMessages[currentGreetingIndex]}،
-                  </span>
-                </div>
-                <h2 className="font-bold text-lg tracking-wide">{storeName}</h2>
+                <span className="text-xs font-medium bg-white/15 px-2 py-0.5 rounded-full backdrop-blur-sm text-white/90">
+                  {elegantMessage}
+                </span>
+                <h2 className="font-bold text-lg tracking-wide mt-1">{storeName}</h2>
               </div>
             </div>
             
@@ -114,7 +102,7 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
           </div>
           
           {/* Time display in top right */}
-          <div className="absolute top-4 left-4 bg-green-500 text-white px-4 py-1 rounded-full text-sm font-medium shadow-sm">
+          <div className="absolute top-4 left-4 bg-indigo-500/70 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium shadow-md border border-white/20">
             {formatTime(currentTime)}
           </div>
           
@@ -136,7 +124,7 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
       </div>
       
       {/* Search bar positioned for overlap */}
-      <div className="container mx-auto px-4 relative -mt-6">
+      <div className="container mx-auto px-4 relative -mt-7">
         <SearchBar 
           searchQuery={searchQuery} 
           setSearchQuery={setSearchQuery} 

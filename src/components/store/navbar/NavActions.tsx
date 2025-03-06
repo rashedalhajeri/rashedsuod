@@ -21,12 +21,12 @@ const NavActions: React.FC<NavActionsProps> = ({
         <Button 
           variant="ghost" 
           size="sm" 
-          className="relative text-white p-0 hover:bg-white/10 transition-colors"
+          className="relative text-white p-0 hover:bg-white/15 active:bg-white/20 transition-colors"
           aria-label="عربة التسوق"
         >
           <ShoppingCart className="h-7 w-7" />
           {totalItems > 0 && (
-            <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-xs h-5 min-w-5 flex items-center justify-center rounded-full px-1 border border-white/20 shadow-sm">
+            <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-xs h-5 min-w-5 flex items-center justify-center rounded-full px-1 border border-white/20 shadow-md">
               {totalItems}
             </Badge>
           )}
@@ -37,7 +37,7 @@ const NavActions: React.FC<NavActionsProps> = ({
       <Button 
         variant="ghost" 
         size="sm" 
-        className="text-white p-0 hover:bg-white/10 transition-colors"
+        className="text-white p-0 hover:bg-white/15 active:bg-white/20 transition-colors"
         aria-label="الإشعارات"
       >
         <Bell className="h-7 w-7" />
