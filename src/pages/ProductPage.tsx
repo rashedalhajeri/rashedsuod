@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
-import { Minus, Plus, ShoppingCart, ChevronRight } from "lucide-react";
+import { Minus, Plus, ShoppingCart, ChevronRight, Heart, Share2, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import StoreNavbar from "@/components/store/StoreNavbar";
@@ -21,6 +21,7 @@ const ProductPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const { addToCart } = useCart();
   
   useEffect(() => {
@@ -107,6 +108,14 @@ const ProductPage = () => {
   if (error) {
     return <ErrorState title="خطأ" message={error} />;
   }
+
+  // تنسيق العملة
+  const formatCurrency = (price: number) => {
+    return new Intl.NumberFormat('ar-SA', {
+      style: 'currency',
+      currency: storeData?.currency || 'KWD'
+    }).format(price);
+  };
   
   return (
     <div className="min-h-screen flex flex-col" dir="rtl">
@@ -114,49 +123,124 @@ const ProductPage = () => {
       
       <main className="flex-grow container mx-auto py-8 px-4">
         <div className="mb-6">
-          <Link to={`/store/${storeDomain}`} className="flex items-center text-sm text-blue-600 hover:underline">
+          <Link to={`/store/${storeDomain}`} className="flex items-center text-sm text-primary hover:underline">
             <ChevronRight className="h-4 w-4 ml-1" />
             <span>العودة للمتجر</span>
           </Link>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Product Image */}
-          <div className="bg-white rounded-lg overflow-hidden border">
-            <img 
-              src={product.image_url || "/placeholder.svg"} 
-              alt={product.name}
-              className="w-full h-full object-contain aspect-square"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = "/placeholder.svg";
-              }}
-            />
+          {/* Product Image - تحسين عرض الصور */}
+          <div className="bg-white rounded-lg overflow-hidden border shadow-sm hover:shadow-md transition-all">
+            <div className="relative aspect-square bg-gray-100 animate-pulse flex items-center justify-center">
+              <img 
+                src={product.image_url || "/placeholder.svg"} 
+                alt={product.name}
+                className={`w-full h-full object-contain ${imageLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).onerror = null;
+                  (e.target as HTMLImageElement).src = "/placeholder.svg";
+                  setImageLoaded(true);
+                }}
+                onLoad={() => {
+                  setImageLoaded(true);
+                }}
+              />
+              {!imageLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="loading loading-spinner loading-lg text-primary"></span>
+                </div>
+              )}
+              {/* Badges & Actions */}
+              <div className="absolute top-2 left-2 flex flex-col gap-2">
+                {product.discount_percentage > 0 && (
+                  <Badge className="bg-red-500 text-white">خصم {product.discount_percentage}%</Badge>
+                )}
+                {product.is_new && (
+                  <Badge className="bg-green-500 text-white">جديد</Badge>
+                )}
+              </div>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="absolute top-2 right-2 h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm hover:bg-primary/10 hover:text-primary"
+              >
+                <Heart className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
           
           {/* Product Info */}
-          <div>
-            <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
-            
-            <div className="mb-4">
-              <span className="text-2xl font-bold">{product.price} {storeData?.currency || "KWD"}</span>
+          <div className="space-y-6">
+            <div>
+              <div className="flex items-center justify-between">
+                <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
+                <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 hover:text-primary">
+                  <Share2 className="h-5 w-5" />
+                </Button>
+              </div>
+              
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center gap-1 text-yellow-500">
+                  <Star className="h-4 w-4 fill-current" />
+                  <Star className="h-4 w-4 fill-current" />
+                  <Star className="h-4 w-4 fill-current" />
+                  <Star className="h-4 w-4 fill-current" />
+                  <Star className="h-4 w-4" />
+                </div>
+                <span className="text-sm text-gray-500">(15 تقييم)</span>
+              </div>
+              
+              <div className="mb-4 flex items-center gap-4">
+                <span className="text-3xl font-bold text-primary">{formatCurrency(product.price)}</span>
+                {product.original_price && product.original_price > product.price && (
+                  <span className="text-lg text-gray-400 line-through">
+                    {formatCurrency(product.original_price)}
+                  </span>
+                )}
+              </div>
+              
+              {product.stock_quantity !== null && (
+                <Badge className={`mb-4 px-3 py-1 ${product.stock_quantity > 10 ? 'bg-green-100 text-green-800' : product.stock_quantity > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                  متوفر: {product.stock_quantity} قطعة
+                </Badge>
+              )}
             </div>
             
-            {product.stock_quantity !== null && (
-              <Badge className="mb-4">
-                متوفر: {product.stock_quantity} قطعة
-              </Badge>
-            )}
+            <Separator className="my-6" />
             
-            <div className="mb-8">
+            <div>
               <h3 className="text-lg font-medium mb-2">الوصف</h3>
-              <p className="text-gray-600">{product.description || "لا يوجد وصف متاح"}</p>
+              <p className="text-gray-600 leading-relaxed">
+                {product.description || "لا يوجد وصف متاح لهذا المنتج"}
+              </p>
+            </div>
+            
+            {/* Features */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+              <div className="flex items-center gap-2 text-sm">
+                <ShieldCheck className="h-5 w-5 text-primary" />
+                <span>ضمان الجودة</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <ShieldCheck className="h-5 w-5 text-primary" />
+                <span>شحن سريع</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <ShieldCheck className="h-5 w-5 text-primary" />
+                <span>استرجاع سهل</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <ShieldCheck className="h-5 w-5 text-primary" />
+                <span>دفع آمن</span>
+              </div>
             </div>
             
             <Separator className="my-6" />
             
             <div className="flex flex-col space-y-4">
               <div className="flex items-center">
-                <span className="ml-4">الكمية:</span>
+                <span className="ml-4 font-medium">الكمية:</span>
                 <div className="flex items-center border rounded-md">
                   <Button 
                     type="button" 
@@ -164,16 +248,18 @@ const ProductPage = () => {
                     size="icon"
                     onClick={() => handleQuantityChange('decrease')}
                     disabled={quantity <= 1}
+                    className="hover:bg-primary/10 hover:text-primary transition-colors"
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
-                  <span className="w-12 text-center">{quantity}</span>
+                  <span className="w-12 text-center font-medium">{quantity}</span>
                   <Button 
                     type="button" 
                     variant="ghost" 
                     size="icon"
                     onClick={() => handleQuantityChange('increase')}
                     disabled={product.stock_quantity !== null && quantity >= product.stock_quantity}
+                    className="hover:bg-primary/10 hover:text-primary transition-colors"
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -183,10 +269,18 @@ const ProductPage = () => {
               <Button 
                 onClick={handleAddToCart} 
                 size="lg" 
-                className="w-full"
+                className="w-full gap-2"
                 disabled={product.stock_quantity === 0}
               >
                 <ShoppingCart className="ml-2 h-5 w-5" /> إضافة إلى السلة
+              </Button>
+              
+              <Button 
+                variant="outline"
+                size="lg"
+                className="w-full border-primary/20 text-primary hover:bg-primary/5"
+              >
+                <Heart className="ml-2 h-5 w-5" /> أضف للمفضلة
               </Button>
             </div>
           </div>

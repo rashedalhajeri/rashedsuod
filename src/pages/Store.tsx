@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Search, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -108,23 +108,24 @@ const Store = () => {
       <StoreNavbar storeName={storeData?.store_name} logoUrl={storeData?.logo_url} />
       
       <main className="flex-grow">
-        {/* Hero Banner */}
-        <div className="bg-gradient-to-r from-primary-50 to-primary-100 py-16 px-4">
-          <div className="container mx-auto">
+        {/* Hero Banner - تحسين مظهر البانر */}
+        <div className="bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 py-20 px-4 relative overflow-hidden">
+          <div className="absolute inset-0 opacity-20 bg-pattern"></div>
+          <div className="container mx-auto relative z-10">
             <div className="max-w-3xl mx-auto text-center">
-              <h1 className="text-4xl font-bold mb-4 text-gray-900">{storeData?.store_name}</h1>
-              <p className="text-xl text-gray-600 mb-8">
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 animate-fade-in">{storeData?.store_name}</h1>
+              <p className="text-xl text-gray-700 mb-8 animate-enter">
                 {storeData?.description || `متجر ${storeData?.store_name} الإلكتروني، نوفر لكم أفضل المنتجات`}
               </p>
               
               {/* Search Bar */}
-              <div className="relative max-w-xl mx-auto mt-8">
+              <div className="relative max-w-xl mx-auto mt-8 glass-effect rounded-full">
                 <Input
                   type="search"
                   placeholder="ابحث عن منتجات..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pr-12 pl-4 py-3 rounded-full border-gray-300 shadow-sm focus:ring-primary-500 focus:border-primary-500 text-base"
+                  className="pr-12 pl-4 py-6 rounded-full border-gray-200 shadow-sm focus:ring-primary-500 focus:border-primary-500 text-base bg-white/70 backdrop-blur-sm"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-4">
                   <Search className="h-5 w-5 text-gray-400" />
@@ -134,15 +135,15 @@ const Store = () => {
           </div>
         </div>
         
-        {/* Category Quick Links */}
-        <div className="bg-white py-8 border-b">
+        {/* Category Quick Links - تحسين فئات المنتجات */}
+        <div className="bg-white py-8 border-b sticky top-16 z-20 shadow-sm">
           <div className="container mx-auto px-4 overflow-x-auto">
-            <div className="flex gap-4 justify-center">
-              <Button variant="outline" className="rounded-full">جميع المنتجات</Button>
-              <Button variant="outline" className="rounded-full">الأكثر مبيعاً</Button>
-              <Button variant="outline" className="rounded-full">العروض</Button>
-              <Button variant="outline" className="rounded-full">الجديد</Button>
-              <Button variant="outline" className="rounded-full">الأكسسوارات</Button>
+            <div className="flex gap-4 justify-center flex-wrap md:flex-nowrap">
+              <Button variant="outline" className="rounded-full bg-white hover:bg-primary/10 hover:text-primary transition-all">جميع المنتجات</Button>
+              <Button variant="outline" className="rounded-full bg-white hover:bg-primary/10 hover:text-primary transition-all">الأكثر مبيعاً</Button>
+              <Button variant="outline" className="rounded-full bg-white hover:bg-primary/10 hover:text-primary transition-all">العروض</Button>
+              <Button variant="outline" className="rounded-full bg-white hover:bg-primary/10 hover:text-primary transition-all">الجديد</Button>
+              <Button variant="outline" className="rounded-full bg-white hover:bg-primary/10 hover:text-primary transition-all">الأكسسوارات</Button>
             </div>
           </div>
         </div>
@@ -152,8 +153,8 @@ const Store = () => {
           <section className="py-12 bg-white">
             <div className="container mx-auto px-4">
               <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-bold text-gray-900">منتجات مميزة</h2>
-                <Button variant="ghost" className="text-primary">عرض الكل</Button>
+                <h2 className="text-2xl font-bold text-gray-900 relative pb-2 before:absolute before:bottom-0 before:right-0 before:w-12 before:h-1 before:bg-primary">منتجات مميزة</h2>
+                <Button variant="ghost" className="text-primary hover:bg-primary/5">عرض الكل</Button>
               </div>
               
               <ProductGrid products={featuredProducts} />
@@ -166,8 +167,8 @@ const Store = () => {
           <section className="py-12 bg-gray-50">
             <div className="container mx-auto px-4">
               <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-bold text-gray-900">الأكثر مبيعاً</h2>
-                <Button variant="ghost" className="text-primary">عرض الكل</Button>
+                <h2 className="text-2xl font-bold text-gray-900 relative pb-2 before:absolute before:bottom-0 before:right-0 before:w-12 before:h-1 before:bg-primary">الأكثر مبيعاً</h2>
+                <Button variant="ghost" className="text-primary hover:bg-primary/5">عرض الكل</Button>
               </div>
               
               <ProductGrid products={bestSellingProducts} />
@@ -179,7 +180,7 @@ const Store = () => {
         <section className="py-12 bg-white">
           <div className="container mx-auto px-4">
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-900">جميع المنتجات</h2>
+              <h2 className="text-2xl font-bold text-gray-900 relative pb-2 before:absolute before:bottom-0 before:right-0 before:w-12 before:h-1 before:bg-primary">جميع المنتجات</h2>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-500">
                   {filteredProducts.length} منتج

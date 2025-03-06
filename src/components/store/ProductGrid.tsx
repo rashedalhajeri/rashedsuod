@@ -50,14 +50,26 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
         <Card key={product.id} className="group overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-100">
           <Link to={`/store/${storeDomain}/product/${product.id}`}>
             <div className="aspect-square overflow-hidden bg-gray-50 relative">
-              <img 
-                src={product.image_url || "/placeholder.svg"} 
-                alt={product.name}
-                className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = "/placeholder.svg";
-                }}
-              />
+              {/* تحسين عرض الصور مع fallback آمن */}
+              <div className="w-full h-full flex items-center justify-center bg-gray-100 animate-pulse">
+                <img 
+                  src={product.image_url || "/placeholder.svg"} 
+                  alt={product.name}
+                  className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).onerror = null; // منع تكرار الخطأ
+                    (e.target as HTMLImageElement).src = "/placeholder.svg";
+                  }}
+                  onLoad={(e) => {
+                    // عند تحميل الصورة بنجاح، نزيل تأثير النبض
+                    const parent = (e.target as HTMLImageElement).parentElement;
+                    if (parent) {
+                      parent.classList.remove('animate-pulse', 'bg-gray-100');
+                    }
+                  }}
+                  loading="lazy"
+                />
+              </div>
               {product.stock_quantity === 0 && (
                 <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
                   <Badge variant="destructive" className="text-sm px-3 py-1">نفدت الكمية</Badge>
