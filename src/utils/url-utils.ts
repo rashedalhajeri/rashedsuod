@@ -1,3 +1,4 @@
+
 /**
  * Utility functions for handling store URLs with subdomains
  */
@@ -189,7 +190,7 @@ export const getStoreFromUrl = async (storeId: string, supabase: any) => {
     return { 
       data: null, 
       error: { 
-        message: `لم يتم العثور على المتجر "${cleanId}". تأكد من كتابة اسم المتجر بشكل صحيح.`
+        message: `المتجر "${cleanId}" غير موجود. تأكد من كتابة اسم المتجر بشكل صحيح.`
       } 
     };
     

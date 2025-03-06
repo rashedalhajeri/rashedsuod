@@ -72,10 +72,6 @@ const ProductDetail = () => {
             <Link to="/dashboard">الذهاب إلى لوحة التحكم</Link>
           </Button>
         </div>
-        
-        <div className="mt-8 text-sm text-gray-500 max-w-md text-center">
-          <p>إذا كنت تبحث عن متجرك الخاص، يرجى تسجيل الدخول أولاً ثم الذهاب إلى لوحة التحكم.</p>
-        </div>
       </div>
     );
   }
