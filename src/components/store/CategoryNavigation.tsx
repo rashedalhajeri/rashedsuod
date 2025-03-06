@@ -49,7 +49,7 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
           return;
         }
         
-        // Fetch categories with product counts and actual products
+        // Fetch categories with actual products (not just counts)
         const { data, error } = await supabase
           .from('categories')
           .select(`

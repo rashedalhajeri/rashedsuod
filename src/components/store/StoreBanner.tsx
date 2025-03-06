@@ -22,6 +22,11 @@ const StoreBanner: React.FC<StoreBannerProps> = ({
 }) => {
   const isMobile = useIsMobile();
   
+  // Return null if no proper banner content exists
+  if (!storeName && !storeDescription) {
+    return null;
+  }
+  
   return (
     <div className="relative bg-gradient-to-l from-gray-900 to-gray-800 py-6 px-4 sm:px-5 rounded-xl shadow-md mt-4 mb-6 overflow-hidden border border-gray-700 w-full">
       {/* Fondo con imagen de electrónica */}

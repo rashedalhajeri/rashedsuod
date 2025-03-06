@@ -49,19 +49,19 @@ export const useCategoryData = (categoryName?: string, searchQuery: string = "")
         setIsLoadingProducts(true);
         
         try {
-          // Fetch categories with product counts
+          // Fetch categories with actual products, not just counts
           const { data: categoriesData } = await supabase
             .from('categories')
             .select(`
               id,
               name,
-              products:products(count)
+              products:products(id)
             `)
             .eq('store_id', storeData.id)
             .order('sort_order');
             
           if (categoriesData) {
-            // Filter out categories with no products - explicitly check for product count > 0
+            // Filter out categories with no products - check products array length
             const categoriesWithProducts = categoriesData
               .filter(cat => cat.products.length > 0)
               .map(cat => cat.name);
