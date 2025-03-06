@@ -1,65 +1,59 @@
 
 import React from "react";
+import { Plus, Minus, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Minus, Plus, ShoppingCart, Heart } from "lucide-react";
 
 interface ProductActionsProps {
   quantity: number;
   onQuantityChange: (type: 'increase' | 'decrease') => void;
   onAddToCart: () => void;
-  isOutOfStock: boolean;
+  isOutOfStock?: boolean;
 }
 
 const ProductActions: React.FC<ProductActionsProps> = ({
   quantity,
   onQuantityChange,
   onAddToCart,
-  isOutOfStock
+  isOutOfStock = false
 }) => {
   return (
-    <div className="flex flex-col space-y-4">
-      <div className="flex items-center">
-        <span className="ml-4 font-medium">الكمية:</span>
-        <div className="flex items-center border rounded-md">
-          <Button 
-            type="button" 
-            variant="ghost" 
-            size="icon"
+    <div className="space-y-4">
+      {/* Quantity selector */}
+      <div className="flex items-center justify-between">
+        <span className="text-gray-700 font-medium">الكمية</span>
+        <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
+          <button
             onClick={() => onQuantityChange('decrease')}
-            disabled={quantity <= 1}
-            className="hover:bg-primary/10 hover:text-primary transition-colors"
+            disabled={quantity <= 1 || isOutOfStock}
+            className="px-3 py-2 bg-gray-50 text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+            aria-label="تقليل الكمية"
           >
             <Minus className="h-4 w-4" />
-          </Button>
+          </button>
+          
           <span className="w-12 text-center font-medium">{quantity}</span>
-          <Button 
-            type="button" 
-            variant="ghost" 
-            size="icon"
+          
+          <button
             onClick={() => onQuantityChange('increase')}
             disabled={isOutOfStock}
-            className="hover:bg-primary/10 hover:text-primary transition-colors"
+            className="px-3 py-2 bg-gray-50 text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+            aria-label="زيادة الكمية"
           >
             <Plus className="h-4 w-4" />
-          </Button>
+          </button>
         </div>
       </div>
       
-      <Button 
-        onClick={onAddToCart} 
-        size="lg" 
-        className="w-full gap-2"
+      {/* Add to cart button */}
+      <Button
+        onClick={onAddToCart}
         disabled={isOutOfStock}
-      >
-        <ShoppingCart className="ml-2 h-5 w-5" /> إضافة إلى السلة
-      </Button>
-      
-      <Button 
-        variant="outline"
+        variant="default"
         size="lg"
-        className="w-full border-primary/20 text-primary hover:bg-primary/5"
+        className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl h-12"
       >
-        <Heart className="ml-2 h-5 w-5" /> أضف للمفضلة
+        <ShoppingCart className="h-5 w-5 ml-2" />
+        {isOutOfStock ? 'نفدت الكمية' : 'إضافة إلى السلة'}
       </Button>
     </div>
   );

@@ -5,15 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/use-cart";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
-import StoreNavbar from "@/components/store/StoreNavbar";
-import StoreFooter from "@/components/store/StoreFooter";
 import { toast } from "sonner";
+import { ArrowLeft, ShoppingCart, Share } from "lucide-react";
+import { Link } from "react-router-dom";
 
 // Import refactored components
 import ProductImage from "@/components/product/ProductImage";
 import ProductInfo from "@/components/product/ProductInfo";
 import ProductActions from "@/components/product/ProductActions";
-import ProductBreadcrumb from "@/components/product/ProductBreadcrumb";
 
 const ProductPage = () => {
   const { productId, storeDomain } = useParams<{ productId: string; storeDomain: string }>();
@@ -104,8 +103,8 @@ const ProductPage = () => {
   // تنسيق العملة
   const formatCurrency = (price: number) => {
     return new Intl.NumberFormat('ar-SA', {
-      style: 'currency',
-      currency: storeData?.currency || 'KWD'
+      minimumFractionDigits: 3,
+      maximumFractionDigits: 3
     }).format(price);
   };
   
@@ -119,38 +118,79 @@ const ProductPage = () => {
   
   return (
     <div className="min-h-screen flex flex-col" dir="rtl">
-      <StoreNavbar storeName={storeData?.store_name} logoUrl={storeData?.logo_url} />
+      {/* Header with gradient background */}
+      <header className="bg-gradient-to-r from-blue-700 to-cyan-500 text-white p-4 relative">
+        <div className="container mx-auto flex justify-between items-center">
+          <Link to={`/store/${storeDomain}`} className="text-white">
+            <ArrowLeft className="h-6 w-6" />
+          </Link>
+          <h1 className="text-xl font-bold text-center">تفاصيل المنتج</h1>
+          <Link to={`/store/${storeDomain}/cart`} className="text-white">
+            <ShoppingCart className="h-6 w-6" />
+          </Link>
+        </div>
+      </header>
       
-      <main className="flex-grow container mx-auto py-8 px-4">
-        <ProductBreadcrumb storeDomain={storeDomain || ''} />
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <main className="flex-grow bg-gray-50">
+        {/* Product Card */}
+        <div className="bg-white rounded-3xl shadow-sm mx-4 -mt-4 overflow-hidden">
           {/* Product Image */}
           <ProductImage 
             imageUrl={product.image_url} 
             name={product.name}
             discount_percentage={product.discount_percentage}
             is_new={product.is_new}
+            storeLogo={storeData?.logo_url}
+            storeName={storeData?.store_name}
           />
           
           {/* Product Info */}
-          <div className="space-y-6">
-            <ProductInfo 
-              product={product} 
-              formatCurrency={formatCurrency} 
-            />
+          <ProductInfo 
+            product={product} 
+            formatCurrency={formatCurrency} 
+            storeData={storeData}
+          />
+        </div>
+        
+        {/* Product Overview Section */}
+        <div className="mt-4 mx-4 bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="border-b border-gray-100">
+            <h2 className="text-xl font-bold p-4">نظرة عامة</h2>
+          </div>
+          <div className="p-4">
+            <h3 className="font-medium mb-2">وصف المنتج</h3>
+            <p className="text-gray-700">
+              {product.description || "لا يوجد وصف متاح لهذا المنتج"}
+            </p>
             
-            <ProductActions 
-              quantity={quantity}
-              onQuantityChange={handleQuantityChange}
-              onAddToCart={handleAddToCart}
-              isOutOfStock={product.stock_quantity === 0}
-            />
+            {/* Additional product details bullets */}
+            {product.highlights && product.highlights.length > 0 && (
+              <div className="mt-4">
+                <ul className="space-y-2">
+                  {product.highlights.map((highlight: string, index: number) => (
+                    <li key={index} className="text-gray-700">
+                      {highlight}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
+        
+        {/* Fixed bottom bar for add to cart */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 flex justify-between items-center">
+          <div className="text-2xl font-bold text-gray-800">
+            {formatCurrency(product.price)} <span className="text-sm font-normal">KWD</span>
+          </div>
+          <button 
+            onClick={handleAddToCart}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          >
+            إضافة للسلة
+          </button>
+        </div>
       </main>
-      
-      <StoreFooter storeName={storeData?.store_name} />
     </div>
   );
 };

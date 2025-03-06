@@ -1,7 +1,6 @@
 
 import React, { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Share } from "lucide-react";
 import { Heart } from "lucide-react";
 
 interface ProductImageProps {
@@ -9,29 +8,35 @@ interface ProductImageProps {
   name: string;
   discount_percentage?: number;
   is_new?: boolean;
+  storeLogo?: string | null;
+  storeName?: string | null;
 }
 
 const ProductImage: React.FC<ProductImageProps> = ({
   imageUrl,
   name,
   discount_percentage,
-  is_new
+  is_new,
+  storeLogo,
+  storeName
 }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  // Placeholder for a gallery of images
+  const images = [imageUrl];
   
   return (
-    <div className="bg-white rounded-lg overflow-hidden border shadow-sm hover:shadow-md transition-all">
-      <div className="relative aspect-square bg-gray-100 animate-pulse flex items-center justify-center">
+    <div className="relative">
+      <div className="aspect-w-16 aspect-h-9 bg-gray-100">
         <img 
           src={imageUrl || "/placeholder.svg"} 
           alt={name}
           className={`w-full h-full object-contain ${imageLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
+          onLoad={() => setImageLoaded(true)}
           onError={(e) => {
             (e.target as HTMLImageElement).onerror = null;
             (e.target as HTMLImageElement).src = "/placeholder.svg";
-            setImageLoaded(true);
-          }}
-          onLoad={() => {
             setImageLoaded(true);
           }}
         />
@@ -40,22 +45,49 @@ const ProductImage: React.FC<ProductImageProps> = ({
             <span className="loading loading-spinner loading-lg text-primary"></span>
           </div>
         )}
-        {/* Badges & Actions */}
-        <div className="absolute top-2 left-2 flex flex-col gap-2">
-          {discount_percentage && discount_percentage > 0 && (
-            <Badge className="bg-red-500 text-white">خصم {discount_percentage}%</Badge>
-          )}
-          {is_new && (
-            <Badge className="bg-green-500 text-white">جديد</Badge>
-          )}
+      </div>
+      
+      {/* Image pagination indicators */}
+      <div className="flex justify-center -mt-6 relative z-10">
+        <div className="flex gap-1 bg-white/20 backdrop-blur-sm rounded-full px-2 py-1">
+          {[0, 1, 2].map((index) => (
+            <div 
+              key={index}
+              className={`w-2 h-2 rounded-full ${index === currentImageIndex ? 'bg-white' : 'bg-white/50'}`}
+              onClick={() => setCurrentImageIndex(index)}
+            />
+          ))}
         </div>
-        <Button 
-          variant="outline" 
-          size="icon" 
-          className="absolute top-2 right-2 h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm hover:bg-primary/10 hover:text-primary"
-        >
-          <Heart className="h-4 w-4" />
-        </Button>
+      </div>
+      
+      {/* Actions row */}
+      <div className="flex justify-between items-center p-4">
+        <div className="flex space-x-4 space-x-reverse">
+          <button className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-blue-500">
+            <Share className="h-5 w-5" />
+          </button>
+          <button className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+            <Heart className="h-5 w-5" />
+          </button>
+        </div>
+        
+        {/* Store logo and name */}
+        <div className="flex items-center">
+          <span className="text-gray-700 ml-2 font-medium">{storeName || 'المتجر'}</span>
+          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-teal-500 bg-white flex items-center justify-center">
+            {storeLogo ? (
+              <img 
+                src={storeLogo} 
+                alt={storeName || 'المتجر'} 
+                className="w-10 h-10 object-contain" 
+              />
+            ) : (
+              <div className="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center text-white font-bold">
+                {(storeName || 'م').charAt(0)}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
