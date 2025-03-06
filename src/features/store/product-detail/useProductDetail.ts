@@ -1,71 +1,101 @@
 
-import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { getProductById } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { getCurrencyFormatter } from "@/hooks/use-store-data";
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
-export const useProductDetail = () => {
-  const { storeId, productId } = useParams<{ storeId: string; productId: string }>();
+export const useProductDetail = (productId: string, storeData: any) => {
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   
-  const formatCurrency = getCurrencyFormatter("SAR");
-
-  useEffect(() => {
-    const fetchProduct = async () => {
-      if (!productId) {
-        setError("معرف المنتج غير متوفر");
+  const fetchProduct = async () => {
+    if (!productId || !storeData?.id) {
+      setError("معلومات المنتج أو المتجر غير متوفرة");
+      setLoading(false);
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', productId)
+        .eq('store_id', storeData.id)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching product:', error);
+        setError("حدث خطأ في جلب بيانات المنتج");
         setLoading(false);
         return;
       }
-
-      try {
-        const { data, error } = await getProductById(productId);
-
-        if (error) throw error;
-        if (!data) {
-          setError("المنتج غير موجود");
-          return;
-        }
-
-        setProduct(data);
-      } catch (err) {
-        console.error("Error fetching product:", err);
-        setError("حدث خطأ أثناء تحميل المنتج");
-      } finally {
+      
+      if (!data) {
+        setError("لم يتم العثور على المنتج");
         setLoading(false);
+        return;
       }
-    };
-
-    fetchProduct();
-  }, [productId]);
-
-  const handleQuantityChange = (value: number) => {
-    const newQuantity = Math.max(1, Math.min(product?.stock_quantity || 10, value));
-    setQuantity(newQuantity);
+      
+      setProduct(data);
+    } catch (err) {
+      console.error('Error in fetchProduct:', err);
+      setError("حدث خطأ غير متوقع");
+    } finally {
+      setLoading(false);
+    }
   };
-
+  
+  useEffect(() => {
+    if (productId && storeData) {
+      fetchProduct();
+    }
+  }, [productId, storeData]);
+  
+  const formatCurrency = (price: number) => {
+    return new Intl.NumberFormat('ar-EG', {
+      style: 'currency',
+      currency: storeData?.currency || 'KWD'
+    }).format(price);
+  };
+  
+  const handleQuantityChange = (newQuantity: number) => {
+    setQuantity(Math.max(1, newQuantity));
+  };
+  
   const handleAddToCart = () => {
-    toast.success("تمت إضافة المنتج إلى سلة التسوق");
+    if (!product) return;
+    
+    try {
+      // Here would be the cart implementation
+      // For now we just show a toast message
+      toast.success(`تمت إضافة ${product.name} إلى سلة التسوق`);
+    } catch (err) {
+      console.error('Error adding to cart:', err);
+      toast.error('حدث خطأ أثناء إضافة المنتج إلى السلة');
+    }
   };
-
+  
   const getAllImages = () => {
     if (!product) return [];
     
     const images = [];
-    if (product.image_url) images.push(product.image_url);
+    
+    if (product.image_url) {
+      images.push(product.image_url);
+    }
+    
     if (product.additional_images && Array.isArray(product.additional_images)) {
       images.push(...product.additional_images);
     }
     
     return images;
   };
-
+  
   return {
-    storeId,
     product,
     loading,
     error,
@@ -73,6 +103,7 @@ export const useProductDetail = () => {
     formatCurrency,
     handleQuantityChange,
     handleAddToCart,
-    getAllImages
+    getAllImages,
+    refetch: fetchProduct
   };
 };
