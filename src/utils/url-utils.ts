@@ -1,3 +1,4 @@
+
 /**
  * Utility functions for handling store URLs with subdomains
  */
@@ -150,8 +151,23 @@ export const getStoreFromUrl = async (storeId: string, supabase: any) => {
       return { data: null, error: { message: "معرف المتجر غير صالح" } };
     }
     
-    // Try to find the store with domain name (case insensitive)
-    console.log('Searching for store with domain name:', cleanId);
+    // First try to find the store with exact ID match (most reliable)
+    console.log('Searching for store with ID:', cleanId);
+    const { data: idResult, error: idError } = await supabase
+      .from("stores")
+      .select("*")
+      .eq("id", cleanId)
+      .single();
+      
+    console.log('ID search result:', idResult, idError);
+    
+    if (idResult) {
+      console.log('Store found by ID:', idResult);
+      return { data: idResult, error: null };
+    }
+    
+    // If ID search failed, try exact domain name match (case insensitive)
+    console.log('ID search failed, trying domain name:', cleanId);
     const { data: domainResult, error: domainError } = await supabase
       .from("stores")
       .select("*")
@@ -161,26 +177,11 @@ export const getStoreFromUrl = async (storeId: string, supabase: any) => {
     console.log('Domain search result:', domainResult, domainError);
     
     if (domainResult) {
+      console.log('Store found by domain name:', domainResult);
       return { data: domainResult, error: null };
     }
     
-    // If domain search fails or returns no results, try as UUID if it looks like a UUID
-    console.log('Domain search failed, trying as UUID');
-    if (cleanId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-      const { data: idResult, error: idError } = await supabase
-        .from("stores")
-        .select("*")
-        .eq("id", cleanId)
-        .single();
-        
-      console.log('ID search result:', idResult, idError);
-      
-      if (idResult) {
-        return { data: idResult, error: null };
-      }
-    }
-    
-    // If all direct lookups fail, try doing a more general search
+    // If both direct lookups fail, try a more general search
     console.log('Both lookups failed, doing a general search');
     const { data: allStores, error: storesError } = await supabase
       .from("stores")
@@ -203,6 +204,9 @@ export const getStoreFromUrl = async (storeId: string, supabase: any) => {
       console.log('Found store with partial domain match:', matchingStore);
       return { data: matchingStore, error: null };
     }
+    
+    // Log all stores to help with debugging
+    console.log('Available stores:', allStores);
     
     // If we've tried everything and still no result, return proper error
     return { 

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -120,8 +121,10 @@ const CreateStore: React.FC = () => {
 
       if (error) throw error;
 
+      console.log("Store created successfully:", data);
       toast.success("تم إنشاء المتجر بنجاح، جاري تحويلك للوحة التحكم");
       
+      // Always redirect to dashboard after creating store
       setTimeout(() => {
         navigate("/dashboard");
       }, 1500);
