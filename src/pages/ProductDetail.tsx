@@ -12,8 +12,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import SaveButton from "@/components/ui/save-button";
 import ImageUploadGrid from "@/components/ui/image-upload-grid";
+import { fetchCategories } from "@/services/category-service";
 
 const ProductDetail: React.FC = () => {
   const { productId } = useParams<{ productId: string }>();
@@ -28,8 +30,10 @@ const ProductDetail: React.FC = () => {
     description: "",
     price: 0,
     stock_quantity: 0,
-    images: [] as string[]
+    images: [] as string[],
+    category_id: "" as string | null
   });
+  const [categories, setCategories] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchProductData = async () => {
@@ -57,8 +61,14 @@ const ProductDetail: React.FC = () => {
           description: data.description || "",
           price: data.price || 0,
           stock_quantity: data.stock_quantity || 0,
-          images: allImages
+          images: allImages,
+          category_id: data.category_id || null
         });
+
+        if (storeData?.id) {
+          const { data: categoriesData } = await fetchCategories(storeData.id);
+          setCategories(categoriesData);
+        }
       } catch (err) {
         console.error("Error fetching product:", err);
         setError("حدث خطأ أثناء تحميل بيانات المنتج");
@@ -68,7 +78,7 @@ const ProductDetail: React.FC = () => {
     };
     
     fetchProductData();
-  }, [productId]);
+  }, [productId, storeData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -85,6 +95,13 @@ const ProductDetail: React.FC = () => {
     setFormData(prev => ({
       ...prev,
       images
+    }));
+  };
+
+  const handleCategoryChange = (categoryId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      category_id: categoryId
     }));
   };
 
@@ -229,6 +246,26 @@ const ProductDetail: React.FC = () => {
                     onChange={handleChange}
                   />
                 </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="category">الفئة</Label>
+                <Select 
+                  value={formData.category_id || ""} 
+                  onValueChange={handleCategoryChange}
+                >
+                  <SelectTrigger id="category">
+                    <SelectValue placeholder="اختر الفئة" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">بدون فئة</SelectItem>
+                    {categories.map(category => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>

@@ -35,7 +35,7 @@ const SidebarLinks: React.FC<SidebarLinksProps> = ({
     {
       path: "/dashboard/categories",
       icon: <Tags size={20} />,
-      label: "التصنيفات"
+      label: "الفئات والأقسام"
     },
     {
       path: "/dashboard/customers",
