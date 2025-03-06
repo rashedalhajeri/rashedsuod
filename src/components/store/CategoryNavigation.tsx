@@ -12,7 +12,7 @@ interface CategoryNavigationProps {
 const CategoryNavigation: React.FC<CategoryNavigationProps> = ({
   activeCategory,
   onCategoryChange,
-  categories = ["جميع المنتجات", "الأكثر مبيعاً", "العروض", "الجديد", "الأكسسوارات"]
+  categories = ["جميع المنتجات"]
 }) => {
   const [isFixed, setIsFixed] = useState(false);
 

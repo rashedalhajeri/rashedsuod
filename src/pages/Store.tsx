@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +16,7 @@ const Store = () => {
   const { storeDomain } = useParams<{ storeDomain: string }>();
   const [storeData, setStoreData] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<string[]>(["جميع المنتجات"]);
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
   const [bestSellingProducts, setBestSellingProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,6 +43,27 @@ const Store = () => {
         }
         
         setStoreData(store);
+
+        // Fetch store categories
+        const { data: storeCategories, error: categoriesError } = await supabase
+          .from('categories')
+          .select('name')
+          .eq('store_id', store.id)
+          .order('sort_order', { ascending: true });
+        
+        if (categoriesError) throw categoriesError;
+        
+        // Add default categories and any stored categories
+        const defaultCategories = ["جميع المنتجات", "الأكثر مبيعاً", "العروض", "الجديد"];
+        const dbCategories = storeCategories?.map(cat => cat.name) || [];
+        
+        // Combine default categories with database categories (avoiding duplicates)
+        const combinedCategories = [
+          ...defaultCategories,
+          ...dbCategories.filter(cat => !defaultCategories.includes(cat))
+        ];
+        
+        setCategories(combinedCategories);
 
         // Get products from this store
         const { data: storeProducts, error: productsError } = await supabase
@@ -114,7 +137,7 @@ const Store = () => {
     if (activeCategory === "الجديد") 
       return filteredProducts.slice(0, 8); // Most recent products
     
-    // Category filter (would use actual categories from database in production)
+    // Custom category filter - filter by category name (future enhancement)
     return filteredProducts;
   };
 
@@ -140,14 +163,14 @@ const Store = () => {
           searchQuery={searchQuery}
           onSearchChange={handleSearchChange}
           logoUrl={storeData?.logo_url}
-          bannerUrl={storeData?.banner_url} // Pass banner URL to component
+          bannerUrl={storeData?.banner_url}
         />
         
         {/* Category Quick Links */}
         <CategoryNavigation 
           activeCategory={activeCategory}
           onCategoryChange={handleCategoryChange}
-          categories={["جميع المنتجات", "الأكثر مبيعاً", "العروض", "الجديد", "الأكسسوارات"]}
+          categories={categories}
         />
         
         {/* Featured Products Section */}
