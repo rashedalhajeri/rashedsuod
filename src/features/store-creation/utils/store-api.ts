@@ -28,7 +28,9 @@ export const createStore = async (formData: StoreFormData): Promise<boolean> => 
           phone_number: formData.phoneNumber,
           country: formData.country,
           currency: formData.currency,
-          description: formData.description
+          description: formData.description,
+          logo_url: formData.logoUrl,
+          banner_url: formData.bannerUrl
         }
       ])
       .select()
@@ -36,27 +38,13 @@ export const createStore = async (formData: StoreFormData): Promise<boolean> => 
 
     if (storeError) throw storeError;
 
-    // Create store settings
-    const { error: settingsError } = await supabase
-      .from('store_settings')
-      .insert([
-        {
-          store_id: storeData.id,
-          shipping_method: formData.shippingMethod,
-          free_shipping: formData.freeShipping,
-          free_shipping_min_order: formData.freeShippingMinOrder
-        }
-      ]);
-
-    if (settingsError) throw settingsError;
-
     // Create store theme settings
     const { error: themeError } = await supabase
       .from('store_theme_settings')
       .insert([
         {
           store_id: storeData.id,
-          theme_id: formData.storeTheme
+          theme_id: 'modern' // Default theme
         }
       ]);
 

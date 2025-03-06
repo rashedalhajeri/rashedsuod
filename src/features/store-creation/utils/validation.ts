@@ -24,12 +24,8 @@ export const validateStep = (step: number, formData: StoreFormData, domainAvaila
       return false;
     }
   } else if (step === 2) {
-    if (!formData.country) {
-      toast.error("الرجاء اختيار الدولة");
-      return false;
-    }
-    if (!formData.currency) {
-      toast.error("الرجاء اختيار العملة");
+    if (!formData.logoUrl) {
+      toast.error("الرجاء رفع شعار المتجر");
       return false;
     }
   } else if (step === 3) {

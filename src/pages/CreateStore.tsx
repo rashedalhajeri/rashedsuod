@@ -9,13 +9,15 @@ import { validateStep } from "@/features/store-creation/utils/validation";
 import { createStore } from "@/features/store-creation/utils/store-api";
 import StepIndicator from "@/features/store-creation/components/StepIndicator";
 import BasicInfoStep from "@/features/store-creation/components/BasicInfoStep";
-import StoreSettingsStep from "@/features/store-creation/components/StoreSettingsStep";
+import StoreMediaStep from "@/features/store-creation/components/StoreMediaStep";
 import ConfirmationStep from "@/features/store-creation/components/ConfirmationStep";
+import { v4 as uuidv4 } from 'uuid';
 
 const CreateStore: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [tempStoreId] = useState(() => uuidv4()); // Generate temporary ID for asset uploads
   const [formData, setFormData] = useState<StoreFormData>({
     storeName: "",
     domainName: "",
@@ -23,10 +25,8 @@ const CreateStore: React.FC = () => {
     country: "Kuwait",
     currency: "KWD",
     description: "",
-    shippingMethod: "store_delivery",
-    freeShipping: false,
-    freeShippingMinOrder: 0,
-    storeTheme: "modern",
+    logoUrl: null,
+    bannerUrl: null,
     acceptTerms: false
   });
   const [domainAvailable, setDomainAvailable] = useState<boolean | null>(null);
@@ -43,6 +43,14 @@ const CreateStore: React.FC = () => {
 
   // Handle select changes
   const handleSelectChange = (name: string, value: string) => {
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
+
+  // Handle media changes (logo/banner)
+  const handleMediaChange = (name: string, value: string | null) => {
     setFormData({
       ...formData,
       [name]: value
@@ -114,11 +122,10 @@ const CreateStore: React.FC = () => {
           )}
           
           {currentStep === 2 && (
-            <StoreSettingsStep 
+            <StoreMediaStep 
               formData={formData}
-              handleSelectChange={handleSelectChange}
-              handleSwitchChange={handleSwitchChange}
-              handleChange={handleChange}
+              handleMediaChange={handleMediaChange}
+              tempStoreId={tempStoreId}
             />
           )}
           

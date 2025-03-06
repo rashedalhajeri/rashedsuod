@@ -162,17 +162,18 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
             <Select
               value={formData.country}
               onValueChange={(value) => handleSelectChange("country", value)}
+              disabled
             >
               <SelectTrigger id="country">
                 <SelectValue placeholder="اختر الدولة" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Kuwait">الكويت</SelectItem>
-                <SelectItem value="Saudi Arabia">السعودية</SelectItem>
-                <SelectItem value="UAE">الإمارات</SelectItem>
-                <SelectItem value="Qatar">قطر</SelectItem>
-                <SelectItem value="Bahrain">البحرين</SelectItem>
-                <SelectItem value="Oman">عمان</SelectItem>
+                <SelectItem value="Saudi Arabia" disabled>السعودية (قريباً)</SelectItem>
+                <SelectItem value="UAE" disabled>الإمارات (قريباً)</SelectItem>
+                <SelectItem value="Qatar" disabled>قطر (قريباً)</SelectItem>
+                <SelectItem value="Bahrain" disabled>البحرين (قريباً)</SelectItem>
+                <SelectItem value="Oman" disabled>عمان (قريباً)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -182,17 +183,18 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
             <Select
               value={formData.currency}
               onValueChange={(value) => handleSelectChange("currency", value)}
+              disabled
             >
               <SelectTrigger id="currency">
                 <SelectValue placeholder="اختر العملة" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="KWD">دينار كويتي (KWD)</SelectItem>
-                <SelectItem value="SAR">ريال سعودي (SAR)</SelectItem>
-                <SelectItem value="AED">درهم إماراتي (AED)</SelectItem>
-                <SelectItem value="QAR">ريال قطري (QAR)</SelectItem>
-                <SelectItem value="BHD">دينار بحريني (BHD)</SelectItem>
-                <SelectItem value="OMR">ريال عماني (OMR)</SelectItem>
+                <SelectItem value="SAR" disabled>ريال سعودي (SAR) (قريباً)</SelectItem>
+                <SelectItem value="AED" disabled>درهم إماراتي (AED) (قريباً)</SelectItem>
+                <SelectItem value="QAR" disabled>ريال قطري (QAR) (قريباً)</SelectItem>
+                <SelectItem value="BHD" disabled>دينار بحريني (BHD) (قريباً)</SelectItem>
+                <SelectItem value="OMR" disabled>ريال عماني (OMR) (قريباً)</SelectItem>
               </SelectContent>
             </Select>
           </div>

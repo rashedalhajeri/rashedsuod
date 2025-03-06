@@ -6,9 +6,7 @@ export interface StoreFormData {
   country: string;
   currency: string;
   description: string;
-  shippingMethod: string;
-  freeShipping: boolean;
-  freeShippingMinOrder: number;
-  storeTheme: string;
+  logoUrl: string | null;
+  bannerUrl: string | null;
   acceptTerms: boolean;
 }
