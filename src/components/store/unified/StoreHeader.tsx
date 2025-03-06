@@ -50,20 +50,21 @@ const StoreHeader: React.FC<StoreHeaderProps> = ({
 
   return (
     <header className="relative w-full" dir="rtl">
-      <div className="bg-gradient-to-l from-blue-500 to-blue-600 pt-6 pb-10 px-3 sm:px-4 relative">
+      <div className="bg-gradient-to-br from-[#1A1F2C] to-[#403E43] pt-6 pb-10 px-3 sm:px-4 relative">
+        <div className="absolute inset-0 bg-[url('/public/lovable-uploads/40f2878b-2f08-4165-b6f3-ef717990c0e1.png')] bg-cover bg-center opacity-10"></div>
         <div className="absolute bottom-0 left-0 right-0 h-8 bg-gray-50" style={{ 
           borderTopLeftRadius: '2rem', 
           borderTopRightRadius: '2rem',
           transform: 'translateY(50%)'
         }}></div>
         
-        <div className="mx-auto max-w-7xl w-full">
+        <div className="mx-auto max-w-7xl w-full relative z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3 text-white">
               {showBackButton ? (
                 <Button 
                   variant="ghost" 
-                  className="h-10 w-10 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 flex items-center justify-center"
+                  className="h-10 w-10 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/30 flex items-center justify-center"
                   onClick={handleNavigateBack}
                 >
                   <ChevronRight className="h-5 w-5" />
@@ -73,7 +74,7 @@ const StoreHeader: React.FC<StoreHeaderProps> = ({
                   {logoUrl ? (
                     <AvatarImage src={logoUrl} alt={storeName} />
                   ) : (
-                    <AvatarFallback className="bg-gradient-to-br from-blue-400 to-blue-500 text-white text-lg sm:text-xl font-bold">
+                    <AvatarFallback className="bg-gradient-to-br from-gray-200 to-gray-300 text-gray-800 text-lg sm:text-xl font-bold">
                       {initials}
                     </AvatarFallback>
                   )}
@@ -128,7 +129,7 @@ const StoreHeader: React.FC<StoreHeaderProps> = ({
         {/* Background decoration */}
         <div className="absolute bottom-0 left-0 w-full overflow-hidden">
           <div className="absolute bottom-0 left-0 w-16 sm:w-24 h-16 sm:h-24 bg-white/5 rounded-full blur-xl -mb-8 -ml-8"></div>
-          <div className="absolute bottom-0 right-0 w-20 sm:w-32 h-20 sm:h-32 bg-blue-500/10 rounded-full blur-xl -mb-10 -mr-10"></div>
+          <div className="absolute bottom-0 right-0 w-20 sm:w-32 h-20 sm:h-32 bg-[#403E43]/10 rounded-full blur-xl -mb-10 -mr-10"></div>
         </div>
       </div>
     </header>

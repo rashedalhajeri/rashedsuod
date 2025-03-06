@@ -123,18 +123,18 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
   };
 
   return (
-    <div className="py-4 z-10 transition-all duration-300" dir="rtl">
-      <div className="grid grid-cols-3 gap-4 mx-auto">
+    <div className="py-3 z-10 transition-all duration-300" dir="rtl">
+      <div className="grid grid-cols-4 gap-2 mx-auto">
         {isLoading ? (
           // Placeholder for loading state
-          [...Array(3)].map((_, index) => (
+          [...Array(4)].map((_, index) => (
             <motion.div
               key={`loading-${index}`}
               className="flex-shrink-0"
             >
-              <div className="w-full h-full flex flex-col items-center bg-white rounded-xl p-4 shadow-sm border border-gray-100 animate-pulse">
-                <div className="w-full aspect-square mb-2 bg-gray-200 rounded-lg"></div>
-                <div className="h-4 w-24 bg-gray-200 rounded"></div>
+              <div className="w-full h-full flex flex-col items-center bg-white rounded-lg p-2 shadow-sm border border-gray-100 animate-pulse">
+                <div className="w-full aspect-square mb-1 bg-gray-200 rounded-lg"></div>
+                <div className="h-3 w-16 bg-gray-200 rounded"></div>
               </div>
             </motion.div>
           ))
@@ -155,20 +155,20 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
               >
                 <button
                   onClick={() => handleCategoryClick(category)}
-                  className={`w-full h-full flex flex-col items-center transition-all duration-300 bg-white rounded-xl p-4 shadow-sm ${
+                  className={`w-full h-full flex flex-col items-center transition-all duration-300 bg-white rounded-lg p-2 shadow-sm ${
                     isActive
                       ? 'border-2 border-blue-400'
                       : 'border border-gray-100'
                   }`}
                 >
-                  <div className="w-full aspect-square mb-2 flex items-center justify-center overflow-hidden rounded-lg bg-gray-50">
+                  <div className="w-full aspect-square mb-1 flex items-center justify-center overflow-hidden rounded-lg bg-gray-50">
                     <img 
                       src={imagePath}
                       alt={category} 
                       className="w-full h-full object-cover" 
                     />
                   </div>
-                  <span className={`text-sm font-medium ${
+                  <span className={`text-xs font-medium ${
                     isActive
                       ? 'text-blue-600'
                       : 'text-gray-800'
