@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +7,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { RefreshCw } from "lucide-react";
 import StorefrontLayout from "@/layouts/StorefrontLayout";
-import { getStoreFromUrl } from "@/utils/url-utils";
+import { getStoreFromUrl, getStoreUrl } from "@/utils/url-utils";
 import { toast } from "sonner";
 
 const StoreHome: React.FC = () => {
@@ -83,7 +82,6 @@ const StoreHome: React.FC = () => {
     fetchStoreData();
   }, [storeId, retryAttempt]);
 
-  // Retry loading function
   const handleRetry = () => {
     setRetryAttempt(prev => prev + 1);
   };
@@ -115,7 +113,7 @@ const StoreHome: React.FC = () => {
     );
   }
 
-  // Store URL for links
+  // Store URL for links - ensure we use relative paths for navigation within the store
   const baseUrl = `/store/${store.id}`;
 
   return (

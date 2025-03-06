@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -83,7 +82,6 @@ const StoreProducts: React.FC = () => {
     fetchProducts();
   }, [storeId, retryAttempt]);
 
-  // Retry loading function
   const handleRetry = () => {
     setRetryAttempt(prev => prev + 1);
   };
@@ -115,7 +113,6 @@ const StoreProducts: React.FC = () => {
     );
   }
 
-  // Store URL for links
   const baseUrl = `/store/${store.id}`;
 
   return (

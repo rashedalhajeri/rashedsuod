@@ -1,4 +1,3 @@
-
 import React, { ReactNode, useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { ShoppingCart, Search, User, Menu, X, Store as StoreIcon, AlertTriangle, RefreshCw } from "lucide-react";
@@ -7,7 +6,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import { getStoreUrl, getStoreFromUrl } from "@/utils/url-utils";
+import { getStoreUrl, getStoreFromUrl, shouldRedirectToStoreDomain } from "@/utils/url-utils";
 import { toast } from "sonner";
 
 interface StorefrontLayoutProps {
@@ -27,6 +26,19 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+
+  // Handle redirect to proper store domain
+  useEffect(() => {
+    if (storeData) {
+      const { shouldRedirect, targetUrl } = shouldRedirectToStoreDomain(storeData);
+      
+      if (shouldRedirect && targetUrl) {
+        console.log('Redirecting to proper store domain:', targetUrl);
+        // Use window.location for hard redirect to different domain
+        window.location.href = targetUrl;
+      }
+    }
+  }, [storeData]);
 
   // Fetch store data on mount or when retrying
   useEffect(() => {
@@ -94,7 +106,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  // Generate store URL for navigation
+  // Generate store URL for navigation - always using subdomain format in production
   const baseUrl = storeData ? `/store/${storeData.id}` : `/store/${storeId}`;
 
   // Menu items with proper URLs
@@ -184,7 +196,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
         
         <footer className="bg-white border-t py-6">
           <div className="container mx-auto px-4 text-center text-gray-500 text-sm">
-            &copy; {new Date().getFullYear()} - جميع الحقوق محفوظة
+            &copy; {new Date().getFullYear()} - جميع الحقوق مح��وظة
           </div>
         </footer>
       </div>

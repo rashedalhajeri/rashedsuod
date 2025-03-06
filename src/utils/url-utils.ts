@@ -1,4 +1,3 @@
-
 /**
  * Utility functions for handling store URLs with subdomains
  */
@@ -32,15 +31,13 @@ export const formatStoreUrl = (domainName: string): string => {
     return `https://${cleanDomain}`;
   }
   
-  // In development environment, format as a path instead of subdomain
+  // In development environment, keep the current url structure
   if (isDevelopment) {
-    // Use current origin for development
-    console.log('Creating development URL with path:', `${window.location.origin}/store/${cleanDomain}`);
+    // Use current path structure for development
     return `${window.location.origin}/store/${cleanDomain}`;
   }
   
   // In production, format as subdomain
-  console.log('Creating production URL with subdomain:', `https://${cleanDomain}.linok.me`);
   return `https://${cleanDomain}.linok.me`;
 };
 
@@ -68,13 +65,11 @@ export const getStoreUrl = (storeData: any): string => {
   if (storeData.id) {
     // In development, use path-based URL
     if (isDevelopment) {
-      console.log('Creating development URL with ID:', `${window.location.origin}/store/${storeData.id}`);
       return `${window.location.origin}/store/${storeData.id}`;
     }
     
-    // In production with no domain name yet, use full URL with path
-    console.log('Creating production URL with ID path:', `https://linok.me/store/${storeData.id}`);
-    return `https://linok.me/store/${storeData.id}`;
+    // In production with no domain name yet, use ID as subdomain
+    return `https://${storeData.id}.linok.me`;
   }
   
   return '';
@@ -89,6 +84,51 @@ export const isValidDomainName = (domainName: string): boolean => {
   // Only allow alphanumeric characters and hyphens, no spaces or special chars
   const domainRegex = /^[a-zA-Z0-9-]+$/;
   return domainRegex.test(domainName);
+};
+
+/**
+ * Determine if the current URL should be redirected to the proper store domain format
+ * @param storeData Store data object containing domain_name and id
+ * @returns Boolean indicating if redirect is needed, and the target URL if true
+ */
+export const shouldRedirectToStoreDomain = (storeData: any): { shouldRedirect: boolean; targetUrl: string } => {
+  if (!storeData) return { shouldRedirect: false, targetUrl: '' };
+  
+  const isDevelopment = window.location.hostname === 'localhost' || 
+                        window.location.hostname.includes('lovableproject.com') ||
+                        window.location.hostname.includes('lovable.app');
+  
+  // Don't redirect in development environment
+  if (isDevelopment) {
+    return { shouldRedirect: false, targetUrl: '' };
+  }
+  
+  const currentHostname = window.location.hostname;
+  
+  // Generate the expected hostname format
+  let expectedHostname = '';
+  if (storeData.domain_name) {
+    expectedHostname = `${storeData.domain_name}.linok.me`;
+  } else if (storeData.id) {
+    expectedHostname = `${storeData.id}.linok.me`;
+  }
+  
+  // If on linok.me domain but not on the right subdomain, should redirect
+  if (currentHostname.includes('linok.me') && 
+      currentHostname !== expectedHostname && 
+      expectedHostname) {
+    
+    const newUrl = `https://${expectedHostname}${window.location.pathname}${window.location.search}`;
+    return { shouldRedirect: true, targetUrl: newUrl };
+  }
+  
+  // If not on linok.me domain at all in production, should redirect
+  if (!currentHostname.includes('linok.me') && expectedHostname) {
+    const newUrl = `https://${expectedHostname}${window.location.pathname}${window.location.search}`;
+    return { shouldRedirect: true, targetUrl: newUrl };
+  }
+  
+  return { shouldRedirect: false, targetUrl: '' };
 };
 
 /**
@@ -110,50 +150,46 @@ export const getStoreFromUrl = async (storeId: string, supabase: any) => {
       return { data: null, error: { message: "معرف المتجر غير صالح" } };
     }
     
-    // Try both domain name and ID approaches in parallel for faster response
-    const domainPromise = supabase
+    // Try to find the store with domain name (case insensitive)
+    const { data: domainResult, error: domainError } = await supabase
       .from("stores")
       .select("*")
       .ilike("domain_name", cleanId)
       .maybeSingle();
       
-    // Only try UUID lookup if the cleanId looks like a UUID
-    let idPromise = { data: null, error: null };
+    console.log('Domain search result:', domainResult, domainError);
+    
+    if (domainResult) {
+      return { data: domainResult, error: null };
+    }
+    
+    // Try as UUID if it looks like a UUID
     if (cleanId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-      idPromise = supabase
+      const { data: idResult, error: idError } = await supabase
         .from("stores")
         .select("*")
         .eq("id", cleanId)
         .maybeSingle();
+        
+      console.log('ID search result:', idResult, idError);
+      
+      if (idResult) {
+        return { data: idResult, error: null };
+      }
     }
     
-    // Wait for both queries to complete
-    const [domainResult, idResult] = await Promise.all([domainPromise, idPromise]);
-    
-    console.log('Domain search result:', domainResult.data, domainResult.error);
-    console.log('ID search result:', idResult.data, idResult.error);
-    
-    // Use the first result that has data
-    if (domainResult.data) {
-      return domainResult;
-    }
-    
-    if (idResult.data) {
-      return idResult;
-    }
-    
-    // If neither query found a result, try exact domain match as final fallback
+    // Try exact domain match as final fallback
     console.log('Trying exact domain match as fallback');
-    const exactMatchResult = await supabase
+    const { data: exactMatchResult, error: exactMatchError } = await supabase
       .from("stores")
       .select("*")
       .eq("domain_name", cleanId)
       .maybeSingle();
       
-    console.log('Exact domain match result:', exactMatchResult.data, exactMatchResult.error);
+    console.log('Exact domain match result:', exactMatchResult, exactMatchError);
     
-    if (exactMatchResult.data) {
-      return exactMatchResult;
+    if (exactMatchResult) {
+      return { data: exactMatchResult, error: null };
     }
     
     // If we've tried everything and still no result, return proper error

@@ -65,7 +65,7 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
       });
   };
   
-  // Navigate to store
+  // Navigate to store - uses window.open to ensure proper domain navigation
   const visitStore = () => {
     if (!finalStoreUrl) {
       toast.error("لا يمكن الوصول إلى رابط المتجر");
