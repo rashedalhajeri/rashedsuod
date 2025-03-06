@@ -15,6 +15,7 @@ import { getCurrencyFormatter } from "@/hooks/use-store-data";
 import StoreHeader from "@/components/store/StoreHeader";
 import StoreFooter from "@/components/store/StoreFooter";
 import ProductGallery from "@/components/store/ProductGallery";
+import { ErrorState } from "@/components/ui/error-state";
 
 const StoreProductDetail: React.FC = () => {
   const { storeId, productId } = useParams();
@@ -22,19 +23,28 @@ const StoreProductDetail: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   
   // استعلام لجلب بيانات المتجر
-  const { data: storeData, isLoading: storeLoading } = useQuery({
+  const { data: storeData, isLoading: storeLoading, error: storeError, refetch: refetchStore } = useQuery({
     queryKey: ['store', storeId],
     queryFn: async () => {
       if (!storeId) throw new Error("معرف المتجر غير متوفر");
       const { data, error } = await getStoreFromUrl(storeId, supabase);
-      if (error) throw error;
+      
+      if (error) {
+        console.error("Store lookup error:", error);
+        throw new Error(error.message || "لم نتمكن من العثور على المتجر المطلوب");
+      }
+      
+      if (!data) {
+        throw new Error("لم نتمكن من العثور على المتجر المطلوب");
+      }
+      
       return data;
     },
     staleTime: 1000 * 60 * 5, // 5 دقائق
   });
   
   // استعلام لجلب بيانات المنتج
-  const { data: product, isLoading: productLoading } = useQuery({
+  const { data: product, isLoading: productLoading, error: productError } = useQuery({
     queryKey: ['product', productId],
     queryFn: async () => {
       if (!productId) throw new Error("معرف المنتج غير متوفر");
@@ -53,7 +63,7 @@ const StoreProductDetail: React.FC = () => {
   
   // استعلام لجلب منتجات مشابهة
   const { data: relatedProducts, isLoading: relatedLoading } = useQuery({
-    queryKey: ['relatedProducts', productId],
+    queryKey: ['relatedProducts', productId, storeData?.id],
     queryFn: async () => {
       if (!storeData?.id) return [];
       
@@ -67,7 +77,7 @@ const StoreProductDetail: React.FC = () => {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!storeData?.id,
+    enabled: !!storeData?.id && !!productId,
   });
   
   const formatCurrency = getCurrencyFormatter(storeData?.currency);
@@ -88,6 +98,57 @@ const StoreProductDetail: React.FC = () => {
     toast.success(`تم إضافة ${quantity} من ${product?.name} إلى السلة`);
     // TODO: إضافة المنتج للسلة
   };
+  
+  // عرض رسالة خطأ محسنة في حالة عدم العثور على المتجر
+  if (storeError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center flex-col p-4" dir="rtl">
+        <ErrorState 
+          title="خطأ في تحميل المتجر"
+          message={storeError.message || "لم نتمكن من العثور على المتجر المطلوب. تأكد من صحة الرابط المستخدم."}
+          onRetry={() => refetchStore()}
+        />
+        <div className="mt-4">
+          <Button asChild variant="outline">
+            <Link to="/">العودة للصفحة الرئيسية</Link>
+          </Button>
+        </div>
+        <div className="mt-8 text-sm text-gray-500 max-w-md text-center">
+          <p>للوصول إلى المتجر، استخدم أحد الروابط التالية:</p>
+          <ul className="mt-2 space-y-1">
+            <li><code className="bg-gray-100 px-2 py-1 rounded">/store/fhad</code> - للمتجر الأول</li>
+            <li><code className="bg-gray-100 px-2 py-1 rounded">/store/rashed</code> - للمتجر الثاني</li>
+            <li><code className="bg-gray-100 px-2 py-1 rounded">/store/Alhajeri</code> - للمتجر الثالث</li>
+          </ul>
+        </div>
+      </div>
+    );
+  }
+  
+  // عرض رسالة خطأ محسنة في حالة عدم العثور على المنتج
+  if (productError && !productLoading) {
+    return (
+      <div className="min-h-screen flex flex-col" dir="rtl">
+        <StoreHeader storeData={storeData} isLoading={storeLoading} />
+        
+        <main className="flex-1 py-8">
+          <div className="container mx-auto px-4">
+            <ErrorState 
+              title="خطأ في تحميل المنتج"
+              message="لم نتمكن من العثور على المنتج المطلوب. تأكد من صحة الرابط المستخدم."
+            />
+            <div className="mt-4 text-center">
+              <Button asChild variant="outline">
+                <Link to={`/store/${storeId}/products`}>عرض كل المنتجات</Link>
+              </Button>
+            </div>
+          </div>
+        </main>
+        
+        <StoreFooter storeData={storeData} />
+      </div>
+    );
+  }
   
   if (productLoading || !product) {
     return (

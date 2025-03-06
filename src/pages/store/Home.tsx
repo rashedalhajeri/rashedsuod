@@ -12,18 +12,28 @@ import { toast } from "sonner";
 import StoreHeader from "@/components/store/StoreHeader";
 import FeaturedProducts from "@/components/store/FeaturedProducts";
 import StoreFooter from "@/components/store/StoreFooter";
+import { ErrorState } from "@/components/ui/error-state";
 
 const StoreHome: React.FC = () => {
   const { storeId } = useParams();
   const [searchQuery, setSearchQuery] = useState("");
   
   // استعلام لجلب بيانات المتجر
-  const { data: storeData, isLoading: storeLoading, error: storeError } = useQuery({
+  const { data: storeData, isLoading: storeLoading, error: storeError, refetch: refetchStore } = useQuery({
     queryKey: ['store', storeId],
     queryFn: async () => {
       if (!storeId) throw new Error("معرف المتجر غير متوفر");
       const { data, error } = await getStoreFromUrl(storeId, supabase);
-      if (error) throw error;
+      
+      if (error) {
+        console.error("Store lookup error:", error);
+        throw new Error(error.message || "لم نتمكن من العثور على المتجر المطلوب");
+      }
+      
+      if (!data) {
+        throw new Error("لم نتمكن من العثور على المتجر المطلوب");
+      }
+      
       return data;
     },
     staleTime: 1000 * 60 * 5, // 5 دقائق
@@ -70,20 +80,6 @@ const StoreHome: React.FC = () => {
     staleTime: 1000 * 60 * 5, // 5 دقائق
   });
   
-  if (storeError) {
-    return (
-      <div className="min-h-screen flex items-center justify-center flex-col p-4" dir="rtl">
-        <div className="text-center space-y-3">
-          <h1 className="text-2xl font-bold text-red-600">خطأ في تحميل المتجر</h1>
-          <p className="text-gray-600">لم نتمكن من العثور على المتجر المطلوب</p>
-          <Button asChild variant="outline">
-            <Link to="/">العودة للصفحة الرئيسية</Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
-  
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -92,6 +88,32 @@ const StoreHome: React.FC = () => {
       window.location.href = `/store/${storeId}/products?search=${encodeURIComponent(searchQuery)}`;
     }
   };
+  
+  // عرض رسالة خطأ محسنة في حالة عدم العثور على المتجر
+  if (storeError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center flex-col p-4" dir="rtl">
+        <ErrorState 
+          title="خطأ في تحميل المتجر"
+          message={storeError.message || "لم نتمكن من العثور على المتجر المطلوب. تأكد من صحة الرابط المستخدم."}
+          onRetry={() => refetchStore()}
+        />
+        <div className="mt-4">
+          <Button asChild variant="outline">
+            <Link to="/">العودة للصفحة الرئيسية</Link>
+          </Button>
+        </div>
+        <div className="mt-8 text-sm text-gray-500 max-w-md text-center">
+          <p>للوصول إلى المتجر، استخدم أحد الروابط التالية:</p>
+          <ul className="mt-2 space-y-1">
+            <li><code className="bg-gray-100 px-2 py-1 rounded">/store/fhad</code> - للمتجر الأول</li>
+            <li><code className="bg-gray-100 px-2 py-1 rounded">/store/rashed</code> - للمتجر الثاني</li>
+            <li><code className="bg-gray-100 px-2 py-1 rounded">/store/Alhajeri</code> - للمتجر الثالث</li>
+          </ul>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen flex flex-col" dir="rtl">
