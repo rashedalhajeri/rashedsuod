@@ -23,6 +23,7 @@ import Customers from "@/pages/dashboard/Customers";
 import Payments from "@/pages/dashboard/Payments";
 import Coupons from "@/pages/dashboard/Coupons";
 import Settings from "@/pages/dashboard/Settings";
+import StoreDesign from "@/pages/dashboard/StoreDesign";
 
 const AppRoutes = () => {
   return (
@@ -114,6 +115,15 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Coupons />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/dashboard/store-design"
+        element={
+          <ProtectedRoute>
+            <StoreDesign />
           </ProtectedRoute>
         }
       />
