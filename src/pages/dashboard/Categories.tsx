@@ -35,6 +35,12 @@ const CategoriesAndSections: React.FC = () => {
     setNewSection,
     newSectionType,
     setNewSectionType,
+    newCategoryId,
+    setNewCategoryId,
+    newProductIds,
+    setNewProductIds,
+    newDisplayStyle,
+    setNewDisplayStyle,
     editingSection,
     setEditingSection,
     handleAddSection,
@@ -165,6 +171,12 @@ const CategoriesAndSections: React.FC = () => {
               setNewSection={setNewSection}
               newSectionType={newSectionType}
               setNewSectionType={setNewSectionType}
+              newCategoryId={newCategoryId}
+              setNewCategoryId={setNewCategoryId}
+              newProductIds={newProductIds}
+              setNewProductIds={setNewProductIds}
+              newDisplayStyle={newDisplayStyle}
+              setNewDisplayStyle={setNewDisplayStyle}
               handleAddSection={handleAddSection}
             />
           </TabsContent>

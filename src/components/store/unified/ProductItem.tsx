@@ -8,9 +8,15 @@ interface ProductItemProps {
   product: any;
   storeDomain?: string;
   index: number;
+  displayStyle?: 'grid' | 'list';
 }
 
-const ProductItem: React.FC<ProductItemProps> = ({ product, storeDomain, index }) => {
+const ProductItem: React.FC<ProductItemProps> = ({ 
+  product, 
+  storeDomain, 
+  index,
+  displayStyle = 'grid'
+}) => {
   // Format currency with proper locale and format
   const formatCurrency = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -22,6 +28,60 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, storeDomain, index }
   // Default placeholder for products without images
   const defaultPlaceholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%23000000'/%3E%3C/svg%3E";
   
+  // If in list mode, use a different layout
+  if (displayStyle === 'list') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: index * 0.05 }}
+        className="flex bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 card-float"
+      >
+        <Link 
+          to={`/store/${storeDomain}/product/${product.id}`}
+          className="relative block"
+          style={{ width: '120px' }}
+        >
+          <div className="relative overflow-hidden bg-black h-full">
+            <img 
+              src={product.image_url || defaultPlaceholder} 
+              alt={product.name} 
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                // Fallback if image fails to load
+                (e.target as HTMLImageElement).src = defaultPlaceholder;
+              }}
+            />
+          </div>
+        </Link>
+        
+        <div className="flex flex-col justify-between p-3 flex-grow">
+          <div>
+            <h3 className="font-bold text-md text-gray-800 line-clamp-1">
+              {product.name}
+            </h3>
+            {product.description && (
+              <p className="text-sm text-gray-500 line-clamp-2 mt-1">
+                {product.description}
+              </p>
+            )}
+          </div>
+          
+          <div className="flex items-center justify-between mt-2">
+            <p className="text-primary font-bold">
+              {formatCurrency(product.price)} <span className="text-xs font-normal">KWD</span>
+            </p>
+            
+            <button className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 transition-all hover:bg-gray-200">
+              <Heart className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+  
+  // Default grid layout
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}

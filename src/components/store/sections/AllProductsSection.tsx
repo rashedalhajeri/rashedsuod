@@ -15,7 +15,7 @@ interface Product {
   category_id?: string;
   store_id: string;
   image_url?: string;
-  additional_images?: any;
+  additional_images?: string[];
   stock_quantity?: number;
   created_at?: string;
   updated_at?: string;
