@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { isValidDomainName } from "@/utils/url-utils";
+import { isValidDomainName, getStoreUrl } from "@/utils/url-utils";
 
 const CreateStore: React.FC = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ const CreateStore: React.FC = () => {
   });
   const [domainAvailable, setDomainAvailable] = useState<boolean | null>(null);
   const [checkingDomain, setCheckingDomain] = useState(false);
+  const [createdStore, setCreatedStore] = useState<any>(null);
 
   // Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,7 +54,7 @@ const CreateStore: React.FC = () => {
 
     // Validate domain name format (alphanumeric and hyphens only)
     if (!isValidDomainName(formData.domainName)) {
-      toast.error("اسم ا��نطاق يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط");
+      toast.error("اسم النطاق يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط");
       return;
     }
 
@@ -121,8 +123,19 @@ const CreateStore: React.FC = () => {
       if (error) throw error;
 
       toast.success("تم إنشاء المتجر بنجاح");
-      // Redirect to home page since dashboard is removed
-      navigate("/");
+      setCreatedStore(data);
+      
+      // Generate the store URL to display to the user
+      const storeUrl = getStoreUrl({
+        id: data.id,
+        domain_name: data.domain_name
+      });
+      
+      // Redirect to the new store after a short delay
+      setTimeout(() => {
+        window.location.href = storeUrl;
+      }, 3000);
+      
     } catch (error) {
       console.error("Error creating store:", error);
       toast.error("حدث خطأ أثناء إنشاء المتجر");
@@ -130,6 +143,45 @@ const CreateStore: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Display the success screen with store link
+  if (createdStore) {
+    const storeUrl = getStoreUrl({
+      id: createdStore.id,
+      domain_name: createdStore.domain_name
+    });
+    
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4" dir="rtl">
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
+          <h1 className="text-2xl font-bold mb-4">تم إنشاء المتجر بنجاح!</h1>
+          <p className="mb-6">سيتم توجيهك إلى متجرك الجديد خلال ثوان...</p>
+          
+          <div className="bg-gray-50 p-4 rounded-md mb-6 break-all">
+            <p className="text-gray-500 mb-1">رابط متجرك:</p>
+            <p className="font-bold text-primary-600">{storeUrl}</p>
+          </div>
+          
+          <div className="flex flex-col space-y-3">
+            <Button 
+              onClick={() => window.location.href = storeUrl}
+              className="w-full"
+            >
+              الذهاب إلى المتجر الآن
+            </Button>
+            
+            <Button 
+              variant="outline"
+              onClick={() => navigate("/")}
+              className="w-full"
+            >
+              العودة للصفحة الرئيسية
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4" dir="rtl">
@@ -179,6 +231,9 @@ const CreateStore: React.FC = () => {
             {domainAvailable === false && (
               <p className="text-red-600 text-sm">✗ اسم النطاق غير متاح</p>
             )}
+            <p className="text-xs text-gray-500 mt-1">
+              سيكون رابط متجرك: {formData.domainName ? `${formData.domainName}.linok.me` : "example.linok.me"}
+            </p>
           </div>
           
           <div className="space-y-2">
