@@ -42,6 +42,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
     ? Math.round(((product.original_price - product.price) / product.original_price) * 100) 
     : product.discount_percentage || 0;
   
+  // Fake brand data for demo
+  const brandLogo = "/placeholder.svg";
+  const brandName = product.id % 3 === 0 ? "توني فايف" : 
+                   product.id % 3 === 1 ? "مازدا" : 
+                   "شركة جينيريشن ليمتد";
+  
   return (
     <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-100 h-full">
       <Link to={`/store/${storeDomain}/product/${product.id}`} className="block h-full">
@@ -55,9 +61,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
               onError={(e) => {
                 (e.target as HTMLImageElement).onerror = null;
                 (e.target as HTMLImageElement).src = "/placeholder.svg";
-                setIsImageLoaded(true);
+                setImageLoaded(true);
               }}
-              onLoad={() => setIsImageLoaded(true)}
+              onLoad={() => setImageLoaded(true)}
               loading="lazy"
             />
           </div>
@@ -90,54 +96,26 @@ const ProductCard: React.FC<ProductCardProps> = ({
         </div>
         
         <CardContent className="p-4">
-          {/* Brand logo */}
-          <div className="flex items-center justify-end mb-2">
-            <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center">
-              <img src="/placeholder.svg" alt="Brand" className="h-5 w-5 object-contain" />
+          {/* Product Price with Brand */}
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-xl font-bold text-blue-600">
+              {formatCurrency(product.price, product.currency)} <span className="text-xs text-gray-500">KWD</span>
+            </div>
+            <div className="flex items-center">
+              <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center">
+                <img src={brandLogo} alt="Brand" className="h-5 w-5 object-contain" />
+              </div>
             </div>
           </div>
+          
+          {/* Brand Name */}
+          <div className="text-gray-600 text-sm mb-1 text-right">{brandName}</div>
           
           {/* Product Name */}
-          <h3 className="font-bold text-lg hover:text-blue-600 line-clamp-1 transition-colors">
+          <h3 className="font-bold text-lg hover:text-blue-600 line-clamp-2 transition-colors text-right">
             {product.name}
           </h3>
-          
-          {/* Rating */}
-          <div className="flex items-center gap-1 text-yellow-500 mb-1">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <Star 
-                key={star} 
-                className={`h-4 w-4 ${star <= 4 ? 'fill-current' : ''}`} 
-              />
-            ))}
-            <span className="text-xs text-gray-500 mr-1">(4.0)</span>
-          </div>
-          
-          {/* Price and Status */}
-          <div className="mt-2 flex items-center justify-between">
-            <div className="flex flex-col">
-              <div className="font-bold text-lg text-blue-600">
-                {formatCurrency(product.price, product.currency)}
-              </div>
-              {product.original_price && product.original_price > product.price && (
-                <div className="text-sm text-gray-500 line-through">
-                  {formatCurrency(product.original_price, product.currency)}
-                </div>
-              )}
-            </div>
-          </div>
         </CardContent>
-        
-        <CardFooter className="p-4 pt-0">
-          <Button 
-            onClick={handleAddToCart} 
-            className="w-full gap-2 hover:shadow-md transition-all bg-blue-600 hover:bg-blue-700 text-white"
-            disabled={product.stock_quantity === 0}
-          >
-            <ShoppingCart className="h-4 w-4" /> 
-            إضافة للسلة
-          </Button>
-        </CardFooter>
       </Link>
     </Card>
   );

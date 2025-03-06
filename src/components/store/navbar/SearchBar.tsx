@@ -1,6 +1,7 @@
 
-import React, { useState, useEffect, useRef } from "react";
-import { Search, X } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { Search } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface SearchBarProps {
   searchQuery: string;
@@ -13,107 +14,115 @@ const SearchBar: React.FC<SearchBarProps> = ({
   searchQuery,
   setSearchQuery,
   handleSearchSubmit,
-  productNames = ["قميص رجالي", "عطر فاخر", "ساعة يد", "حذاء رياضي", "حقيبة جلدية", "نظارة شمسية"]
+  productNames = [],
 }) => {
-  const [placeholderText, setPlaceholderText] = useState("أبحث عن...");
-  const [productIndex, setProductIndex] = useState(0);
-  const [charIndex, setCharIndex] = useState(0);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
   const [isFocused, setIsFocused] = useState(false);
-
-  // Typewriter effect for placeholder
+  const searchRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  
   useEffect(() => {
-    if (!isPaused) {
-      const typingSpeed = isDeleting ? 50 : 120;
-      const pauseTime = isDeleting ? 500 : 2000;
-      const currentProductName = productNames[productIndex];
-      
-      if (isDeleting) {
-        // Deleting text
-        if (charIndex > 0) {
-          const timeoutId = setTimeout(() => {
-            setPlaceholderText("أبحث عن " + currentProductName.substring(0, charIndex - 1));
-            setCharIndex(charIndex - 1);
-          }, typingSpeed);
-          return () => clearTimeout(timeoutId);
-        } else {
-          // Finished deleting
-          setIsDeleting(false);
-          const nextIndex = (productIndex + 1) % productNames.length;
-          setProductIndex(nextIndex);
-          const timeoutId = setTimeout(() => {
-            setPlaceholderText("أبحث عن ");
-          }, pauseTime);
-          return () => clearTimeout(timeoutId);
-        }
-      } else {
-        // Typing text
-        if (charIndex < currentProductName.length) {
-          const timeoutId = setTimeout(() => {
-            setPlaceholderText("أبحث عن " + currentProductName.substring(0, charIndex + 1));
-            setCharIndex(charIndex + 1);
-          }, typingSpeed);
-          return () => clearTimeout(timeoutId);
-        } else {
-          // Finished typing
-          const timeoutId = setTimeout(() => {
-            setIsDeleting(true);
-          }, pauseTime);
-          return () => clearTimeout(timeoutId);
-        }
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setIsFocused(false);
       }
-    }
-  }, [charIndex, isDeleting, productIndex, productNames, isPaused]);
-
+    };
+    
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+  
   const handleFocus = () => {
-    setIsPaused(true);
     setIsFocused(true);
   };
-
-  const handleBlur = () => {
-    if (!searchQuery) {
-      setIsPaused(false);
-      setIsFocused(false);
-    }
-  };
-
-  const clearSearch = () => {
-    setSearchQuery("");
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  };
-
+  
+  // For the animated placeholder
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  
+  useEffect(() => {
+    if (!productNames.length) return;
+    
+    const interval = setInterval(() => {
+      setPlaceholderIndex((prev) => (prev + 1) % productNames.length);
+    }, 3000);
+    
+    return () => clearInterval(interval);
+  }, [productNames]);
+  
+  const placeholder = productNames.length 
+    ? `ابحث عن "${productNames[placeholderIndex]}"` 
+    : "ابحث حسب المتجر أو المنتج";
+  
   return (
-    <form onSubmit={handleSearchSubmit} className="relative w-full max-w-full">
-      <div className={`relative w-full h-14 sm:h-14 rounded-full overflow-hidden bg-white shadow-md border border-gray-100/50 transition-all ${isFocused ? 'ring-2 ring-blue-300 shadow-lg' : 'hover:shadow-lg'}`}>
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
-          <Search className="h-5 w-5 sm:h-5 sm:w-5" />
+    <div 
+      ref={searchRef}
+      className={`relative w-full transition-all duration-300 max-w-3xl mx-auto ${
+        isFocused ? 'ring-2 ring-primary ring-opacity-50' : ''
+      }`}
+    >
+      <form 
+        onSubmit={handleSearchSubmit}
+        className="flex items-center w-full"
+      >
+        <div 
+          className={`flex items-center w-full px-4 py-2 bg-white border rounded-full ${
+            isFocused 
+              ? 'border-primary shadow-sm' 
+              : 'border-gray-200'
+          }`}
+        >
+          <Search 
+            className="h-5 w-5 text-gray-400 ml-2" 
+          />
+          
+          <motion.input
+            ref={inputRef}
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={handleFocus}
+            placeholder={placeholder}
+            initial={{ width: "100%" }}
+            animate={{ width: "100%" }}
+            className="w-full bg-transparent border-none focus:outline-none text-right px-2 py-1 placeholder-gray-400 text-base"
+            dir="rtl"
+          />
         </div>
-        {searchQuery && (
-          <button 
-            type="button"
-            onClick={clearSearch}
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+      </form>
+      
+      <AnimatePresence>
+        {isFocused && productNames.length > 0 && searchQuery === "" && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.2 }}
+            className="absolute left-0 right-0 top-full mt-2 bg-white rounded-lg shadow-lg overflow-hidden z-50 text-right border border-gray-100"
           >
-            <X className="h-5 w-5" />
-          </button>
+            <div className="p-2">
+              <h4 className="text-xs font-medium text-gray-500 mb-2 px-2">اقتراحات البحث</h4>
+              <div className="space-y-1">
+                {productNames.slice(0, 5).map((name, index) => (
+                  <div 
+                    key={index}
+                    className="px-3 py-1.5 hover:bg-gray-50 rounded-md cursor-pointer text-sm flex items-center justify-end"
+                    onClick={() => {
+                      setSearchQuery(name);
+                      setIsFocused(false);
+                      handleSearchSubmit(new Event('submit') as any);
+                    }}
+                  >
+                    <span>{name}</span>
+                    <Search className="h-3.5 w-3.5 text-gray-400 ml-2" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
         )}
-        <input 
-          ref={inputRef}
-          type="search" 
-          placeholder={placeholderText} 
-          className="w-full h-full bg-transparent border-0 text-gray-700 placeholder-gray-400 pr-14 pl-12 py-3 rounded-full text-sm sm:text-base focus:outline-none focus:ring-0 transition-all"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          dir="rtl"
-        />
-      </div>
-    </form>
+      </AnimatePresence>
+    </div>
   );
 };
 

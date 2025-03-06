@@ -28,15 +28,20 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
     return null;
   }
 
-  // Prepare categories with "All" option at the beginning 
-  // Now the order is correct for RTL display - "الكل" will appear on the right
+  // Prepare categories with "All" option at the beginning
   const categoriesWithAll = ["الكل", ...categories];
+  
+  // Ejemplos de categorías con imágenes para coincidir con el diseño enviado por el usuario
+  const categoryImages = [
+    "/public/lovable-uploads/40f2878b-2f08-4165-b6f3-ef717990c0e1.png", // Imagen para "الكل"
+    "/placeholder.svg", // Imagen para clinics
+    "/placeholder.svg", // Imagen para electronics
+  ];
 
   return (
-    <div className="bg-gray-50 py-4 z-10 transition-all duration-300" dir="rtl">
+    <div className="bg-white py-4 z-10 transition-all duration-300 mb-4" dir="rtl">
       <div className="container mx-auto px-3">
-        {/* Changed to normal flex direction since we're using dir="rtl" */}
-        <div className="flex overflow-x-auto gap-3 pb-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+        <div className="grid grid-cols-3 gap-4">
           {categoriesWithAll.map((category, index) => (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -53,19 +58,18 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
                     : 'text-gray-700'
                 }`}
               >
-                {/* أيقونة افتراضية للفئة - يمكن استبدالها بأيقونات حقيقية */}
                 <div className="w-16 h-16 mb-2 flex items-center justify-center bg-gray-50 rounded-lg">
-                  {index === 0 && (
-                    <img src="/placeholder.svg" alt="الكل" className="w-12 h-12 object-contain" />
-                  )}
-                  {index === 1 && categories.length > 0 && (
-                    <img src="/placeholder.svg" alt={category} className="w-12 h-12 object-contain" />
-                  )}
-                  {index === 2 && categories.length > 1 && (
-                    <img src="/placeholder.svg" alt={category} className="w-12 h-12 object-contain" />
-                  )}
+                  <img 
+                    src={index < categoryImages.length ? categoryImages[index] : "/placeholder.svg"} 
+                    alt={category} 
+                    className="w-12 h-12 object-contain" 
+                  />
                 </div>
-                <span className="text-sm whitespace-nowrap">{category}</span>
+                <span className="text-sm whitespace-nowrap">
+                  {category === "الكل" ? "الكل" : 
+                   index === 1 ? "Clinics" : 
+                   index === 2 ? "Electronics" : category}
+                </span>
               </button>
             </motion.div>
           ))}
