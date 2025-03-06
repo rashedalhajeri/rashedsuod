@@ -15,7 +15,7 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = ({
   categories = ["جميع المنتجات", "الأكثر مبيعاً", "العروض", "الجديد", "الأكسسوارات"]
 }) => {
   return (
-    <div className="bg-white py-4 border-b fixed top-0 left-0 right-0 z-50 shadow-sm">
+    <div className="bg-white py-4 border-b sticky top-0 left-0 right-0 z-50 shadow-sm">
       <div className="container mx-auto">
         <div className="scroll-container hide-scrollbar px-4">
           {categories.map((category, index) => (
