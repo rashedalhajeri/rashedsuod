@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import StoreLayout from "@/components/store/StoreLayout";
 import { useStoreData } from "@/hooks/use-store-data";
 import { LoadingState } from "@/components/ui/loading-state";
@@ -8,8 +8,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import ProductGrid from "@/components/store/ProductGrid";
 import SearchBar from "@/components/store/navbar/SearchBar";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Filter } from "lucide-react";
-import { Link } from "react-router-dom";
+import CategoryNavigation from "@/components/store/CategoryNavigation";
 
 // Define the Product interface to match what we're getting from Supabase
 interface Product {
@@ -17,7 +16,7 @@ interface Product {
   name: string;
   description?: string;
   price: number;
-  category_id?: string; // Changed from category to category_id to match db schema
+  category_id?: string;
   store_id: string;
   image_url?: string;
   additional_images?: any;
@@ -41,6 +40,8 @@ const CategoryPage = () => {
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [productNames, setProductNames] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [sections, setSections] = useState<string[]>([]);
 
   // Fetch store data and category products
   useEffect(() => {
@@ -49,6 +50,16 @@ const CategoryPage = () => {
         setIsLoadingProducts(true);
         
         try {
+          // Get all categories for the store
+          const { data: categoriesData } = await supabase
+            .from('categories')
+            .select('name')
+            .eq('store_id', storeData.id);
+            
+          if (categoriesData) {
+            setCategories(categoriesData.map(cat => cat.name));
+          }
+          
           // Get category details first
           const { data: categoryData } = await supabase
             .from('categories')
@@ -92,6 +103,16 @@ const CategoryPage = () => {
     e.preventDefault();
   };
   
+  // Handle category change
+  const handleCategoryChange = (category: string) => {
+    console.log("Category changed:", category);
+  };
+  
+  // Handle section change
+  const handleSectionChange = (section: string) => {
+    console.log("Section changed:", section);
+  };
+  
   // Filter products by search term
   const filteredProducts = searchQuery 
     ? products.filter(product => 
@@ -99,11 +120,6 @@ const CategoryPage = () => {
         (product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase()))
       ) 
     : products;
-
-  // Format category name for display
-  const displayCategoryName = categoryName 
-    ? categoryName.charAt(0).toUpperCase() + categoryName.slice(1)
-    : "";
 
   if (isLoading || isLoadingProducts) {
     return <LoadingState message="جاري تحميل المتجر..." />;
@@ -116,33 +132,8 @@ const CategoryPage = () => {
   return (
     <StoreLayout storeData={storeData}>
       <div className="py-4" dir="rtl">
-        {/* Hero Banner with gradient background */}
-        <div className="relative mb-6 rounded-xl overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-l from-blue-600 via-blue-500 to-blue-400 opacity-90"></div>
-          <div className="relative z-10 p-6 text-white">
-            <div className="mb-2">
-              <Link 
-                to={`/store/${storeDomain}`}
-                className="inline-flex items-center text-white/90 hover:text-white transition-colors"
-              >
-                <ArrowLeft className="h-4 w-4 mr-1 rtl:rotate-180" />
-                <span>العودة إلى المتجر</span>
-              </Link>
-            </div>
-            <h1 className="text-3xl font-bold text-right">
-              {displayCategoryName === "Clinics" ? "العيادات" : 
-               displayCategoryName === "Electronics" ? "الإلكترونيات" : 
-               displayCategoryName === "الكل" ? "جميع الصفقات" :
-               displayCategoryName}
-            </h1>
-            <p className="text-white/80 text-right mt-1">
-              {categoryDetails?.description || `تصفح جميع منتجات ${displayCategoryName}`}
-            </p>
-          </div>
-        </div>
-        
         {/* Search Bar with rounded design */}
-        <div className="mb-6 px-2">
+        <div className="mb-4 px-2">
           <div className="search-bar-modern">
             <SearchBar 
               searchQuery={searchQuery}
@@ -153,29 +144,16 @@ const CategoryPage = () => {
           </div>
         </div>
         
-        {/* Category Pills - simplified visual style */}
-        <div className="mb-6 overflow-x-auto hide-scrollbar px-2">
-          <div className="flex gap-4 pb-2">
-            <div className={`category-pill ${displayCategoryName === "الكل" ? "active" : ""}`}>
-              <div className="category-pill-icon">
-                <img src="/public/lovable-uploads/76b54a01-0b01-4389-87c4-99406ba4e5ca.png" alt="الكل" className="w-7 h-7" />
-              </div>
-              <span>الكل</span>
-            </div>
-            <div className={`category-pill ${displayCategoryName === "Clinics" ? "active" : ""}`}>
-              <div className="category-pill-icon">
-                <img src="/public/lovable-uploads/c8a5c4e7-628d-4c52-acca-e8f603036b6b.png" alt="Clinics" className="w-7 h-7" />
-              </div>
-              <span>العيادات</span>
-            </div>
-            <div className={`category-pill ${displayCategoryName === "Electronics" ? "active" : ""}`}>
-              <div className="category-pill-icon">
-                <img src="/public/lovable-uploads/827a00fa-f421-45c3-96d7-b9305fb217d1.jpg" alt="Electronics" className="w-7 h-7" />
-              </div>
-              <span>الإلكترونيات</span>
-            </div>
-          </div>
-        </div>
+        {/* Category Navigation */}
+        <CategoryNavigation
+          categories={categories}
+          sections={sections}
+          activeCategory={categoryName || ""}
+          activeSection=""
+          onCategoryChange={handleCategoryChange}
+          onSectionChange={handleSectionChange}
+          storeDomain={storeDomain}
+        />
         
         {/* Products Grid */}
         <div className="px-2">

@@ -55,7 +55,7 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
   };
 
   return (
-    <div className="bg-white py-4 z-10 transition-all duration-300 mb-4" dir="rtl">
+    <div className="bg-white py-2 z-10 transition-all duration-300 mb-6" dir="rtl">
       <div className="container mx-auto px-3">
         <div className="grid grid-cols-3 gap-4">
           {categoriesWithAll.map((category, index) => (
@@ -69,7 +69,8 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
               <button
                 onClick={() => handleCategoryClick(category, index)}
                 className={`w-full h-full flex flex-col items-center p-3 ${
-                  (category === "الكل" && !activeCategory) || activeCategory === category
+                  (category === "الكل" && !activeCategory) || 
+                  (activeCategory && category.toLowerCase() === activeCategory.toLowerCase())
                     ? 'text-blue-600 font-medium'
                     : 'text-gray-700'
                 }`}
