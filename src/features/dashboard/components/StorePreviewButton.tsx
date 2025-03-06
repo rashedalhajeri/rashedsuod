@@ -1,12 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Eye, Copy, CheckCheck, X, ExternalLink, Share2, Download } from 'lucide-react';
+import { Eye, Copy, CheckCheck, X, ExternalLink, Share2, Download, Smartphone, Tablet, Monitor, PaintBucket } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import useStoreData from '@/hooks/use-store-data';
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const StorePreviewButton = () => {
   const { data: storeData } = useStoreData();
@@ -199,9 +201,15 @@ const StorePreviewButton = () => {
             
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
               <TabsList className="w-full grid grid-cols-3 max-w-xs mx-auto">
-                <TabsTrigger value="mobile">جوال</TabsTrigger>
-                <TabsTrigger value="tablet">لوحي</TabsTrigger>
-                <TabsTrigger value="desktop">سطح المكتب</TabsTrigger>
+                <TabsTrigger value="mobile" className="flex items-center gap-1">
+                  <Smartphone className="h-3 w-3" /> جوال
+                </TabsTrigger>
+                <TabsTrigger value="tablet" className="flex items-center gap-1">
+                  <Tablet className="h-3 w-3" /> لوحي
+                </TabsTrigger>
+                <TabsTrigger value="desktop" className="flex items-center gap-1">
+                  <Monitor className="h-3 w-3" /> سطح المكتب
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           </DialogHeader>
@@ -217,13 +225,21 @@ const StorePreviewButton = () => {
             </div>
           </div>
           
-          <DialogFooter className="p-4 border-t bg-gray-50">
-            <Button variant="outline" size="sm" onClick={() => setPreviewOpen(false)}>
-              إغلاق
-            </Button>
-            <Button size="sm" onClick={openExternalLink} className="gap-2">
-              <ExternalLink className="h-4 w-4" /> فتح في نافذة جديدة
-            </Button>
+          <DialogFooter className="p-4 border-t bg-gray-50 flex flex-row justify-between">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="flex items-center gap-1">
+                <PaintBucket className="h-3 w-3" /> تخصيص المظهر
+              </Badge>
+              <span className="text-xs text-muted-foreground">لتغيير مظهر متجرك، انتقل إلى قسم "المظهر" في لوحة التحكم</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setPreviewOpen(false)}>
+                إغلاق
+              </Button>
+              <Button size="sm" onClick={openExternalLink} className="gap-2">
+                <ExternalLink className="h-4 w-4" /> فتح في نافذة جديدة
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
