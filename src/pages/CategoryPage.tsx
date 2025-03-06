@@ -58,20 +58,22 @@ const CategoryPage = () => {
         storeDomain={storeDomain}
       />
       
-      <CategoryContent
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        handleSearchSubmit={handleSearchSubmit}
-        productNames={productNames}
-        categories={categories}
-        sections={sections}
-        categoryName={categoryName}
-        handleCategoryChange={handleCategoryChange}
-        handleSectionChange={handleSectionChange}
-        isLoadingProducts={isLoadingProducts}
-        filteredProducts={filteredProducts}
-        storeDomain={storeDomain}
-      />
+      <div className="mt-4">
+        <CategoryContent
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          handleSearchSubmit={handleSearchSubmit}
+          productNames={productNames}
+          categories={categories}
+          sections={sections}
+          categoryName={categoryName}
+          handleCategoryChange={handleCategoryChange}
+          handleSectionChange={handleSectionChange}
+          isLoadingProducts={isLoadingProducts}
+          filteredProducts={filteredProducts}
+          storeDomain={storeDomain}
+        />
+      </div>
     </div>
   );
 };
