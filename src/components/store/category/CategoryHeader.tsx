@@ -33,40 +33,40 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({
   };
 
   return (
-    <header className="bg-gradient-to-r from-blue-600 to-blue-500 text-white relative overflow-hidden">
+    <header className="bg-gradient-to-br from-blue-700 to-blue-500 text-white relative overflow-hidden">
       {/* Decorative elements */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400/20 rounded-full -mt-32 -mr-32 blur-2xl"></div>
-      <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -mb-24 -ml-24 blur-xl"></div>
-      <div className="absolute top-1/4 left-1/3 w-16 h-16 bg-blue-300/20 rounded-full blur-lg"></div>
+      <div className="absolute -top-24 right-0 w-72 h-72 rounded-full bg-white/10 blur-3xl"></div>
+      <div className="absolute -bottom-32 left-0 w-72 h-72 rounded-full bg-blue-800/30 blur-3xl"></div>
+      <div className="absolute top-1/2 left-1/4 w-24 h-24 rounded-full bg-blue-400/20 blur-xl"></div>
       
       <div className="container mx-auto px-4 py-4 relative z-10">
-        <div className="flex items-center justify-between mb-3">
-          {/* Left Side: Cart button with badge */}
-          <Link to={`/store/${storeDomain}/cart`} className="block">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="relative text-white p-1.5 h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors shadow-sm"
-              aria-label="عربة التسوق"
-            >
-              <ShoppingCart className="h-5 w-5" />
-              {totalItems > 0 && (
-                <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] h-5 min-w-5 flex items-center justify-center rounded-full px-1 border border-white/20 shadow-md">
-                  {totalItems}
-                </Badge>
-              )}
-            </Button>
-          </Link>
+        <div className="flex items-center justify-between mb-4">
+          {/* Left side: Back button */}
+          <Button 
+            variant="ghost" 
+            className="text-white bg-white/10 hover:bg-white/20 p-0 h-10 w-10 rounded-full shadow-md flex items-center justify-center"
+            onClick={handleNavigateToStore}
+          >
+            <ChevronRight className="h-5 w-5" />
+          </Button>
           
           <div className="flex items-center space-x-4 rtl:space-x-reverse">
-            {/* Back button */}
-            <Button 
-              variant="ghost" 
-              className="text-white bg-white/15 hover:bg-white/25 p-0 h-10 w-10 rounded-full shadow-sm flex items-center justify-center"
-              onClick={handleNavigateToStore}
-            >
-              <ChevronRight className="h-5 w-5" />
-            </Button>
+            {/* Cart button with badge */}
+            <Link to={`/store/${storeDomain}/cart`} className="block">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="relative text-white p-1.5 h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors shadow-md"
+                aria-label="عربة التسوق"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                {totalItems > 0 && (
+                  <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] h-5 min-w-5 flex items-center justify-center rounded-full px-1 border border-white/20 shadow-md">
+                    {totalItems}
+                  </Badge>
+                )}
+              </Button>
+            </Link>
             
             {/* User dropdown */}
             <DropdownMenu>
@@ -74,7 +74,7 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="text-white p-1.5 h-10 w-10 rounded-full bg-white/15 hover:bg-white/25 active:bg-white/30 transition-colors shadow-sm"
+                  className="text-white p-1.5 h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors shadow-md"
                   aria-label="حسابي"
                 >
                   <User className="h-5 w-5" />
@@ -107,13 +107,15 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({
         </div>
         
         <motion.div 
-          className="text-center py-5"
+          className="text-center py-8"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.4 }}
         >
-          <h1 className="text-2xl font-bold text-white tracking-wide mb-2 text-shadow">{headerTitle}</h1>
-          <div className="h-1 w-24 bg-white/30 rounded-full mx-auto transform transition-all duration-300 hover:w-32"></div>
+          <h1 className="text-3xl font-bold text-white mb-2 text-shadow-sm tracking-wide">
+            {headerTitle}
+          </h1>
+          <div className="h-1.5 w-24 bg-white/30 rounded-full mx-auto transform transition-all duration-300 hover:w-32"></div>
         </motion.div>
       </div>
       
