@@ -23,6 +23,7 @@ interface StoreData {
   subscription_plan: string;
   subscription_end_date: string | null;
   created_at: string;
+  suspension_reason?: string | null;
 }
 
 const AdminStoresPage = () => {

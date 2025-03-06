@@ -9,7 +9,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createClient } from "@supabase/supabase-js";
 import { Toaster } from "sonner";
-import { secureLocalStorage } from "@/lib/encryption";
 
 // Import pages
 import Index from "@/pages/Index";
@@ -44,7 +43,7 @@ interface AuthContextProps {
   signOut: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextProps | undefined>(undefined);
+export const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -141,14 +140,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const userId = await secureLocalStorage.retrieve("user-id");
-        if (userId) {
+        // Check authentication from local storage or session
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
           setIsAuthenticated(true);
         } else {
           setIsAuthenticated(false);
         }
       } catch (error) {
-        console.error("Error retrieving user ID:", error);
+        console.error("Error retrieving session:", error);
         setIsAuthenticated(false);
       } finally {
         setLoading(false);

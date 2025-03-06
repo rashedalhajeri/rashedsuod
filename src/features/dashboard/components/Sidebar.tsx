@@ -5,8 +5,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, ShoppingBag, Package, Tags, Users, CreditCard, Settings, ChevronLeft, ChevronRight, LogOut, Menu, FileText, X } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { useContext } from "react";
-import { AuthContext } from "@/App";
+import { useAuthState } from "@/hooks/use-auth-state";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import AdminNavigation from "./AdminNavigation";
 
@@ -43,9 +42,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
   const location = useLocation();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
-  const {
-    signOut
-  } = useContext(AuthContext);
+  const { signOut } = useAuthState();
 
   useEffect(() => {
     setIsCollapsed(isMobile && !isMobileMenuOpen);
