@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback, memo } from "react";
+import React, { memo } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -83,8 +83,8 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
                 </div>
                 <span className="text-sm whitespace-nowrap">
                   {category === "الكل" ? "الكل" : 
-                   index === 1 ? "Clinics" : 
-                   index === 2 ? "Electronics" : category}
+                   index === 1 ? "العيادات" : 
+                   index === 2 ? "الإلكترونيات" : category}
                 </span>
               </button>
             </motion.div>
