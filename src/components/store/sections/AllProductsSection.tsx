@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { X, ChevronLeft } from "lucide-react";
@@ -36,42 +35,58 @@ interface AllProductsSectionProps {
   displayStyle?: 'grid' | 'list';
 }
 
-// Helper function to fetch products with appropriate filters
+// Helper function to fetch products with appropriate filters - refactored to avoid deep type instantiation
 const fetchProductsWithFilters = async (
   sectionType: string,
   categoryId?: string,
   sectionId?: string
 ): Promise<Product[]> => {
   try {
-    // Set up base query
+    // Initialize the query first without additional filters
     let query = supabase.from('products').select('*');
     
     // Apply different filters based on section type
     if (sectionType === 'category' && categoryId) {
+      // Add category filter
       query = query.eq('category_id', categoryId);
     } 
     else if (sectionType === 'featured') {
+      // Add featured filter
       query = query.eq('is_featured', true);
     } 
     else if (sectionType === 'best_selling') {
-      query = query.order('sales_count', { ascending: false });
+      // We'll handle ordering separately
     } 
     else if (sectionType === 'on_sale') {
+      // Add discount filter
       query = query.not('discount_price', 'is', null);
     } 
     else if (sectionType === 'custom' && sectionId) {
+      // Add section filter
       query = query.eq('section_id', sectionId);
     }
     
-    // Execute the final query with ordering
-    const { data, error } = await query.order('created_at', { ascending: false });
-    
-    if (error) {
-      console.error("Error fetching products:", error);
-      return [];
+    // Apply ordering based on section type or default ordering
+    if (sectionType === 'best_selling') {
+      const { data, error } = await query.order('sales_count', { ascending: false });
+      
+      if (error) {
+        console.error("Error fetching products:", error);
+        return [];
+      }
+      
+      return data as Product[] || [];
+    } else {
+      // Default ordering by created_at
+      const { data, error } = await query.order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error("Error fetching products:", error);
+        return [];
+      }
+      
+      return data as Product[] || [];
     }
-    
-    return data as Product[] || [];
   } catch (err) {
     console.error("Error in fetchProductsWithFilters:", err);
     return [];
