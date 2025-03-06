@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Eye, Copy, CheckCheck, X, ExternalLink, Share2, Download } from 'lucide-react';
@@ -16,15 +15,12 @@ const StorePreviewButton = () => {
   const [activeTab, setActiveTab] = useState("desktop");
   const [isOnline, setIsOnline] = useState(true);
   
-  // Create store URL based on domain
   const storeUrl = storeData?.domain_name 
     ? `https://${storeData.domain_name}.linok.me` 
     : null;
   
   useEffect(() => {
-    // Simulate checking if store is online
     const checkStoreStatus = async () => {
-      // In a real app, we would do an actual check here
       setIsOnline(true);
     };
     
@@ -97,7 +93,7 @@ const StorePreviewButton = () => {
     <>
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex items-center gap-1 mb-2">
-          <Badge variant={isOnline ? "success" : "destructive"} className="px-2 py-0 h-5">
+          <Badge variant={isOnline ? "default" : "destructive"} className="px-2 py-0 h-5">
             {isOnline ? "متصل" : "غير متصل"}
           </Badge>
           <span className="text-xs text-muted-foreground">
@@ -184,7 +180,7 @@ const StorePreviewButton = () => {
         </div>
       </div>
 
-      <Dialog open={previewOpen} onOpenChange={setPreviewOpen} className="max-w-6xl">
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
         <DialogContent className="max-w-6xl h-[80vh] p-0">
           <DialogHeader className="p-4 bg-gray-50 border-b">
             <div className="flex flex-row items-center justify-between">
