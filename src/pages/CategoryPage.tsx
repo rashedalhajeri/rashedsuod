@@ -58,7 +58,7 @@ const CategoryPage = () => {
         storeDomain={storeDomain}
       />
       
-      <div className="mt-4">
+      <div>
         <CategoryContent
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
