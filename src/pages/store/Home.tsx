@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getStoreFromUrl } from "@/utils/url-utils";
@@ -31,15 +31,15 @@ const StoreHome: React.FC = () => {
   
   // استعلام لجلب المنتجات المميزة
   const { data: featuredProducts, isLoading: productsLoading } = useQuery({
-    queryKey: ['featuredProducts', storeId],
+    queryKey: ['featuredProducts', storeData?.id],
     queryFn: async () => {
-      if (!storeId) return [];
+      if (!storeData?.id) return [];
       
+      // Since we don't have is_featured field yet, just get the most recent products
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .eq('store_id', storeData?.id)
-        .eq('is_featured', true)
+        .eq('store_id', storeData.id)
         .order('created_at', { ascending: false })
         .limit(6);
         
@@ -52,14 +52,14 @@ const StoreHome: React.FC = () => {
   
   // استعلام لجلب المنتجات الجديدة
   const { data: newProducts, isLoading: newProductsLoading } = useQuery({
-    queryKey: ['newProducts', storeId],
+    queryKey: ['newProducts', storeData?.id],
     queryFn: async () => {
-      if (!storeId) return [];
+      if (!storeData?.id) return [];
       
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .eq('store_id', storeData?.id)
+        .eq('store_id', storeData.id)
         .order('created_at', { ascending: false })
         .limit(8);
         
@@ -173,7 +173,7 @@ const StoreHome: React.FC = () => {
                   </div>
                 ))
               ) : newProducts && newProducts.length > 0 ? (
-                newProducts.map((product: any) => (
+                newProducts.map((product) => (
                   <Link 
                     to={`/store/${storeId}/products/${product.id}`} 
                     key={product.id}

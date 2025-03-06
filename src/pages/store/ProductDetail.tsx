@@ -41,7 +41,7 @@ const StoreProductDetail: React.FC = () => {
       
       const { data, error } = await supabase
         .from('products')
-        .select('*, categories(*)')
+        .select('*')
         .eq('id', productId)
         .single();
         
@@ -53,22 +53,21 @@ const StoreProductDetail: React.FC = () => {
   
   // استعلام لجلب منتجات مشابهة
   const { data: relatedProducts, isLoading: relatedLoading } = useQuery({
-    queryKey: ['relatedProducts', product?.category_id, productId],
+    queryKey: ['relatedProducts', productId],
     queryFn: async () => {
-      if (!product?.category_id || !storeData?.id) return [];
+      if (!storeData?.id) return [];
       
       const { data, error } = await supabase
         .from('products')
         .select('*')
         .eq('store_id', storeData.id)
-        .eq('category_id', product.category_id)
         .neq('id', productId)
         .limit(4);
         
       if (error) throw error;
       return data || [];
     },
-    enabled: !!product?.category_id && !!storeData?.id,
+    enabled: !!storeData?.id,
   });
   
   const formatCurrency = getCurrencyFormatter(storeData?.currency);
@@ -147,17 +146,6 @@ const StoreProductDetail: React.FC = () => {
             <Link to={`/store/${storeId}/products`} className="hover:text-blue-600">
               المنتجات
             </Link>
-            {product.categories && (
-              <>
-                <ChevronLeft className="h-4 w-4 mx-2" />
-                <Link 
-                  to={`/store/${storeId}/products?category=${product.categories.id}`}
-                  className="hover:text-blue-600"
-                >
-                  {product.categories.name}
-                </Link>
-              </>
-            )}
             <ChevronLeft className="h-4 w-4 mx-2" />
             <span className="font-medium text-gray-700">{product.name}</span>
           </div>
@@ -184,16 +172,6 @@ const StoreProductDetail: React.FC = () => {
                   <span className="text-xl md:text-2xl font-bold text-blue-600">
                     {formatCurrency(product.price)}
                   </span>
-                  {product.compare_price && product.compare_price > product.price && (
-                    <>
-                      <span className="text-gray-400 line-through mr-2">
-                        {formatCurrency(product.compare_price)}
-                      </span>
-                      <Badge className="bg-red-100 text-red-700 mr-2">
-                        خصم {Math.round((1 - product.price / product.compare_price) * 100)}%
-                      </Badge>
-                    </>
-                  )}
                 </div>
                 
                 <p className="text-gray-600 mb-6">
@@ -275,26 +253,7 @@ const StoreProductDetail: React.FC = () => {
               
               <TabsContent value="details" className="p-4">
                 <div className="prose max-w-none">
-                  {product.long_description ? (
-                    <div dangerouslySetInnerHTML={{ __html: product.long_description }} />
-                  ) : (
-                    <p>{product.description || "لا توجد تفاصيل إضافية لهذا المنتج."}</p>
-                  )}
-                  
-                  {/* المواصفات */}
-                  {product.specifications && Object.keys(product.specifications).length > 0 && (
-                    <div className="mt-6">
-                      <h3 className="text-lg font-medium mb-3">المواصفات</h3>
-                      <ul className="space-y-2">
-                        {Object.entries(product.specifications).map(([key, value]) => (
-                          <li key={key} className="flex">
-                            <span className="font-medium ml-2">{key}:</span>
-                            <span>{String(value)}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  <p>{product.description || "لا توجد تفاصيل إضافية لهذا المنتج."}</p>
                 </div>
               </TabsContent>
               
@@ -313,7 +272,7 @@ const StoreProductDetail: React.FC = () => {
             <div className="mb-8">
               <h2 className="text-xl font-bold mb-4">منتجات مشابهة</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                {relatedProducts.map((relatedProduct: any) => (
+                {relatedProducts.map((relatedProduct) => (
                   <Link 
                     to={`/store/${storeId}/products/${relatedProduct.id}`} 
                     key={relatedProduct.id}
