@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -52,7 +51,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
     <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-100 h-full">
       <Link to={`/store/${storeDomain}/product/${product.id}`} className="block h-full">
         <div className="aspect-square overflow-hidden bg-gray-50 relative">
-          {/* Image with loading state */}
           <div className={`w-full h-full flex items-center justify-center bg-gray-100 ${!isImageLoaded ? 'animate-pulse' : ''}`}>
             <img 
               src={product.image_url || "/placeholder.svg"} 
@@ -61,28 +59,25 @@ const ProductCard: React.FC<ProductCardProps> = ({
               onError={(e) => {
                 (e.target as HTMLImageElement).onerror = null;
                 (e.target as HTMLImageElement).src = "/placeholder.svg";
-                setImageLoaded(true);
+                setIsImageLoaded(true);
               }}
-              onLoad={() => setImageLoaded(true)}
+              onLoad={() => setIsImageLoaded(true)}
               loading="lazy"
             />
           </div>
           
-          {/* Out of stock overlay */}
           {product.stock_quantity === 0 && (
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
               <Badge variant="destructive" className="text-sm px-3 py-1">نفدت الكمية</Badge>
             </div>
           )}
           
-          {/* Discount badge */}
           {discountPercentage > 0 && (
             <Badge className="absolute top-2 left-2 bg-red-500 text-white">
               خصم {discountPercentage}%
             </Badge>
           )}
           
-          {/* Wishlist button */}
           <button 
             className="absolute top-2 right-2 h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-gray-600 hover:text-red-500 transition-colors"
             onClick={(e) => {
@@ -96,7 +91,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
         </div>
         
         <CardContent className="p-4">
-          {/* Product Price with Brand */}
           <div className="flex items-center justify-between mb-2">
             <div className="text-xl font-bold text-blue-600">
               {formatCurrency(product.price, product.currency)} <span className="text-xs text-gray-500">KWD</span>
@@ -108,10 +102,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
             </div>
           </div>
           
-          {/* Brand Name */}
           <div className="text-gray-600 text-sm mb-1 text-right">{brandName}</div>
           
-          {/* Product Name */}
           <h3 className="font-bold text-lg hover:text-blue-600 line-clamp-2 transition-colors text-right">
             {product.name}
           </h3>
