@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,13 +24,6 @@ import Customers from "./pages/dashboard/Customers";
 import Payments from "./pages/dashboard/Payments";
 import Coupons from "./pages/dashboard/Coupons";
 import Settings from "./pages/dashboard/Settings";
-
-// Import store pages
-import ProductDetail from "./pages/ProductDetail";
-import StoreHome from "./pages/store/Home";
-import StoreProducts from "./pages/store/Products";
-import StoreProductDetail from "./pages/store/ProductDetail";
-import Cart from "./pages/store/Cart";
 
 // Create a new query client with retry disabled
 const queryClient = new QueryClient({
@@ -293,18 +285,6 @@ const App = () => (
                   <Coupons />
                 </ProtectedRoute>
               }
-            />
-            
-            {/* Store Routes - Using storeId in URL */}
-            <Route path="/store/:storeId" element={<StoreHome />} />
-            <Route path="/store/:storeId/products" element={<StoreProducts />} />
-            <Route path="/store/:storeId/products/:productId" element={<StoreProductDetail />} />
-            <Route path="/store/:storeId/cart" element={<Cart />} />
-            
-            {/* Legacy route - redirect to new structure */}
-            <Route 
-              path="/products/:productId" 
-              element={<ProductDetail />}
             />
             
             {/* Catch-all route for 404 */}
