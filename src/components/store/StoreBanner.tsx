@@ -40,7 +40,7 @@ const StoreBanner: React.FC<StoreBannerProps> = ({
         transition={{ duration: 0.6 }}
       >
         <div className="flex justify-between items-center">
-          {/* Greeting and Username */}
+          {/* Greeting and Store Logo */}
           <div className="flex items-center gap-3 ml-auto">
             <div className="text-right">
               <motion.p 
@@ -51,17 +51,9 @@ const StoreBanner: React.FC<StoreBannerProps> = ({
               >
                 حياكم في
               </motion.p>
-              <motion.h1 
-                className="text-xl font-bold text-white"
-                initial={{ y: -5, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.4, delay: 0.1 }}
-              >
-                {storeName}
-              </motion.h1>
             </div>
             
-            {/* User Avatar */}
+            {/* Store Logo */}
             <motion.div
               className="flex-shrink-0"
               initial={{ scale: 0.8, opacity: 0 }}
