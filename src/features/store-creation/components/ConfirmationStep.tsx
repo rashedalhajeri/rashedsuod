@@ -50,6 +50,20 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
                 <p>{formData.description}</p>
               </div>
             )}
+
+            {formData.logoUrl && (
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">شعار المتجر</h3>
+                <img src={formData.logoUrl} alt="شعار المتجر" className="h-16 w-16 object-contain" />
+              </div>
+            )}
+
+            {formData.bannerUrl && (
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">بنر المتجر</h3>
+                <img src={formData.bannerUrl} alt="بنر المتجر" className="h-20 w-full object-cover rounded" />
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

@@ -28,6 +28,7 @@ export const validateStep = (step: number, formData: StoreFormData, domainAvaila
       toast.error("الرجاء رفع شعار المتجر");
       return false;
     }
+    // Banner is optional, so no validation required
   } else if (step === 3) {
     if (!formData.acceptTerms) {
       toast.error("الرجاء الموافقة على شروط الخدمة");
