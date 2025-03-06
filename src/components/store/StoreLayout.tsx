@@ -17,8 +17,8 @@ const StoreLayout: React.FC<StoreLayoutProps> = ({ children, storeData }) => {
       <div className="min-h-screen flex flex-col bg-gray-50" dir="rtl">
         <StoreNavbar storeName={storeData?.store_name} logoUrl={storeData?.logo_url} />
         
-        {/* Add top padding to account for fixed header */}
-        <main className="flex-grow container mx-auto px-4 pt-24 categories-content">
+        {/* Adjusted padding to position content directly below header */}
+        <main className="flex-grow container mx-auto px-4 pt-16 categories-content">
           {children}
         </main>
         
