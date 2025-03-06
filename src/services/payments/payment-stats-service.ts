@@ -104,7 +104,9 @@ export const fetchPaymentStats = async (storeId: string): Promise<PaymentStats |
     const paymentMethodStats: Record<string, number> = {};
     if (paymentMethodsData && Array.isArray(paymentMethodsData)) {
       paymentMethodsData.forEach(item => {
-        paymentMethodStats[item.payment_method] = parseInt(item.count);
+        // Fix: Convert count to number before assignment
+        // The RPC function returns count as a string but we need it as a number
+        paymentMethodStats[item.payment_method] = Number(item.count);
       });
     }
     
