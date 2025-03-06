@@ -11,15 +11,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 
+// Define the Product interface to match what we're getting from Supabase
 interface Product {
   id: string;
   name: string;
   description?: string;
   price: number;
-  category: string;
+  category_id?: string; // Changed from category to category_id to match db schema
   store_id: string;
   image_url?: string;
-  [key: string]: any;
+  additional_images?: any;
+  stock_quantity?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface CategoryDetails {
@@ -27,7 +31,6 @@ interface CategoryDetails {
   name: string;
   description?: string;
   store_id: string;
-  [key: string]: any;
 }
 
 const CategoryPage = () => {
@@ -56,18 +59,22 @@ const CategoryPage = () => {
             
           setCategoryDetails(categoryData);
           
-          // Fetch products in this category
-          const { data: productsData } = await supabase
-            .from('products')
-            .select('*')
-            .eq('store_id', storeData.id)
-            .eq('category', categoryName);
-          
-          setProducts(productsData || []);
-          
-          // Get product names for search suggestions
-          if (productsData && productsData.length > 0) {
-            setProductNames(productsData.map(product => product.name));
+          if (categoryData) {
+            // Fetch products in this category using category_id
+            const { data: productsData } = await supabase
+              .from('products')
+              .select('*')
+              .eq('store_id', storeData.id)
+              .eq('category_id', categoryData.id);
+            
+            setProducts(productsData || []);
+            
+            // Get product names for search suggestions
+            if (productsData && productsData.length > 0) {
+              setProductNames(productsData.map(product => product.name));
+            }
+          } else {
+            setProducts([]);
           }
         } catch (err) {
           console.error("Error fetching category data:", err);
