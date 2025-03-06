@@ -49,7 +49,7 @@ const StoreBanner: React.FC<StoreBannerProps> = ({
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.4 }}
               >
-                مرحبًا
+                حياكم في
               </motion.p>
               <motion.h1 
                 className="text-lg font-bold text-white"
