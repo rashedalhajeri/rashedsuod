@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
-import { Minus, Plus, ShoppingCart, ChevronRight, Heart, Share2, ShieldCheck } from "lucide-react";
+import { Minus, Plus, ShoppingCart, ChevronRight, Heart, Share2, ShieldCheck, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import StoreNavbar from "@/components/store/StoreNavbar";
