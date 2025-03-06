@@ -134,13 +134,14 @@ const Store = () => {
       <StoreNavbar storeName={storeData?.store_name} logoUrl={storeData?.logo_url} />
       
       <main className="flex-grow container mx-auto px-4">
-        {/* App Banner (previously Hero Banner) */}
+        {/* App Banner - Now conditional based on bannerUrl existence */}
         <StoreBanner 
           storeName={storeData?.store_name}
           storeDescription={storeData?.description}
           searchQuery={searchQuery}
           onSearchChange={handleSearchChange}
           logoUrl={storeData?.logo_url}
+          bannerUrl={storeData?.banner_url} // Pass banner URL to component
         />
         
         {/* Category Quick Links */}

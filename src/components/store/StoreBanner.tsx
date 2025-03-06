@@ -11,14 +11,19 @@ interface StoreBannerProps {
   searchQuery: string;
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   logoUrl?: string | null;
+  bannerUrl?: string | null; // Added banner URL prop
 }
 
 const StoreBanner: React.FC<StoreBannerProps> = ({
   storeName,
   storeDescription,
-  logoUrl
+  logoUrl,
+  bannerUrl
 }) => {
   const isMobile = useIsMobile();
+  
+  // Don't render the banner at all if there's no valid banner URL
+  if (!bannerUrl) return null;
   
   return (
     <div className="relative bg-gradient-to-l from-indigo-50 to-purple-50 py-6 px-4 sm:px-5 rounded-xl shadow-md mt-4 mb-6 overflow-hidden border border-indigo-100/80 w-full">
