@@ -16,7 +16,7 @@ const MobileMenuToggle: React.FC<MobileMenuToggleProps> = ({
     <Button 
       variant="ghost" 
       size="sm" 
-      className="md:hidden text-gray-700 hover:bg-gray-100 rounded-full" 
+      className="md:hidden text-white bg-transparent hover:bg-white/10 rounded-full" 
       onClick={onToggle}
       aria-label={isOpen ? "إغلاق القائمة" : "فتح القائمة"}
     >

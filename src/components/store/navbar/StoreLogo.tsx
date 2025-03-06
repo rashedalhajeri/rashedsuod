@@ -12,7 +12,7 @@ const StoreLogo: React.FC<StoreLogoProps> = ({ storeName, logoUrl, storeDomain }
   return (
     <Link to={`/store/${storeDomain}`} className="flex items-center gap-3">
       {logoUrl ? (
-        <div className="h-12 w-12 rounded-full overflow-hidden border border-gray-200 flex items-center justify-center bg-white shadow-sm">
+        <div className="h-12 w-12 rounded-full overflow-hidden border border-white/20 flex items-center justify-center bg-white/10 shadow-sm">
           <img 
             src={logoUrl} 
             alt={storeName} 
@@ -24,15 +24,15 @@ const StoreLogo: React.FC<StoreLogoProps> = ({ storeName, logoUrl, storeDomain }
           />
         </div>
       ) : (
-        <div className="h-12 w-12 bg-gradient-to-br from-primary/80 to-primary rounded-full flex items-center justify-center border border-primary/20 shadow-sm">
-          <span className="text-lg font-bold text-white">
+        <div className="h-12 w-12 bg-white rounded-full flex items-center justify-center border border-white/20 shadow-sm">
+          <span className="text-lg font-bold text-blue-600">
             {storeName ? storeName.charAt(0).toUpperCase() : "S"}
           </span>
         </div>
       )}
       <div className="flex flex-col">
-        <span className="font-bold text-xl text-gray-800">{storeName}</span>
-        <span className="text-xs text-gray-500">متجر إلكتروني احترافي</span>
+        <span className="font-bold text-xl text-white">{storeName}</span>
+        <span className="text-xs text-white/80">متجر إلكتروني احترافي</span>
       </div>
     </Link>
   );

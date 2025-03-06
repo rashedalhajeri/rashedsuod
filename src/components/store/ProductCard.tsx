@@ -90,6 +90,18 @@ const ProductCard: React.FC<ProductCardProps> = ({
         </div>
         
         <CardContent className="p-4">
+          {/* Brand logo */}
+          <div className="flex items-center justify-end mb-2">
+            <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center">
+              <img src="/placeholder.svg" alt="Brand" className="h-5 w-5 object-contain" />
+            </div>
+          </div>
+          
+          {/* Product Name */}
+          <h3 className="font-bold text-lg hover:text-blue-600 line-clamp-1 transition-colors">
+            {product.name}
+          </h3>
+          
           {/* Rating */}
           <div className="flex items-center gap-1 text-yellow-500 mb-1">
             {[1, 2, 3, 4, 5].map((star) => (
@@ -101,20 +113,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
             <span className="text-xs text-gray-500 mr-1">(4.0)</span>
           </div>
           
-          {/* Product Name */}
-          <h3 className="font-bold text-lg hover:text-primary line-clamp-1 transition-colors">
-            {product.name}
-          </h3>
-          
-          {/* Product Description */}
-          <p className="text-gray-600 my-2 line-clamp-2 text-sm min-h-[40px] overflow-hidden">
-            {product.description || ""}
-          </p>
-          
           {/* Price and Status */}
           <div className="mt-2 flex items-center justify-between">
             <div className="flex flex-col">
-              <div className="font-bold text-lg text-primary">
+              <div className="font-bold text-lg text-blue-600">
                 {formatCurrency(product.price, product.currency)}
               </div>
               {product.original_price && product.original_price > product.price && (
@@ -123,18 +125,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 </div>
               )}
             </div>
-            {product.inventory_status && (
-              <Badge variant={product.inventory_status === "in_stock" ? "outline" : "secondary"} className="text-xs">
-                {product.inventory_status === "in_stock" ? "متوفر" : "نفذت الكمية"}
-              </Badge>
-            )}
           </div>
         </CardContent>
         
         <CardFooter className="p-4 pt-0">
           <Button 
             onClick={handleAddToCart} 
-            className="w-full gap-2 hover:shadow-md transition-all bg-primary hover:bg-primary/90"
+            className="w-full gap-2 hover:shadow-md transition-all bg-blue-600 hover:bg-blue-700 text-white"
             disabled={product.stock_quantity === 0}
           >
             <ShoppingCart className="h-4 w-4" /> 

@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useIsMobile } from "@/hooks/use-media-query";
 import AuthLinks from "./AuthLinks";
 import SearchToggle from "./SearchToggle";
 import FavoritesButton from "./FavoritesButton";
@@ -23,6 +24,28 @@ const NavActions: React.FC<NavActionsProps> = ({
   isMobileMenuOpen,
   setIsMobileMenuOpen
 }) => {
+  const isMobile = useIsMobile();
+  
+  if (isMobile) {
+    return (
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center gap-2">
+          <FavoritesButton />
+        </div>
+        
+        <CartButton 
+          storeDomain={storeDomain} 
+          totalItems={totalItems} 
+        />
+        
+        <SearchToggle 
+          showSearch={showSearch} 
+          setShowSearch={setShowSearch} 
+        />
+      </div>
+    );
+  }
+  
   return (
     <div className="flex items-center gap-2 sm:gap-4">
       {/* Authentication Links - Desktop */}

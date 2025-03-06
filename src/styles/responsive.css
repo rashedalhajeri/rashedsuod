@@ -38,6 +38,25 @@
   .dashboard-stat-value {
     @apply text-xl;
   }
+  
+  /* تخصيص عناصر المتجر للهواتف */
+  .store-card {
+    @apply rounded-lg;
+  }
+  
+  .store-card-content {
+    @apply p-3;
+  }
+  
+  /* تحسين شكل البحث */
+  .search-bar-mobile {
+    @apply py-2 px-4 rounded-full text-base;
+  }
+  
+  /* تعديل التنقل بين الفئات */
+  .scroll-container {
+    @apply gap-2;
+  }
 }
 
 /* تحسينات مخصصة للأجهزة اللوحية */
@@ -45,4 +64,48 @@
   .tablet-optimized {
     @apply p-4;
   }
+  
+  /* تحسينات للنافذة الرئيسية */
+  .hero-banner {
+    @apply py-16;
+  }
+  
+  /* تعديل عدد العناصر في الصف */
+  .product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* تحسينات للشاشات الكبيرة */
+@media (min-width: 1025px) {
+  /* زيادة المساحات بين العناصر للشاشات الكبيرة */
+  .container {
+    @apply px-6;
+  }
+  
+  /* تكبير حجم البطاقات */
+  .product-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  
+  /* تحسين شكل العناصر المميزة */
+  .featured-section {
+    @apply py-16;
+  }
+}
+
+/* تحسينات للواجهة العربية */
+.rtl-layout {
+  direction: rtl;
+  text-align: right;
+}
+
+.rtl-layout .ml-auto {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.rtl-layout .mr-auto {
+  margin-right: 0;
+  margin-left: auto;
 }

@@ -18,11 +18,11 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
   onClearSearch
 }) => {
   return (
-    <section className="py-12 bg-white">
+    <section className="py-8 bg-white">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="store-section-title">
-            {activeCategory === "جميع المنتجات" ? "جميع المنتجات" : activeCategory}
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold relative pr-3 before:content-[''] before:absolute before:right-0 before:top-0 before:bottom-0 before:w-1 before:bg-blue-600 before:rounded-full">
+            {activeCategory === "جميع المنتجات" ? "أحدث العروض" : activeCategory}
           </h2>
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-500">
@@ -33,7 +33,7 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
         
         {searchQuery && (
           <p className="mb-6 text-gray-500">
-            نتائج البحث عن: <span className="font-medium text-primary">{searchQuery}</span>
+            نتائج البحث عن: <span className="font-medium text-blue-600">{searchQuery}</span>
           </p>
         )}
         
@@ -59,6 +59,12 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
             )}
           </div>
         )}
+        
+        <div className="text-center mt-6">
+          <Button variant="outline" className="rounded-full px-6">
+            عرض الكل
+          </Button>
+        </div>
       </div>
     </section>
   );

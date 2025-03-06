@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useCart } from "@/hooks/use-cart";
+import { useIsMobile } from "@/hooks/use-media-query";
 
 // Import components
 import StoreLogo from "./navbar/StoreLogo";
@@ -21,6 +22,7 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
 }) => {
   const { storeDomain } = useParams<{ storeDomain: string }>();
   const { cart } = useCart();
+  const isMobile = useIsMobile();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -59,28 +61,52 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
   }, [isMobileMenuOpen]);
 
   return (
-    <header className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled ? "glass-nav py-2" : "bg-white py-4"}`}>
+    <header className={`sticky top-0 z-50 transition-all duration-300 ${
+      isScrolled 
+        ? "bg-gradient-to-r from-blue-700 to-green-500 py-2 shadow-md" 
+        : "bg-gradient-to-r from-blue-700 to-green-500 py-4"
+    }`}>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
           {/* Logo and Store Name */}
-          <StoreLogo 
-            storeName={storeName} 
-            logoUrl={logoUrl} 
-            storeDomain={storeDomain || ''} 
-          />
+          {!isMobile && (
+            <StoreLogo 
+              storeName={storeName} 
+              logoUrl={logoUrl} 
+              storeDomain={storeDomain || ''} 
+            />
+          )}
+          
+          {/* Mobile with centered cart icon and search */}
+          {isMobile && (
+            <div className="flex items-center justify-between w-full">
+              <NavActions 
+                storeDomain={storeDomain || ''} 
+                totalItems={totalItems}
+                showSearch={showSearch}
+                setShowSearch={setShowSearch}
+                isMobileMenuOpen={isMobileMenuOpen}
+                setIsMobileMenuOpen={setIsMobileMenuOpen}
+              />
+            </div>
+          )}
           
           {/* Desktop Navigation */}
-          <DesktopNavigation storeDomain={storeDomain || ''} />
-          
-          {/* Actions (Search, Cart, Mobile Menu) */}
-          <NavActions 
-            storeDomain={storeDomain || ''} 
-            totalItems={totalItems}
-            showSearch={showSearch}
-            setShowSearch={setShowSearch}
-            isMobileMenuOpen={isMobileMenuOpen}
-            setIsMobileMenuOpen={setIsMobileMenuOpen}
-          />
+          {!isMobile && (
+            <>
+              <DesktopNavigation storeDomain={storeDomain || ''} />
+              
+              {/* Actions (Search, Cart, Mobile Menu) */}
+              <NavActions 
+                storeDomain={storeDomain || ''} 
+                totalItems={totalItems}
+                showSearch={showSearch}
+                setShowSearch={setShowSearch}
+                isMobileMenuOpen={isMobileMenuOpen}
+                setIsMobileMenuOpen={setIsMobileMenuOpen}
+              />
+            </>
+          )}
         </div>
         
         {/* Search bar - conditionally rendered */}

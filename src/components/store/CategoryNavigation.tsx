@@ -16,8 +16,8 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = ({
 }) => {
   return (
     <div className="bg-white py-4 border-b sticky top-16 left-0 right-0 z-40 shadow-sm">
-      <div className="container mx-auto px-4">
-        <div className="scroll-container hide-scrollbar">
+      <div className="container mx-auto">
+        <div className="scroll-container hide-scrollbar px-4">
           {categories.map((category, index) => (
             <motion.div
               key={category}
@@ -34,9 +34,9 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = ({
                 variant={activeCategory === category ? "default" : "outline"} 
                 className={`rounded-full whitespace-nowrap ${
                   activeCategory === category 
-                    ? "bg-primary text-white hover:bg-primary/90 shadow-sm" 
-                    : "bg-white hover:bg-primary/10 hover:text-primary border-gray-200"
-                } transition-all min-w-24 font-medium`}
+                    ? "bg-blue-600 text-white hover:bg-blue-700 shadow-sm border-none" 
+                    : "bg-white hover:bg-blue-50 hover:text-blue-600 border-gray-200"
+                } transition-all min-w-24 font-medium text-sm`}
                 onClick={() => onCategoryChange(category)}
               >
                 {category}
