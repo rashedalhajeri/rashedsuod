@@ -133,7 +133,7 @@ const Store = () => {
     <div className="min-h-screen flex flex-col bg-gray-50" dir="rtl">
       <StoreNavbar storeName={storeData?.store_name} logoUrl={storeData?.logo_url} />
       
-      <main className="flex-grow container mx-auto px-4">
+      <main className="flex-grow container mx-auto px-4 pt-16"> {/* Added pt-16 for proper spacing below fixed navbar */}
         {/* App Banner - Now conditional based on bannerUrl existence */}
         <StoreBanner 
           storeName={storeData?.store_name}
