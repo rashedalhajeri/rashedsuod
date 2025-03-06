@@ -91,6 +91,11 @@ const Products: React.FC = () => {
         return;
       }
       
+      if (formData.images.length === 0) {
+        toast.error("يرجى إضافة صورة واحدة على الأقل");
+        return;
+      }
+      
       const { data, error } = await supabase
         .from('products')
         .insert([
@@ -354,7 +359,11 @@ const Products: React.FC = () => {
                     images={formData.images}
                     onImagesChange={handleImagesChange}
                     maxImages={5}
+                    storeId={storeData?.id}
                   />
+                  <p className="text-xs text-gray-500">
+                    يمكنك إضافة حتى 5 صور. اسحب وأفلت الصور أو اضغط لرفع الصور من جهازك.
+                  </p>
                 </div>
               </div>
             </TabsContent>

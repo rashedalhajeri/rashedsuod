@@ -1,26 +1,34 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Upload, X, Image as ImageIcon, Plus } from "lucide-react";
+import { Upload, X, Image as ImageIcon, Plus, FileImage } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ImageUploadGridProps {
   images: string[];
   onImagesChange: (images: string[]) => void;
   maxImages?: number;
+  storeId?: string;
 }
 
 const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
   images,
   onImagesChange,
-  maxImages = 5
+  maxImages = 5,
+  storeId
 }) => {
   const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const handleAddImage = (url: string) => {
     if (images.length < maxImages) {
       onImagesChange([...images, url]);
+    } else {
+      toast.error(`لا يمكن إضافة أكثر من ${maxImages} صور`);
     }
   };
   
@@ -50,9 +58,10 @@ const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
     e.preventDefault();
     setIsDragging(false);
     
+    // Handle image URLs from drag and drop
     const items = e.dataTransfer.items;
     if (items) {
-      // استخدم for loop بدلاً من forEach لأننا قد نحتاج للخروج منها مبكراً
+      // Check for string data (URLs)
       for (let i = 0; i < items.length; i++) {
         if (items[i].kind === 'string' && items[i].type.match('^text/uri-list')) {
           items[i].getAsString((url) => {
@@ -62,11 +71,109 @@ const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
           });
         }
       }
+      
+      // Check for files
+      const files = e.dataTransfer.files;
+      if (files && files.length > 0) {
+        handleFileUpload(files);
+      }
+    }
+  };
+  
+  const handleFileUpload = async (files: FileList) => {
+    if (images.length + files.length > maxImages) {
+      toast.error(`لا يمكن إضافة أكثر من ${maxImages} صور`);
+      return;
+    }
+    
+    setIsUploading(true);
+    const uploadPromises = Array.from(files).map(async (file) => {
+      // Validate the file is an image
+      if (!file.type.startsWith('image/')) {
+        toast.error(`الملف ${file.name} ليس صورة`);
+        return null;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`حجم الصورة ${file.name} يجب أن يكون أقل من 5 ميجابايت`);
+        return null;
+      }
+      
+      try {
+        // Generate a unique file name to avoid collisions
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+        const filePath = `products/${storeId || 'uploads'}/${fileName}`;
+        
+        // Upload to public/uploads for now (in real app, would use Supabase Storage)
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        // For this demo, create a URL for the uploaded file
+        const objectUrl = URL.createObjectURL(file);
+        return objectUrl;
+        
+        // In a real app with Supabase storage:
+        // const { data, error } = await supabase.storage
+        //   .from('product-images')
+        //   .upload(filePath, file);
+        //
+        // if (error) throw error;
+        // 
+        // const { data: { publicUrl } } = supabase.storage
+        //   .from('product-images')
+        //   .getPublicUrl(data.path);
+        //
+        // return publicUrl;
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        toast.error(`فشل رفع الصورة ${file.name}`);
+        return null;
+      }
+    });
+    
+    try {
+      const uploadedUrls = await Promise.all(uploadPromises);
+      const validUrls = uploadedUrls.filter(url => url !== null) as string[];
+      
+      onImagesChange([...images, ...validUrls]);
+      toast.success(`تم رفع ${validUrls.length} صورة بنجاح`);
+    } catch (error) {
+      console.error('Error processing uploads:', error);
+      toast.error('حدث خطأ أثناء رفع الصور');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+  
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+  
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      handleFileUpload(files);
+    }
+    
+    // Reset the input value to allow uploading the same file again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
   
   return (
     <div className="space-y-3">
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleFileChange} 
+        accept="image/*" 
+        multiple 
+        className="hidden" 
+      />
+      
       <div 
         className={cn(
           "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2",
@@ -118,22 +225,34 @@ const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
                 isDragging 
                   ? "border-purple-400 bg-purple-50" 
                   : "border-gray-300 hover:border-purple-300 hover:bg-purple-50/50",
-                images.length === 0 && "col-span-full h-28 md:h-40"
+                images.length === 0 && "col-span-full h-28 md:h-40",
+                isUploading && "opacity-50 pointer-events-none"
               )}
-              onClick={handleUrlInput}
+              onClick={triggerFileInput}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
             >
-              <div className="rounded-full bg-purple-100 p-2 mb-1">
-                <Plus className="h-3 w-3 text-purple-500" />
-              </div>
-              <p className="text-xs font-medium mb-1 text-purple-700">
-                إضافة صورة
-              </p>
-              <p className="text-[10px] text-gray-500">
-                اسحب وأفلت أو انقر لإضافة رابط
-              </p>
+              {isUploading ? (
+                <>
+                  <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+                  <p className="text-xs font-medium text-purple-700">
+                    جاري الرفع...
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="rounded-full bg-purple-100 p-2 mb-1">
+                    <FileImage className="h-4 w-4 text-purple-500" />
+                  </div>
+                  <p className="text-xs font-medium mb-1 text-purple-700">
+                    إضافة صورة
+                  </p>
+                  <p className="text-[10px] text-gray-500">
+                    اضغط لاختيار ملف أو اسحب وأفلت
+                  </p>
+                </>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

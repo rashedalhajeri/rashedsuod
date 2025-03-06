@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -48,7 +47,6 @@ const ProductDetail: React.FC = () => {
         
         setProduct(data);
         
-        // جمع كل الصور (الصورة الرئيسية والصور الإضافية)
         const allImages = [
           ...(data.image_url ? [data.image_url] : []),
           ...(data.additional_images || [])
@@ -95,6 +93,12 @@ const ProductDetail: React.FC = () => {
     
     try {
       setSaving(true);
+      
+      if (formData.images.length === 0) {
+        toast.error("يرجى إضافة صورة واحدة على الأقل");
+        setSaving(false);
+        return;
+      }
       
       const updates = {
         ...formData,
@@ -243,7 +247,11 @@ const ProductDetail: React.FC = () => {
                     images={formData.images}
                     onImagesChange={handleImagesChange}
                     maxImages={5}
+                    storeId={storeData?.id}
                   />
+                  <p className="text-xs text-gray-500">
+                    يمكنك إضافة حتى 5 صور. اسحب وأفلت الصور أو اضغط لرفع الصور من جهازك.
+                  </p>
                 </div>
                 
                 {formData.images.length === 0 && (
