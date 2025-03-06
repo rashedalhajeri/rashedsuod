@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { RefreshCw } from "lucide-react";
 import StorefrontLayout from "@/layouts/StorefrontLayout";
 import { getStoreFromUrl } from "@/utils/url-utils";
 import { toast } from "sonner";

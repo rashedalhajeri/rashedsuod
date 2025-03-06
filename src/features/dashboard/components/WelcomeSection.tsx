@@ -44,6 +44,8 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
     domain_name: storeDomain
   });
   
+  console.log("Generated store URL:", finalStoreUrl); // Debugging log
+  
   // Copy store link to clipboard
   const copyStoreLink = () => {
     if (!finalStoreUrl) return;
@@ -70,6 +72,7 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
       return;
     }
     
+    console.log("Opening store URL:", finalStoreUrl);
     window.open(finalStoreUrl, '_blank');
   };
   
