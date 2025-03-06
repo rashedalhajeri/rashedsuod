@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link, useParams } from "react-router-dom";
-import { ShoppingCart, Menu, Search, User } from "lucide-react";
+import { ShoppingCart, Menu, Search, User, Phone, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -30,15 +30,15 @@ const StoreHeader: React.FC<StoreHeaderProps> = ({ storeData, isLoading }) => {
           <div className="flex items-center">
             <Link to={`/store/${storeId}`} className="flex items-center">
               {isLoading ? (
-                <Skeleton className="h-8 w-8 rounded-full" />
+                <Skeleton className="h-10 w-10 rounded-full" />
               ) : storeData?.logo_url ? (
                 <img 
                   src={storeData.logo_url} 
                   alt={storeData.store_name} 
-                  className="h-8 w-8 rounded-full object-cover"
+                  className="h-10 w-10 rounded-full object-cover border-2 border-blue-100"
                 />
               ) : (
-                <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold">
                   {storeData?.store_name?.charAt(0) || 'S'}
                 </div>
               )}
@@ -68,6 +68,20 @@ const StoreHeader: React.FC<StoreHeaderProps> = ({ storeData, isLoading }) => {
               المنتجات
             </Link>
           </nav>
+          
+          {/* معلومات الاتصال - للشاشات المتوسطة والكبيرة */}
+          {!isLoading && storeData?.phone_number && (
+            <div className="hidden md:flex items-center text-sm text-gray-600 ml-auto mr-6">
+              <Phone className="h-4 w-4 ml-1" />
+              <span>{storeData.phone_number}</span>
+              {storeData?.country && (
+                <div className="flex items-center mr-4">
+                  <MapPin className="h-4 w-4 ml-1" />
+                  <span>{storeData.country}</span>
+                </div>
+              )}
+            </div>
+          )}
           
           {/* أزرار الإجراءات */}
           <div className="flex items-center space-x-2 space-x-reverse">
@@ -124,6 +138,21 @@ const StoreHeader: React.FC<StoreHeaderProps> = ({ storeData, isLoading }) => {
                         سلة التسوق
                       </Link>
                     </SheetClose>
+                    
+                    {storeData?.phone_number && (
+                      <div className="border-t pt-4 mt-4">
+                        <div className="flex items-center text-gray-700 mb-2">
+                          <Phone className="h-4 w-4 ml-2" />
+                          <span>{storeData.phone_number}</span>
+                        </div>
+                        {storeData?.country && (
+                          <div className="flex items-center text-gray-700">
+                            <MapPin className="h-4 w-4 ml-2" />
+                            <span>{storeData.country}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </SheetContent>
               </Sheet>

@@ -1,10 +1,11 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Plus, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCurrencyFormatter } from "@/hooks/use-store-data";
+import { toast } from "sonner";
 
 interface FeaturedProductsProps {
   products: any[];
@@ -20,6 +21,11 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
   currency
 }) => {
   const formatCurrency = getCurrencyFormatter(currency);
+  
+  const handleAddToCart = (e: React.MouseEvent, productName: string) => {
+    e.preventDefault(); // منع الانتقال للمنتج عند النقر على الزر
+    toast.success(`تم إضافة ${productName} إلى سلة التسوق`);
+  };
   
   if (isLoading) {
     return (
@@ -56,9 +62,9 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
         <Link 
           to={`/store/${storeId}/products/${product.id}`} 
           key={product.id}
-          className="bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow group"
+          className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow group relative"
         >
-          <div className="h-56 bg-gray-200 overflow-hidden relative">
+          <div className="h-56 bg-gray-100 overflow-hidden relative">
             {product.image_url ? (
               <img 
                 src={product.image_url} 
@@ -72,8 +78,9 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
             )}
             
             {/* علامة منتج مميز */}
-            <div className="absolute top-2 right-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded">
-              مميز
+            <div className="absolute top-2 right-2 bg-gradient-to-r from-amber-400 to-amber-500 text-white text-xs px-3 py-1 rounded-full flex items-center">
+              <Star className="h-3 w-3 mr-1 fill-current" />
+              <span>مميز</span>
             </div>
           </div>
           <div className="p-4">
@@ -81,11 +88,18 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
             <p className="text-gray-600 text-sm mb-2 line-clamp-2">
               {product.description || ""}
             </p>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mt-auto">
               <span className="text-blue-600 font-bold">
                 {formatCurrency(product.price)}
               </span>
-              <Button size="sm">إضافة للسلة</Button>
+              <Button 
+                size="sm" 
+                className="gap-1"
+                onClick={(e) => handleAddToCart(e, product.name)}
+              >
+                <Plus className="h-4 w-4" />
+                <span>إضافة للسلة</span>
+              </Button>
             </div>
           </div>
         </Link>
