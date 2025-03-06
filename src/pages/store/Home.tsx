@@ -1,241 +1,150 @@
 
-import React, { useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { getStoreFromUrl } from "@/utils/url-utils";
-import { ShoppingBag, ChevronRight, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
-import StoreHeader from "@/components/store/StoreHeader";
-import FeaturedProducts from "@/components/store/FeaturedProducts";
-import StoreFooter from "@/components/store/StoreFooter";
+import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
+import StorefrontLayout from "@/layouts/StorefrontLayout";
+import { getStoreFromUrl } from "@/utils/url-utils";
 
 const StoreHome: React.FC = () => {
-  const { storeId } = useParams();
-  const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
-  
-  // استعلام لجلب بيانات المتجر
-  const { data: storeData, isLoading: storeLoading, error: storeError, refetch: refetchStore } = useQuery({
-    queryKey: ['store', storeId],
-    queryFn: async () => {
-      if (!storeId) throw new Error("معرف المتجر غير متوفر");
-      const { data, error } = await getStoreFromUrl(storeId, supabase);
-      
-      if (error) {
-        console.error("Store lookup error:", error);
-        throw new Error(error.message || "لم نتمكن من العثور على المتجر المطلوب");
-      }
-      
-      if (!data) {
-        throw new Error("لم نتمكن من العثور على المتجر المطلوب");
-      }
-      
-      return data;
-    },
-    staleTime: 1000 * 60 * 5, // 5 دقائق
-  });
-  
-  // استعلام لجلب المنتجات المميزة
-  const { data: featuredProducts, isLoading: productsLoading } = useQuery({
-    queryKey: ['featuredProducts', storeData?.id],
-    queryFn: async () => {
-      if (!storeData?.id) return [];
-      
-      // Since we don't have is_featured field yet, just get the most recent products
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('store_id', storeData.id)
-        .order('created_at', { ascending: false })
-        .limit(6);
-        
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!storeData?.id,
-    staleTime: 1000 * 60 * 5, // 5 دقائق
-  });
-  
-  // استعلام لجلب المنتجات الجديدة
-  const { data: newProducts, isLoading: newProductsLoading } = useQuery({
-    queryKey: ['newProducts', storeData?.id],
-    queryFn: async () => {
-      if (!storeData?.id) return [];
-      
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('store_id', storeData.id)
-        .order('created_at', { ascending: false })
-        .limit(8);
-        
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!storeData?.id,
-    staleTime: 1000 * 60 * 5, // 5 دقائق
-  });
-  
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      toast.info("البحث عن: " + searchQuery);
-      // التوجيه إلى صفحة البحث
-      navigate(`/store/${storeId}/products?search=${encodeURIComponent(searchQuery)}`);
-    }
-  };
+  const { storeId } = useParams<{ storeId: string }>();
+  const [store, setStore] = useState<any>(null);
+  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // التعامل مع حالة وجود خطأ أو عدم وجود المتجر
-  if (storeError) {
-    return (
-      <div className="min-h-screen flex items-center justify-center flex-col p-4" dir="rtl">
-        <ErrorState 
-          title="خطأ في تحميل المتجر"
-          message={storeError.message || "لم نتمكن من العثور على المتجر المطلوب. تأكد من صحة الرابط المستخدم."}
-          onRetry={() => refetchStore()}
-        />
+  useEffect(() => {
+    const fetchStoreData = async () => {
+      if (!storeId) {
+        setError("معرف المتجر غير متوفر");
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        console.log("Fetching store data for:", storeId);
+        // Use the utility function to get store data
+        const { data: storeData, error: storeError } = await getStoreFromUrl(storeId, supabase);
         
-        <div className="mt-4 flex flex-col md:flex-row gap-3">
-          <Button asChild variant="outline">
-            <Link to="/">العودة للصفحة الرئيسية</Link>
-          </Button>
-          
-          <Button asChild variant="default">
-            <Link to="/dashboard">الذهاب إلى لوحة التحكم</Link>
-          </Button>
-        </div>
-      </div>
+        if (storeError) {
+          console.error("Error fetching store:", storeError);
+          throw storeError;
+        }
+        
+        if (!storeData) {
+          console.error("Store not found for ID:", storeId);
+          throw new Error("المتجر غير موجود");
+        }
+        
+        console.log("Store found:", storeData);
+        setStore(storeData);
+        
+        // Fetch featured products
+        const { data: productsData, error: productsError } = await supabase
+          .from("products")
+          .select("*")
+          .eq("store_id", storeData.id)
+          .limit(4);
+        
+        if (productsError) throw productsError;
+        
+        setFeaturedProducts(productsData || []);
+      } catch (err) {
+        console.error("Error fetching store data:", err);
+        setError("حدث خطأ أثناء تحميل بيانات المتجر");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchStoreData();
+  }, [storeId]);
+
+  if (loading) {
+    return (
+      <StorefrontLayout>
+        <LoadingState message="جاري تحميل بيانات المتجر..." />
+      </StorefrontLayout>
     );
   }
-  
+
+  if (error) {
+    return (
+      <StorefrontLayout>
+        <ErrorState 
+          title="خطأ في تحميل المتجر"
+          message={error}
+          onRetry={() => window.location.reload()}
+        />
+      </StorefrontLayout>
+    );
+  }
+
+  // Store URL for links
+  const baseUrl = `/store/${store.id}`;
+
   return (
-    <div className="min-h-screen flex flex-col" dir="rtl">
-      <StoreHeader storeData={storeData} isLoading={storeLoading} />
-      
-      <main className="flex-1">
-        {/* قسم البحث */}
-        <div className="bg-gradient-to-r from-blue-100 to-indigo-50 py-10">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center">
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">
-                {storeLoading ? 
-                  <Skeleton className="h-10 w-3/4 mx-auto" /> : 
-                  `مرحباً بك في ${storeData?.store_name || 'متجرنا'}`
-                }
-              </h1>
-              <p className="text-gray-600 mb-6">تسوق أحدث المنتجات بأفضل الأسعار</p>
-              
-              <form onSubmit={handleSearch} className="relative flex items-center">
-                <Input
-                  type="text"
-                  placeholder="ابحث عن منتجات..."
-                  className="pr-10 text-right"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <Button type="submit" className="mr-2">ابحث</Button>
-              </form>
-            </div>
-          </div>
+    <StorefrontLayout>
+      <div className="container mx-auto py-8">
+        <div className="text-center mb-12">
+          <h1 className="text-3xl font-bold mb-4">{store.store_name}</h1>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            مرحباً بك في متجر {store.store_name}. استعرض مجموعتنا من المنتجات المميزة.
+          </p>
         </div>
         
-        {/* المنتجات المميزة */}
-        <section className="py-12 bg-white">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">منتجات مميزة</h2>
-              <Link 
-                to={`/store/${storeId}/products`} 
-                className="text-blue-600 hover:text-blue-800 flex items-center"
-              >
-                عرض الكل <ChevronRight className="h-4 w-4 mr-1" />
-              </Link>
-            </div>
-            
-            <FeaturedProducts 
-              products={featuredProducts || []} 
-              isLoading={productsLoading} 
-              storeId={storeId || ''} 
-              currency={storeData?.currency || 'KWD'}
-            />
+        {/* Featured Products */}
+        <section className="mb-12">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">منتجات مميزة</h2>
+            <Button variant="outline" asChild>
+              <Link to={`${baseUrl}/products`}>عرض كل المنتجات</Link>
+            </Button>
           </div>
-        </section>
-        
-        {/* المنتجات الجديدة */}
-        <section className="py-12 bg-gray-50">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">أحدث المنتجات</h2>
-              <Link 
-                to={`/store/${storeId}/products`} 
-                className="text-blue-600 hover:text-blue-800 flex items-center"
-              >
-                عرض الكل <ChevronRight className="h-4 w-4 mr-1" />
-              </Link>
+          
+          {featuredProducts.length === 0 ? (
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <p className="text-gray-500">لا توجد منتجات متاحة حالياً</p>
             </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {newProductsLoading ? (
-                Array(4).fill(0).map((_, i) => (
-                  <div key={i} className="bg-white rounded-lg shadow overflow-hidden">
-                    <Skeleton className="h-48 w-full" />
-                    <div className="p-4">
-                      <Skeleton className="h-6 w-3/4 mb-2" />
-                      <Skeleton className="h-4 w-1/2 mb-4" />
-                      <Skeleton className="h-10 w-full" />
-                    </div>
-                  </div>
-                ))
-              ) : newProducts && newProducts.length > 0 ? (
-                newProducts.map((product) => (
-                  <Link 
-                    to={`/store/${storeId}/products/${product.id}`} 
-                    key={product.id}
-                    className="bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow"
-                  >
-                    <div className="h-48 bg-gray-200 overflow-hidden">
-                      {product.image_url ? (
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {featuredProducts.map((product) => (
+                <Link 
+                  key={product.id} 
+                  to={`${baseUrl}/products/${product.id}`}
+                  className="group block"
+                >
+                  <div className="bg-gray-100 aspect-square rounded-md overflow-hidden mb-2">
+                    {product.image_url ? (
+                      <img 
+                        src={product.image_url} 
+                        alt={product.name} 
+                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "/placeholder.svg";
+                        }}
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
                         <img 
-                          src={product.image_url} 
-                          alt={product.name} 
-                          className="w-full h-full object-cover"
+                          src="/placeholder.svg" 
+                          alt="Placeholder" 
+                          className="w-16 h-16 opacity-50" 
                         />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <ShoppingBag className="h-16 w-16 text-gray-400" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-medium text-lg mb-1 line-clamp-1">{product.name}</h3>
-                      <p className="text-blue-600 font-bold">
-                        {new Intl.NumberFormat('ar-EG', {
-                          style: 'currency',
-                          currency: storeData?.currency || 'KWD'
-                        }).format(product.price)}
-                      </p>
-                      <Button className="w-full mt-3">إضافة للسلة</Button>
-                    </div>
-                  </Link>
-                ))
-              ) : (
-                <div className="col-span-full text-center py-8">
-                  <p className="text-gray-500">لا توجد منتجات جديدة حالياً</p>
-                </div>
-              )}
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="font-medium">{product.name}</h3>
+                  <p className="text-gray-900 font-bold">{product.price} ر.س</p>
+                </Link>
+              ))}
             </div>
-          </div>
+          )}
         </section>
-      </main>
-      
-      <StoreFooter storeData={storeData} />
-    </div>
+      </div>
+    </StorefrontLayout>
   );
 };
 

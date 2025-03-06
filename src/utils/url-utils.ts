@@ -32,13 +32,15 @@ export const formatStoreUrl = (domainName: string): string => {
     return `https://${cleanDomain}`;
   }
   
-  // In development environment, always use path-based URL format
+  // In development environment, format as a path instead of subdomain
   if (isDevelopment) {
-    // Use current path structure for development
+    // Use current origin for development
+    console.log('Creating development URL with path:', `${window.location.origin}/store/${cleanDomain}`);
     return `${window.location.origin}/store/${cleanDomain}`;
   }
   
   // In production, format as subdomain
+  console.log('Creating production URL with subdomain:', `https://${cleanDomain}.linok.me`);
   return `https://${cleanDomain}.linok.me`;
 };
 
@@ -66,11 +68,13 @@ export const getStoreUrl = (storeData: any): string => {
   if (storeData.id) {
     // In development, use path-based URL
     if (isDevelopment) {
+      console.log('Creating development URL with ID:', `${window.location.origin}/store/${storeData.id}`);
       return `${window.location.origin}/store/${storeData.id}`;
     }
     
-    // In production with no domain name yet, use ID as subdomain
-    return `https://${storeData.id}.linok.me`;
+    // In production with no domain name yet, use full URL with path
+    console.log('Creating production URL with ID path:', `https://linok.me/store/${storeData.id}`);
+    return `https://linok.me/store/${storeData.id}`;
   }
   
   return '';
@@ -85,51 +89,6 @@ export const isValidDomainName = (domainName: string): boolean => {
   // Only allow alphanumeric characters and hyphens, no spaces or special chars
   const domainRegex = /^[a-zA-Z0-9-]+$/;
   return domainRegex.test(domainName);
-};
-
-/**
- * Determine if the current URL should be redirected to the proper store domain format
- * @param storeData Store data object containing domain_name and id
- * @returns Boolean indicating if redirect is needed, and the target URL if true
- */
-export const shouldRedirectToStoreDomain = (storeData: any): { shouldRedirect: boolean; targetUrl: string } => {
-  if (!storeData) return { shouldRedirect: false, targetUrl: '' };
-  
-  const isDevelopment = window.location.hostname === 'localhost' || 
-                        window.location.hostname.includes('lovableproject.com') ||
-                        window.location.hostname.includes('lovable.app');
-  
-  // Don't redirect in development environment
-  if (isDevelopment) {
-    return { shouldRedirect: false, targetUrl: '' };
-  }
-  
-  const currentHostname = window.location.hostname;
-  
-  // Generate the expected hostname format
-  let expectedHostname = '';
-  if (storeData.domain_name) {
-    expectedHostname = `${storeData.domain_name}.linok.me`;
-  } else if (storeData.id) {
-    expectedHostname = `${storeData.id}.linok.me`;
-  }
-  
-  // If on linok.me domain but not on the right subdomain, should redirect
-  if (currentHostname.includes('linok.me') && 
-      currentHostname !== expectedHostname && 
-      expectedHostname) {
-    
-    const newUrl = `https://${expectedHostname}${window.location.pathname}${window.location.search}`;
-    return { shouldRedirect: true, targetUrl: newUrl };
-  }
-  
-  // If not on linok.me domain at all in production, should redirect
-  if (!currentHostname.includes('linok.me') && expectedHostname) {
-    const newUrl = `https://${expectedHostname}${window.location.pathname}${window.location.search}`;
-    return { shouldRedirect: true, targetUrl: newUrl };
-  }
-  
-  return { shouldRedirect: false, targetUrl: '' };
 };
 
 /**
@@ -150,57 +109,47 @@ export const getStoreFromUrl = async (storeId: string, supabase: any) => {
     if (!cleanId) {
       return { data: null, error: { message: "معرف المتجر غير صالح" } };
     }
-
-    // First try to find by domain name (case insensitive)
-    console.log('Looking up store by domain name:', cleanId);
-    const { data: domainResult, error: domainError } = await supabase
+    
+    // First try to fetch by domain name (more likely in production)
+    // Using ILIKE for case-insensitive matching
+    let { data, error } = await supabase
       .from("stores")
       .select("*")
       .ilike("domain_name", cleanId)
-      .maybeSingle();
+      .maybeSingle(); // Use maybeSingle instead of single to avoid errors
     
-    console.log('Domain search result:', domainResult, domainError);
+    console.log('Search by domain result:', data, error);
     
-    if (domainResult) {
-      console.log('Store found by domain name:', domainResult);
-      return { data: domainResult, error: null };
-    }
-    
-    // Check if this looks like a UUID
-    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanId);
-    
-    // If it looks like a UUID, try to find by ID
-    if (isUUID) {
-      console.log('Looking up store with ID:', cleanId);
-      const { data: idResult, error: idError } = await supabase
-        .from("stores")
-        .select("*")
-        .eq("id", cleanId)
-        .maybeSingle();
-        
-      console.log('ID search result:', idResult, idError);
-      
-      if (idResult) {
-        console.log('Store found by ID:', idResult);
-        return { data: idResult, error: null };
+    // If not found by domain, try by UUID
+    if (!data && !error) {
+      // Only try UUID lookup if the cleanId looks like a UUID
+      if (cleanId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+        console.log('Trying to fetch by UUID:', cleanId);
+        ({ data, error } = await supabase
+          .from("stores")
+          .select("*")
+          .eq("id", cleanId)
+          .maybeSingle());
+          
+        console.log('Search by UUID result:', data, error);
       }
     }
     
-    // If store is not found, return a clear error
-    return { 
-      data: null, 
-      error: { 
-        message: `المتجر "${cleanId}" غير موجود. تأكد من كتابة اسم المتجر بشكل صحيح.`
-      } 
-    };
+    // If we still don't have data, try again with exact matching (in case ilike returned multiple)
+    if (!data && !error) {
+      console.log('Trying exact domain match as fallback');
+      ({ data, error } = await supabase
+        .from("stores")
+        .select("*")
+        .eq("domain_name", cleanId)
+        .maybeSingle());
+        
+      console.log('Exact domain match result:', data, error);
+    }
     
+    return { data, error };
   } catch (err) {
     console.error("Error in getStoreFromUrl:", err);
-    return { 
-      data: null, 
-      error: { 
-        message: "حدث خطأ أثناء البحث عن المتجر. الرجاء المحاولة مرة أخرى." 
-      } 
-    };
+    return { data: null, error: err };
   }
 };

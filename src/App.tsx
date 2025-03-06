@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -26,6 +27,7 @@ import Coupons from "./pages/dashboard/Coupons";
 import Settings from "./pages/dashboard/Settings";
 
 // Import store pages
+import ProductDetail from "./pages/ProductDetail";
 import StoreHome from "./pages/store/Home";
 import StoreProducts from "./pages/store/Products";
 import StoreProductDetail from "./pages/store/ProductDetail";
@@ -111,6 +113,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+// Fixed ProtectedRoute to not use Navigate directly as a component
 const ProtectedRoute = ({ children, redirectIfStore = false }: { children: React.ReactNode, redirectIfStore?: boolean }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [hasStore, setHasStore] = useState<boolean | null>(null);
@@ -297,6 +300,12 @@ const App = () => (
             <Route path="/store/:storeId/products" element={<StoreProducts />} />
             <Route path="/store/:storeId/products/:productId" element={<StoreProductDetail />} />
             <Route path="/store/:storeId/cart" element={<Cart />} />
+            
+            {/* Legacy route - redirect to new structure */}
+            <Route 
+              path="/products/:productId" 
+              element={<ProductDetail />}
+            />
             
             {/* Catch-all route for 404 */}
             <Route path="*" element={<NotFound />} />

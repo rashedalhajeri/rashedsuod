@@ -1,90 +1,39 @@
 
 import React from "react";
-import { Star, Calendar, ShoppingBag, Tag, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface ProductInformationProps {
   product: any;
-  currency: string;
+  formattedPrice: string;
 }
 
-const ProductInformation: React.FC<ProductInformationProps> = ({ product, currency }) => {
-  const formatCurrency = (price: number) => {
-    return new Intl.NumberFormat('ar-EG', {
-      style: 'currency',
-      currency: currency || 'KWD'
-    }).format(price);
-  };
-  
-  // تنسيق التاريخ بشكل مقروء
-  const formatDate = (dateString: string) => {
-    if (!dateString) return '';
-    
-    try {
-      const date = new Date(dateString);
-      return new Intl.DateTimeFormat('ar-EG', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      }).format(date);
-    } catch (error) {
-      return dateString;
-    }
-  };
-  
+const ProductInformation: React.FC<ProductInformationProps> = ({ 
+  product, 
+  formattedPrice 
+}) => {
   return (
-    <div className="space-y-4">
-      <h1 className="text-3xl font-bold text-gray-800">{product.name}</h1>
-      
-      <div className="flex items-center">
-        <p className="text-2xl font-bold text-blue-600">
-          {formatCurrency(product.price)}
-        </p>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold mb-2">{product.name}</h1>
+        <div className="flex items-center gap-2">
+          <span className="text-xl font-bold text-primary">{formattedPrice}</span>
+          {product.stock_quantity <= 0 && (
+            <Badge variant="destructive">غير متوفر</Badge>
+          )}
+          {product.stock_quantity > 0 && product.stock_quantity <= 5 && (
+            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-200">
+              كمية محدودة
+            </Badge>
+          )}
+        </div>
       </div>
-      
+
       {product.description && (
-        <div className="mt-4">
-          <h3 className="text-lg font-medium mb-2 flex items-center">
-            <Info className="h-4 w-4 mr-2" /> الوصف
-          </h3>
+        <div className="py-4 border-t border-b border-gray-100">
+          <h2 className="text-lg font-medium mb-2">الوصف</h2>
           <p className="text-gray-700 whitespace-pre-line">{product.description}</p>
         </div>
       )}
-      
-      {product.stock_quantity !== null && (
-        <div className="mt-4 p-3 rounded-md border flex items-center gap-2">
-          <div className={`h-3 w-3 rounded-full ${
-            product.stock_quantity > 10 ? 'bg-green-500' : 
-            product.stock_quantity > 0 ? 'bg-yellow-500' : 'bg-red-500'
-          }`}></div>
-          <span className="text-sm font-medium">
-            {product.stock_quantity > 10 ? 'متوفر في المخزون' : 
-             product.stock_quantity > 0 ? `متبقي ${product.stock_quantity} فقط` : 'غير متوفر'}
-          </span>
-        </div>
-      )}
-      
-      {/* معلومات إضافية عن المنتج */}
-      <div className="mt-6 pt-4 border-t border-gray-200">
-        <div className="grid grid-cols-1 gap-3">
-          {product.created_at && (
-            <div className="flex items-center text-sm text-gray-600">
-              <Calendar className="h-4 w-4 ml-2" />
-              <span>تاريخ الإضافة: {formatDate(product.created_at)}</span>
-            </div>
-          )}
-          
-          {product.category && (
-            <div className="flex items-center text-sm text-gray-600">
-              <Tag className="h-4 w-4 ml-2" />
-              <span>التصنيف: </span>
-              <Badge variant="outline" className="mr-1 rounded-full">
-                {product.category}
-              </Badge>
-            </div>
-          )}
-        </div>
-      </div>
     </div>
   );
 };

@@ -1,183 +1,104 @@
 
-import React, { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { supabase, getCurrentUser } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import StoreHeader from "@/components/store/StoreHeader";
-import StoreFooter from "@/components/store/StoreFooter";
+import React from "react";
+import { Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
-import { ArrowRight } from "lucide-react";
-import { getStoreFromUrl } from "@/utils/url-utils";
+import StorefrontLayout from "@/layouts/StorefrontLayout";
 import ProductGallery from "@/features/store/product-detail/ProductGallery";
 import ProductInformation from "@/features/store/product-detail/ProductInformation";
+import QuantitySelector from "@/features/store/product-detail/QuantitySelector";
 import ProductActions from "@/features/store/product-detail/ProductActions";
 import { useProductDetail } from "@/features/store/product-detail/useProductDetail";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const ProductDetail = () => {
-  const { storeId, productId } = useParams();
-  const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState(null);
-  
-  // جلب معلومات المستخدم الحالي
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      const user = await getCurrentUser();
-      setCurrentUser(user);
-      console.log("Current user:", user);
-    };
-    
-    fetchCurrentUser();
-  }, []);
-  
-  // استعلام لجلب بيانات المتجر
-  const { data: storeData, isLoading: storeLoading, error: storeError, refetch: refetchStore } = useQuery({
-    queryKey: ['store', storeId],
-    queryFn: async () => {
-      if (!storeId) throw new Error("معرف المتجر غير متوفر");
-      const { data, error } = await getStoreFromUrl(storeId, supabase);
-      
-      if (error) {
-        console.error("Store lookup error:", error);
-        throw new Error(error.message || "لم نتمكن من العثور على المتجر المطلوب");
-      }
-      
-      if (!data) {
-        throw new Error("لم نتمكن من العثور على المتجر المطلوب");
-      }
-      
-      return data;
-    },
-  });
-  
-  // استخدام هوك تفاصيل المنتج
-  const { 
-    product, 
-    loading: productLoading, 
-    error: productError,
+const StoreProductDetail: React.FC = () => {
+  const {
+    storeId,
+    product,
+    loading,
+    error,
     quantity,
     formatCurrency,
     handleQuantityChange,
     handleAddToCart,
-    getAllImages,
-    refetch: refetchProduct
-  } = useProductDetail(productId || '', storeData);
-  
-  // التعامل مع حالة وجود خطأ في تحميل المتجر
-  if (storeError) {
+    getAllImages
+  } = useProductDetail();
+
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center flex-col p-4" dir="rtl">
+      <StorefrontLayout>
+        <LoadingState message="جاري تحميل المنتج..." />
+      </StorefrontLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <StorefrontLayout>
         <ErrorState 
-          title="خطأ في تحميل المتجر"
-          message={storeError.message || "لم نتمكن من العثور على المتجر المطلوب. تأكد من صحة الرابط المستخدم."}
-          onRetry={() => refetchStore()}
+          title="خطأ في تحميل المنتج"
+          message={error}
+          onRetry={() => window.location.reload()}
         />
-        
-        <div className="mt-4 flex flex-col md:flex-row gap-3">
-          <Button asChild variant="outline">
-            <Link to="/">العودة للصفحة الرئيسية</Link>
-          </Button>
-          
-          <Button asChild variant="default">
-            <Link to="/dashboard">الذهاب إلى لوحة التحكم</Link>
-          </Button>
-        </div>
-      </div>
+      </StorefrontLayout>
     );
   }
-  
-  // التعامل مع حالة وجود خطأ في تحميل المنتج
-  if (productError) {
-    return (
-      <div dir="rtl">
-        <StoreHeader storeData={storeData} isLoading={storeLoading} />
-        
-        <div className="container mx-auto px-4 py-12 flex items-center justify-center flex-col">
-          <ErrorState 
-            title="خطأ في تحميل المنتج"
-            message={productError || "لم نتمكن من العثور على المنتج المطلوب"}
-            onRetry={() => refetchProduct()}
-          />
-          
-          <div className="mt-4">
-            <Button asChild variant="outline">
-              <Link to={`/store/${storeId}`}>العودة للمتجر</Link>
-            </Button>
-          </div>
-        </div>
-        
-        <StoreFooter storeData={storeData} />
-      </div>
-    );
-  }
-  
+
+  const allImages = getAllImages();
+
   return (
-    <div dir="rtl">
-      <StoreHeader storeData={storeData} isLoading={storeLoading} />
-      
-      {/* بطاقة عرض معلومات المستخدم الحالي */}
-      {currentUser && (
-        <div className="container mx-auto px-4 py-4">
-          <Card className="bg-primary/5 border-primary/20">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">معلومات المستخدم الحالي</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <p><strong>البريد الإلكتروني:</strong> {currentUser.email}</p>
-                <p><strong>معرف المستخدم:</strong> {currentUser.id}</p>
-                <p><strong>آخر تسجيل دخول:</strong> {new Date(currentUser.last_sign_in_at).toLocaleString('ar')}</p>
-              </div>
-            </CardContent>
-          </Card>
+    <StorefrontLayout>
+      <div className="container mx-auto py-8">
+        <div className="mb-6">
+          <Link to={`/store/${storeId}/products`} className="flex items-center text-sm text-gray-500 hover:text-gray-700">
+            <ArrowLeft className="h-4 w-4 ml-1" />
+            العودة إلى المنتجات
+          </Link>
         </div>
-      )}
-      
-      <main className="container mx-auto px-4 py-8">
-        {productLoading || storeLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Skeleton className="aspect-square rounded-lg" />
-            
-            <div className="space-y-4">
-              <Skeleton className="h-10 w-3/4" />
-              <Skeleton className="h-6 w-1/2" />
-              <Skeleton className="h-24 w-full" />
-              <Skeleton className="h-12 w-full" />
-            </div>
-          </div>
-        ) : product ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <ProductGallery product={product} />
-            
-            <div className="space-y-6">
-              <ProductInformation 
-                product={product} 
-                currency={storeData?.currency || 'KWD'} 
-              />
-              
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <ProductGallery 
+            mainImage={product.image_url} 
+            additionalImages={product.additional_images || []} 
+            productName={product.name}
+          />
+
+          <div className="space-y-6">
+            <ProductInformation 
+              product={product} 
+              formattedPrice={formatCurrency(product.price)} 
+            />
+
+            {product.stock_quantity > 0 && (
+              <div className="flex flex-col space-y-4">
+                <QuantitySelector 
+                  quantity={quantity}
+                  maxQuantity={product.stock_quantity}
+                  onQuantityChange={handleQuantityChange}
+                />
+
+                <ProductActions 
+                  product={product}
+                  storeId={storeId || ""}
+                  quantity={quantity}
+                  onAddToCart={handleAddToCart}
+                />
+              </div>
+            )}
+
+            {product.stock_quantity <= 0 && (
               <ProductActions 
                 product={product}
+                storeId={storeId || ""}
                 quantity={quantity}
-                setQuantity={handleQuantityChange}
-                addToCart={handleAddToCart}
-                isAddingToCart={false}
-                currency={storeData?.currency || 'KWD'}
+                onAddToCart={handleAddToCart}
               />
-            </div>
+            )}
           </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-500">لم يتم العثور على المنتج</p>
-          </div>
-        )}
-      </main>
-      
-      <StoreFooter storeData={storeData} />
-    </div>
+        </div>
+      </div>
+    </StorefrontLayout>
   );
 };
 
-export default ProductDetail;
+export default StoreProductDetail;
