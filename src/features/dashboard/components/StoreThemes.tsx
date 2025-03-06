@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -177,7 +176,7 @@ const StoreThemes: React.FC<StoreThemesProps> = ({ storeId }) => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full">
           <TabsTrigger value="themes" className="flex-1">
-            <PaintBrush className="h-4 w-4 mr-2" />
+            <Paintbrush className="h-4 w-4 mr-2" />
             تصاميم المتجر
           </TabsTrigger>
           <TabsTrigger value="customize" className="flex-1">

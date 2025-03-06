@@ -1,4 +1,3 @@
-
 export interface ThemeOption {
   id: string;
   name: string;
@@ -49,4 +48,11 @@ export interface ColorOption {
 export interface FontOption {
   name: string;
   value: string;
+}
+
+export interface ColorScheme {
+  name: string;
+  primary: string;
+  secondary: string;
+  accent: string;
 }
