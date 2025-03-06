@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { 
   Menu, X, ChevronDown, LogIn, UserPlus, 
@@ -11,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useAuthState } from "@/hooks/use-auth-state";
+import { supabase } from "@/integrations/supabase/client";
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
