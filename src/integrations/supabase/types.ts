@@ -600,6 +600,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      count_payment_methods_by_store: {
+        Args: {
+          store_id_param: string
+        }
+        Returns: {
+          payment_method: string
+          count: number
+        }[]
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean

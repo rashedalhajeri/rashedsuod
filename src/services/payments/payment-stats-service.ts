@@ -46,6 +46,7 @@ export const fetchPaymentStats = async (storeId: string): Promise<PaymentStats |
       .eq('status', 'successful');
     
     // عدد المعاملات لكل طريقة دفع - لتحليل طرق الدفع الأكثر شيوعًا
+    // استخدام الدالة الجديدة count_payment_methods_by_store
     const { data: paymentMethodsData, error: paymentMethodsError } = await supabase
       .rpc('count_payment_methods_by_store', { store_id_param: storeId });
     
@@ -99,14 +100,13 @@ export const fetchPaymentStats = async (storeId: string): Promise<PaymentStats |
       }
     }
     
-    // Since we can't use group() in the Supabase query directly, we'll use a workaround
-    // We'll use the payment methods data returned from the RPC function or manually calculate it
-    const paymentMethodStats = paymentMethodsData 
-      ? paymentMethodsData.reduce((acc: Record<string, number>, item: any) => {
-          acc[item.payment_method] = parseInt(item.count);
-          return acc;
-        }, {})
-      : {};
+    // حساب احصائيات طرق الدفع باستخدام البيانات من الدالة RPC
+    const paymentMethodStats: Record<string, number> = {};
+    if (paymentMethodsData && Array.isArray(paymentMethodsData)) {
+      paymentMethodsData.forEach(item => {
+        paymentMethodStats[item.payment_method] = parseInt(item.count);
+      });
+    }
     
     return {
       totalRevenue,
