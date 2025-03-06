@@ -7,13 +7,17 @@ import { ErrorState } from "@/components/ui/error-state";
 import StoreLayout from "@/components/store/StoreLayout";
 import StoreContent from "@/components/store/StoreContent";
 
-// Mock data for development (will be replaced with actual data from the API)
+// بيانات وهمية للتطوير (سيتم استبدالها ببيانات فعلية من واجهة برمجة التطبيقات)
 const mockProducts = [
   { id: '1', name: 'منتج 1', price: 100, category: 'ملابس', section: 'مميز' },
   { id: '2', name: 'منتج 2', price: 200, category: 'إلكترونيات', section: 'جديد' },
   { id: '3', name: 'منتج 3', price: 300, category: 'منزل', section: 'مميز' },
   { id: '4', name: 'منتج 4', price: 400, category: 'ملابس', section: 'الأكثر مبيعًا' },
   { id: '5', name: 'منتج 5', price: 500, category: 'إلكترونيات', section: 'جديد' },
+  { id: '6', name: 'منتج 6', price: 600, category: 'رياضة', section: 'خصومات' },
+  { id: '7', name: 'منتج 7', price: 700, category: 'مطبخ', section: 'العروض' },
+  { id: '8', name: 'منتج 8', price: 800, category: 'رياضة', section: 'الأكثر مبيعًا' },
+  { id: '9', name: 'منتج 9', price: 900, category: 'مطبخ', section: 'خصومات' },
 ]; 
 
 const mockCategories = ['ملابس', 'إلكترونيات', 'منزل', 'مطبخ', 'رياضة'];
@@ -25,8 +29,8 @@ const Store = () => {
   const { storeDomain } = useParams<{ storeDomain: string }>();
   const { storeData, isLoading, error } = useStoreData();
 
-  // In a real implementation, we would fetch these from the API
-  // This is just a placeholder until we implement the actual data fetching
+  // في التنفيذ الحقيقي، سنقوم بجلب هذه البيانات من واجهة برمجة التطبيقات
+  // هذا مجرد مكان مؤقت حتى نقوم بتنفيذ جلب البيانات الفعلي
   const products = mockProducts;
   const categories = mockCategories;
   const sections = mockSections;

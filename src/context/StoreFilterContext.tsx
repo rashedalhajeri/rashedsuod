@@ -33,18 +33,16 @@ export const StoreFilterProvider: React.FC<StoreFilterProviderProps> = ({ childr
   const [activeSection, setActiveSection] = useState("");
 
   const handleCategoryChange = (category: string) => {
-    // If clicking the same category again, clear it
+    // إذا تم النقر على نفس الفئة مرة أخرى، قم بإلغاء تحديدها
     if (category === activeCategory) {
       setActiveCategory("");
     } else {
       setActiveCategory(category);
     }
-    // Clear section when category changes
-    setActiveSection("");
   };
 
   const handleSectionChange = (section: string) => {
-    // If clicking the same section again, clear it
+    // إذا تم النقر على نفس القسم مرة أخرى، قم بإلغاء تحديده
     if (section === activeSection) {
       setActiveSection("");
     } else {
