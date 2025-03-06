@@ -42,14 +42,6 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
                 <h3 className="text-sm font-medium text-gray-500">العملة</h3>
                 <p>{formData.currency}</p>
               </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">طريقة الشحن</h3>
-                <p>
-                  {formData.shippingMethod === "store_delivery" && "توصيل المتجر"}
-                  {formData.shippingMethod === "courier" && "شركة شحن"}
-                  {formData.shippingMethod === "pickup" && "استلام من المتجر"}
-                </p>
-              </div>
             </div>
             
             {formData.description && (
