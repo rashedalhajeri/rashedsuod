@@ -61,27 +61,11 @@ const StoreContent: React.FC<StoreContentProps> = ({
       }
     };
     
-    // Check if KIB Paytally banner should be shown - this could be based on store settings
-    const checkPromoBanner = async () => {
-      if (!storeDomain) return;
-      
-      try {
-        const { data } = await supabase
-          .from('stores')
-          .select('show_promo_banner')
-          .eq('domain_name', storeDomain)
-          .single();
-          
-        // Only show the banner if explicitly set to true
-        setShowPromoBanner(data?.show_promo_banner === true);
-      } catch (error) {
-        console.error("Error checking promo banner status:", error);
-        setShowPromoBanner(false);
-      }
-    };
+    // For demo purposes, we'll just hardcode this to false
+    // In a real implementation, this would be based on store settings
+    setShowPromoBanner(false);
     
     fetchProductNames();
-    checkPromoBanner();
   }, [storeDomain]);
 
   // Handle search submission
