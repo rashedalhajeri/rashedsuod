@@ -1,6 +1,6 @@
 
 import React from "react";
-import { LayoutDashboard, ShoppingBag, Package, Tags, Users, CreditCard, Settings, FileText, Palette } from "lucide-react";
+import { LayoutDashboard, ShoppingBag, Package, Tags, Users, CreditCard, Settings, FileText } from "lucide-react";
 import SidebarLink from "./SidebarLink";
 
 interface SidebarLinksProps {
@@ -51,11 +51,6 @@ const SidebarLinks: React.FC<SidebarLinksProps> = ({
       path: "/dashboard/coupons",
       icon: <FileText size={20} />,
       label: "الكوبونات"
-    },
-    {
-      path: "/dashboard/store-design",
-      icon: <Palette size={20} />,
-      label: "تصميم المتجر"
     },
     {
       path: "/dashboard/settings",
