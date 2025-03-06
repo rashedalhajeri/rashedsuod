@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -6,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { isValidDomainName } from "@/utils/url-utils";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { isValidDomainName, formatStoreUrl } from "@/utils/url-utils";
 
 const CreateStore: React.FC = () => {
   const navigate = useNavigate();
@@ -20,6 +22,16 @@ const CreateStore: React.FC = () => {
   });
   const [domainAvailable, setDomainAvailable] = useState<boolean | null>(null);
   const [checkingDomain, setCheckingDomain] = useState(false);
+  const [storeUrl, setStoreUrl] = useState<string | null>(null);
+
+  // Format the preview URL whenever domain name changes
+  useEffect(() => {
+    if (formData.domainName && isValidDomainName(formData.domainName)) {
+      setStoreUrl(formatStoreUrl(formData.domainName));
+    } else {
+      setStoreUrl(null);
+    }
+  }, [formData.domainName]);
 
   // Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,7 +55,7 @@ const CreateStore: React.FC = () => {
     });
   };
 
-  // Check domain availability (manual check since RPC was removed)
+  // Check domain availability
   const checkDomainAvailability = async () => {
     if (!formData.domainName.trim()) {
       toast.error("الرجاء إدخال اسم النطاق أولاً");
@@ -52,7 +64,7 @@ const CreateStore: React.FC = () => {
 
     // Validate domain name format (alphanumeric and hyphens only)
     if (!isValidDomainName(formData.domainName)) {
-      toast.error("اسم ا��نطاق يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط");
+      toast.error("اسم النطاق يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط");
       return;
     }
 
@@ -98,7 +110,7 @@ const CreateStore: React.FC = () => {
       if (userError) throw userError;
       if (!userData.user) {
         toast.error("الرجاء تسجيل الدخول للمتابعة");
-        navigate("/");
+        navigate("/auth");
         return;
       }
 
@@ -120,9 +132,27 @@ const CreateStore: React.FC = () => {
 
       if (error) throw error;
 
-      toast.success("تم إنشاء المتجر بنجاح");
-      // Redirect to home page since dashboard is removed
-      navigate("/");
+      toast.success("تم إنشاء المتجر بنجاح، جاري تحويلك للمتجر الخاص بك");
+      
+      // Get the correct store URL
+      const storeUrl = formatStoreUrl(data.domain_name);
+      console.log("Redirecting to store URL:", storeUrl);
+      
+      // Short delay to show the success message before redirect
+      setTimeout(() => {
+        // Check if in development or production
+        const isDevelopment = window.location.hostname === 'localhost' || 
+                            window.location.hostname.includes('lovableproject.com') ||
+                            window.location.hostname.includes('lovable.app');
+        
+        if (isDevelopment) {
+          // In development, use react-router to navigate
+          navigate(`/dashboard`);
+        } else {
+          // In production, do a hard redirect to the store URL
+          window.location.href = storeUrl;
+        }
+      }, 1500);
     } catch (error) {
       console.error("Error creating store:", error);
       toast.error("حدث خطأ أثناء إنشاء المتجر");
@@ -179,6 +209,11 @@ const CreateStore: React.FC = () => {
             {domainAvailable === false && (
               <p className="text-red-600 text-sm">✗ اسم النطاق غير متاح</p>
             )}
+            {storeUrl && (
+              <p className="text-sm text-muted-foreground mt-1">
+                <b>رابط المتجر:</b> {storeUrl}
+              </p>
+            )}
           </div>
           
           <div className="space-y-2">
@@ -232,6 +267,14 @@ const CreateStore: React.FC = () => {
               </SelectContent>
             </Select>
           </div>
+          
+          {storeUrl && (
+            <Alert variant="info" className="bg-blue-50 text-blue-700 border-blue-100">
+              <AlertDescription>
+                سيكون رابط متجرك: <strong>{storeUrl}</strong>
+              </AlertDescription>
+            </Alert>
+          )}
           
           <Button
             type="submit"

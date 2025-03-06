@@ -1,3 +1,4 @@
+
 import React, { ReactNode, useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { ShoppingCart, Search, User, Menu, X, Store as StoreIcon, AlertTriangle, RefreshCw } from "lucide-react";
@@ -96,11 +97,6 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
     setRetryCount(prev => prev + 1);
   };
 
-  // Return to home page
-  const handleBackToHome = () => {
-    navigate('/');
-  };
-
   // Toggle menu open/close
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -133,10 +129,6 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
               </div>
               <span className="font-bold text-xl text-gray-900">متجر</span>
             </div>
-            
-            <Button variant="ghost" size="sm" onClick={handleBackToHome}>
-              العودة للصفحة الرئيسية
-            </Button>
           </div>
         </header>
         
@@ -154,10 +146,6 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
               <Button onClick={handleRetry} className="flex items-center gap-2">
                 <RefreshCw className="h-4 w-4" />
                 إعادة المحاولة
-              </Button>
-              
-              <Button variant="outline" onClick={handleBackToHome}>
-                العودة للصفحة الرئيسية
               </Button>
             </div>
           </div>
@@ -196,7 +184,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
         
         <footer className="bg-white border-t py-6">
           <div className="container mx-auto px-4 text-center text-gray-500 text-sm">
-            &copy; {new Date().getFullYear()} - جميع الحقوق مح��وظة
+            &copy; {new Date().getFullYear()} - جميع الحقوق محفوظة
           </div>
         </footer>
       </div>
