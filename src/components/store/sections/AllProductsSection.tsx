@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { X, ChevronLeft } from "lucide-react";
@@ -35,58 +36,71 @@ interface AllProductsSectionProps {
   displayStyle?: 'grid' | 'list';
 }
 
-// Helper function to fetch products with appropriate filters - refactored to avoid deep type instantiation
+// Helper function to fetch products with appropriate filters - completely refactored
 const fetchProductsWithFilters = async (
   sectionType: string,
   categoryId?: string,
   sectionId?: string
 ): Promise<Product[]> => {
   try {
-    // Initialize the query first without additional filters
-    let query = supabase.from('products').select('*');
+    // Build the base query
+    const baseQuery = supabase.from('products').select('*');
     
-    // Apply different filters based on section type
-    if (sectionType === 'category' && categoryId) {
-      // Add category filter
-      query = query.eq('category_id', categoryId);
-    } 
-    else if (sectionType === 'featured') {
-      // Add featured filter
-      query = query.eq('is_featured', true);
-    } 
-    else if (sectionType === 'best_selling') {
-      // We'll handle ordering separately
-    } 
-    else if (sectionType === 'on_sale') {
-      // Add discount filter
-      query = query.not('discount_price', 'is', null);
-    } 
-    else if (sectionType === 'custom' && sectionId) {
-      // Add section filter
-      query = query.eq('section_id', sectionId);
+    // Apply filters based on section type
+    let filteredQuery;
+    
+    switch (sectionType) {
+      case 'category':
+        if (categoryId) {
+          filteredQuery = baseQuery.eq('category_id', categoryId);
+        } else {
+          filteredQuery = baseQuery;
+        }
+        break;
+        
+      case 'featured':
+        filteredQuery = baseQuery.eq('is_featured', true);
+        break;
+        
+      case 'best_selling':
+        // For best selling, we'll handle it separately
+        const { data: bestSellingData, error: bestSellingError } = await baseQuery
+          .order('sales_count', { ascending: false });
+        
+        if (bestSellingError) {
+          console.error("Error fetching best selling products:", bestSellingError);
+          return [];
+        }
+        
+        return bestSellingData as Product[] || [];
+        
+      case 'on_sale':
+        filteredQuery = baseQuery.not('discount_price', 'is', null);
+        break;
+        
+      case 'custom':
+        if (sectionId) {
+          filteredQuery = baseQuery.eq('section_id', sectionId);
+        } else {
+          filteredQuery = baseQuery;
+        }
+        break;
+        
+      default:
+        filteredQuery = baseQuery;
+        break;
     }
     
-    // Apply ordering based on section type or default ordering
-    if (sectionType === 'best_selling') {
-      const { data, error } = await query.order('sales_count', { ascending: false });
-      
-      if (error) {
-        console.error("Error fetching products:", error);
-        return [];
-      }
-      
-      return data as Product[] || [];
-    } else {
-      // Default ordering by created_at
-      const { data, error } = await query.order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error("Error fetching products:", error);
-        return [];
-      }
-      
-      return data as Product[] || [];
+    // For cases other than best_selling which we already handled
+    const { data, error } = await filteredQuery.order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error("Error fetching products:", error);
+      return [];
     }
+    
+    return data as Product[] || [];
+    
   } catch (err) {
     console.error("Error in fetchProductsWithFilters:", err);
     return [];

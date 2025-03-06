@@ -106,6 +106,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
             alt={product.name} 
             className="w-full aspect-square object-cover"
             onError={handleImageError}
+            key={product.id} // Add key to force re-render when product changes
           />
           
           {/* Heart button with improved styling */}

@@ -32,10 +32,7 @@ const ProductImage: React.FC<ProductImageProps> = ({
     setImageError(false);
   }, [imageUrl]);
   
-  // Placeholder for a gallery of images
-  const images = [imageUrl];
-  
-  // Determine which image URL to use
+  // Determine which image URL to use - ensure we handle blob URLs correctly
   const displayImageUrl = imageError || !imageUrl ? defaultPlaceholder : imageUrl;
   
   return (
