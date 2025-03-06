@@ -23,10 +23,13 @@ const StoreBanner: React.FC<StoreBannerProps> = ({
   const isMobile = useIsMobile();
   
   return (
-    <div className="relative bg-gradient-to-l from-indigo-50 to-purple-50 py-6 px-4 sm:px-5 rounded-xl shadow-md mt-4 mb-6 overflow-hidden border border-indigo-100/80 w-full">
-      {/* Decorative elements - made less pronounced on mobile */}
-      <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-purple-200/20 rounded-full -mt-10 -mr-10 blur-2xl"></div>
-      <div className="absolute bottom-0 left-0 w-16 sm:w-24 h-16 sm:h-24 bg-indigo-300/10 rounded-full -mb-8 -ml-8 blur-xl"></div>
+    <div className="relative bg-gradient-to-l from-gray-900 to-gray-800 py-6 px-4 sm:px-5 rounded-xl shadow-md mt-4 mb-6 overflow-hidden border border-gray-700 w-full">
+      {/* Fondo con imagen de electrónica */}
+      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1518770660439-4636190af475')] bg-cover bg-center opacity-20 mix-blend-overlay"></div>
+      
+      {/* Elementos decorativos */}
+      <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-blue-500/20 rounded-full -mt-10 -mr-10 blur-2xl"></div>
+      <div className="absolute bottom-0 left-0 w-16 sm:w-24 h-16 sm:h-24 bg-indigo-500/10 rounded-full -mb-8 -ml-8 blur-xl"></div>
       
       <motion.div 
         className="flex items-center justify-between gap-3 sm:gap-4 relative w-full"
@@ -34,14 +37,14 @@ const StoreBanner: React.FC<StoreBannerProps> = ({
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
       >
-        {/* App Info Section */}
+        {/* Sección de información */}
         <div className="flex-1 flex flex-col items-end text-right">
-          <h3 className="text-indigo-700 font-bold text-base sm:text-xl mb-2 flex items-center gap-1 sm:gap-2">
+          <h3 className="text-blue-400 font-bold text-base sm:text-xl mb-2 flex items-center gap-1 sm:gap-2">
             <Smartphone className="h-4 w-4 sm:h-5 sm:w-5" />
-            حمل التطبيق الآن
+            <span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">الإلكترونيات الذكية</span>
           </h3>
-          <p className="text-gray-600 mb-3 sm:mb-4 text-xs sm:text-sm max-w-md">
-            أكبر منصة للخدمات الطبية والصحية والعلاجية في الكويت
+          <p className="text-gray-300 mb-3 sm:mb-4 text-xs sm:text-sm max-w-md">
+            أحدث الأجهزة والتقنيات العصرية بأفضل الأسعار وخدمة متميزة
           </p>
           
           <div className="flex space-x-2 sm:space-x-3 rtl:space-x-reverse">
@@ -70,24 +73,24 @@ const StoreBanner: React.FC<StoreBannerProps> = ({
           </div>
         </div>
         
-        {/* QR Code Section (Hidden on mobile for stability) */}
+        {/* Sección de código QR (oculto en móvil) */}
         {!isMobile && (
-          <div className="hidden md:flex items-center justify-center bg-white p-3 rounded-lg shadow-sm border border-indigo-100">
-            <div className="w-24 h-24 bg-gray-100 rounded-md flex items-center justify-center">
-              <ArrowDownToLine className="h-8 w-8 text-indigo-500" />
+          <div className="hidden md:flex items-center justify-center bg-white/10 backdrop-blur-sm p-3 rounded-lg shadow-sm border border-white/20">
+            <div className="w-24 h-24 bg-gray-100/10 rounded-md flex items-center justify-center">
+              <ArrowDownToLine className="h-8 w-8 text-blue-400" />
             </div>
           </div>
         )}
       </motion.div>
       
-      {/* Indicator Dots */}
+      {/* Indicadores de puntos */}
       <div className="flex items-center justify-center space-x-1 rtl:space-x-reverse mt-4 sm:mt-6">
         {[...Array(5)].map((_, index) => (
           <div 
             key={index} 
             className={cn(
               "w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full transition-all duration-300",
-              index === 4 ? "bg-indigo-500 w-3 sm:w-4" : "bg-gray-300 hover:bg-gray-400"
+              index === 4 ? "bg-blue-400 w-3 sm:w-4" : "bg-gray-600 hover:bg-gray-500"
             )}
           ></div>
         ))}

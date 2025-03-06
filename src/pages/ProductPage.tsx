@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +7,6 @@ import { ErrorState } from "@/components/ui/error-state";
 import { toast } from "sonner";
 import StoreHeader from "@/components/store/unified/StoreHeader";
 
-// Import refactored components
 import ProductImage from "@/components/product/ProductImage";
 import ProductInfo from "@/components/product/ProductInfo";
 import ProductActions from "@/components/product/ProductActions";
@@ -27,7 +25,6 @@ const ProductPage = () => {
       try {
         setLoading(true);
         
-        // Get store by domain name
         const { data: store, error: storeError } = await supabase
           .from('stores')
           .select('*')
@@ -42,7 +39,6 @@ const ProductPage = () => {
         
         setStoreData(store);
         
-        // Get product details
         const { data: productData, error: productError } = await supabase
           .from('products')
           .select('*')
@@ -75,7 +71,6 @@ const ProductPage = () => {
     if (type === 'decrease' && quantity > 1) {
       setQuantity(quantity - 1);
     } else if (type === 'increase') {
-      // Check stock if available
       const stockLimit = product?.stock_quantity;
       if (stockLimit && quantity >= stockLimit) {
         toast.error(`الكمية المتوفرة: ${stockLimit} فقط`);
@@ -95,11 +90,14 @@ const ProductPage = () => {
         image_url: product.image_url,
         store_id: product.store_id
       });
-      toast.success("تمت إضافة المنتج إلى السلة");
+      toast.success("تمت الإضافة", {
+        duration: 1000,
+        className: "text-sm py-1 px-2 max-w-[150px]",
+        position: "top-center"
+      });
     }
   };
   
-  // تنسيق العملة
   const formatCurrency = (price: number) => {
     return new Intl.NumberFormat('ar-SA', {
       minimumFractionDigits: 3,
@@ -124,9 +122,7 @@ const ProductPage = () => {
       />
       
       <main className="flex-grow bg-gray-50">
-        {/* Product Card */}
         <div className="bg-white rounded-3xl shadow-sm mx-4 -mt-4 overflow-hidden">
-          {/* Product Image */}
           <ProductImage 
             imageUrl={product.image_url} 
             name={product.name}
@@ -136,7 +132,6 @@ const ProductPage = () => {
             storeName={storeData?.store_name}
           />
           
-          {/* Product Info */}
           <div className="p-4">
             <ProductInfo 
               product={product} 
@@ -145,7 +140,6 @@ const ProductPage = () => {
           </div>
         </div>
         
-        {/* Product Overview Section */}
         <div className="mt-4 mx-4 bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="border-b border-gray-100">
             <h2 className="text-xl font-bold p-4">نظرة عامة</h2>
@@ -156,7 +150,6 @@ const ProductPage = () => {
               {product.description || "لا يوجد وصف متاح لهذا المنتج"}
             </p>
             
-            {/* Additional product details bullets */}
             {product.highlights && product.highlights.length > 0 && (
               <div className="mt-4">
                 <ul className="space-y-2">
@@ -171,7 +164,6 @@ const ProductPage = () => {
           </div>
         </div>
         
-        {/* Fixed bottom bar for add to cart */}
         <div className="fixed bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 flex justify-between items-center">
           <div className="text-2xl font-bold text-gray-800">
             {formatCurrency(product.price)} <span className="text-sm font-normal">KWD</span>

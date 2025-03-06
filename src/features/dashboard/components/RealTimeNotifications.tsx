@@ -7,39 +7,45 @@ interface RealTimeNotificationsProps {
   storeId?: string;
 }
 
+// Este componente solo debe usarse en el Dashboard, nunca en la vista de tienda para visitantes
 const RealTimeNotifications: React.FC<RealTimeNotificationsProps> = ({ storeId }) => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [isRealtimeConnected, setIsRealtimeConnected] = useState(false);
+  const [isDashboard, setIsDashboard] = useState(false);
   
   useEffect(() => {
-    // تفعيل الإشعارات فقط عندما يكون لدينا معرف متجر ونكون في لوحة التحكم
-    if (storeId && notificationsEnabled) {
+    // Verificar si estamos en el dashboard (no en la vista de tienda)
+    const currentPath = window.location.pathname;
+    const isDashboardPath = currentPath.includes('/dashboard') || currentPath.includes('/admin');
+    setIsDashboard(isDashboardPath);
+    
+    // Solo activar notificaciones en el dashboard
+    if (storeId && notificationsEnabled && isDashboardPath) {
       try {
-        console.log("جاري تفعيل الإشعارات لمتجر:", storeId);
+        console.log("Activando notificaciones para administrador de tienda:", storeId);
         setIsRealtimeConnected(true);
       } catch (error) {
-        console.error("حدث خطأ أثناء تفعيل الإشعارات:", error);
-        toast.error("فشل في تفعيل الإشعارات. يرجى إعادة تحميل الصفحة");
+        console.error("Error al activar notificaciones:", error);
+        toast.error("Error al activar notificaciones. Recargue la página para intentar nuevamente");
         setIsRealtimeConnected(false);
       }
     }
     
     return () => {
-      // تنظيف عند إزالة المكون
       if (isRealtimeConnected) {
-        console.log("تم إلغاء الاشتراك في الإشعارات");
+        console.log("Desactivando notificaciones");
       }
     };
   }, [storeId, notificationsEnabled]);
   
-  // عدم عرض أي شيء إذا لم يكن هناك معرف متجر
-  if (!storeId) {
+  // No renderizar nada si no estamos en el dashboard o no hay storeId
+  if (!storeId || !isDashboard) {
     return null;
   }
   
   return (
     <>
-      {notificationsEnabled && storeId && (
+      {notificationsEnabled && storeId && isDashboard && (
         <OrderNotifications storeId={storeId} />
       )}
     </>
