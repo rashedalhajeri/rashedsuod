@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Json } from "@/integrations/supabase/types";
+import { PostgrestFilterBuilder } from "@supabase/postgrest-js";
 
 // Define Product interface to match database structure
 interface Product {
@@ -35,6 +36,39 @@ interface AllProductsSectionProps {
   displayStyle?: 'grid' | 'list';
 }
 
+// Helper function to fetch products with appropriate filters
+const fetchProductsWithFilters = async (
+  sectionType: string,
+  categoryId?: string,
+  sectionId?: string
+): Promise<Product[]> => {
+  // Create base query
+  let baseQuery = supabase.from('products').select('*');
+  
+  // Apply filters based on section type
+  if (sectionType === 'category' && categoryId) {
+    baseQuery = baseQuery.eq('category_id', categoryId);
+  } else if (sectionType === 'featured') {
+    baseQuery = baseQuery.eq('is_featured', true);
+  } else if (sectionType === 'best_selling') {
+    baseQuery = baseQuery.order('sales_count', { ascending: false });
+  } else if (sectionType === 'on_sale') {
+    baseQuery = baseQuery.not('discount_price', 'is', null);
+  } else if (sectionType === 'custom' && sectionId) {
+    baseQuery = baseQuery.eq('section_id', sectionId);
+  }
+  
+  // Apply final ordering
+  const { data, error } = await baseQuery.order('created_at', { ascending: false });
+  
+  if (error) {
+    console.error("Error fetching products:", error);
+    return [];
+  }
+  
+  return (data as Product[]) || [];
+};
+
 const AllProductsSection: React.FC<AllProductsSectionProps> = ({
   products: initialProducts,
   activeCategory,
@@ -59,38 +93,13 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
     }
 
     // Otherwise fetch products from the database based on section type
-    const fetchProducts = async () => {
+    const loadProducts = async () => {
       try {
         setIsLoading(true);
         
-        let query = supabase.from('products').select('*');
+        const data = await fetchProductsWithFilters(sectionType, categoryId, sectionId);
+        setProducts(data);
         
-        // Apply different filters based on section type
-        if (sectionType === 'category' && categoryId) {
-          query = query.eq('category_id', categoryId);
-        } else if (sectionType === 'featured') {
-          query = query.eq('is_featured', true);
-        } else if (sectionType === 'best_selling') {
-          query = query.order('sales_count', { ascending: false });
-        } else if (sectionType === 'new_arrivals') {
-          // Already ordered by created_at below
-        } else if (sectionType === 'on_sale') {
-          query = query.not('discount_price', 'is', null);
-        } else if (sectionType === 'custom' && sectionId) {
-          query = query.eq('section_id', sectionId);
-        }
-        
-        // Final ordering
-        const { data, error } = await query.order('created_at', { ascending: false });
-          
-        if (error) {
-          console.error("Error fetching products:", error);
-          return;
-        }
-        
-        if (data) {
-          setProducts(data as Product[]);
-        }
       } catch (err) {
         console.error("Error in fetchProducts:", err);
       } finally {
@@ -101,7 +110,7 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
       }
     };
     
-    fetchProducts();
+    loadProducts();
   }, [initialProducts, sectionType, categoryId, sectionId]);
   
   // Determine section title
