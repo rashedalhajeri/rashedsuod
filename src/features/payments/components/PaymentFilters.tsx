@@ -11,6 +11,7 @@ import { fetchUniquePaymentMethods } from "@/services/payments";
 import { useQuery } from "@tanstack/react-query";
 import { useStoreData } from "@/hooks/use-store-data";
 import DatePicker from "react-tailwindcss-datepicker";
+import type { DateValueType } from "react-tailwindcss-datepicker/dist/types";
 
 interface PaymentFiltersProps {
   onFilterChange: (filters: {
@@ -45,12 +46,9 @@ const PaymentFilters: React.FC<PaymentFiltersProps> = ({
   const [status, setStatus] = useState(initialValues.status);
   const [paymentMethod, setPaymentMethod] = useState(initialValues.paymentMethod);
   const [searchQuery, setSearchQuery] = useState(initialValues.searchQuery);
-  const [dateRange, setDateRange] = useState<{ 
-    startDate: Date | string | null; 
-    endDate: Date | string | null;
-  }>({
-    startDate: initialValues.startDate || null,
-    endDate: initialValues.endDate || null
+  const [dateRange, setDateRange] = useState<DateValueType>({
+    startDate: initialValues.startDate ? new Date(initialValues.startDate) : null,
+    endDate: initialValues.endDate ? new Date(initialValues.endDate) : null
   });
   
   // استرجاع طرق الدفع المتاحة
@@ -75,8 +73,8 @@ const PaymentFilters: React.FC<PaymentFiltersProps> = ({
       status,
       paymentMethod,
       searchQuery,
-      startDate: dateRange.startDate ? new Date(dateRange.startDate).toISOString() : undefined,
-      endDate: dateRange.endDate ? new Date(dateRange.endDate).toISOString() : undefined
+      startDate: dateRange?.startDate ? new Date(dateRange.startDate as Date).toISOString() : undefined,
+      endDate: dateRange?.endDate ? new Date(dateRange.endDate as Date).toISOString() : undefined
     });
   }, [status, paymentMethod, searchQuery, dateRange]);
   
@@ -90,7 +88,7 @@ const PaymentFilters: React.FC<PaymentFiltersProps> = ({
   };
   
   // التعامل مع تغيير نطاق التاريخ
-  const handleDateRangeChange = (newDateRange: { startDate: string | null; endDate: string | null }) => {
+  const handleDateRangeChange = (newDateRange: DateValueType) => {
     setDateRange(newDateRange);
   };
   
