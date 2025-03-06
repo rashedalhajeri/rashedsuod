@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Navigate, Outlet } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthState } from "@/hooks/use-auth-state";
