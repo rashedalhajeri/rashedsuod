@@ -28,13 +28,15 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
     return null;
   }
 
-  // Prepare categories with "All" option at the beginning for RTL display
+  // Prepare categories with "All" option at the beginning 
+  // Now the order is correct for RTL display - "الكل" will appear on the right
   const categoriesWithAll = ["الكل", ...categories];
 
   return (
-    <div className="bg-gray-50 py-4 z-10 transition-all duration-300">
+    <div className="bg-gray-50 py-4 z-10 transition-all duration-300" dir="rtl">
       <div className="container mx-auto px-3">
-        <div className="flex overflow-x-auto gap-3 pb-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 flex-row-reverse">
+        {/* Changed to normal flex direction since we're using dir="rtl" */}
+        <div className="flex overflow-x-auto gap-3 pb-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
           {categoriesWithAll.map((category, index) => (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
