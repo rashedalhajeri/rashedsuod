@@ -5,7 +5,7 @@ import { ShoppingBag, Box, TruckIcon, CheckCircle2, XCircle } from "lucide-react
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface OrderStats {
   total: number;
@@ -25,66 +25,75 @@ const OrderStats: React.FC<OrderStatsProps> = ({
   isLoading = false
 }) => {
   if (isLoading) {
-    return <Card className="animate-pulse">
+    return (
+      <Card className="border-primary-100">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg font-medium">
-            <div className="h-6 w-32 bg-gray-200 rounded"></div>
+            <Skeleton className="h-6 w-32" />
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-5 gap-4">
-            {[1, 2, 3, 4, 5].map(i => <div key={i} className="text-center">
-                <div className="h-12 w-12 bg-gray-200 rounded-full mx-auto"></div>
-                <div className="h-3 w-16 bg-gray-200 rounded mx-auto mt-2"></div>
-                <div className="h-5 w-6 bg-gray-200 rounded mx-auto mt-1"></div>
-              </div>)}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="text-center">
+                <Skeleton className="h-12 w-12 rounded-full mx-auto" />
+                <Skeleton className="h-3 w-16 mx-auto mt-2" />
+                <Skeleton className="h-5 w-6 mx-auto mt-1" />
+              </div>
+            ))}
           </div>
         </CardContent>
-      </Card>;
+      </Card>
+    );
   }
 
-  // إنشاء مصفوفة من البيانات للعرض المبسط
-  const statsItems = [{
-    label: "الكل",
-    value: stats.total,
-    icon: <ShoppingBag className="h-5 w-5" />,
-    bgColor: "bg-gray-100",
-    textColor: "text-gray-700",
-    href: "/dashboard/orders?tab=all",
-    hoverBgColor: "hover:bg-gray-200"
-  }, {
-    label: "قيد المعالجة",
-    value: stats.processing,
-    icon: <Box className="h-5 w-5" />,
-    bgColor: "bg-blue-100",
-    textColor: "text-blue-700",
-    href: "/dashboard/orders?tab=processing",
-    hoverBgColor: "hover:bg-blue-200"
-  }, {
-    label: "تم الشحن",
-    value: stats.shipped,
-    icon: <TruckIcon className="h-5 w-5" />,
-    bgColor: "bg-indigo-100",
-    textColor: "text-indigo-700",
-    href: "/dashboard/orders?tab=shipped",
-    hoverBgColor: "hover:bg-indigo-200"
-  }, {
-    label: "تم التوصيل",
-    value: stats.delivered,
-    icon: <CheckCircle2 className="h-5 w-5" />,
-    bgColor: "bg-green-100",
-    textColor: "text-green-700",
-    href: "/dashboard/orders?tab=delivered",
-    hoverBgColor: "hover:bg-green-200"
-  }, {
-    label: "ملغي",
-    value: stats.cancelled,
-    icon: <XCircle className="h-5 w-5" />,
-    bgColor: "bg-red-100",
-    textColor: "text-red-700",
-    href: "/dashboard/orders?tab=cancelled",
-    hoverBgColor: "hover:bg-red-200"
-  }];
+  const statsItems = [
+    {
+      label: "الكل",
+      value: stats.total,
+      icon: <ShoppingBag className="h-5 w-5" />,
+      bgColor: "bg-gray-100",
+      textColor: "text-gray-700",
+      href: "/dashboard/orders?tab=all",
+      hoverBgColor: "hover:bg-gray-200"
+    },
+    {
+      label: "قيد المعالجة",
+      value: stats.processing,
+      icon: <Box className="h-5 w-5" />,
+      bgColor: "bg-blue-100",
+      textColor: "text-blue-700",
+      href: "/dashboard/orders?tab=processing",
+      hoverBgColor: "hover:bg-blue-200"
+    },
+    {
+      label: "تم الشحن",
+      value: stats.shipped,
+      icon: <TruckIcon className="h-5 w-5" />,
+      bgColor: "bg-indigo-100",
+      textColor: "text-indigo-700",
+      href: "/dashboard/orders?tab=shipped",
+      hoverBgColor: "hover:bg-indigo-200"
+    },
+    {
+      label: "تم التوصيل",
+      value: stats.delivered,
+      icon: <CheckCircle2 className="h-5 w-5" />,
+      bgColor: "bg-green-100",
+      textColor: "text-green-700",
+      href: "/dashboard/orders?tab=delivered",
+      hoverBgColor: "hover:bg-green-200"
+    },
+    {
+      label: "ملغي",
+      value: stats.cancelled,
+      icon: <XCircle className="h-5 w-5" />,
+      bgColor: "bg-red-100",
+      textColor: "text-red-700",
+      href: "/dashboard/orders?tab=cancelled",
+      hoverBgColor: "hover:bg-red-200"
+    }
+  ];
 
   return (
     <Card className="border-primary-100">
@@ -92,24 +101,25 @@ const OrderStats: React.FC<OrderStatsProps> = ({
         <CardTitle className="text-lg font-medium">إحصائيات الطلبات</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {statsItems.map((item, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.1 }}
+              className="w-full"
             >
               <Link to={item.href} className="block">
                 <div className={cn(
-                  "flex flex-col items-center justify-center p-3 rounded-lg transition-all",
+                  "flex flex-col items-center justify-center p-3 rounded-lg transition-all h-full",
                   item.bgColor,
                   item.hoverBgColor
                 )}>
                   <div className={cn("p-2 rounded-full mb-2", `${item.bgColor}/60`)}>
                     <span className={item.textColor}>{item.icon}</span>
                   </div>
-                  <span className="text-xs font-medium mb-1">{item.label}</span>
+                  <span className="text-xs font-medium mb-1 text-center">{item.label}</span>
                   <span className={cn("text-lg font-bold", item.textColor)}>{item.value}</span>
                 </div>
               </Link>
