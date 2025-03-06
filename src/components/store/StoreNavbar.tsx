@@ -34,7 +34,6 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
         const { data } = await supabase
           .from('products')
           .select('name')
-          .eq('store_domain', storeDomain)
           .limit(10);
           
         if (data && data.length > 0) {
