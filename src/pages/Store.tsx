@@ -86,32 +86,63 @@ const Store = () => {
       <StoreNavbar storeName={storeData?.store_name} logoUrl={storeData?.logo_url} />
       
       <main className="flex-grow">
-        {/* Hero Banner */}
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-16 px-4">
-          <div className="container mx-auto text-center">
-            <h1 className="text-4xl font-bold mb-4">{storeData?.store_name}</h1>
+        {/* Hero Banner - Enhanced with gradient and image */}
+        <div 
+          className="bg-gradient-to-r from-black/80 to-black/60 text-white relative"
+          style={{
+            backgroundImage: storeData?.banner_url ? `url(${storeData.banner_url})` : 'none',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundBlendMode: 'overlay'
+          }}
+        >
+          <div className="container mx-auto py-24 px-4 relative z-10">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">{storeData?.store_name}</h1>
             {storeData?.description && (
-              <p className="text-xl mb-6">{storeData.description}</p>
+              <p className="text-xl md:text-2xl mb-8 max-w-2xl">{storeData.description}</p>
             )}
-            <div className="max-w-md mx-auto relative">
+            <div className="max-w-md relative">
               <Input
                 type="search"
                 placeholder="ابحث عن منتجات..."
-                className="pr-10"
+                className="pr-10 bg-white/20 backdrop-blur-md border-white/30 text-white placeholder-white/70"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+              <Search className="absolute left-3 top-3 text-white/70" size={20} />
+            </div>
+          </div>
+        </div>
+        
+        {/* Category Quick Links - New section */}
+        <div className="bg-gray-50">
+          <div className="container mx-auto py-6 px-4 overflow-x-auto">
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <Button variant="outline" className="rounded-full">جميع المنتجات</Button>
+              </div>
+              <div className="flex-shrink-0">
+                <Button variant="outline" className="rounded-full">الأكثر مبيعاً</Button>
+              </div>
+              <div className="flex-shrink-0">
+                <Button variant="outline" className="rounded-full">العروض</Button>
+              </div>
+              <div className="flex-shrink-0">
+                <Button variant="outline" className="rounded-full">الجديد</Button>
+              </div>
+              <div className="flex-shrink-0">
+                <Button variant="outline" className="rounded-full">الأكسسوارات</Button>
+              </div>
             </div>
           </div>
         </div>
         
         {/* Products Section */}
         <div className="container mx-auto py-12 px-4">
-          <h2 className="text-2xl font-bold mb-6">منتجاتنا</h2>
+          <h2 className="text-2xl font-bold mb-6">استكشف منتجاتنا</h2>
           
           {filteredProducts.length === 0 ? (
-            <div className="text-center py-12">
+            <div className="text-center py-12 bg-gray-50 rounded-lg border">
               <p className="text-gray-500 mb-4">لا توجد منتجات متاحة حالياً</p>
               <p className="text-sm text-gray-400">يمكنك العودة لاحقاً للاطلاع على المنتجات الجديدة</p>
             </div>
@@ -119,6 +150,44 @@ const Store = () => {
             <ProductGrid products={filteredProducts} />
           )}
         </div>
+        
+        {/* Featured Section - New */}
+        {products.length > 0 && (
+          <div className="bg-gray-50 py-16">
+            <div className="container mx-auto px-4">
+              <h2 className="text-2xl font-bold mb-8 text-center">منتجات مميزة</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {products.slice(0, 4).map(product => (
+                  <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    <div className="aspect-square overflow-hidden bg-gray-100">
+                      {product.image_url ? (
+                        <img 
+                          src={product.image_url} 
+                          alt={product.name} 
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                          <ShoppingCart className="h-12 w-12 text-gray-300" />
+                        </div>
+                      )}
+                    </div>
+                    <CardContent className="p-4">
+                      <h3 className="font-semibold text-lg truncate">{product.name}</h3>
+                      <p className="text-gray-500 text-sm line-clamp-2 h-10">
+                        {product.description || "لا يوجد وصف للمنتج"}
+                      </p>
+                    </CardContent>
+                    <CardFooter className="p-4 pt-0 flex justify-between">
+                      <p className="font-bold text-lg">{product.price} ر.س</p>
+                      <Badge variant="secondary">جديد</Badge>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </main>
       
       <StoreFooter storeName={storeData?.store_name} />
