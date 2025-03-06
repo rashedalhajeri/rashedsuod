@@ -8,72 +8,38 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { ar } from "date-fns/locale";
+import { useQuery } from "@tanstack/react-query";
+import { fetchPayments, Payment } from "@/services/payment-service";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Pagination } from "@/components/ui/pagination";
 
-interface Transaction {
-  id: string;
-  orderNumber: string;
-  amount: number;
-  status: "successful" | "failed" | "pending" | "refunded";
-  method: string;
-  date: string;
-  customerName: string;
+interface PaymentTransactionsTableProps {
+  filters: {
+    status: string;
+    paymentMethod: string;
+    searchQuery: string;
+  };
 }
 
-// بيانات افتراضية للمعاملات، يمكن استبدالها بالبيانات الفعلية من قاعدة البيانات
-const demoTransactions: Transaction[] = [
-  {
-    id: "txn-1",
-    orderNumber: "10045",
-    amount: 450,
-    status: "successful",
-    method: "بطاقة ائتمان",
-    date: "2023-07-15T08:30:00Z",
-    customerName: "محمد أحمد"
-  },
-  {
-    id: "txn-2",
-    orderNumber: "10046",
-    amount: 320.50,
-    status: "pending",
-    method: "تحويل بنكي",
-    date: "2023-07-14T14:20:00Z",
-    customerName: "سارة علي"
-  },
-  {
-    id: "txn-3",
-    orderNumber: "10044",
-    amount: 145.75,
-    status: "failed",
-    method: "بطاقة ائتمان",
-    date: "2023-07-14T11:15:00Z",
-    customerName: "خالد محمد"
-  },
-  {
-    id: "txn-4",
-    orderNumber: "10043",
-    amount: 560,
-    status: "refunded",
-    method: "بطاقة ائتمان",
-    date: "2023-07-13T16:40:00Z",
-    customerName: "أحمد سعيد"
-  },
-  {
-    id: "txn-5",
-    orderNumber: "10042",
-    amount: 220.25,
-    status: "successful",
-    method: "نقد عند الاستلام",
-    date: "2023-07-12T09:10:00Z",
-    customerName: "نورة عبدالله"
-  }
-];
-
-const PaymentTransactionsTable: React.FC = () => {
+const PaymentTransactionsTable: React.FC<PaymentTransactionsTableProps> = ({ filters }) => {
   const { data: storeData } = useStoreData();
-  const formatCurrency = getCurrencyFormatter(storeData?.currency || 'SAR');
-  const [transactions] = useState<Transaction[]>(demoTransactions);
+  const formatCurrency = getCurrencyFormatter(storeData?.currency || 'KWD');
+  const [page, setPage] = useState(0);
+  const pageSize = 5;
   
-  const getStatusBadge = (status: Transaction['status']) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['payments', storeData?.id, filters, page],
+    queryFn: () => fetchPayments(storeData?.id || '', {
+      status: filters.status === "all" ? undefined : filters.status as any,
+      paymentMethod: filters.paymentMethod === "all" ? undefined : filters.paymentMethod,
+      searchQuery: filters.searchQuery,
+      page,
+      pageSize
+    }),
+    enabled: !!storeData?.id,
+  });
+  
+  const getStatusBadge = (status: Payment['status']) => {
     switch (status) {
       case "successful":
         return (
@@ -117,11 +83,67 @@ const PaymentTransactionsTable: React.FC = () => {
     }
   };
   
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+  
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden" dir="rtl">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-center">رقم الطلب</TableHead>
+                <TableHead className="text-center">العميل</TableHead>
+                <TableHead className="text-center">المبلغ</TableHead>
+                <TableHead className="text-center">طريقة الدفع</TableHead>
+                <TableHead className="text-center">الحالة</TableHead>
+                <TableHead className="text-center">التاريخ</TableHead>
+                <TableHead className="text-center">الإجراءات</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {[...Array(5)].map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell><Skeleton className="h-4 w-14 mx-auto" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-24 mx-auto" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-16 mx-auto" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-20 mx-auto" /></TableCell>
+                  <TableCell><Skeleton className="h-6 w-16 mx-auto rounded-full" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-20 mx-auto" /></TableCell>
+                  <TableCell><Skeleton className="h-8 w-16 mx-auto" /></TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+    );
+  }
+  
+  if (error) {
+    console.error("Error loading payments:", error);
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-8 text-center" dir="rtl">
+        <p className="text-red-500">حدث خطأ أثناء تحميل المدفوعات</p>
+      </div>
+    );
+  }
+  
+  const payments = data?.payments || [];
+  const totalCount = data?.totalCount || 0;
+  const totalPages = Math.ceil(totalCount / pageSize);
+  
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden" dir="rtl">
       <div className="overflow-x-auto">
         <Table>
-          <TableCaption>آخر المعاملات المالية</TableCaption>
+          {payments.length === 0 ? (
+            <TableCaption>لا توجد مدفوعات متطابقة مع معايير البحث</TableCaption>
+          ) : (
+            <TableCaption>عرض {payments.length} من أصل {totalCount} مدفوعة</TableCaption>
+          )}
           <TableHeader>
             <TableRow>
               <TableHead className="text-center">رقم الطلب</TableHead>
@@ -134,28 +156,48 @@ const PaymentTransactionsTable: React.FC = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {transactions.map((transaction) => (
-              <TableRow key={transaction.id} className={cn(
-                "hover:bg-gray-50 transition-colors",
-                transaction.status === "failed" && "bg-red-50",
-                transaction.status === "pending" && "bg-amber-50",
-              )}>
-                <TableCell className="text-center font-medium">{transaction.orderNumber}</TableCell>
-                <TableCell className="text-center">{transaction.customerName}</TableCell>
-                <TableCell className="text-center font-medium">{formatCurrency(transaction.amount)}</TableCell>
-                <TableCell className="text-center">{transaction.method}</TableCell>
-                <TableCell className="text-center">{getStatusBadge(transaction.status)}</TableCell>
-                <TableCell className="text-center">{formatDate(transaction.date)}</TableCell>
-                <TableCell className="text-center">
-                  <Button variant="ghost" size="sm" className="h-8 px-2 text-primary-600">
-                    التفاصيل
-                  </Button>
+            {payments.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                  لا توجد مدفوعات متطابقة مع معايير البحث
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              payments.map((payment) => (
+                <TableRow key={payment.id} className={cn(
+                  "hover:bg-gray-50 transition-colors",
+                  payment.status === "failed" && "bg-red-50",
+                  payment.status === "pending" && "bg-amber-50",
+                )}>
+                  <TableCell className="text-center font-medium">{payment.order_id.slice(-5)}</TableCell>
+                  <TableCell className="text-center">{payment.customer_name}</TableCell>
+                  <TableCell className="text-center font-medium">{formatCurrency(payment.amount)}</TableCell>
+                  <TableCell className="text-center">{payment.payment_method}</TableCell>
+                  <TableCell className="text-center">{getStatusBadge(payment.status)}</TableCell>
+                  <TableCell className="text-center">{formatDate(payment.created_at)}</TableCell>
+                  <TableCell className="text-center">
+                    <Button variant="ghost" size="sm" className="h-8 px-2 text-primary-600">
+                      التفاصيل
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
+      
+      {totalPages > 1 && (
+        <div className="py-4 px-6 border-t border-gray-200">
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            totalItems={totalCount}
+            pageSize={pageSize}
+          />
+        </div>
+      )}
     </div>
   );
 };
