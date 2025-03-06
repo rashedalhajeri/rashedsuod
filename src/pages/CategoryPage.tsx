@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import StoreLayout from "@/components/store/StoreLayout";
 import { useStoreData } from "@/hooks/use-store-data";
 import { LoadingState } from "@/components/ui/loading-state";
@@ -9,6 +9,9 @@ import ProductGrid from "@/components/store/ProductGrid";
 import SearchBar from "@/components/store/navbar/SearchBar";
 import { supabase } from "@/integrations/supabase/client";
 import CategoryNavigation from "@/components/store/CategoryNavigation";
+import { motion } from "framer-motion";
+import { ShoppingCart, User, ChevronLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // Define the Product interface to match what we're getting from Supabase
 interface Product {
@@ -42,6 +45,7 @@ const CategoryPage = () => {
   const [productNames, setProductNames] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [sections, setSections] = useState<string[]>([]);
+  const navigate = useNavigate();
 
   // Fetch store data and category products
   useEffect(() => {
@@ -103,9 +107,15 @@ const CategoryPage = () => {
     e.preventDefault();
   };
   
-  // Handle category change
+  // Handle category change - now we'll navigate without triggering full reload
   const handleCategoryChange = (category: string) => {
-    console.log("Category changed:", category);
+    if (!storeDomain) return;
+    
+    if (category === "الكل") {
+      navigate(`/store/${storeDomain}`);
+    } else {
+      navigate(`/store/${storeDomain}/category/${encodeURIComponent(category.toLowerCase())}`);
+    }
   };
   
   // Handle section change
@@ -121,7 +131,12 @@ const CategoryPage = () => {
       ) 
     : products;
 
-  if (isLoading || isLoadingProducts) {
+  // Back button handler
+  const handleBackToStore = () => {
+    navigate(`/store/${storeDomain}`);
+  };
+
+  if (isLoading) {
     return <LoadingState message="جاري تحميل المتجر..." />;
   }
 
@@ -130,10 +145,47 @@ const CategoryPage = () => {
   }
 
   return (
-    <StoreLayout storeData={storeData}>
-      <div className="py-4" dir="rtl">
+    <div className="min-h-screen bg-gray-50" dir="rtl">
+      {/* Category Header - Modified to be more compact and professional */}
+      <header className="bg-gradient-to-l from-blue-500 to-blue-600 text-white">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-white bg-white/10 hover:bg-white/20 rounded-full mr-2"
+                onClick={handleBackToStore}
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+              <h1 className="text-xl font-bold">{categoryDetails?.name || "جميع المنتجات"}</h1>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Link to={`/store/${storeDomain}/cart`}>
+                <Button variant="ghost" size="sm" className="text-white bg-white/10 hover:bg-white/20 rounded-full">
+                  <ShoppingCart className="h-5 w-5" />
+                </Button>
+              </Link>
+              <Link to={`/store/${storeDomain}/login`}>
+                <Button variant="ghost" size="sm" className="text-white bg-white/10 hover:bg-white/20 rounded-full">
+                  <User className="h-5 w-5" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      <motion.div 
+        className="container mx-auto px-4 py-6"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
         {/* Search Bar with rounded design */}
-        <div className="mb-4 px-2">
+        <div className="mb-4">
           <div className="search-bar-modern">
             <SearchBar 
               searchQuery={searchQuery}
@@ -156,8 +208,20 @@ const CategoryPage = () => {
         />
         
         {/* Products Grid */}
-        <div className="px-2">
-          {filteredProducts.length > 0 ? (
+        <div className="mt-6">
+          {isLoadingProducts ? (
+            <div className="grid grid-cols-2 gap-4">
+              {[1, 2, 3, 4].map((_, index) => (
+                <div key={index} className="bg-white rounded-xl shadow-sm overflow-hidden animate-pulse">
+                  <div className="h-48 bg-gray-200"></div>
+                  <div className="p-4">
+                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredProducts.length > 0 ? (
             <ProductGrid products={filteredProducts} />
           ) : (
             <div className="text-center py-12 bg-gray-50 rounded-xl">
@@ -166,8 +230,8 @@ const CategoryPage = () => {
             </div>
           )}
         </div>
-      </div>
-    </StoreLayout>
+      </motion.div>
+    </div>
   );
 };
 

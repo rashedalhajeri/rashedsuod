@@ -43,21 +43,16 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
     "/public/lovable-uploads/827a00fa-f421-45c3-96d7-b9305fb217d1.jpg", // Electronics
   ];
 
-  // Handle category click
+  // Handle category click with smooth transitions
   const handleCategoryClick = (category: string, index: number) => {
     if (!storeDomain) return;
-    
-    if (category === "الكل") {
-      navigate(`/store/${storeDomain}`);
-    } else {
-      navigate(`/store/${storeDomain}/category/${encodeURIComponent(category.toLowerCase())}`);
-    }
+    onCategoryChange(category);
   };
 
   return (
-    <div className="bg-white py-2 z-10 transition-all duration-300 mb-6" dir="rtl">
-      <div className="container mx-auto px-3">
-        <div className="grid grid-cols-3 gap-4">
+    <div className="bg-white py-3 z-10 transition-all duration-300 mb-6 rounded-xl shadow-sm" dir="rtl">
+      <div className="container mx-auto">
+        <div className="grid grid-cols-3 gap-3">
           {categoriesWithAll.map((category, index) => (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -68,18 +63,23 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
             >
               <button
                 onClick={() => handleCategoryClick(category, index)}
-                className={`w-full h-full flex flex-col items-center p-3 ${
+                className={`w-full h-full flex flex-col items-center p-3 transition-all duration-300 ${
                   (category === "الكل" && !activeCategory) || 
                   (activeCategory && category.toLowerCase() === activeCategory.toLowerCase())
-                    ? 'text-blue-600 font-medium'
-                    : 'text-gray-700'
+                    ? 'text-blue-600 font-medium bg-blue-50'
+                    : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
-                <div className="w-16 h-16 mb-2 flex items-center justify-center bg-gray-50 rounded-lg">
+                <div className={`w-14 h-14 mb-2 flex items-center justify-center rounded-lg transition-all duration-300 ${
+                  (category === "الكل" && !activeCategory) || 
+                  (activeCategory && category.toLowerCase() === activeCategory.toLowerCase())
+                    ? 'bg-blue-100'
+                    : 'bg-gray-50'
+                }`}>
                   <img 
                     src={index < categoryImages.length ? categoryImages[index] : "/placeholder.svg"} 
                     alt={category} 
-                    className="w-12 h-12 object-contain" 
+                    className="w-10 h-10 object-contain" 
                   />
                 </div>
                 <span className="text-sm whitespace-nowrap">
