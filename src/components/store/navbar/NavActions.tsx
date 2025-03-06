@@ -16,11 +16,13 @@ import {
 interface NavActionsProps {
   storeDomain: string;
   totalItems: number;
+  isScrolled?: boolean;
 }
 
 const NavActions: React.FC<NavActionsProps> = ({
   storeDomain,
-  totalItems
+  totalItems,
+  isScrolled = false
 }) => {
   const isMobile = useIsMobile();
   
@@ -32,7 +34,11 @@ const NavActions: React.FC<NavActionsProps> = ({
           <Button 
             variant="ghost" 
             size="sm" 
-            className="text-white p-1 sm:p-1.5 h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
+            className={`p-1 sm:p-1.5 h-9 w-9 sm:h-10 sm:w-10 rounded-full transition-colors ${
+              isScrolled 
+                ? 'text-blue-600 bg-blue-50 hover:bg-blue-100 active:bg-blue-200' 
+                : 'text-white bg-white/10 hover:bg-white/20 active:bg-white/30'
+            }`}
             aria-label="حسابي"
           >
             <User className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -67,7 +73,11 @@ const NavActions: React.FC<NavActionsProps> = ({
         <Button 
           variant="ghost" 
           size="sm" 
-          className="relative text-white p-1 sm:p-1.5 h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
+          className={`relative p-1 sm:p-1.5 h-9 w-9 sm:h-10 sm:w-10 rounded-full transition-colors ${
+            isScrolled 
+              ? 'text-blue-600 bg-blue-50 hover:bg-blue-100 active:bg-blue-200' 
+              : 'text-white bg-white/10 hover:bg-white/20 active:bg-white/30'
+          }`}
           aria-label="عربة التسوق"
         >
           <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6" />
