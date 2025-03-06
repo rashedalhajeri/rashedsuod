@@ -33,44 +33,11 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({
   };
 
   const initials = getInitials(storeName || "Store");
-  
-  // Current time for header
-  const [currentTime, setCurrentTime] = useState(new Date());
-  
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000); // Update every minute
-    
-    return () => clearInterval(timer);
-  }, []);
-  
-  const formattedTime = currentTime.toLocaleTimeString('ar-KW', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  });
 
   return (
     <header className="relative w-full" dir="rtl">
       {/* خلفية رأس الصفحة الأساسية باللون الأزرق الفاتح بدلاً من البنفسجي */}
       <div className="bg-gradient-to-l from-blue-500 to-blue-600 pt-6 pb-10 px-3 sm:px-4 relative">
-        {/* Status Bar */}
-        <div className="flex items-center justify-between text-white text-xs mb-4">
-          <div className="flex items-center gap-1">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M14 10H10V14H14V10Z" fill="currentColor" />
-              <path d="M10 18H14V16H10V18Z" fill="currentColor" />
-              <path fillRule="evenodd" clipRule="evenodd" d="M4 3C4 2.44772 4.44772 2 5 2H19C19.5523 2 20 2.44772 20 3V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V3ZM6 4V20H18V4H6Z" fill="currentColor" />
-            </svg>
-            <span>5G</span>
-          </div>
-          
-          <div className="px-4 py-1 bg-green-500 rounded-full">
-            {formattedTime}
-          </div>
-        </div>
-      
         <div className="absolute bottom-0 left-0 right-0 h-8 bg-gray-50" style={{ 
           borderTopLeftRadius: '2rem', 
           borderTopRightRadius: '2rem',
