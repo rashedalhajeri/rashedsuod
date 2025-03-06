@@ -1,5 +1,7 @@
 
 import React from "react";
+import { Star, Calendar, ShoppingBag } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface ProductInformationProps {
   product: any;
@@ -12,6 +14,22 @@ const ProductInformation: React.FC<ProductInformationProps> = ({ product, curren
       style: 'currency',
       currency: currency || 'KWD'
     }).format(price);
+  };
+  
+  // تنسيق التاريخ بشكل مقروء
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    
+    try {
+      const date = new Date(dateString);
+      return new Intl.DateTimeFormat('ar-EG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }).format(date);
+    } catch (error) {
+      return dateString;
+    }
   };
   
   return (
@@ -43,6 +61,26 @@ const ProductInformation: React.FC<ProductInformationProps> = ({ product, curren
           </span>
         </div>
       )}
+      
+      {/* معلومات إضافية عن المنتج */}
+      <div className="mt-6 pt-4 border-t border-gray-200">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {product.created_at && (
+            <div className="flex items-center text-sm text-gray-600">
+              <Calendar className="h-4 w-4 ml-2" />
+              <span>تاريخ الإضافة: {formatDate(product.created_at)}</span>
+            </div>
+          )}
+          
+          {product.category && (
+            <div className="flex items-center">
+              <Badge variant="outline" className="rounded-full">
+                {product.category}
+              </Badge>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

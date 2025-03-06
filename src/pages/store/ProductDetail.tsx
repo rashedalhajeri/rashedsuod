@@ -73,43 +73,9 @@ const ProductDetail = () => {
           </Button>
         </div>
         
+        {/* تم إزالة الاقتراحات للمتاجر الأخرى وتغييرها برسالة توضيحية */}
         <div className="mt-8 text-sm text-gray-500 max-w-md text-center">
-          <p>للوصول إلى المتجر، يمكنك استخدام أحد روابط المتاجر المتاحة:</p>
-          <ul className="mt-2 space-y-1">
-            <li className="flex items-center justify-center gap-2">
-              <code className="bg-gray-100 px-2 py-1 rounded">/store/fhad</code>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-6 p-0 text-blue-600"
-                onClick={() => navigate('/store/fhad')}
-              >
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </li>
-            <li className="flex items-center justify-center gap-2">
-              <code className="bg-gray-100 px-2 py-1 rounded">/store/rashed</code>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-6 p-0 text-blue-600"
-                onClick={() => navigate('/store/rashed')}
-              >
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </li>
-            <li className="flex items-center justify-center gap-2">
-              <code className="bg-gray-100 px-2 py-1 rounded">/store/Alhajeri</code>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-6 p-0 text-blue-600"
-                onClick={() => navigate('/store/Alhajeri')}
-              >
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </li>
-          </ul>
+          <p>للوصول إلى متجرك، تأكد من تسجيل الدخول واختيار المتجر الخاص بك من لوحة التحكم.</p>
         </div>
       </div>
     );
