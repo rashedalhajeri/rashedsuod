@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PaintBucket } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface PreviewDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   storeUrl: string;
   storeName?: string;
+  storeDomain?: string;
   onExternalLinkClick: () => void;
 }
 
@@ -20,9 +22,11 @@ const PreviewDialog: React.FC<PreviewDialogProps> = ({
   onOpenChange,
   storeUrl,
   storeName,
+  storeDomain,
   onExternalLinkClick
 }) => {
   const [activeTab, setActiveTab] = React.useState("desktop");
+  const navigate = useNavigate();
   
   const getScreenSize = () => {
     switch(activeTab) {
@@ -33,6 +37,13 @@ const PreviewDialog: React.FC<PreviewDialogProps> = ({
       case "desktop":
       default:
         return "w-full h-full";
+    }
+  };
+  
+  const handleVisitStore = () => {
+    if (storeDomain) {
+      onOpenChange(false);
+      navigate(`/store/${storeDomain}`);
     }
   };
   
@@ -91,7 +102,19 @@ const PreviewDialog: React.FC<PreviewDialogProps> = ({
             <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
               إغلاق
             </Button>
-            <Button size="sm" onClick={onExternalLinkClick} className="gap-2">
+            <Button 
+              size="sm" 
+              onClick={handleVisitStore} 
+              className="gap-2"
+            >
+              زيارة المتجر
+            </Button>
+            <Button 
+              size="sm" 
+              onClick={onExternalLinkClick} 
+              variant="outline"
+              className="gap-2"
+            >
               <ExternalLink className="h-4 w-4" /> فتح في نافذة جديدة
             </Button>
           </div>

@@ -8,6 +8,11 @@ import Auth from "@/pages/Auth";
 import CreateStore from "@/pages/CreateStore";
 import NotFound from "@/pages/NotFound";
 import ProductDetail from "@/pages/ProductDetail";
+import Store from "@/pages/Store";
+import ProductPage from "@/pages/ProductPage";
+import CartPage from "@/pages/CartPage";
+import CheckoutPage from "@/pages/CheckoutPage";
+import OrderSuccessPage from "@/pages/OrderSuccessPage";
 
 // Import dashboard pages
 import DashboardHome from "@/pages/dashboard/Home";
@@ -25,6 +30,12 @@ const AppRoutes = () => {
       <Route path="/" element={<Index />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/reset-password" element={<Auth />} />
+      
+      <Route path="/store/:storeDomain" element={<Store />} />
+      <Route path="/store/:storeDomain/product/:productId" element={<ProductPage />} />
+      <Route path="/store/:storeDomain/cart" element={<CartPage />} />
+      <Route path="/store/:storeDomain/checkout" element={<CheckoutPage />} />
+      <Route path="/store/:storeDomain/order-success/:orderId" element={<OrderSuccessPage />} />
       
       <Route 
         path="/create-store" 
