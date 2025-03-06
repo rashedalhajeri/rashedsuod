@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,7 +23,6 @@ const CreateStore: React.FC = () => {
   const [checkingDomain, setCheckingDomain] = useState(false);
   const [storeUrl, setStoreUrl] = useState<string | null>(null);
 
-  // Format the preview URL whenever domain name changes
   useEffect(() => {
     if (formData.domainName && isValidDomainName(formData.domainName)) {
       setStoreUrl(formatStoreUrl(formData.domainName));
@@ -33,7 +31,6 @@ const CreateStore: React.FC = () => {
     }
   }, [formData.domainName]);
 
-  // Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({
@@ -41,13 +38,11 @@ const CreateStore: React.FC = () => {
       [name]: value
     });
 
-    // Reset domain availability check when domain name changes
     if (name === "domainName") {
       setDomainAvailable(null);
     }
   };
 
-  // Handle select changes
   const handleSelectChange = (name: string, value: string) => {
     setFormData({
       ...formData,
@@ -55,14 +50,12 @@ const CreateStore: React.FC = () => {
     });
   };
 
-  // Check domain availability
   const checkDomainAvailability = async () => {
     if (!formData.domainName.trim()) {
       toast.error("الرجاء إدخال اسم النطاق أولاً");
       return;
     }
 
-    // Validate domain name format (alphanumeric and hyphens only)
     if (!isValidDomainName(formData.domainName)) {
       toast.error("اسم النطاق يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط");
       return;
@@ -70,7 +63,6 @@ const CreateStore: React.FC = () => {
 
     setCheckingDomain(true);
     try {
-      // Check if domain already exists in database
       const { data, error } = await supabase
         .from('stores')
         .select('domain_name')
@@ -79,7 +71,6 @@ const CreateStore: React.FC = () => {
 
       if (error) throw error;
 
-      // If data is null, domain is available
       setDomainAvailable(!data);
       if (!data) {
         toast.success("اسم النطاق متاح");
@@ -94,7 +85,6 @@ const CreateStore: React.FC = () => {
     }
   };
 
-  // Submit form to create a store
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -105,7 +95,6 @@ const CreateStore: React.FC = () => {
 
     setLoading(true);
     try {
-      // Get current user
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
       if (!userData.user) {
@@ -114,7 +103,6 @@ const CreateStore: React.FC = () => {
         return;
       }
 
-      // Create store
       const { data, error } = await supabase
         .from('stores')
         .insert([
@@ -134,22 +122,17 @@ const CreateStore: React.FC = () => {
 
       toast.success("تم إنشاء المتجر بنجاح، جاري تحويلك للمتجر الخاص بك");
       
-      // Get the correct store URL
       const storeUrl = formatStoreUrl(data.domain_name);
       console.log("Redirecting to store URL:", storeUrl);
       
-      // Short delay to show the success message before redirect
       setTimeout(() => {
-        // Check if in development or production
         const isDevelopment = window.location.hostname === 'localhost' || 
                             window.location.hostname.includes('lovableproject.com') ||
                             window.location.hostname.includes('lovable.app');
         
         if (isDevelopment) {
-          // In development, use react-router to navigate
           navigate(`/dashboard`);
         } else {
-          // In production, do a hard redirect to the store URL
           window.location.href = storeUrl;
         }
       }, 1500);
@@ -269,7 +252,7 @@ const CreateStore: React.FC = () => {
           </div>
           
           {storeUrl && (
-            <Alert variant="info" className="bg-blue-50 text-blue-700 border-blue-100">
+            <Alert className="bg-blue-50 text-blue-700 border-blue-100">
               <AlertDescription>
                 سيكون رابط متجرك: <strong>{storeUrl}</strong>
               </AlertDescription>
