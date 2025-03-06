@@ -6,6 +6,14 @@ type ToasterProps = React.ComponentProps<typeof Sonner>
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
+  
+  // Check if we're in the store frontend (not dashboard)
+  const isStoreFrontend = window.location.pathname.includes('/store/');
+  
+  // If we're in the store frontend, return an empty div instead of the toaster
+  if (isStoreFrontend) {
+    return null;
+  }
 
   return (
     <Sonner

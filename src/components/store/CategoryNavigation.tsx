@@ -89,6 +89,7 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
   }, [storeDomain]);
   
   // Filter out empty arrays and prepare display categories
+  // Only include "الكل" and categories with products
   const displayCategories = ["الكل", ...categoriesWithProducts.map(cat => cat.name)];
   const hasCategories = displayCategories.length > 1; // At least "All" and one other category
   const hasSections = sections.length > 0;

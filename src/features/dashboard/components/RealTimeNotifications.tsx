@@ -17,7 +17,15 @@ const RealTimeNotifications: React.FC<RealTimeNotificationsProps> = ({ storeId }
     // Verificar si estamos en el dashboard (no en la vista de tienda)
     const currentPath = window.location.pathname;
     const isDashboardPath = currentPath.includes('/dashboard') || currentPath.includes('/admin');
+    const isStorePath = currentPath.includes('/store/');
+    
     setIsDashboard(isDashboardPath);
+    
+    // Desactivar completamente para visitantes de la tienda
+    if (isStorePath) {
+      setNotificationsEnabled(false);
+      return;
+    }
     
     // Solo activar notificaciones en el dashboard
     if (storeId && notificationsEnabled && isDashboardPath) {
@@ -26,7 +34,6 @@ const RealTimeNotifications: React.FC<RealTimeNotificationsProps> = ({ storeId }
         setIsRealtimeConnected(true);
       } catch (error) {
         console.error("Error al activar notificaciones:", error);
-        toast.error("Error al activar notificaciones. Recargue la página para intentar nuevamente");
         setIsRealtimeConnected(false);
       }
     }

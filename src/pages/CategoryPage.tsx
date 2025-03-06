@@ -7,7 +7,6 @@ import { ErrorState } from "@/components/ui/error-state";
 import { useCategoryData } from "@/hooks/use-category-data";
 import CategoryHeader from "@/components/store/category/CategoryHeader";
 import CategoryContent from "@/components/store/category/CategoryContent";
-import { toast } from "sonner";
 
 const CategoryPage = () => {
   const { storeDomain, categoryName } = useParams<{ storeDomain: string; categoryName: string }>();
@@ -24,21 +23,10 @@ const CategoryPage = () => {
     filteredProducts
   } = useCategoryData(categoryName, searchQuery);
 
-  // Show success toast when category is loaded
-  useEffect(() => {
-    if (categoryDetails && !isLoadingProducts) {
-      const msg = categoryName === "الكل" 
-        ? "تم عرض جميع المنتجات" 
-        : `تم عرض منتجات ${categoryDetails.name}`;
-      toast.success(msg);
-    }
-  }, [categoryDetails, isLoadingProducts, categoryName]);
+  // Remove the success toast effect that was here
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery) {
-      toast.info(`جاري البحث عن: ${searchQuery}`);
-    }
   };
   
   const handleCategoryChange = (category: string) => {
