@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { CreditCard, TrendingUp, TrendingDown, DollarSign, Clock } from "lucide-react";
@@ -52,8 +51,8 @@ const PaymentStat: React.FC<PaymentStatProps> = ({
 };
 
 const PaymentStats: React.FC = () => {
-  const { data: storeData } = useStoreData();
-  const formatCurrency = getCurrencyFormatter(storeData?.currency || 'SAR');
+  const { storeData } = useStoreData();
+  const formatCurrency = getCurrencyFormatter('KWD');
   
   // يمكن استبدال هذه البيانات بالبيانات الفعلية من قاعدة البيانات
   const stats = {

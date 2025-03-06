@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/layouts/DashboardLayout";
@@ -26,36 +25,22 @@ import useStoreData from "@/hooks/use-store-data";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 const OrdersPage: React.FC = () => {
-  const { data: storeData } = useStoreData();
+  const { storeData } = useStoreData();
   const storeId = storeData?.id || "";
   
-  // نوع الطلبات المعروضة (الكل، قيد المعالجة، إلخ)
   const [activeTab, setActiveTab] = useState<OrderStatus | "all">("all");
-  
-  // حالة البحث
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  
-  // الصفحات
   const [currentPage, setCurrentPage] = useState(0);
   const pageSize = 10;
-  
-  // الفرز
   const [orderBy, setOrderBy] = useState<string>("created_at");
   const [orderDirection, setOrderDirection] = useState<"asc" | "desc">("desc");
-  
-  // حالة العرض المفصل للطلب
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isViewingDetails, setIsViewingDetails] = useState(false);
-  
-  // حالة تأكيد الحذف
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
-  
-  // حالة إضافة طلب جديد (النافذة المنبثقة)
   const [isAddingOrder, setIsAddingOrder] = useState(false);
 
-  // استعلام البيانات - إحصائيات الطلبات
   const { 
     data: statsData,
     isLoading: isStatsLoading,
@@ -65,8 +50,7 @@ const OrdersPage: React.FC = () => {
     queryFn: () => fetchOrderStats(storeId),
     enabled: !!storeId,
   });
-  
-  // استعلام البيانات - قائمة الطلبات
+
   const {
     data: ordersData,
     isLoading,
@@ -84,21 +68,18 @@ const OrdersPage: React.FC = () => {
     }),
     enabled: !!storeId,
   });
-  
-  // معالجة تغيير كلمة البحث مع مهلة لتقليل عدد الاستعلامات
+
   React.useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(searchQuery);
-      setCurrentPage(0); // إعادة تعيين رقم الصفحة عند البحث
+      setCurrentPage(0);
     }, 500);
     
     return () => clearTimeout(timer);
   }, [searchQuery]);
-  
-  // معالجة عرض تفاصيل الطلب
+
   const handleViewDetails = async (order: Order) => {
     try {
-      // نحاول الحصول على تفاصيل الطلب الكاملة إذا لم تكن متوفرة بالفعل
       if (!order.items) {
         const detailedOrder = await fetchOrderDetails(order.id);
         if (detailedOrder) {
@@ -117,15 +98,13 @@ const OrdersPage: React.FC = () => {
       toast.error("حدث خطأ أثناء تحميل تفاصيل الطلب");
     }
   };
-  
-  // معالجة تحديث حالة الطلب
+
   const handleUpdateStatus = async (orderId: string, status: OrderStatus) => {
     try {
       await updateOrderStatus(orderId, status);
       refetch();
       refetchStats();
       
-      // تحديث الطلب المعروض في الموديل إذا كان هو نفسه
       if (selectedOrder && selectedOrder.id === orderId) {
         setSelectedOrder(prev => prev ? { ...prev, status } : null);
       }
@@ -134,14 +113,12 @@ const OrdersPage: React.FC = () => {
       toast.error("حدث خطأ أثناء تحديث حالة الطلب");
     }
   };
-  
-  // معالجة حذف الطلب
+
   const handleDeleteOrder = async (orderId: string) => {
     setOrderToDelete(orderId);
     setIsConfirmingDelete(true);
   };
-  
-  // تأكيد حذف الطلب
+
   const confirmDelete = async () => {
     if (!orderToDelete) return;
     
@@ -152,7 +129,6 @@ const OrdersPage: React.FC = () => {
         refetchStats();
         setIsConfirmingDelete(false);
         
-        // إغلاق موديل التفاصيل إذا كان الطلب المحذوف هو المعروض
         if (selectedOrder && selectedOrder.id === orderToDelete) {
           setIsViewingDetails(false);
           setSelectedOrder(null);
@@ -165,40 +141,34 @@ const OrdersPage: React.FC = () => {
       setOrderToDelete(null);
     }
   };
-  
-  // ترتيب الطلبات
+
   const handleSort = (field: string) => {
     if (orderBy === field) {
-      // عكس الترتيب إذا كان نفس الحقل
       setOrderDirection(prev => prev === "asc" ? "desc" : "asc");
     } else {
-      // تعيين حقل جديد للترتيب
       setOrderBy(field);
-      setOrderDirection("desc"); // افتراضيًا ترتيب تنازلي
+      setOrderDirection("desc");
     }
   };
-  
-  // تحديث البيانات
+
   const handleRefresh = () => {
     refetch();
     refetchStats();
     toast.success("تم تحديث البيانات");
   };
-  
-  // معالجة إضافة طلب جديد بنجاح
+
   const handleOrderAdded = () => {
     refetch();
     refetchStats();
     toast.success("تم إضافة الطلب بنجاح");
   };
-  
-  // إجمالي عدد الصفحات
+
   const totalPages = Math.ceil((ordersData?.totalCount || 0) / pageSize);
-  
+
   if (isLoading && !ordersData) {
     return <LoadingState message="جاري تحميل الطلبات..." />;
   }
-  
+
   if (error) {
     return (
       <ErrorState 
@@ -208,7 +178,7 @@ const OrdersPage: React.FC = () => {
       />
     );
   }
-  
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -243,10 +213,8 @@ const OrdersPage: React.FC = () => {
           </div>
         </div>
 
-        {/* إحصائيات الطلبات */}
         <OrderStats stats={statsData || { total: 0, processing: 0, shipped: 0, delivered: 0, cancelled: 0 }} isLoading={isStatsLoading} />
         
-        {/* البحث والتصفية */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -264,13 +232,12 @@ const OrdersPage: React.FC = () => {
           </Button>
         </div>
         
-        {/* تبويبات حالة الطلب */}
         <Tabs 
           defaultValue="all" 
           value={activeTab}
           onValueChange={(value) => {
             setActiveTab(value as OrderStatus | "all");
-            setCurrentPage(0); // إعادة تعيين رقم الصفحة عند تغيير التبويب
+            setCurrentPage(0);
           }}
           className="w-full"
         >
@@ -294,7 +261,6 @@ const OrdersPage: React.FC = () => {
                   currency={storeData?.currency}
                 />
                 
-                {/* الصفحات */}
                 {totalPages > 1 && (
                   <div className="flex justify-center mt-6">
                     <div className="flex items-center gap-2">
@@ -330,7 +296,6 @@ const OrdersPage: React.FC = () => {
         </Tabs>
       </div>
       
-      {/* موديل تفاصيل الطلب */}
       {selectedOrder && (
         <OrderDetailsModal
           order={selectedOrder}
@@ -343,7 +308,6 @@ const OrdersPage: React.FC = () => {
         />
       )}
       
-      {/* موديل تأكيد الحذف */}
       <Dialog open={isConfirmingDelete} onOpenChange={(open) => !open && setIsConfirmingDelete(false)}>
         <DialogContent>
           <DialogHeader>
@@ -363,7 +327,6 @@ const OrdersPage: React.FC = () => {
         </DialogContent>
       </Dialog>
       
-      {/* موديل إضافة طلب جديد */}
       <NewOrderModal
         storeId={storeId}
         isOpen={isAddingOrder}

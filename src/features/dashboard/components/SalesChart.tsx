@@ -26,7 +26,7 @@ const SalesChart: React.FC<SalesChartProps> = ({ data, currency }) => {
           <p className="text-sm text-primary-600">
             {`المبيعات: ${new Intl.NumberFormat('ar-SA', {
               style: 'currency',
-              currency: currency === 'ر.س' ? 'SAR' : 'USD',
+              currency: currency === 'د.ك' || currency === 'ر.س' ? 'KWD' : 'USD',
             }).format(payload[0].value)}`}
           </p>
         </div>
@@ -56,33 +56,40 @@ const SalesChart: React.FC<SalesChartProps> = ({ data, currency }) => {
       </CardHeader>
       
       <CardContent>
-        <div className="h-[300px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis 
-                dataKey="name" 
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 12 }}
-              />
-              <YAxis 
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 12 }}
-                tickFormatter={(value) => `${value} ${currency}`}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Bar 
-                dataKey="value" 
-                fill="#8884d8" 
-                radius={[4, 4, 0, 0]}
-                barSize={40}
-                animationDuration={500}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        {data.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-[300px] text-center">
+            <p className="text-muted-foreground">لا توجد بيانات مبيعات متاحة</p>
+            <p className="text-xs text-muted-foreground mt-1">ستظهر مبيعاتك هنا بمجرد إجراء عمليات بيع</p>
+          </div>
+        ) : (
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12 }}
+                />
+                <YAxis 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={(value) => `${value} ${currency}`}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Bar 
+                  dataKey="value" 
+                  fill="#8884d8" 
+                  radius={[4, 4, 0, 0]}
+                  barSize={40}
+                  animationDuration={500}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

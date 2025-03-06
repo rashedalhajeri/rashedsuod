@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -70,18 +69,18 @@ export const useStoreData = () => {
   };
 };
 
-export const getCurrencyFormatter = (currency = 'SAR') => {
+export const getCurrencyFormatter = (currency = 'KWD') => {
   return (value: number) => {
     try {
       return new Intl.NumberFormat('ar-SA', {
         style: 'currency',
-        currency: currency,
+        currency: 'KWD',
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
       }).format(value);
     } catch (error) {
       console.error('Error formatting currency:', error);
-      return `${value} ${currency}`;
+      return `${value} د.ك`;
     }
   };
 };

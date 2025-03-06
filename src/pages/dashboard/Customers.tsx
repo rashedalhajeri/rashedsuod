@@ -1,5 +1,6 @@
 
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,88 +36,7 @@ import { useToast } from "@/components/ui/use-toast";
 import useStoreData, { getCurrencyFormatter } from "@/hooks/use-store-data";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-
-interface Customer {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  city: string;
-  status: "active" | "inactive";
-  totalOrders: number;
-  totalSpent: number;
-  lastOrderDate: string;
-  createdAt: string;
-  avatar?: string | null;
-}
-
-const mockCustomers: Customer[] = [
-  {
-    id: "cus-001",
-    name: "أحمد محمد",
-    email: "ahmed@example.com",
-    phone: "+966 55 123 4567",
-    city: "الرياض",
-    status: "active",
-    totalOrders: 8,
-    totalSpent: 2450,
-    lastOrderDate: "2023-06-15",
-    createdAt: "2023-01-10",
-    avatar: null,
-  },
-  {
-    id: "cus-002",
-    name: "سارة عبدالله",
-    email: "sara@example.com",
-    phone: "+966 50 765 4321",
-    city: "جدة",
-    status: "active",
-    totalOrders: 5,
-    totalSpent: 1350,
-    lastOrderDate: "2023-05-22",
-    createdAt: "2023-02-15",
-    avatar: null,
-  },
-  {
-    id: "cus-003",
-    name: "محمد العنزي",
-    email: "mohammed@example.com",
-    phone: "+966 54 888 7777",
-    city: "الدمام",
-    status: "inactive",
-    totalOrders: 2,
-    totalSpent: 450,
-    lastOrderDate: "2023-03-05",
-    createdAt: "2023-03-01",
-    avatar: null,
-  },
-  {
-    id: "cus-004",
-    name: "نورة الشمري",
-    email: "noura@example.com",
-    phone: "+966 56 222 3333",
-    city: "مكة",
-    status: "active",
-    totalOrders: 12,
-    totalSpent: 3200,
-    lastOrderDate: "2023-06-20",
-    createdAt: "2022-12-05",
-    avatar: null,
-  },
-  {
-    id: "cus-005",
-    name: "خالد السعيد",
-    email: "khalid@example.com",
-    phone: "+966 58 444 5555",
-    city: "المدينة",
-    status: "active",
-    totalOrders: 3,
-    totalSpent: 890,
-    lastOrderDate: "2023-04-18",
-    createdAt: "2023-04-01",
-    avatar: null,
-  },
-];
+import { fetchCustomers, Customer, updateCustomer } from "@/services/customer-service"; 
 
 const CustomerListItem: React.FC<{ 
   customer: Customer; 
@@ -133,7 +53,6 @@ const CustomerListItem: React.FC<{
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4 rtl:space-x-reverse">
           <Avatar className="h-10 w-10 border">
-            <AvatarImage src={customer.avatar || ""} />
             <AvatarFallback className="bg-primary-50 text-primary-700">
               {customer.name.substring(0, 2)}
             </AvatarFallback>
@@ -145,8 +64,8 @@ const CustomerListItem: React.FC<{
         </div>
         <div className="flex items-center gap-4">
           <div className="hidden md:flex flex-col items-end">
-            <span className="text-sm font-medium text-gray-800">{formatCurrency(customer.totalSpent)}</span>
-            <span className="text-xs text-gray-500">{customer.totalOrders} طلب</span>
+            <span className="text-sm font-medium text-gray-800">{formatCurrency(customer.total_spent)}</span>
+            <span className="text-xs text-gray-500">{customer.total_orders} طلب</span>
           </div>
           <Badge
             variant={customer.status === "active" ? "outline" : "secondary"}
@@ -166,10 +85,12 @@ const CustomerDetails: React.FC<{
   customer: Customer;
   onClose: () => void;
   currency: string;
-}> = ({ customer, onClose, currency }) => {
-  const formatCurrency = getCurrencyFormatter('KWD');
+  onUpdateStatus: (customerId: string, status: "active" | "inactive") => void;
+}> = ({ customer, onClose, currency, onUpdateStatus }) => {
+  const formatCurrency = getCurrencyFormatter(currency);
   
   const formatDate = (dateString: string) => {
+    if (!dateString) return "غير متوفر";
     try {
       return format(new Date(dateString), 'dd MMMM yyyy', { locale: ar });
     } catch (error) {
@@ -181,14 +102,13 @@ const CustomerDetails: React.FC<{
     <div className="space-y-6 rtl">
       <div className="flex flex-col items-center space-y-4">
         <Avatar className="h-20 w-20 border">
-          <AvatarImage src={customer.avatar || ""} />
           <AvatarFallback className="bg-primary-50 text-primary-700 text-2xl">
             {customer.name.substring(0, 2)}
           </AvatarFallback>
         </Avatar>
         <div className="text-center">
           <h2 className="text-xl font-bold">{customer.name}</h2>
-          <p className="text-gray-500">عميل منذ {formatDate(customer.createdAt)}</p>
+          <p className="text-gray-500">عميل منذ {formatDate(customer.created_at)}</p>
         </div>
       </div>
       
@@ -205,28 +125,28 @@ const CustomerDetails: React.FC<{
               <Mail className="h-4 w-4 text-gray-500" />
               <div>
                 <p className="text-xs text-gray-500">البريد الإلكتروني</p>
-                <p className="text-sm font-medium">{customer.email}</p>
+                <p className="text-sm font-medium">{customer.email || "غير متوفر"}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 p-3 border rounded-md">
               <Phone className="h-4 w-4 text-gray-500" />
               <div>
                 <p className="text-xs text-gray-500">رقم الهاتف</p>
-                <p className="text-sm font-medium">{customer.phone}</p>
+                <p className="text-sm font-medium">{customer.phone || "غير متوفر"}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 p-3 border rounded-md">
               <MapPin className="h-4 w-4 text-gray-500" />
               <div>
                 <p className="text-xs text-gray-500">المدينة</p>
-                <p className="text-sm font-medium">{customer.city}</p>
+                <p className="text-sm font-medium">{customer.city || "غير متوفر"}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 p-3 border rounded-md">
               <User className="h-4 w-4 text-gray-500" />
               <div>
                 <p className="text-xs text-gray-500">الحالة</p>
-                <p className="text-sm font-medium">
+                <div className="text-sm font-medium flex items-center mt-1">
                   <Badge
                     variant={customer.status === "active" ? "outline" : "secondary"}
                     className={`
@@ -235,7 +155,18 @@ const CustomerDetails: React.FC<{
                   >
                     {customer.status === "active" ? "نشط" : "غير نشط"}
                   </Badge>
-                </p>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-6 mr-2 text-xs"
+                    onClick={() => onUpdateStatus(
+                      customer.id, 
+                      customer.status === "active" ? "inactive" : "active"
+                    )}
+                  >
+                    تغيير الحالة
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -243,15 +174,19 @@ const CustomerDetails: React.FC<{
           <div className="grid grid-cols-3 gap-4 mt-6">
             <div className="bg-primary-50 p-4 rounded-lg text-center">
               <p className="text-sm text-gray-600">مجموع الطلبات</p>
-              <p className="text-xl font-bold text-primary-700">{customer.totalOrders}</p>
+              <p className="text-xl font-bold text-primary-700">{customer.total_orders}</p>
             </div>
             <div className="bg-primary-50 p-4 rounded-lg text-center">
               <p className="text-sm text-gray-600">إجمالي الإنفاق</p>
-              <p className="text-xl font-bold text-primary-700">{formatCurrency(customer.totalSpent)}</p>
+              <p className="text-xl font-bold text-primary-700">{formatCurrency(customer.total_spent)}</p>
             </div>
             <div className="bg-primary-50 p-4 rounded-lg text-center">
               <p className="text-sm text-gray-600">آخر طلب</p>
-              <p className="text-xl font-bold text-primary-700">{formatDate(customer.lastOrderDate)}</p>
+              <p className="text-lg font-bold text-primary-700">
+                {customer.last_order_date 
+                  ? formatDate(customer.last_order_date) 
+                  : "لا يوجد"}
+              </p>
             </div>
           </div>
         </TabsContent>
@@ -291,21 +226,62 @@ const Customers: React.FC = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const { toast } = useToast();
   
-  const filteredCustomers = mockCustomers.filter(customer => {
-    const matchesSearch = 
-      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.phone.includes(searchTerm);
-    
-    const matchesStatus = 
-      statusFilter === "all" || 
-      customer.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
+  // Fetch customers data from Supabase
+  const { data: customersData, isLoading, error, refetch } = useQuery({
+    queryKey: ['customers', storeData?.id],
+    queryFn: () => fetchCustomers(storeData?.id || ''),
+    enabled: !!storeData?.id,
   });
+  
+  const filteredCustomers = React.useMemo(() => {
+    if (!customersData?.customers) return [];
+    
+    return customersData.customers.filter(customer => {
+      const matchesSearch = 
+        customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (customer.email && customer.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (customer.phone && customer.phone.includes(searchTerm));
+      
+      const matchesStatus = 
+        statusFilter === "all" || 
+        customer.status === statusFilter;
+      
+      return matchesSearch && matchesStatus;
+    });
+  }, [customersData, searchTerm, statusFilter]);
   
   const handleViewDetails = (customer: Customer) => {
     setSelectedCustomer(customer);
+  };
+  
+  const handleUpdateStatus = async (customerId: string, status: "active" | "inactive") => {
+    try {
+      const result = await updateCustomer(customerId, { status });
+      
+      if (result.success) {
+        // Update the selected customer if it's the one being modified
+        if (selectedCustomer && selectedCustomer.id === customerId) {
+          setSelectedCustomer({ ...selectedCustomer, status });
+        }
+        
+        // Refetch customers list
+        refetch();
+        
+        toast({
+          title: "تم تحديث حالة العميل",
+          description: `تم تغيير حالة العميل إلى ${status === "active" ? "نشط" : "غير نشط"}`,
+        });
+      } else {
+        throw new Error("Failed to update customer status");
+      }
+    } catch (error) {
+      console.error("Error updating customer status:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تحديث حالة العميل",
+        variant: "destructive",
+      });
+    }
   };
   
   const handleExportCustomers = () => {
@@ -314,6 +290,15 @@ const Customers: React.FC = () => {
       description: "تم تصدير بيانات العملاء بنجاح إلى ملف CSV",
     });
   };
+  
+  const emptyState = (
+    <div className="text-center py-12">
+      <Users className="h-12 w-12 mx-auto text-gray-300" />
+      <h3 className="mt-4 text-lg font-medium text-gray-900">لا يوجد عملاء</h3>
+      <p className="mt-1 text-sm text-gray-500">ابدأ بإضافة عملاء جدد لمتجرك</p>
+      <Button className="mt-4">إضافة عميل جديد</Button>
+    </div>
+  );
   
   return (
     <DashboardLayout>
@@ -326,113 +311,88 @@ const Customers: React.FC = () => {
           </Button>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="md:col-span-2">
-            <div className="relative">
-              <Search className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="البحث عن عميل بالاسم أو البريد الإلكتروني..." 
-                className="pl-3 pr-10"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
+        {/* Search and filter bar */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="البحث بالاسم أو البريد الإلكتروني أو رقم الهاتف..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-3 pr-9"
+            />
           </div>
-          <div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full gap-2">
-                  <Filter className="h-4 w-4 ml-1" />
-                  <span>تصفية النتائج</span>
-                  <ChevronDown className="h-4 w-4 mr-auto" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" dir="rtl">
-                <DropdownMenuLabel>تصفية حسب الحالة</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setStatusFilter("all")}>
-                  {statusFilter === "all" && <Check className="h-4 w-4 ml-2" />}
-                  جميع العملاء
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("active")}>
-                  {statusFilter === "active" && <Check className="h-4 w-4 ml-2" />}
-                  العملاء النشطين
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("inactive")}>
-                  {statusFilter === "inactive" && <Check className="h-4 w-4 ml-2" />}
-                  العملاء غير النشطين
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          
+          <Select 
+            value={statusFilter} 
+            onValueChange={(value) => setStatusFilter(value as "all" | "active" | "inactive")}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="تصفية حسب الحالة" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">جميع العملاء</SelectItem>
+              <SelectItem value="active">العملاء النشطين</SelectItem>
+              <SelectItem value="inactive">العملاء غير النشطين</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         
-        <Card className="rtl">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-medium flex items-center">
-              <Users className="h-4 w-4 inline-block ml-2" />
-              قائمة العملاء
-              <Badge className="mr-2">{filteredCustomers.length}</Badge>
+        {/* Customers list */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">
+              العملاء ({filteredCustomers.length})
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            {filteredCustomers.length > 0 ? (
-              <div className="border rounded-md overflow-hidden">
-                {filteredCustomers.map(customer => (
-                  <CustomerListItem 
-                    key={customer.id} 
-                    customer={customer} 
-                    onViewDetails={handleViewDetails}
-                    currency={storeData?.currency || "SAR"}
-                  />
-                ))}
+          <CardContent className="p-0">
+            {isLoading ? (
+              <div className="p-8 text-center">
+                <p>جاري تحميل بيانات العملاء...</p>
               </div>
+            ) : error ? (
+              <div className="p-8 text-center">
+                <p className="text-red-500">حدث خطأ أثناء تحميل بيانات العملاء</p>
+                <Button variant="outline" className="mt-2" onClick={() => refetch()}>
+                  إعادة المحاولة
+                </Button>
+              </div>
+            ) : filteredCustomers.length === 0 ? (
+              emptyState
             ) : (
-              <div className="text-center py-12">
-                <Users className="h-12 w-12 mx-auto text-muted-foreground" />
-                <h3 className="mt-4 text-lg font-medium">لا يوجد عملاء</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {searchTerm || statusFilter !== "all" 
-                    ? "لا يوجد عملاء مطابقون لمعايير البحث" 
-                    : "سيظهر هنا عملاؤك عندما يقومون بالتسجيل أو إتمام عملية شراء"}
-                </p>
-                {(searchTerm || statusFilter !== "all") && (
-                  <Button 
-                    variant="outline" 
-                    className="mt-4"
-                    onClick={() => {
-                      setSearchTerm("");
-                      setStatusFilter("all");
-                    }}
-                  >
-                    <X className="h-4 w-4 ml-2" />
-                    إزالة عوامل التصفية
-                  </Button>
-                )}
-              </div>
+              filteredCustomers.map((customer) => (
+                <CustomerListItem
+                  key={customer.id}
+                  customer={customer}
+                  onViewDetails={handleViewDetails}
+                  currency="KWD"
+                />
+              ))
             )}
           </CardContent>
         </Card>
+        
+        {/* Customer details dialog */}
+        <Dialog open={!!selectedCustomer} onOpenChange={(open) => !open && setSelectedCustomer(null)}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>تفاصيل العميل</DialogTitle>
+              <DialogDescription>
+                عرض كافة بيانات ومعلومات العميل
+              </DialogDescription>
+            </DialogHeader>
+            
+            {selectedCustomer && (
+              <CustomerDetails 
+                customer={selectedCustomer} 
+                onClose={() => setSelectedCustomer(null)}
+                currency="KWD"
+                onUpdateStatus={handleUpdateStatus}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
-      
-      <Dialog open={!!selectedCustomer} onOpenChange={(open) => !open && setSelectedCustomer(null)}>
-        <DialogContent className="max-w-2xl rtl">
-          <DialogHeader>
-            <DialogTitle>تفاصيل العميل</DialogTitle>
-            <DialogDescription>
-              عرض وإدارة معلومات العميل وطلباته
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedCustomer && (
-            <CustomerDetails 
-              customer={selectedCustomer} 
-              onClose={() => setSelectedCustomer(null)}
-              currency={storeData?.currency || "SAR"}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
     </DashboardLayout>
   );
 };

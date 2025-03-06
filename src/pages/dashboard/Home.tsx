@@ -16,18 +16,14 @@ import SubscriptionAlert from "@/features/dashboard/components/SubscriptionAlert
 import QuickActionButtons from "@/features/dashboard/components/QuickActionButtons";
 import ActivitySummarySection from "@/features/dashboard/components/ActivitySummarySection";
 
-// Import mock data
-import { 
-  mockSalesData, 
-  mockRecentOrders, 
-  mockRecentProducts,
-  statsData
-} from "@/features/dashboard/data/mockDashboardData";
+// Import service functions
+import { fetchDashboardStats, fetchSalesData } from "@/services/stats-service";
+import { fetchOrders } from "@/services/order-service";
 
 // Dashboard Home Page
 const DashboardHome: React.FC = () => {
   // Fetch store data using the custom hook
-  const { data: storeData, isLoading, error } = useStoreData();
+  const { storeData, isLoading: isStoreLoading, error: storeError } = useStoreData();
   
   // Fetch user name
   const [userName, setUserName] = React.useState<string>("المدير");
@@ -49,8 +45,63 @@ const DashboardHome: React.FC = () => {
     
     fetchUserName();
   }, []);
+
+  // Fetch stats data
+  const { data: statsData, isLoading: isStatsLoading, error: statsError } = useQuery({
+    queryKey: ['dashboardStats', storeData?.id],
+    queryFn: () => fetchDashboardStats(storeData?.id),
+    enabled: !!storeData?.id,
+  });
+
+  // Fetch sales chart data
+  const [period, setPeriod] = React.useState("monthly");
+  const { data: salesData, isLoading: isSalesLoading, error: salesError } = useQuery({
+    queryKey: ['salesData', storeData?.id, period],
+    queryFn: () => fetchSalesData(storeData?.id, period),
+    enabled: !!storeData?.id,
+  });
+
+  // Fetch recent orders
+  const { data: ordersData, isLoading: isOrdersLoading, error: ordersError } = useQuery({
+    queryKey: ['recentOrders', storeData?.id],
+    queryFn: () => fetchOrders(storeData?.id, { pageSize: 5 }),
+    enabled: !!storeData?.id,
+  });
+
+  // Fetch recent products
+  const { data: productsData, isLoading: isProductsLoading, error: productsError } = useQuery({
+    queryKey: ['recentProducts', storeData?.id],
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('store_id', storeData?.id)
+          .order('created_at', { ascending: false })
+          .limit(5);
+        
+        if (error) throw error;
+        
+        return data.map(product => ({
+          id: product.id,
+          name: product.name,
+          thumbnail: product.image_url,
+          price: Number(product.price),
+          stock: product.stock_quantity || 0,
+          category: 'بدون تصنيف'  // Default category until we implement categories
+        }));
+      } catch (error) {
+        console.error("Error fetching recent products:", error);
+        return [];
+      }
+    },
+    enabled: !!storeData?.id,
+  });
   
-  if (isLoading) {
+  const isLoading = isStoreLoading || isStatsLoading || isSalesLoading || isOrdersLoading || isProductsLoading;
+  const error = storeError || statsError || salesError || ordersError || productsError;
+  
+  if (isLoading && (!storeData || !statsData)) {
     return <LoadingState message="جاري تحميل البيانات..." />;
   }
   
@@ -64,11 +115,11 @@ const DashboardHome: React.FC = () => {
     );
   }
   
-  // Format currency based on store settings
-  const formatCurrency = getCurrencyFormatter(storeData?.currency || 'SAR');
+  // Format currency based on store settings (always using KWD)
+  const formatCurrency = getCurrencyFormatter('KWD');
   
   // Subscription plan status
-  const subscriptionStatus = "basic"; // Default value since property doesn't exist in type
+  const subscriptionStatus = storeData?.subscription_plan || "free";
   const isBasicPlan = subscriptionStatus === "basic";
   
   return (
@@ -77,20 +128,25 @@ const DashboardHome: React.FC = () => {
       <WelcomeSection 
         storeName={storeData?.store_name || "متجرك"} 
         ownerName={userName}
-        newOrdersCount={7}
-        lowStockCount={5}
+        newOrdersCount={statsData?.orders || 0}
+        lowStockCount={0} // We'll implement this later
       />
       
       {/* Subscription Alert for Basic Plan */}
       <SubscriptionAlert isBasicPlan={isBasicPlan} />
       
       {/* Stats Cards */}
-      <DashboardStatsSection stats={statsData} formatCurrency={formatCurrency} />
+      <DashboardStatsSection stats={statsData || {
+        products: 0,
+        orders: 0,
+        customers: 0,
+        revenue: 0
+      }} formatCurrency={formatCurrency} />
       
       {/* Sales Chart */}
       <SalesChart 
-        data={mockSalesData}
-        currency={storeData?.currency || "SAR"}
+        data={salesData || []}
+        currency="د.ك"
       />
       
       {/* Quick Actions */}
@@ -98,9 +154,9 @@ const DashboardHome: React.FC = () => {
       
       {/* Activity Summary Section */}
       <ActivitySummarySection
-        orders={mockRecentOrders}
-        products={mockRecentProducts}
-        currency={storeData?.currency || "SAR"}
+        orders={ordersData?.orders || []}
+        products={productsData || []}
+        currency="KWD"
       />
     </DashboardLayout>
   );

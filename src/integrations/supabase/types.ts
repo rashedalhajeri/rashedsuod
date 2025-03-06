@@ -71,6 +71,59 @@ export type Database = {
         }
         Relationships: []
       }
+      customers: {
+        Row: {
+          city: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          last_order_date: string | null
+          name: string
+          phone: string | null
+          status: string
+          store_id: string
+          total_orders: number | null
+          total_spent: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          last_order_date?: string | null
+          name: string
+          phone?: string | null
+          status?: string
+          store_id: string
+          total_orders?: number | null
+          total_spent?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          city?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          last_order_date?: string | null
+          name?: string
+          phone?: string | null
+          status?: string
+          store_id?: string
+          total_orders?: number | null
+          total_spent?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customers_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       delivery_areas: {
         Row: {
           created_at: string | null
@@ -329,6 +382,44 @@ export type Database = {
             foreignKeyName: "store_settings_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_stats: {
+        Row: {
+          created_at: string | null
+          date: string
+          id: string
+          orders_count: number | null
+          store_id: string
+          total_sales: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          id?: string
+          orders_count?: number | null
+          store_id: string
+          total_sales?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          id?: string
+          orders_count?: number | null
+          store_id?: string
+          total_sales?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_stats_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
