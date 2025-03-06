@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useStoreData } from "@/hooks/use-store-data";
@@ -45,7 +46,7 @@ const CategoryPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (storeData?.id && categoryName) {
+    if (storeData?.id) {
       const fetchCategoryData = async () => {
         setIsLoadingProducts(true);
         
@@ -59,29 +60,52 @@ const CategoryPage = () => {
             setCategories(categoriesData.map(cat => cat.name));
           }
           
-          const { data: categoryData } = await supabase
-            .from('categories')
-            .select('*')
-            .eq('store_id', storeData.id)
-            .ilike('name', categoryName)
-            .single();
-            
-          setCategoryDetails(categoryData);
-          
-          if (categoryData) {
-            const { data: productsData } = await supabase
+          // Fetch all products if category is "الكل"
+          if (categoryName?.toLowerCase() === "الكل" || categoryName === "all") {
+            // Fetch all products
+            const { data: allProductsData } = await supabase
               .from('products')
               .select('*')
-              .eq('store_id', storeData.id)
-              .eq('category_id', categoryData.id);
+              .eq('store_id', storeData.id);
+              
+            setProducts(allProductsData || []);
             
-            setProducts(productsData || []);
-            
-            if (productsData && productsData.length > 0) {
-              setProductNames(productsData.map(product => product.name));
+            if (allProductsData && allProductsData.length > 0) {
+              setProductNames(allProductsData.map(product => product.name));
             }
+            
+            // Set category details for "الكل"
+            setCategoryDetails({
+              id: "all",
+              name: "الكل",
+              store_id: storeData.id
+            });
           } else {
-            setProducts([]);
+            // Fetch specific category
+            const { data: categoryData } = await supabase
+              .from('categories')
+              .select('*')
+              .eq('store_id', storeData.id)
+              .ilike('name', categoryName || '')
+              .single();
+              
+            setCategoryDetails(categoryData);
+            
+            if (categoryData) {
+              const { data: productsData } = await supabase
+                .from('products')
+                .select('*')
+                .eq('store_id', storeData.id)
+                .eq('category_id', categoryData.id);
+              
+              setProducts(productsData || []);
+              
+              if (productsData && productsData.length > 0) {
+                setProductNames(productsData.map(product => product.name));
+              }
+            } else {
+              setProducts([]);
+            }
           }
         } catch (err) {
           console.error("Error fetching category data:", err);
@@ -102,7 +126,7 @@ const CategoryPage = () => {
     if (!storeDomain) return;
     
     if (category === "الكل") {
-      navigate(`/store/${storeDomain}`);
+      navigate(`/store/${storeDomain}/category/الكل`);
     } else {
       navigate(`/store/${storeDomain}/category/${encodeURIComponent(category.toLowerCase())}`);
     }
@@ -119,7 +143,7 @@ const CategoryPage = () => {
       ) 
     : products;
 
-  const handleNavigateToAllDeals = () => {
+  const handleNavigateToStore = () => {
     navigate(`/store/${storeDomain}`);
   };
 
@@ -131,7 +155,7 @@ const CategoryPage = () => {
     return <ErrorState title="خطأ" message={error.message || "حدث خطأ أثناء تحميل المتجر"} />;
   }
   
-  const headerTitle = categoryDetails?.name || "جميع الصفقات";
+  const headerTitle = categoryDetails?.name || "جميع المنتجات";
 
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
@@ -151,7 +175,7 @@ const CategoryPage = () => {
               <Button 
                 variant="ghost" 
                 className="text-white bg-white/10 hover:bg-white/20 p-0 h-9 w-9 rounded-full"
-                onClick={handleNavigateToAllDeals}
+                onClick={handleNavigateToStore}
               >
                 <ChevronRight className="h-5 w-5" />
               </Button>

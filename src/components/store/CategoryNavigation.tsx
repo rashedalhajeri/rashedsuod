@@ -78,14 +78,17 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
   const handleCategoryClick = (category: string) => {
     if (!storeDomain) return;
     
+    // Always navigate to category page, even for "All"
     if (category === "الكل") {
-      // If "All" category, just go to main store page
-      navigate(`/store/${storeDomain}`);
+      navigate(`/store/${storeDomain}/category/الكل`);
     } else {
       // For other categories, navigate to category page
       const categorySlug = encodeURIComponent(category.toLowerCase());
       navigate(`/store/${storeDomain}/category/${categorySlug}`);
     }
+    
+    // Call the provided category change handler
+    onCategoryChange(category);
   };
 
   return (
@@ -108,6 +111,8 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
           allCategories.map((category, index) => {
             // Get appropriate image
             const imagePath = categoryImageMap[category as keyof typeof categoryImageMap] || "/placeholder.svg";
+            const isActive = (category === "الكل" && activeCategory === "الكل") || 
+                           (category.toLowerCase() === activeCategory.toLowerCase());
             
             return (
               <motion.div
@@ -120,8 +125,7 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
                 <button
                   onClick={() => handleCategoryClick(category)}
                   className={`w-full h-full flex flex-col items-center transition-all duration-300 bg-white rounded-xl p-4 shadow-sm ${
-                    (category === "الكل" && !activeCategory) || 
-                    (activeCategory && category.toLowerCase() === activeCategory.toLowerCase())
+                    isActive
                       ? 'border-2 border-blue-400'
                       : 'border border-gray-100'
                   }`}
@@ -134,8 +138,7 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
                     />
                   </div>
                   <span className={`text-sm font-medium ${
-                    (category === "الكل" && !activeCategory) || 
-                    (activeCategory && category.toLowerCase() === activeCategory.toLowerCase())
+                    isActive
                       ? 'text-blue-600'
                       : 'text-gray-800'
                   }`}>

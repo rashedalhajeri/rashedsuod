@@ -88,9 +88,9 @@ const StoreContent: React.FC<StoreContentProps> = ({
   const handleCategoryChangeWithNavigation = (category: string) => {
     if (!storeDomain) return;
     
+    // Always navigate to category page, even for "All"
     if (category === "الكل") {
-      // If "All" category is selected, stay on main page and update filter state
-      handleCategoryChange(category);
+      navigate(`/store/${storeDomain}/category/الكل`);
     } else {
       // For other categories, navigate to category page
       const categorySlug = encodeURIComponent(category.toLowerCase());
