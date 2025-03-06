@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Tags } from "lucide-react";
+import { Tags, Plus } from "lucide-react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import CategorySearchBox from "@/components/category/CategorySearchBox";
 import CategoryList from "@/components/category/CategoryList";
@@ -11,6 +11,7 @@ import SectionList from "@/components/section/SectionList";
 import SectionForm from "@/components/section/SectionForm";
 import { useCategories } from "@/hooks/use-categories";
 import { useSections } from "@/hooks/use-sections";
+import { Button } from "@/components/ui/button";
 
 const CategoriesAndSections: React.FC = () => {
   // Categories state
@@ -43,6 +44,15 @@ const CategoriesAndSections: React.FC = () => {
   
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("categories");
+  const [isAddSectionDialogOpen, setIsAddSectionDialogOpen] = useState(false);
+
+  const openAddSectionDialog = () => {
+    setIsAddSectionDialogOpen(true);
+  };
+
+  const closeAddSectionDialog = () => {
+    setIsAddSectionDialogOpen(false);
+  };
 
   return (
     <DashboardLayout>
@@ -90,23 +100,37 @@ const CategoriesAndSections: React.FC = () => {
               </div>
               
               <div>
-                <CategoryForm
-                  newCategory={newCategory}
-                  setNewCategory={setNewCategory}
-                  handleAddCategory={handleAddCategory}
-                />
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg font-medium">إضافة فئة جديدة</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CategoryForm
+                      newCategory={newCategory}
+                      setNewCategory={setNewCategory}
+                      handleAddCategory={handleAddCategory}
+                    />
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </TabsContent>
           
           <TabsContent value="sections">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-2">
-                <div className="mb-4">
+              <div className="md:col-span-3">
+                <div className="flex justify-between items-center mb-4">
                   <CategorySearchBox 
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
                   />
+                  <Button
+                    onClick={openAddSectionDialog}
+                    className="gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>إضافة قسم جديد</span>
+                  </Button>
                 </div>
                 
                 <Card>
@@ -127,21 +151,22 @@ const CategoriesAndSections: React.FC = () => {
                       handleDeleteSection={handleDeleteSection}
                       setNewSection={setNewSection}
                       setNewSectionType={setNewSectionType}
+                      openAddDialog={openAddSectionDialog}
                     />
                   </CardContent>
                 </Card>
               </div>
-              
-              <div>
-                <SectionForm
-                  newSection={newSection}
-                  setNewSection={setNewSection}
-                  newSectionType={newSectionType}
-                  setNewSectionType={setNewSectionType}
-                  handleAddSection={handleAddSection}
-                />
-              </div>
             </div>
+            
+            <SectionForm
+              isOpen={isAddSectionDialogOpen}
+              onClose={closeAddSectionDialog}
+              newSection={newSection}
+              setNewSection={setNewSection}
+              newSectionType={newSectionType}
+              setNewSectionType={setNewSectionType}
+              handleAddSection={handleAddSection}
+            />
           </TabsContent>
         </Tabs>
       </div>

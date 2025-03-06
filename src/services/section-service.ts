@@ -9,6 +9,9 @@ export interface Section {
   store_id?: string;
   section_type: string;
   is_active: boolean;
+  category_id?: string | null;
+  product_ids?: string[] | null;
+  display_style?: 'grid' | 'list';
   created_at?: string;
   updated_at?: string;
 }
@@ -29,7 +32,16 @@ export const fetchSections = async (storeId: string) => {
   }
 };
 
-export const addSection = async (name: string, sectionType: string, storeId: string, sortOrder: number, isActive: boolean = true) => {
+export const addSection = async (
+  name: string, 
+  sectionType: string, 
+  storeId: string, 
+  sortOrder: number, 
+  isActive: boolean = true,
+  categoryId?: string | null,
+  productIds?: string[] | null,
+  displayStyle: 'grid' | 'list' = 'grid'
+) => {
   try {
     const { data, error } = await supabase
       .from('sections')
@@ -38,7 +50,10 @@ export const addSection = async (name: string, sectionType: string, storeId: str
         store_id: storeId,
         sort_order: sortOrder,
         section_type: sectionType,
-        is_active: isActive
+        is_active: isActive,
+        category_id: categoryId,
+        product_ids: productIds,
+        display_style: displayStyle
       })
       .select()
       .single();
@@ -58,7 +73,10 @@ export const updateSection = async (section: Section, storeId: string) => {
       .update({
         name: section.name,
         section_type: section.section_type,
-        is_active: section.is_active
+        is_active: section.is_active,
+        category_id: section.category_id,
+        product_ids: section.product_ids,
+        display_style: section.display_style
       })
       .eq('id', section.id)
       .eq('store_id', storeId);

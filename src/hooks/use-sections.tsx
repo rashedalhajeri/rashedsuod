@@ -16,6 +16,9 @@ export const useSections = () => {
   const [storeId, setStoreId] = useState<string | null>(null);
   const [newSection, setNewSection] = useState("");
   const [newSectionType, setNewSectionType] = useState("best_selling");
+  const [newCategoryId, setNewCategoryId] = useState<string | null>(null);
+  const [newProductIds, setNewProductIds] = useState<string[] | null>(null);
+  const [newDisplayStyle, setNewDisplayStyle] = useState<'grid' | 'list'>('grid');
   const [editingSection, setEditingSection] = useState<Section | null>(null);
 
   useEffect(() => {
@@ -61,7 +64,10 @@ export const useSections = () => {
         newSectionType, 
         storeId, 
         nextOrder, 
-        true
+        true,
+        newCategoryId,
+        newProductIds,
+        newDisplayStyle
       );
       
       if (error) throw error;
@@ -120,6 +126,12 @@ export const useSections = () => {
     setNewSection,
     newSectionType,
     setNewSectionType,
+    newCategoryId,
+    setNewCategoryId,
+    newProductIds,
+    setNewProductIds,
+    newDisplayStyle,
+    setNewDisplayStyle,
     editingSection,
     setEditingSection,
     handleAddSection,

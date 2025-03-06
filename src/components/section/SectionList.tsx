@@ -22,6 +22,7 @@ interface SectionListProps {
   handleDeleteSection: (id: string) => void;
   setNewSection: (name: string) => void;
   setNewSectionType: (type: string) => void;
+  openAddDialog: () => void;
 }
 
 const SectionList: React.FC<SectionListProps> = ({
@@ -33,7 +34,8 @@ const SectionList: React.FC<SectionListProps> = ({
   handleUpdateSection,
   handleDeleteSection,
   setNewSection,
-  setNewSectionType
+  setNewSectionType,
+  openAddDialog
 }) => {
   // Filter sections by search query
   const filteredSections = sections.filter(
@@ -57,6 +59,7 @@ const SectionList: React.FC<SectionListProps> = ({
           onClick={() => {
             setNewSection("قسم جديد");
             setNewSectionType("best_selling");
+            openAddDialog();
           }}
         >
           <Plus className="h-4 w-4" />
