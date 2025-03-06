@@ -155,24 +155,3 @@
 .hide-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
-
-/* Header scroll animations */
-@keyframes headerSlideDown {
-  from {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.header-scrolled {
-  animation: headerSlideDown 0.3s ease-out forwards;
-  background-color: #2563eb; /* blue-600 */
-}
-
-.header-transition {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
