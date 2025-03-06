@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { X, ChevronLeft } from "lucide-react";
@@ -36,66 +35,100 @@ interface AllProductsSectionProps {
   displayStyle?: 'grid' | 'list';
 }
 
-// Helper function to fetch products with appropriate filters - completely refactored
+// Simplified helper function to fetch products with appropriate filters
 const fetchProductsWithFilters = async (
   sectionType: string,
   categoryId?: string,
   sectionId?: string
 ): Promise<Product[]> => {
   try {
-    // Build the base query
-    const baseQuery = supabase.from('products').select('*');
-    
-    // Apply filters based on section type
-    let filteredQuery;
-    
-    switch (sectionType) {
-      case 'category':
-        if (categoryId) {
-          filteredQuery = baseQuery.eq('category_id', categoryId);
-        } else {
-          filteredQuery = baseQuery;
-        }
-        break;
-        
-      case 'featured':
-        filteredQuery = baseQuery.eq('is_featured', true);
-        break;
-        
-      case 'best_selling':
-        // For best selling, we'll handle it separately
-        const { data: bestSellingData, error: bestSellingError } = await baseQuery
-          .order('sales_count', { ascending: false });
-        
-        if (bestSellingError) {
-          console.error("Error fetching best selling products:", bestSellingError);
-          return [];
-        }
-        
-        return bestSellingData as Product[] || [];
-        
-      case 'on_sale':
-        filteredQuery = baseQuery.not('discount_price', 'is', null);
-        break;
-        
-      case 'custom':
-        if (sectionId) {
-          filteredQuery = baseQuery.eq('section_id', sectionId);
-        } else {
-          filteredQuery = baseQuery;
-        }
-        break;
-        
-      default:
-        filteredQuery = baseQuery;
-        break;
+    // For best selling products
+    if (sectionType === 'best_selling') {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('sales_count', { ascending: false });
+      
+      if (error) {
+        console.error("Error fetching best selling products:", error);
+        return [];
+      }
+      
+      return data as Product[] || [];
     }
     
-    // For cases other than best_selling which we already handled
-    const { data, error } = await filteredQuery.order('created_at', { ascending: false });
+    // For category filtered products
+    if (sectionType === 'category' && categoryId) {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('category_id', categoryId)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error("Error fetching category products:", error);
+        return [];
+      }
+      
+      return data as Product[] || [];
+    }
+    
+    // For featured products
+    if (sectionType === 'featured') {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('is_featured', true)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error("Error fetching featured products:", error);
+        return [];
+      }
+      
+      return data as Product[] || [];
+    }
+    
+    // For sale products
+    if (sectionType === 'on_sale') {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .not('discount_price', 'is', null)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error("Error fetching on sale products:", error);
+        return [];
+      }
+      
+      return data as Product[] || [];
+    }
+    
+    // For custom section
+    if (sectionType === 'custom' && sectionId) {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('section_id', sectionId)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error("Error fetching custom section products:", error);
+        return [];
+      }
+      
+      return data as Product[] || [];
+    }
+    
+    // Default case: fetch all products
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('created_at', { ascending: false });
     
     if (error) {
-      console.error("Error fetching products:", error);
+      console.error("Error fetching all products:", error);
       return [];
     }
     
