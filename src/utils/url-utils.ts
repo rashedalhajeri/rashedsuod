@@ -102,8 +102,13 @@ export const getStoreFromUrl = async (storeId: string, supabase: any) => {
   
   try {
     // Remove any `:` character that might be in the param (from useParams)
-    const cleanId = storeId.replace(/:/g, '');
+    // Also remove leading/trailing spaces that might cause issues
+    const cleanId = storeId.replace(/:/g, '').trim();
     console.log('Clean store ID/domain:', cleanId);
+    
+    if (!cleanId) {
+      return { data: null, error: { message: "معرف المتجر غير صالح" } };
+    }
     
     // First try to fetch by domain name (more likely in production)
     // Using ILIKE for case-insensitive matching
@@ -128,6 +133,18 @@ export const getStoreFromUrl = async (storeId: string, supabase: any) => {
           
         console.log('Search by UUID result:', data, error);
       }
+    }
+    
+    // If we still don't have data, try again with exact matching (in case ilike returned multiple)
+    if (!data && !error) {
+      console.log('Trying exact domain match as fallback');
+      ({ data, error } = await supabase
+        .from("stores")
+        .select("*")
+        .eq("domain_name", cleanId)
+        .maybeSingle());
+        
+      console.log('Exact domain match result:', data, error);
     }
     
     return { data, error };

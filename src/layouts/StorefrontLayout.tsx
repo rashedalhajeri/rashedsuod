@@ -28,6 +28,7 @@ const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
   useEffect(() => {
     const fetchStoreData = async () => {
       if (!storeId) {
+        setError("معرف المتجر غير متوفر");
         setLoading(false);
         return;
       }
