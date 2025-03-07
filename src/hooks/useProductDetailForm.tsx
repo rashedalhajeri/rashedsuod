@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "@/components/ui/use-toast";
@@ -22,7 +21,6 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
   const [categories, setCategories] = useState([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
 
-  // Initialize the form with default values
   const form = useForm({
     defaultValues: {
       name: "",
@@ -41,17 +39,14 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
       available_colors: [],
       available_sizes: [],
       is_featured: false,
-      images: [], // Add images field to form
+      images: [],
     },
   });
 
-  // Destructure form methods and state
   const { reset, getValues, setValue, watch } = form;
-  
-  // Get the form values (to be used as formData in components)
+
   const formData = getValues();
 
-  // Fetch categories when storeData is available
   useEffect(() => {
     const fetchCategories = async () => {
       setIsLoadingCategories(true);
@@ -80,7 +75,6 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     }
   }, [storeData?.id]);
 
-  // Fetch product data when productId changes
   useEffect(() => {
     const fetchProduct = async () => {
       if (!productId) return;
@@ -104,20 +98,16 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
           return;
         }
 
-        // Add default values for fields that might not exist in the database
         const productData = {
-          ...(data as any),
-          // Use optional chaining and nullish coalescing to safely access properties
-          is_featured: data?.is_featured ?? false,
-          sales_count: data?.sales_count ?? 0
-        } as RawProductData;
+          ...data,
+          is_featured: false,
+          sales_count: 0
+        } as unknown as RawProductData;
 
-        // Map raw product data to Product type
         const mappedProduct = mapRawProductToProduct(productData);
         
         setProduct(mappedProduct);
         
-        // Reset form with product data and explicitly include images
         reset({
           ...mappedProduct,
           images: mappedProduct.images || []
@@ -138,7 +128,6 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     fetchProduct();
   }, [productId, reset]);
 
-  // Event handlers for form inputs
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
     const parsedValue = type === 'number' ? parseFloat(value) : value;
@@ -155,20 +144,18 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
 
     setValue('image_url', mainImage);
     setValue('additional_images', additionalImages);
-    setValue('images', images); // Set the images array directly
+    setValue('images', images);
   };
 
   const handleCategoryChange = (categoryId: string) => {
     setValue('category_id', categoryId);
   };
 
-  // Submit handler
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
       const formData = getValues();
       
-      // Format data for API
       const payload = {
         ...formData,
         additional_images: JSON.stringify(formData.additional_images || []),
@@ -176,7 +163,6 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
         available_sizes: JSON.stringify(formData.available_sizes || []),
       };
 
-      // Remove images field as it's not part of the database schema
       delete (payload as any).images;
 
       const { error } = await supabase
@@ -220,7 +206,6 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     }
   };
 
-  // Delete handler
   const handleDelete = async () => {
     if (!productId) return;
     
@@ -279,7 +264,6 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     product,
     categories,
     isLoadingCategories,
-    // Export form data and handlers for components
     formData: {
       ...getValues(),
       images: watch('images') || []
