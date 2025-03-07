@@ -57,3 +57,80 @@ export const uploadProductImage = async (file: File, storeId: string): Promise<s
     return null;
   }
 };
+
+/**
+ * Get a preview of an image before uploading
+ * @param file The file to preview
+ * @returns A data URL for the image
+ */
+export const getImagePreview = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      resolve(reader.result as string);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
+/**
+ * Optimize image size before upload
+ * @param file The file to resize
+ * @param maxWidth The maximum width
+ * @param maxHeight The maximum height
+ * @returns A promise that resolves to a File object
+ */
+export const optimizeImage = (
+  file: File,
+  maxWidth: number = 1200,
+  maxHeight: number = 1200
+): Promise<File> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+      
+      if (width > maxWidth || height > maxHeight) {
+        const ratio = Math.min(maxWidth / width, maxHeight / height);
+        width *= ratio;
+        height *= ratio;
+      }
+      
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        resolve(file); // If canvas is not supported, return original file
+        return;
+      }
+      
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            resolve(file);
+            return;
+          }
+          const optimizedFile = new File([blob], file.name, {
+            type: file.type,
+            lastModified: Date.now(),
+          });
+          resolve(optimizedFile);
+        },
+        file.type,
+        0.85 // Quality
+      );
+    };
+    
+    img.onerror = () => {
+      reject(new Error('Failed to load image'));
+    };
+  });
+};

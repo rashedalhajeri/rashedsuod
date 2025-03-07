@@ -2,6 +2,8 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { ImageUploadGrid } from "@/components/ui/image-upload";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FileImage } from "lucide-react";
 
 interface ProductImagesSectionProps {
   images: string[];
@@ -17,25 +19,37 @@ const ProductImagesSection: React.FC<ProductImagesSectionProps> = ({
   maxImages = 5
 }) => {
   return (
-    <div className="space-y-4 pt-4 border-t border-gray-200">
-      <div className="flex items-center justify-between mb-2">
-        <Label className="text-md font-medium">صور المنتج <span className="text-red-500">*</span></Label>
-        <span className="text-sm text-gray-500">
-          ({images.length} من {maxImages})
-        </span>
-      </div>
-      
-      <ImageUploadGrid 
-        images={images}
-        onImagesChange={handleImagesChange}
-        maxImages={maxImages}
-        storeId={storeId}
-      />
-      
-      <p className="text-xs text-gray-500 text-center">
-        الصورة الأولى هي الصورة الرئيسية للمنتج. يمكنك إضافة حتى {maxImages} صور.
-      </p>
-    </div>
+    <Card className="border border-gray-200">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-md font-medium flex items-center gap-2">
+          <FileImage className="h-5 w-5 text-blue-500" />
+          صور المنتج
+          <span className="text-sm font-normal text-gray-500 mr-2">
+            ({images.length} من {maxImages})
+          </span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ImageUploadGrid 
+          images={images}
+          onImagesChange={handleImagesChange}
+          maxImages={maxImages}
+          storeId={storeId}
+        />
+        
+        <div className="mt-4 text-center">
+          {images.length === 0 ? (
+            <div className="p-4 border rounded-md border-yellow-200 bg-yellow-50 text-yellow-700 text-sm">
+              لم يتم إضافة أي صور للمنتج. يرجى إضافة صورة واحدة على الأقل.
+            </div>
+          ) : (
+            <p className="text-xs text-gray-500">
+              الصورة الأولى هي الصورة الرئيسية للمنتج. يمكنك إضافة حتى {maxImages} صور.
+            </p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

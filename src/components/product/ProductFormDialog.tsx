@@ -13,6 +13,9 @@ import InventorySection from "./form/InventorySection";
 import AdvancedFeaturesSection from "./form/AdvancedFeaturesSection";
 import ProductImagesSection from "./form/ProductImagesSection";
 import ProductFormActions from "./form/ProductFormActions";
+import ColorManagementSection from "./form/ColorManagementSection";
+import SizeManagementSection from "./form/SizeManagementSection";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ProductFormData {
   name: string;
@@ -58,6 +61,8 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
     available_colors: [],
     available_sizes: []
   });
+  
+  const [activeTab, setActiveTab] = useState("basic");
 
   const handleAddProduct = async () => {
     try {
@@ -131,6 +136,7 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
       available_colors: [],
       available_sizes: []
     });
+    setActiveTab("basic");
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -148,12 +154,33 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
       ...prev,
       [name]: checked
     }));
+    
+    // If colors or sizes are enabled, navigate to the appropriate tab
+    if (name === 'has_colors' && checked) {
+      setActiveTab('variations');
+    } else if (name === 'has_sizes' && checked) {
+      setActiveTab('variations');
+    }
   };
   
   const handleImagesChange = (images: string[]) => {
     setFormData(prev => ({
       ...prev,
       images
+    }));
+  };
+  
+  const handleColorsChange = (colors: string[]) => {
+    setFormData(prev => ({
+      ...prev,
+      available_colors: colors
+    }));
+  };
+  
+  const handleSizesChange = (sizes: string[]) => {
+    setFormData(prev => ({
+      ...prev,
+      available_sizes: sizes
     }));
   };
 
@@ -165,52 +192,80 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
   };
 
   const isFormValid = formData.name && formData.price > 0 && formData.images.length > 0;
+  const showColorSection = formData.has_colors;
+  const showSizeSection = formData.has_sizes;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[750px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>إضافة منتج جديد</DialogTitle>
+          <DialogTitle className="text-xl">إضافة منتج جديد</DialogTitle>
           <DialogDescription>
             أدخل معلومات المنتج الذي تريد إضافته إلى متجرك.
           </DialogDescription>
         </DialogHeader>
         
-        <div className="mt-4 space-y-6">
-          <BasicInfoSection 
-            name={formData.name}
-            description={formData.description}
-            handleInputChange={handleInputChange}
-          />
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4 w-full">
+          <TabsList className="grid grid-cols-3 mb-6">
+            <TabsTrigger value="basic">معلومات أساسية</TabsTrigger>
+            <TabsTrigger value="media">الصور</TabsTrigger>
+            <TabsTrigger value="variations">الخيارات والميزات</TabsTrigger>
+          </TabsList>
           
-          <PricingSection 
-            price={formData.price}
-            discountPrice={formData.discount_price}
-            handleInputChange={handleInputChange}
-            toggleDiscount={toggleDiscount}
-          />
+          <TabsContent value="basic" className="space-y-6">
+            <BasicInfoSection 
+              name={formData.name}
+              description={formData.description}
+              handleInputChange={handleInputChange}
+            />
+            
+            <PricingSection 
+              price={formData.price}
+              discountPrice={formData.discount_price}
+              handleInputChange={handleInputChange}
+              toggleDiscount={toggleDiscount}
+            />
+            
+            <InventorySection 
+              trackInventory={formData.track_inventory}
+              stockQuantity={formData.stock_quantity}
+              handleInputChange={handleInputChange}
+              handleSwitchChange={handleSwitchChange}
+            />
+          </TabsContent>
           
-          <InventorySection 
-            trackInventory={formData.track_inventory}
-            stockQuantity={formData.stock_quantity}
-            handleInputChange={handleInputChange}
-            handleSwitchChange={handleSwitchChange}
-          />
+          <TabsContent value="media" className="space-y-6">
+            <ProductImagesSection 
+              images={formData.images}
+              storeId={storeId}
+              handleImagesChange={handleImagesChange}
+            />
+          </TabsContent>
           
-          <AdvancedFeaturesSection 
-            hasColors={formData.has_colors}
-            hasSizes={formData.has_sizes}
-            requireCustomerName={formData.require_customer_name}
-            requireCustomerImage={formData.require_customer_image}
-            handleSwitchChange={handleSwitchChange}
-          />
-          
-          <ProductImagesSection 
-            images={formData.images}
-            storeId={storeId}
-            handleImagesChange={handleImagesChange}
-          />
-        </div>
+          <TabsContent value="variations" className="space-y-6">
+            <AdvancedFeaturesSection 
+              hasColors={formData.has_colors}
+              hasSizes={formData.has_sizes}
+              requireCustomerName={formData.require_customer_name}
+              requireCustomerImage={formData.require_customer_image}
+              handleSwitchChange={handleSwitchChange}
+            />
+            
+            {showColorSection && (
+              <ColorManagementSection 
+                colors={formData.available_colors || []}
+                onColorsChange={handleColorsChange}
+              />
+            )}
+            
+            {showSizeSection && (
+              <SizeManagementSection 
+                sizes={formData.available_sizes || []}
+                onSizesChange={handleSizesChange}
+              />
+            )}
+          </TabsContent>
+        </Tabs>
         
         <ProductFormActions 
           onCancel={() => onOpenChange(false)}

@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { DialogFooter } from "@/components/ui/dialog";
+import { CheckCircle2, X } from "lucide-react";
 
 interface ProductFormActionsProps {
   onCancel: () => void;
@@ -15,20 +15,27 @@ const ProductFormActions: React.FC<ProductFormActionsProps> = ({
   isDisabled
 }) => {
   return (
-    <DialogFooter className="mt-6">
-      <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 w-full">
-        <Button variant="outline" onClick={onCancel}>
-          إلغاء
-        </Button>
-        <Button 
-          onClick={onSubmit}
-          disabled={isDisabled}
-          className="w-full sm:w-auto"
-        >
-          إضافة المنتج
-        </Button>
-      </div>
-    </DialogFooter>
+    <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={onCancel}
+        className="flex items-center gap-2"
+      >
+        <X className="h-4 w-4" />
+        <span>إلغاء</span>
+      </Button>
+      
+      <Button
+        type="button"
+        onClick={onSubmit}
+        disabled={isDisabled}
+        className="flex items-center gap-2"
+      >
+        <CheckCircle2 className="h-4 w-4" />
+        <span>إضافة المنتج</span>
+      </Button>
+    </div>
   );
 };
 
