@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useStoreData } from "@/hooks/use-store-data";
 import { useQuery } from "@tanstack/react-query";
@@ -12,7 +11,7 @@ import { ProductEmptyState } from "@/components/product/ProductEmptyState";
 import { ProductBulkActions } from "@/components/product/ProductBulkActions";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
-import { Product } from "@/utils/products/types";
+import { Product, RawProductData } from "@/utils/products/types";
 import { mapRawProductToProduct } from "@/utils/products/mappers";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card } from "@/components/ui/card";
@@ -47,8 +46,11 @@ const Products = () => {
     enabled: !!storeData?.id
   });
 
-  // Convert raw products data to Product type
-  const products: Product[] = rawProducts ? rawProducts.map(mapRawProductToProduct) : [];
+  const products: Product[] = rawProducts ? rawProducts.map((item: any) => mapRawProductToProduct({
+    ...item,
+    is_featured: item.is_featured || false,
+    sales_count: item.sales_count || 0
+  } as RawProductData)) : [];
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);

@@ -45,8 +45,8 @@ export const mapRawProductToProduct = (rawData: RawProductData): Product => {
     created_at: rawData.created_at,
     updated_at: rawData.updated_at,
     store_id: rawData.store_id,
-    is_featured: rawData.is_featured || false,
-    sales_count: rawData.sales_count || 0,
+    is_featured: rawData.is_featured !== undefined ? rawData.is_featured : false,
+    sales_count: rawData.sales_count !== undefined ? rawData.sales_count : 0,
     images: images,
     category: rawData.category
   };
