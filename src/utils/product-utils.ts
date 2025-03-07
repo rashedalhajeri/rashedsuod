@@ -27,6 +27,9 @@ export const getImageWithFallback = (imageUrl: string | null, fallbackUrl: strin
   return imageUrl;
 };
 
+// Define a return type for our query to avoid deep type instantiation
+type StoreProductsReturn = Promise<any[]>;
+
 /**
  * Get a store's products with filtering options
  * @param storeId The ID of the store
@@ -42,47 +45,49 @@ export const getStoreProducts = async (
     sort?: 'latest' | 'price_low' | 'price_high' | 'best_selling';
     limit?: number;
   } = {}
-) => {
+): StoreProductsReturn => {
   try {
-    // Start with a basic query
-    let query = supabase.from('products').select('*').eq('store_id', storeId);
+    // Build query in stages with proper typing
+    const baseQuery = supabase
+      .from('products')
+      .select('*');
+
+    // First filter by store ID
+    let query = baseQuery.eq('store_id', storeId);
     
-    // Apply filters - using explicit type casting to avoid deep type instantiation
+    // Apply additional filters with proper type handling
     if (options.categoryId) {
-      query = query.eq('category_id', options.categoryId) as any;
+      query = query.eq('category_id', options.categoryId);
     }
     
     if (options.featured) {
-      query = query.eq('is_featured', true) as any;
+      query = query.eq('is_featured', true);
     }
     
     if (options.onSale) {
-      query = query.not('discount_price', 'is', null) as any;
+      query = query.not('discount_price', 'is', null);
     }
     
-    // Apply sorting
-    switch (options.sort) {
-      case 'price_low':
-        query = query.order('price', { ascending: true }) as any;
-        break;
-      case 'price_high':
-        query = query.order('price', { ascending: false }) as any;
-        break;
-      case 'best_selling':
-        query = query.order('sales_count', { ascending: false }) as any;
-        break;
-      case 'latest':
-      default:
-        query = query.order('created_at', { ascending: false }) as any;
-        break;
+    // Apply sorting based on options
+    let sortedQuery = query;
+    if (options.sort === 'price_low') {
+      sortedQuery = query.order('price', { ascending: true });
+    } else if (options.sort === 'price_high') {
+      sortedQuery = query.order('price', { ascending: false });
+    } else if (options.sort === 'best_selling') {
+      sortedQuery = query.order('sales_count', { ascending: false });
+    } else {
+      // default to latest
+      sortedQuery = query.order('created_at', { ascending: false });
     }
     
-    // Apply limit
-    if (options.limit) {
-      query = query.limit(options.limit) as any;
-    }
+    // Apply limit if specified
+    const finalQuery = options.limit 
+      ? sortedQuery.limit(options.limit)
+      : sortedQuery;
     
-    const { data, error } = await query;
+    // Execute query and handle response
+    const { data, error } = await finalQuery;
     
     if (error) {
       console.error("Error fetching store products:", error);
