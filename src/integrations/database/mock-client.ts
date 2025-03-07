@@ -29,7 +29,7 @@ export const createMockDatabaseClient = (): DatabaseClient => {
         return { success: true, error: null };
       },
       bulkDeleteProducts: async (productIds: string[]) => {
-        return { success: true, error: null, deletedCount: 0 };
+        return { success: true, error: null, deletedCount: 0, archivedCount: 0 };
       },
       archiveProduct: async (productId: string, isArchived: boolean) => {
         return { data: null, error: null };
