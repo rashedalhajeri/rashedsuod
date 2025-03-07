@@ -32,7 +32,7 @@ const ProductDetail = ({ storeId }) => {
     handleDelete
   } = useProductDetailForm({ productId, storeData });
 
-  // Handle discount price toggle
+  // Handle discount price toggle - Fix: Pass boolean value instead of formData.discount_price
   const toggleDiscount = () => {
     handleSwitchChange('discount_price', formData.discount_price === null);
   };
