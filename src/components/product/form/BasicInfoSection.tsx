@@ -81,7 +81,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <div className="grid gap-2">
               <div className="flex items-center gap-2">
                 <div className="relative w-full">
@@ -103,9 +103,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
                     <span className={`${hasDiscount ? 'text-gray-500' : 'text-blue-700'} font-medium`}>د.ك</span>
                   </div>
                 </div>
-                {hasDiscount && (
-                  <span className="text-gray-500 text-xs whitespace-nowrap font-medium">السعر الأصلي</span>
-                )}
+                <span className="text-gray-500 text-xs whitespace-nowrap font-medium">السعر الأصلي</span>
               </div>
             </div>
             
