@@ -8,9 +8,10 @@ import { fetchCategories } from "@/services/category-service";
 interface UseProductDetailFormProps {
   productId: string | undefined;
   storeData: any;
+  onSuccess?: () => void;
 }
 
-export const useProductDetailForm = ({ productId, storeData }: UseProductDetailFormProps) => {
+export const useProductDetailForm = ({ productId, storeData, onSuccess }: UseProductDetailFormProps) => {
   const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -146,6 +147,7 @@ export const useProductDetailForm = ({ productId, storeData }: UseProductDetailF
       if (data && data.length > 0) {
         setProduct(data[0]);
         toast.success("تم حفظ التغييرات بنجاح");
+        if (onSuccess) onSuccess();
       }
     } catch (err) {
       console.error("Error updating product:", err);
@@ -166,6 +168,7 @@ export const useProductDetailForm = ({ productId, storeData }: UseProductDetailF
       if (success) {
         toast.success("تم حذف المنتج بنجاح");
         navigate("/products");
+        if (onSuccess) onSuccess();
       }
     } catch (err) {
       console.error("Error deleting product:", err);

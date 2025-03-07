@@ -1,12 +1,20 @@
 
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Edit, EyeIcon, Trash } from "lucide-react";
+import { Edit, EyeIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/utils/format-currency";
 import { Link } from "react-router-dom";
+import { Product } from "@/utils/products/types";
 
-const ProductListItem = ({ 
+interface ProductListItemProps {
+  product: Product;
+  onSelect: (id: string, isSelected: boolean) => void;
+  isSelected: boolean;
+  onEdit: (id: string) => void;
+}
+
+const ProductListItem: React.FC<ProductListItemProps> = ({ 
   product, 
   onSelect, 
   isSelected, 
@@ -20,23 +28,19 @@ const ProductListItem = ({
     category,
     stock_quantity,
     track_inventory,
-    images
+    images = []
   } = product;
 
-  const imageUrl = images && images.length > 0
+  const imageUrl = Array.isArray(images) && images.length > 0
     ? images[0]
-    : "/placeholder.svg";
-
-  const handleCheck = (e) => {
-    onSelect(id, e.target.checked);
-  };
+    : product.image_url || "/placeholder.svg";
 
   return (
     <div className="flex items-center p-4 hover:bg-gray-50 border-b last:border-b-0 transition-colors">
       <div className="mr-4">
         <Checkbox
           checked={isSelected}
-          onCheckedChange={checked => onSelect(id, checked)}
+          onCheckedChange={checked => onSelect(id, !!checked)}
         />
       </div>
       

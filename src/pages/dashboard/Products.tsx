@@ -4,26 +4,28 @@ import { useStoreData } from "@/hooks/use-store-data";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit } from "lucide-react";
+import { Plus } from "lucide-react";
 import ProductDetailDialog from "@/components/product/ProductDetailDialog";
 import ProductFormDialog from "@/components/product/ProductFormDialog";
 import ProductsList from "@/components/product/ProductsList";
 import ProductSearchBar from "@/components/product/ProductSearchBar";
-import ProductEmptyState from "@/components/product/ProductEmptyState";
-import ProductBulkActions from "@/components/product/ProductBulkActions";
+import { ProductEmptyState } from "@/components/product/ProductEmptyState";
+import { ProductBulkActions } from "@/components/product/ProductBulkActions";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
+import { Product } from "@/utils/products/types";
+import { mapRawProductToProduct } from "@/utils/products/mappers";
 
 const Products = () => {
   const { data: storeData, isLoading: loadingStore } = useStoreData();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedItems, setSelectedItems] = useState([]);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
   const {
-    data: products,
+    data: rawProducts,
     isLoading,
     error,
     refetch
@@ -43,7 +45,10 @@ const Products = () => {
     enabled: !!storeData?.id
   });
 
-  const handleSearch = (term) => {
+  // Convert raw products data to Product type
+  const products: Product[] = rawProducts ? rawProducts.map(mapRawProductToProduct) : [];
+
+  const handleSearch = (term: string) => {
     setSearchTerm(term);
   };
 
@@ -51,12 +56,12 @@ const Products = () => {
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
-  const handleEditProduct = (productId) => {
+  const handleEditProduct = (productId: string) => {
     setSelectedProductId(productId);
     setIsEditDialogOpen(true);
   };
 
-  const handleSelectionChange = (items) => {
+  const handleSelectionChange = (items: string[]) => {
     setSelectedItems(items);
   };
 
@@ -72,7 +77,7 @@ const Products = () => {
     return (
       <ErrorState 
         title="خطأ في تحميل المنتجات"
-        message={error.message}
+        message={(error as Error).message}
         onRetry={refetch}
       />
     );
@@ -98,7 +103,15 @@ const Products = () => {
       <div className="bg-white rounded-lg shadow">
         <div className="p-4 border-b">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
-            <ProductSearchBar onSearch={handleSearch} />
+            <div className="w-full md:w-auto">
+              <input
+                type="text"
+                placeholder="بحث عن منتج..."
+                className="w-full px-3 py-2 border rounded-md"
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+              />
+            </div>
             
             {selectedItems.length > 0 && (
               <ProductBulkActions 
