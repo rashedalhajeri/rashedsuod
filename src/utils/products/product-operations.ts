@@ -100,7 +100,7 @@ export const fetchProductsWithFilters = async (
       return [];
     }
     
-    // Process data with explicit product creation
+    // Process data with explicit product creation - fix for excessive type instantiation
     const processedProducts: Product[] = [];
     
     for (const item of data) {
@@ -156,12 +156,12 @@ export const updateProduct = async (productId: string, updates: any) => {
       
     if (error) throw error;
     
-    // Process the returned data
-    let processedData: Product[] = [];
+    // Fix for excessive type instantiation - use for loop instead of map
+    const processedData: Product[] = [];
     
     if (data && data.length > 0) {
-      for (const rawItem of data) {
-        const rawData = rawItem as RawProductData;
+      for (let i = 0; i < data.length; i++) {
+        const rawData = data[i] as RawProductData;
         const processed = mapRawProductToProduct(rawData);
         processedData.push(processed);
       }

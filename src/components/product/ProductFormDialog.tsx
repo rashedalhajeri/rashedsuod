@@ -2,17 +2,17 @@
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Product } from "@/utils/product-helpers";
 import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import ImageUploadGrid from "@/components/ui/image-upload-grid";
-import { Box, ImageIcon, Percent, Tag, User } from "lucide-react";
+
+// Import all the smaller components
+import BasicInfoSection from "./form/BasicInfoSection";
+import PricingSection from "./form/PricingSection";
+import InventorySection from "./form/InventorySection";
+import AdvancedFeaturesSection from "./form/AdvancedFeaturesSection";
+import ProductImagesSection from "./form/ProductImagesSection";
+import ProductFormActions from "./form/ProductFormActions";
 
 interface ProductFormData {
   name: string;
@@ -157,6 +157,15 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
     }));
   };
 
+  const toggleDiscount = () => {
+    setFormData(prev => ({
+      ...prev,
+      discount_price: prev.discount_price === null ? prev.price : null
+    }));
+  };
+
+  const isFormValid = formData.name && formData.price > 0 && formData.images.length > 0;
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
@@ -168,193 +177,46 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
         </DialogHeader>
         
         <div className="mt-4 space-y-6">
-          <div className="space-y-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">اسم المنتج <span className="text-red-500">*</span></Label>
-              <Input 
-                id="name" 
-                name="name" 
-                placeholder="أدخل اسم المنتج" 
-                value={formData.name} 
-                onChange={handleInputChange} 
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="description">وصف المنتج</Label>
-              <Textarea 
-                id="description" 
-                name="description" 
-                placeholder="أدخل وصف المنتج"
-                value={formData.description} 
-                onChange={handleInputChange} 
-                rows={4}
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="price">السعر <span className="text-red-500">*</span></Label>
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <Input 
-                    id="price" 
-                    name="price" 
-                    type="number" 
-                    placeholder="0.000" 
-                    value={formData.price} 
-                    onChange={handleInputChange} 
-                  />
-                </div>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="flex items-center gap-1"
-                  onClick={() => setFormData(prev => ({
-                    ...prev,
-                    discount_price: prev.discount_price === null ? prev.price : null
-                  }))}
-                >
-                  <Percent className="h-4 w-4" />
-                  <span>خصم</span>
-                </Button>
-              </div>
-            </div>
-            
-            {formData.discount_price !== null && (
-              <div className="grid gap-2">
-                <Label htmlFor="discount_price">السعر بعد الخصم <span className="text-red-500">*</span></Label>
-                <Input 
-                  id="discount_price" 
-                  name="discount_price" 
-                  type="number" 
-                  placeholder="0.000" 
-                  value={formData.discount_price} 
-                  onChange={handleInputChange} 
-                />
-              </div>
-            )}
-            
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col">
-                <Label htmlFor="track_inventory" className="mb-1">تتبع المخزون</Label>
-                <span className="text-sm text-gray-500">
-                  {formData.track_inventory ? 'كمية محدودة' : 'كمية غير محدودة'}
-                </span>
-              </div>
-              <Switch 
-                id="track_inventory"
-                checked={formData.track_inventory}
-                onCheckedChange={(checked) => handleSwitchChange('track_inventory', checked)}
-              />
-            </div>
-            
-            {formData.track_inventory && (
-              <div className="grid gap-2">
-                <Label htmlFor="stock_quantity">الكمية المتوفرة</Label>
-                <Input 
-                  id="stock_quantity" 
-                  name="stock_quantity" 
-                  type="number" 
-                  placeholder="0" 
-                  value={formData.stock_quantity} 
-                  onChange={handleInputChange} 
-                />
-              </div>
-            )}
-            
-            <div className="pt-4 mt-4 border-t border-gray-200">
-              <h3 className="text-md font-medium mb-3 flex items-center gap-2">
-                <Tag className="h-4 w-4" />
-                خصائص متقدمة
-              </h3>
-              
-              <div className="grid gap-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Box className="h-4 w-4 text-blue-500" />
-                    <Label htmlFor="has_colors" className="cursor-pointer">الألوان</Label>
-                  </div>
-                  <Switch 
-                    id="has_colors"
-                    checked={formData.has_colors}
-                    onCheckedChange={(checked) => handleSwitchChange('has_colors', checked)}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Tag className="h-4 w-4 text-green-500" />
-                    <Label htmlFor="has_sizes" className="cursor-pointer">المقاسات</Label>
-                  </div>
-                  <Switch 
-                    id="has_sizes"
-                    checked={formData.has_sizes}
-                    onCheckedChange={(checked) => handleSwitchChange('has_sizes', checked)}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-purple-500" />
-                    <Label htmlFor="require_customer_name" className="cursor-pointer">طلب اسم العميل</Label>
-                  </div>
-                  <Switch 
-                    id="require_customer_name"
-                    checked={formData.require_customer_name}
-                    onCheckedChange={(checked) => handleSwitchChange('require_customer_name', checked)}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <ImageIcon className="h-4 w-4 text-red-500" />
-                    <Label htmlFor="require_customer_image" className="cursor-pointer">طلب صورة من العميل</Label>
-                  </div>
-                  <Switch 
-                    id="require_customer_image"
-                    checked={formData.require_customer_image}
-                    onCheckedChange={(checked) => handleSwitchChange('require_customer_image', checked)}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+          <BasicInfoSection 
+            name={formData.name}
+            description={formData.description}
+            handleInputChange={handleInputChange}
+          />
           
-          <div className="space-y-4 pt-4 border-t border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <Label className="text-md font-medium">صور المنتج <span className="text-red-500">*</span></Label>
-              <span className="text-sm text-gray-500">
-                ({formData.images.length} من 5)
-              </span>
-            </div>
-            
-            <ImageUploadGrid 
-              images={formData.images}
-              onImagesChange={handleImagesChange}
-              maxImages={5}
-              storeId={storeId}
-            />
-            
-            <p className="text-xs text-gray-500 text-center">
-              الصورة الأولى هي الصورة الرئيسية للمنتج. يمكنك إضافة حتى 5 صور.
-            </p>
-          </div>
+          <PricingSection 
+            price={formData.price}
+            discountPrice={formData.discount_price}
+            handleInputChange={handleInputChange}
+            toggleDiscount={toggleDiscount}
+          />
+          
+          <InventorySection 
+            trackInventory={formData.track_inventory}
+            stockQuantity={formData.stock_quantity}
+            handleInputChange={handleInputChange}
+            handleSwitchChange={handleSwitchChange}
+          />
+          
+          <AdvancedFeaturesSection 
+            hasColors={formData.has_colors}
+            hasSizes={formData.has_sizes}
+            requireCustomerName={formData.require_customer_name}
+            requireCustomerImage={formData.require_customer_image}
+            handleSwitchChange={handleSwitchChange}
+          />
+          
+          <ProductImagesSection 
+            images={formData.images}
+            storeId={storeId}
+            handleImagesChange={handleImagesChange}
+          />
         </div>
         
-        <DialogFooter className="mt-6">
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 w-full">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              إلغاء
-            </Button>
-            <Button 
-              onClick={handleAddProduct}
-              disabled={!formData.name || formData.price <= 0 || formData.images.length === 0}
-              className="w-full sm:w-auto"
-            >
-              إضافة المنتج
-            </Button>
-          </div>
-        </DialogFooter>
+        <ProductFormActions 
+          onCancel={() => onOpenChange(false)}
+          onSubmit={handleAddProduct}
+          isDisabled={!isFormValid}
+        />
       </DialogContent>
     </Dialog>
   );
