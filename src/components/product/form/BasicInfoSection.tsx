@@ -30,15 +30,15 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
     : 0;
 
   return (
-    <div className="space-y-5 bg-white rounded-lg border border-gray-100 p-4 shadow-sm">
-      <div className="flex items-center gap-2 mb-2">
-        <Sparkles className="h-5 w-5 text-blue-500" />
+    <div className="space-y-5 bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+      <div className="flex items-center gap-2 border-b border-gray-100 pb-4 mb-4">
+        <Sparkles className="h-5 w-5 text-blue-600" />
         <h3 className="text-lg font-medium">معلومات المنتج الأساسية</h3>
       </div>
       
-      <div className="grid gap-3">
+      <div className="grid gap-5">
         <div className="grid gap-2">
-          <Label htmlFor="name" className="text-sm font-medium">
+          <Label htmlFor="name" className="text-sm font-medium text-gray-700">
             اسم المنتج <span className="text-red-500">*</span>
           </Label>
           <Input 
@@ -52,7 +52,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
         </div>
         
         <div className="grid gap-2">
-          <Label htmlFor="description" className="text-sm font-medium">وصف المنتج</Label>
+          <Label htmlFor="description" className="text-sm font-medium text-gray-700">وصف المنتج</Label>
           <Textarea 
             id="description" 
             name="description" 
@@ -64,9 +64,9 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           />
         </div>
 
-        <div className="space-y-3 pt-2">
+        <div className="space-y-4 pt-2 border-t border-gray-100 mt-2">
           <div className="flex justify-between items-center">
-            <Label htmlFor="price" className="text-sm font-medium">
+            <Label htmlFor="price" className="text-sm font-medium text-gray-700">
               السعر <span className="text-red-500">*</span>
             </Label>
             <Button 
@@ -74,7 +74,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
               variant={hasDiscount ? "default" : "outline"} 
               size="sm" 
               onClick={toggleDiscount}
-              className={`text-xs flex items-center gap-1 ${hasDiscount ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : ''}`}
+              className={`text-xs flex items-center gap-1 ${hasDiscount ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : 'text-yellow-600 border-yellow-200 hover:bg-yellow-50'}`}
             >
               <BadgePercent className={`h-4 w-4 ${hasDiscount ? 'text-white' : 'text-yellow-600'}`} />
               {discountPrice === null ? "إضافة خصم" : "إلغاء الخصم"}
@@ -96,14 +96,16 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
                     onChange={handleInputChange}
                     className={`
                       border-gray-200 focus-visible:ring-blue-500 pr-12
-                      ${hasDiscount ? 'line-through text-gray-500 bg-gray-50' : ''}
+                      ${hasDiscount ? 'text-gray-500 bg-gray-50 border-gray-200' : 'border-blue-200 bg-blue-50/30'}
                     `}
                   />
                   <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <span className="text-gray-500">د.ك</span>
+                    <span className={`${hasDiscount ? 'text-gray-500' : 'text-blue-700'} font-medium`}>د.ك</span>
                   </div>
                 </div>
-                {hasDiscount && <span className="text-gray-500 text-xs whitespace-nowrap">السعر قبل الخصم</span>}
+                {hasDiscount && (
+                  <span className="text-gray-500 text-xs whitespace-nowrap font-medium">السعر الأصلي</span>
+                )}
               </div>
             </div>
             
@@ -120,13 +122,13 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
                       placeholder="أدخل سعر الخصم" 
                       value={discountPrice || ""} 
                       onChange={handleInputChange}
-                      className="border-green-500 focus-visible:ring-green-500 pr-12 bg-green-50"
+                      className="border-green-200 focus-visible:ring-green-500 pr-12 bg-green-50/50"
                     />
                     <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <span className="text-green-600">د.ك</span>
+                      <span className="text-green-700 font-medium">د.ك</span>
                     </div>
                   </div>
-                  <span className="text-green-600 text-xs font-semibold whitespace-nowrap">السعر بعد الخصم</span>
+                  <span className="text-green-600 text-xs font-medium whitespace-nowrap">السعر بعد الخصم</span>
                 </div>
               </div>
             )}
