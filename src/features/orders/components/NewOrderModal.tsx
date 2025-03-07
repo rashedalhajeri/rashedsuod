@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -43,12 +42,9 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedItems, setSelectedItems] = useState<OrderItem[]>([]);
   
-  // إنشاء رقم طلب فريد بتنسيق ORD-{STORE_PREFIX}-{RANDOM_NUMBER}
   const generateOrderNumber = () => {
-    const storePrefix = storeId.substring(0, 3).toUpperCase();
-    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    const timestamp = Date.now().toString().slice(-4);
-    return `ORD-${storePrefix}-${random}${timestamp}`;
+    const randomNumber = Math.floor(Math.random() * 9999) + 1;
+    return `ORD-${randomNumber.toString().padStart(4, '0')}`;
   };
   
   const [orderData, setOrderData] = useState({
@@ -63,14 +59,12 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     notes: ""
   });
 
-  // جلب المنتجات
   const { data: productsData } = useQuery({
     queryKey: ["products", storeId, searchQuery],
     queryFn: () => getProductsWithPagination(storeId, 0, 100, searchQuery),
     enabled: !!storeId && isOpen
   });
 
-  // إعادة إنشاء رقم الطلب وإعادة تعيين العناصر المحددة عند فتح النافذة المنبثقة
   useEffect(() => {
     if (isOpen) {
       setOrderData(prev => ({
@@ -83,7 +77,6 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     }
   }, [isOpen, storeId]);
 
-  // حساب إجمالي الطلب كلما تغيرت العناصر المحددة
   useEffect(() => {
     const newTotal = selectedItems.reduce((sum, item) => sum + item.total_price, 0);
     setOrderData(prev => ({
@@ -114,19 +107,15 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     }
   };
 
-  // إضافة منتج إلى الطلب
   const handleAddProduct = (productId: string, productName: string, price: number) => {
-    // التحقق مما إذا كان المنتج موجودًا بالفعل
     const existingItemIndex = selectedItems.findIndex(item => item.product_id === productId);
     
     if (existingItemIndex >= 0) {
-      // زيادة الكمية إذا كان المنتج موجودًا بالفعل
       const updatedItems = [...selectedItems];
       updatedItems[existingItemIndex].quantity += 1;
       updatedItems[existingItemIndex].total_price = updatedItems[existingItemIndex].quantity * updatedItems[existingItemIndex].unit_price;
       setSelectedItems(updatedItems);
     } else {
-      // إضافة منتج جديد
       setSelectedItems(prev => [
         ...prev,
         {
@@ -140,7 +129,6 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     }
   };
 
-  // تغيير كمية منتج
   const handleQuantityChange = (index: number, newQuantity: number) => {
     if (newQuantity < 1) return;
     
@@ -150,7 +138,6 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     setSelectedItems(updatedItems);
   };
 
-  // إزالة منتج من الطلب
   const handleRemoveItem = (index: number) => {
     setSelectedItems(prev => prev.filter((_, i) => i !== index));
   };
@@ -188,13 +175,11 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     try {
       setSaving(true);
       
-      // إنشاء كائن الطلب الكامل بما في ذلك معرف المتجر
       const completeOrderData: Omit<Order, "id" | "created_at" | "updated_at"> = {
         ...orderData,
         store_id: storeId
       };
       
-      // إنشاء بيانات العناصر
       const orderItems = selectedItems.map(item => ({
         product_id: item.product_id,
         quantity: item.quantity,
@@ -267,7 +252,6 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="processing">قيد المعالجة</SelectItem>
-                        <SelectItem value="shipped">تم الشحن</SelectItem>
                         <SelectItem value="delivered">تم التوصيل</SelectItem>
                         <SelectItem value="cancelled">ملغي</SelectItem>
                       </SelectContent>
@@ -326,7 +310,6 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                   />
                 </div>
                 
-                {/* قائمة المنتجات المتاحة */}
                 <div className="border rounded-md p-2 max-h-40 overflow-y-auto">
                   <div className="grid grid-cols-1 gap-2">
                     {productsData?.data && productsData.data.length > 0 ? (
@@ -351,7 +334,6 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                   </div>
                 </div>
                 
-                {/* عناصر الطلب المحددة */}
                 <div className="mt-4">
                   <Label>المنتجات المحددة</Label>
                   {selectedItems.length > 0 ? (
@@ -515,3 +497,4 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
 };
 
 export default NewOrderModal;
+

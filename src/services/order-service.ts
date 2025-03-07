@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Order, OrderStatus, OrderItem } from "@/types/orders";
 
@@ -23,11 +22,9 @@ export const fetchOrders = async (storeId: string, filters: OrderFilters = {}) =
       orderDirection = "desc"
     } = filters;
 
-    // Calculate pagination
     const from = page * pageSize;
     const to = from + pageSize - 1;
 
-    // Build query
     let query = supabase
       .from('orders')
       .select('*', { count: 'exact' })
@@ -35,12 +32,10 @@ export const fetchOrders = async (storeId: string, filters: OrderFilters = {}) =
       .order(orderBy, { ascending: orderDirection === 'asc' })
       .range(from, to);
 
-    // Apply status filter if not "all"
     if (status !== "all") {
       query = query.eq('status', status);
     }
 
-    // Apply search filter
     if (searchQuery) {
       query = query.or(`order_number.ilike.%${searchQuery}%,customer_name.ilike.%${searchQuery}%,customer_email.ilike.%${searchQuery}%`);
     }
@@ -65,7 +60,6 @@ export const fetchOrders = async (storeId: string, filters: OrderFilters = {}) =
 // Fetch a single order with details
 export const fetchOrderDetails = async (orderId: string) => {
   try {
-    // Fetch the order
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .select('*')
@@ -81,7 +75,6 @@ export const fetchOrderDetails = async (orderId: string) => {
       return null;
     }
 
-    // Fetch order items
     const { data: items, error: itemsError } = await supabase
       .from('order_items')
       .select('*')
@@ -91,7 +84,6 @@ export const fetchOrderDetails = async (orderId: string) => {
       console.error("Error fetching order items:", itemsError);
     }
 
-    // Return order with items
     return {
       ...order,
       items: items || []
@@ -126,7 +118,6 @@ export const updateOrderStatus = async (orderId: string, status: OrderStatus) =>
 // Delete an order
 export const deleteOrder = async (orderId: string) => {
   try {
-    // Delete order items first (cascade delete might handle this, but being explicit)
     const { error: itemsError } = await supabase
       .from('order_items')
       .delete()
@@ -137,7 +128,6 @@ export const deleteOrder = async (orderId: string) => {
       return false;
     }
 
-    // Delete the order
     const { error } = await supabase
       .from('orders')
       .delete()
@@ -158,27 +148,23 @@ export const deleteOrder = async (orderId: string) => {
 // Fetch order statistics
 export const fetchOrderStats = async (storeId: string) => {
   try {
-    // Get total count
     const { count: totalCount, error: totalError } = await supabase
       .from('orders')
       .select('*', { count: 'exact', head: true })
       .eq('store_id', storeId);
 
-    // Get processing count
     const { count: processingCount, error: processingError } = await supabase
       .from('orders')
       .select('*', { count: 'exact', head: true })
       .eq('store_id', storeId)
       .eq('status', 'processing');
 
-    // Get delivered count
     const { count: deliveredCount, error: deliveredError } = await supabase
       .from('orders')
       .select('*', { count: 'exact', head: true })
       .eq('store_id', storeId)
       .eq('status', 'delivered');
 
-    // Get cancelled count
     const { count: cancelledCount, error: cancelledError } = await supabase
       .from('orders')
       .select('*', { count: 'exact', head: true })
@@ -204,13 +190,65 @@ export const fetchOrderStats = async (storeId: string) => {
   }
 };
 
+// Check if order number already exists
+export const checkOrderNumberExists = async (storeId: string, orderNumber: string) => {
+  try {
+    const { count, error } = await supabase
+      .from('orders')
+      .select('*', { count: 'exact', head: true })
+      .eq('store_id', storeId)
+      .eq('order_number', orderNumber);
+    
+    if (error) {
+      console.error("Error checking order number:", error);
+      return true;
+    }
+    
+    return count ? count > 0 : false;
+  } catch (error) {
+    console.error("Error in checkOrderNumberExists:", error);
+    return true;
+  }
+};
+
+// Generate a unique order number
+export const generateUniqueOrderNumber = async (storeId: string) => {
+  let isUnique = false;
+  let orderNumber = '';
+  
+  const maxAttempts = 20;
+  let attempts = 0;
+  
+  while (!isUnique && attempts < maxAttempts) {
+    const sequentialNumber = Math.floor(Math.random() * 9999) + 1;
+    orderNumber = `ORD-${sequentialNumber.toString().padStart(4, '0')}`;
+    
+    const exists = await checkOrderNumberExists(storeId, orderNumber);
+    isUnique = !exists;
+    attempts++;
+  }
+  
+  if (!isUnique) {
+    const timestamp = Date.now().toString().slice(-6);
+    orderNumber = `ORD-${timestamp}`;
+  }
+  
+  return orderNumber;
+};
+
 // Create a new order with items
 export const createOrder = async (storeId: string, orderData: Omit<Order, "id" | "created_at" | "updated_at">, orderItems: Omit<OrderItem, "id" | "created_at" | "order_id">[]) => {
   try {
-    // Insert the order
+    const orderNumber = orderData.order_number;
+    const orderNumberExists = await checkOrderNumberExists(storeId, orderNumber);
+    
+    const finalOrderNumber = orderNumberExists 
+      ? await generateUniqueOrderNumber(storeId)
+      : orderNumber;
+    
     const { data: orderResult, error: orderError } = await supabase
       .from('orders')
-      .insert({ ...orderData, store_id: storeId })
+      .insert({ ...orderData, order_number: finalOrderNumber, store_id: storeId })
       .select()
       .single();
 
@@ -221,7 +259,6 @@ export const createOrder = async (storeId: string, orderData: Omit<Order, "id" |
 
     const order = orderResult;
 
-    // Insert order items
     if (orderItems && orderItems.length > 0) {
       const itemsWithOrderId = orderItems.map(item => ({
         ...item,
