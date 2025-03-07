@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -6,6 +7,8 @@ import useAuth from "@/hooks/useAuth";
 import SidebarHeader from "./SidebarHeader";
 import SidebarLinks from "./SidebarLinks";
 import LogoutButton from "./LogoutButton";
+import { Mail } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface SidebarProps {
   isMobileMenuOpen?: boolean;
@@ -15,7 +18,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
   const location = useLocation();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
-  const { signOut } = useAuth();
+  const { signOut, session } = useAuth();
+  const userEmail = session?.user?.email || "";
 
   useEffect(() => {
     setIsCollapsed(isMobile && !isMobileMenuOpen);
@@ -57,7 +61,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
     <AnimatePresence>
       {isMobile && isMobileMenuOpen && (
         <motion.div
-          className="fixed inset-0 bg-black/50 z-30"
+          className="fixed inset-0 bg-black/50 z-30 backdrop-blur-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -93,7 +97,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
             closeMobileMenu={closeMobileMenu}
           />
 
-          <div className="p-4 border-t border-gray-200">
+          <div className="p-4 border-t border-gray-200 mt-auto">
+            {/* User Email Display */}
+            {userEmail && (!isCollapsed || isMobile) && (
+              <div className="flex items-center gap-2 px-3 py-2 mb-2 bg-gray-50 rounded-lg text-sm text-gray-600">
+                <Mail size={16} className="text-primary-500 shrink-0" />
+                <span className="truncate">{userEmail}</span>
+              </div>
+            )}
+            
             <LogoutButton 
               isCollapsed={isCollapsed}
               isMobile={isMobile}
@@ -105,7 +117,5 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
     </AnimatePresence>
   );
 };
-
-import { cn } from "@/lib/utils";
 
 export default Sidebar;

@@ -32,23 +32,23 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
         <Button
           variant="ghost"
           className={cn(
-            "w-full justify-start text-red-600 hover:bg-red-50 hover:text-red-700",
+            "w-full justify-start gap-2 text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors",
             isCollapsed && !isMobile && "justify-center px-2"
           )}
         >
-          <LogOut size={18} className="mr-2" />
+          <LogOut size={18} className="shrink-0" />
           {(!isCollapsed || isMobile) && <span>تسجيل الخروج</span>}
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className="sm:max-w-[400px]">
         <AlertDialogHeader>
-          <AlertDialogTitle>تسجيل الخروج</AlertDialogTitle>
-          <AlertDialogDescription>
+          <AlertDialogTitle className="text-right">تسجيل الخروج</AlertDialogTitle>
+          <AlertDialogDescription className="text-right">
             هل أنت متأكد من رغبتك في تسجيل الخروج من لوحة التحكم؟
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>إلغاء</AlertDialogCancel>
+        <AlertDialogFooter className="flex justify-start gap-2">
+          <AlertDialogCancel className="mt-0">إلغاء</AlertDialogCancel>
           <AlertDialogAction onClick={onLogout} className="bg-red-600 hover:bg-red-700">
             تسجيل الخروج
           </AlertDialogAction>
