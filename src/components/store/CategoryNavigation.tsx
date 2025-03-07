@@ -113,7 +113,7 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
   // Find image for a category
   const getCategoryImage = (categoryName: string): string | undefined => {
     if (categoryName === "الكل") {
-      return "/public/lovable-uploads/458d1c93-d142-4466-9f1a-1085922105f5.png";
+      return "/lovable-uploads/458d1c93-d142-4466-9f1a-1085922105f5.png";
     }
     
     const category = categoriesWithImages.find(

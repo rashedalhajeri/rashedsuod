@@ -75,6 +75,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          image_url: string | null
           name: string
           sort_order: number
           store_id: string
@@ -83,6 +84,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          image_url?: string | null
           name: string
           sort_order?: number
           store_id: string
@@ -91,6 +93,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          image_url?: string | null
           name?: string
           sort_order?: number
           store_id?: string
@@ -620,6 +623,7 @@ export type Database = {
           primary_color: string
           products_per_row: number
           secondary_color: string
+          show_category_images: boolean | null
           store_id: string
           theme_id: string
           updated_at: string
@@ -634,6 +638,7 @@ export type Database = {
           primary_color?: string
           products_per_row?: number
           secondary_color?: string
+          show_category_images?: boolean | null
           store_id: string
           theme_id: string
           updated_at?: string
@@ -648,6 +653,7 @@ export type Database = {
           primary_color?: string
           products_per_row?: number
           secondary_color?: string
+          show_category_images?: boolean | null
           store_id?: string
           theme_id?: string
           updated_at?: string

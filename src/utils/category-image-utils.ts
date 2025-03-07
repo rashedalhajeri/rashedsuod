@@ -1,83 +1,93 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-// Default category images for fallback
-const defaultCategoryImageMap: Record<string, string> = {
-  "الكل": "/public/lovable-uploads/458d1c93-d142-4466-9f1a-1085922105f5.png", // Dedicated image for ALL
-  "العيادات": "/public/lovable-uploads/c8a5c4e7-628d-4c52-acca-e8f603036b6b.png",
-  "الإلكترونيات": "/public/lovable-uploads/827a00fa-f421-45c3-96d7-b9305fb217d1.jpg",
-};
+interface CategoryWithImage {
+  name: string;
+  image_url?: string | null;
+}
 
 /**
- * Returns an appropriate image URL for a given category name
- * Falls back to placeholder if the category isn't in the map
+ * Fetch all categories with images from a store
+ * @param storeId The store ID to fetch categories from
+ * @returns Array of categories with name and image URL
  */
-export const getCategoryImage = (category: string): string => {
-  return defaultCategoryImageMap[category] || "/placeholder.svg";
-};
-
-/**
- * Fetches a category's image from the database
- */
-export const fetchCategoryImage = async (
-  categoryName: string, 
-  storeId: string
-): Promise<string | null> => {
-  try {
-    // First check if it's the "All" category
-    if (categoryName === "الكل") {
-      return defaultCategoryImageMap["الكل"];
-    }
-    
-    // Fetch from database
-    const { data, error } = await supabase
-      .from('categories')
-      .select('image_url')
-      .eq('store_id', storeId)
-      .eq('name', categoryName)
-      .maybeSingle();
-      
-    if (error) {
-      console.error("Error fetching category image:", error);
-      return defaultCategoryImageMap[categoryName] || null;
-    }
-    
-    return data?.image_url || defaultCategoryImageMap[categoryName] || null;
-  } catch (err) {
-    console.error("Error in fetchCategoryImage:", err);
-    return defaultCategoryImageMap[categoryName] || null;
-  }
-};
-
-/**
- * Fetches all categories with images for a store
- */
-export const fetchAllCategoryImages = async (
-  storeId: string
-): Promise<Record<string, string>> => {
+export const fetchCategoriesWithImages = async (storeId: string): Promise<CategoryWithImage[]> => {
   try {
     const { data, error } = await supabase
       .from('categories')
       .select('name, image_url')
-      .eq('store_id', storeId);
+      .eq('store_id', storeId)
+      .order('sort_order', { ascending: true });
       
     if (error) {
-      console.error("Error fetching category images:", error);
-      return defaultCategoryImageMap;
+      console.error("Error fetching categories with images:", error);
+      return [];
     }
     
-    // Create a map of category names to image URLs
-    const categoryImageMap: Record<string, string> = { ...defaultCategoryImageMap };
-    
-    data.forEach(category => {
-      if (category.name && category.image_url) {
-        categoryImageMap[category.name] = category.image_url;
-      }
-    });
-    
-    return categoryImageMap;
+    return data || [];
   } catch (err) {
-    console.error("Error in fetchAllCategoryImages:", err);
-    return defaultCategoryImageMap;
+    console.error("Error in fetchCategoriesWithImages:", err);
+    return [];
   }
+};
+
+/**
+ * Check if showing category images is enabled in store settings
+ * @param storeId The store ID to check settings for
+ * @returns Boolean indicating if category images should be shown
+ */
+export const isCategoryImagesEnabled = async (storeId: string): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase
+      .from('store_theme_settings')
+      .select('show_category_images')
+      .eq('store_id', storeId)
+      .maybeSingle();
+      
+    if (error) {
+      console.error("Error fetching category images setting:", error);
+      return true; // Default to true if there's an error
+    }
+    
+    return data?.show_category_images ?? true;
+  } catch (err) {
+    console.error("Error in isCategoryImagesEnabled:", err);
+    return true; // Default to true if there's an exception
+  }
+};
+
+/**
+ * Find the image URL for a specific category by name
+ * @param categoryName The name of the category to find
+ * @param categories Array of categories with images
+ * @returns The image URL if found, undefined otherwise
+ */
+export const findCategoryImageByName = (
+  categoryName: string, 
+  categories: CategoryWithImage[]
+): string | undefined => {
+  const category = categories.find(
+    c => c.name.toLowerCase() === categoryName.toLowerCase()
+  );
+  
+  return category?.image_url || undefined;
+};
+
+/**
+ * Map category names to their image URLs
+ * @param categoryNames Array of category names
+ * @param categoriesWithImages Array of categories with images
+ * @returns Mapping of category names to image URLs
+ */
+export const mapCategoryNamesToImages = (
+  categoryNames: string[],
+  categoriesWithImages: CategoryWithImage[]
+): Record<string, string | undefined> => {
+  const mapping: Record<string, string | undefined> = {};
+  
+  categoryNames.forEach(name => {
+    mapping[name] = findCategoryImageByName(name, categoriesWithImages);
+  });
+  
+  return mapping;
 };
