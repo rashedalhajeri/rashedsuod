@@ -1,7 +1,7 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { createCurrencyFormatter } from "./use-currency-formatter";
 
 export interface StoreData {
   id: string;
@@ -128,20 +128,8 @@ export const useStoreData = () => {
  * @param currency Currency code (default: 'KWD')
  * @returns Formatter function that takes a number and returns formatted currency string
  */
-export const getCurrencyFormatter = (currency = 'KWD') => {
-  return (value: number) => {
-    try {
-      return new Intl.NumberFormat('ar-SA', {
-        style: 'currency',
-        currency,
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(value);
-    } catch (error) {
-      console.error('Error formatting currency:', error);
-      return `${value} ${getCurrencySymbol(currency)}`;
-    }
-  };
+export const getCurrencyFormatter = (currency?: string) => {
+  return createCurrencyFormatter(currency);
 };
 
 /**

@@ -1,0 +1,33 @@
+
+/* RTL Directional helpers */
+.ltr {
+  direction: ltr;
+  text-align: right;
+}
+
+.rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Force Arabic numerals to display as Western (English) numerals */
+input[type="number"] {
+  -moz-font-feature-settings: "tnum";
+  -webkit-font-feature-settings: "tnum";
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+}
+
+.force-en-nums {
+  -moz-font-feature-settings: "tnum";
+  -webkit-font-feature-settings: "tnum";
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+}
+
+/* Fixing input number arrows in RTL contexts */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  margin-left: 0;
+  margin-right: 8px;
+}

@@ -1,9 +1,11 @@
+
 import React from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/ui/loading-state";
@@ -102,9 +104,12 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
           <DialogTitle className="text-xl font-semibold">
             {isUpdating ? "تعديل المنتج" : "إضافة منتج جديد"}
           </DialogTitle>
+          <DialogDescription className="text-gray-500">
+            قم بتعديل معلومات المنتج حسب احتياجك
+          </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-6" dir="rtl">
+        <div className="space-y-6">
           {/* القسم العلوي: المعلومات الأساسية والسعر والصور */}
           <FormSection>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -170,7 +175,7 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
           <Button
             variant="destructive"
             onClick={handleDelete}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isUpdating}
           >
             حذف المنتج
           </Button>

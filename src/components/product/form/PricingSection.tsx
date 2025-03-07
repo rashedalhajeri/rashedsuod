@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Percent } from "lucide-react";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 
 interface PricingSectionProps {
   price: number;
@@ -18,6 +19,23 @@ const PricingSection: React.FC<PricingSectionProps> = ({
   handleInputChange,
   toggleDiscount
 }) => {
+  const formatCurrency = useCurrencyFormatter();
+  
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Make sure we're always working with a valid number
+    const input = e.target.value.replace(/[^\d.-]/g, '');
+    
+    const formattedEvent = {
+      ...e,
+      target: {
+        ...e.target,
+        value: input
+      }
+    };
+    
+    handleInputChange(formattedEvent);
+  };
+
   return (
     <div className="space-y-4">
       <div className="grid gap-2">
@@ -28,10 +46,18 @@ const PricingSection: React.FC<PricingSectionProps> = ({
               id="price" 
               name="price" 
               type="number" 
+              step="0.001"
+              min="0"
               placeholder="0.000" 
               value={price} 
-              onChange={handleInputChange} 
+              onChange={handlePriceChange}
+              className="ltr"
             />
+            {price > 0 && (
+              <p className="text-xs text-gray-500 mt-1 ltr">
+                {formatCurrency(price)}
+              </p>
+            )}
           </div>
           <Button 
             type="button" 
@@ -47,15 +73,30 @@ const PricingSection: React.FC<PricingSectionProps> = ({
       
       {discountPrice !== null && (
         <div className="grid gap-2">
-          <Label htmlFor="discount_price">السعر قبل الخصم <span className="text-red-500">*</span></Label>
+          <Label htmlFor="discount_price">السعر بعد الخصم <span className="text-red-500">*</span></Label>
           <Input 
             id="discount_price" 
             name="discount_price" 
             type="number" 
+            step="0.001"
+            min="0"
             placeholder="0.000" 
             value={discountPrice} 
-            onChange={handleInputChange} 
+            onChange={handlePriceChange}
+            className="ltr"
           />
+          {discountPrice > 0 && (
+            <div className="flex justify-between text-xs mt-1">
+              <span className="text-gray-500 ltr">
+                {formatCurrency(discountPrice)}
+              </span>
+              {price > 0 && discountPrice > 0 && (
+                <span className="text-green-600">
+                  خصم {Math.round((1 - discountPrice/price) * 100)}%
+                </span>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { getCurrencyFormatter } from "@/hooks/use-store-data";
 import { Link } from "react-router-dom";
 import { Product } from "@/utils/products/types";
+import { Badge } from "@/components/ui/badge";
 
 interface ProductListItemProps {
   product: Product;
@@ -27,7 +28,8 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
     discount_price,
     stock_quantity,
     track_inventory,
-    images
+    images,
+    category
   } = product;
 
   const formatCurrency = getCurrencyFormatter();
@@ -71,8 +73,14 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
           
           {track_inventory && (
             <div className="mt-1 flex items-center text-sm text-gray-500">
-              <span>المخزون: {stock_quantity}</span>
+              <span className="ltr">المخزون: {stock_quantity}</span>
             </div>
+          )}
+          
+          {category && (
+            <Badge variant="outline" className="mt-1 text-xs">
+              {category.name}
+            </Badge>
           )}
         </div>
       </div>
