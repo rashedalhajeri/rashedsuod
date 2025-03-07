@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Heart, ShoppingCart } from "lucide-react";
 import { motion } from "framer-motion";
+import { formatCurrency, handleImageError } from "@/utils/product-helpers";
 
 interface ProductItemProps {
   product: any;
@@ -19,21 +20,13 @@ const ProductItem: React.FC<ProductItemProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false);
   
-  // Format currency with proper locale and format
-  const formatCurrency = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: 3,
-      maximumFractionDigits: 3
-    }).format(price);
-  };
-  
   // Default placeholder for products without images
   const defaultPlaceholder = "/placeholder.svg";
   
   // Determine which image URL to use
   const displayImageUrl = imageError || !product.image_url ? defaultPlaceholder : product.image_url;
   
-  const handleImageError = () => {
+  const handleLocalImageError = () => {
     console.log("Product image failed to load:", product.image_url);
     setImageError(true);
   };
@@ -57,7 +50,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
               src={displayImageUrl} 
               alt={product.name} 
               className="w-full h-full object-cover"
-              onError={handleImageError}
+              onError={handleLocalImageError}
             />
           </div>
         </Link>
@@ -105,7 +98,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
             src={displayImageUrl} 
             alt={product.name} 
             className="w-full aspect-square object-cover"
-            onError={handleImageError}
+            onError={handleLocalImageError}
             key={product.id} // Add key to force re-render when product changes
           />
           

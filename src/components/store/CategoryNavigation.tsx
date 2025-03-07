@@ -20,6 +20,18 @@ interface CategoryWithProductCount {
   product_count: number;
 }
 
+// Category images mapping with guaranteed image for "الكل" (ALL)
+const categoryImageMap: Record<string, string> = {
+  "الكل": "/public/lovable-uploads/458d1c93-d142-4466-9f1a-1085922105f5.png", // Dedicated image for ALL
+  "العيادات": "/public/lovable-uploads/c8a5c4e7-628d-4c52-acca-e8f603036b6b.png",
+  "الإلكترونيات": "/public/lovable-uploads/827a00fa-f421-45c3-96d7-b9305fb217d1.jpg",
+};
+
+// Get image for a category with fallback
+const getCategoryImage = (category: string): string => {
+  return categoryImageMap[category] || "/placeholder.svg";
+};
+
 const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
   categories,
   sections,
@@ -39,14 +51,20 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
         setIsLoading(true);
         
         // Get store ID first by domain
+        if (!storeDomain) {
+          setIsLoading(false);
+          return;
+        }
+        
         const { data: storeData, error: storeError } = await supabase
           .from('stores')
           .select('id')
           .eq('domain_name', storeDomain)
-          .single();
+          .maybeSingle();
           
         if (storeError || !storeData) {
           console.error("Error fetching store:", storeError);
+          setIsLoading(false);
           return;
         }
         
@@ -62,6 +80,7 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
           
         if (error) {
           console.error("Error fetching categories:", error);
+          setIsLoading(false);
           return;
         }
         
@@ -102,13 +121,6 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
     return null;
   }
 
-  // Category images mapping - Ensure dedicated image for "الكل" (ALL)
-  const categoryImageMap = {
-    "الكل": "/public/lovable-uploads/458d1c93-d142-4466-9f1a-1085922105f5.png", // Dedicated image for ALL
-    "العيادات": "/public/lovable-uploads/c8a5c4e7-628d-4c52-acca-e8f603036b6b.png",
-    "الإلكترونيات": "/public/lovable-uploads/827a00fa-f421-45c3-96d7-b9305fb217d1.jpg",
-  };
-
   // Handle category click with navigation to category page
   const handleCategoryClick = (category: string) => {
     if (!storeDomain) return;
@@ -142,8 +154,8 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
           ))
         ) : (
           displayCategories.map((category, index) => {
-            // Get appropriate image - ensure "الكل" has the correct image
-            const imagePath = categoryImageMap[category as keyof typeof categoryImageMap] || "/placeholder.svg";
+            // Use the helper function to get appropriate image
+            const imagePath = getCategoryImage(category);
             const isActive = (category === "الكل" && activeCategory === "الكل") || 
                            (category.toLowerCase() === activeCategory.toLowerCase());
             
@@ -168,6 +180,9 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
                       src={imagePath}
                       alt={category} 
                       className="w-full h-full object-cover" 
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "/placeholder.svg";
+                      }}
                     />
                   </div>
                   <span className={`text-xs truncate w-full text-center ${

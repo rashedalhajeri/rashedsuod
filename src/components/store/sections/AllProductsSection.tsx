@@ -2,25 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { X, ChevronLeft } from "lucide-react";
 import ProductGrid from "@/components/store/ProductGrid";
-import { supabase } from "@/integrations/supabase/client";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Json } from "@/integrations/supabase/types";
-
-// Define Product interface to match database structure
-interface Product {
-  id: string;
-  name: string;
-  description?: string | null;
-  price: number;
-  category_id?: string | null;
-  store_id: string;
-  image_url?: string | null;
-  additional_images?: Json | null;
-  stock_quantity?: number | null;
-  created_at?: string;
-  updated_at?: string;
-}
+import { Product, fetchProductsWithFilters } from "@/utils/product-helpers";
 
 interface AllProductsSectionProps {
   products: Product[];
@@ -34,104 +18,6 @@ interface AllProductsSectionProps {
   sectionId?: string;
   displayStyle?: 'grid' | 'list';
 }
-
-// Simplified helper function to fetch products with appropriate filters
-const fetchProductsWithFilters = async (
-  sectionType: string,
-  categoryId?: string,
-  sectionId?: string
-): Promise<Product[]> => {
-  try {
-    let query;
-    
-    // Create the appropriate query based on section type
-    switch (sectionType) {
-      case 'best_selling':
-        const { data: bestSellingData, error: bestSellingError } = await supabase
-          .from('products')
-          .select('*')
-          .order('sales_count', { ascending: false });
-          
-        if (bestSellingError) {
-          console.error("Error fetching best selling products:", bestSellingError);
-          return [];
-        }
-        return bestSellingData || [];
-        
-      case 'category':
-        if (!categoryId) return [];
-        
-        const { data: categoryData, error: categoryError } = await supabase
-          .from('products')
-          .select('*')
-          .eq('category_id', categoryId)
-          .order('created_at', { ascending: false });
-          
-        if (categoryError) {
-          console.error("Error fetching category products:", categoryError);
-          return [];
-        }
-        return categoryData || [];
-        
-      case 'featured':
-        const { data: featuredData, error: featuredError } = await supabase
-          .from('products')
-          .select('*')
-          .eq('is_featured', true)
-          .order('created_at', { ascending: false });
-          
-        if (featuredError) {
-          console.error("Error fetching featured products:", featuredError);
-          return [];
-        }
-        return featuredData || [];
-        
-      case 'on_sale':
-        const { data: saleData, error: saleError } = await supabase
-          .from('products')
-          .select('*')
-          .not('discount_price', 'is', null)
-          .order('created_at', { ascending: false });
-          
-        if (saleError) {
-          console.error("Error fetching on sale products:", saleError);
-          return [];
-        }
-        return saleData || [];
-        
-      case 'custom':
-        if (!sectionId) return [];
-        
-        const { data: customData, error: customError } = await supabase
-          .from('products')
-          .select('*')
-          .eq('section_id', sectionId)
-          .order('created_at', { ascending: false });
-          
-        if (customError) {
-          console.error("Error fetching custom section products:", customError);
-          return [];
-        }
-        return customData || [];
-        
-      default:
-        // Default case: fetch all products
-        const { data: allData, error: allError } = await supabase
-          .from('products')
-          .select('*')
-          .order('created_at', { ascending: false });
-          
-        if (allError) {
-          console.error("Error fetching all products:", allError);
-          return [];
-        }
-        return allData || [];
-    }
-  } catch (err) {
-    console.error("Error in fetchProductsWithFilters:", err);
-    return [];
-  }
-};
 
 const AllProductsSection: React.FC<AllProductsSectionProps> = ({
   products: initialProducts,
@@ -147,6 +33,8 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
 }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const params = useParams();
+  const currentStoreDomain = storeDomain || params.storeDomain;
   
   useEffect(() => {
     // If we received products via props, use those
@@ -161,7 +49,7 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
       try {
         setIsLoading(true);
         
-        const data = await fetchProductsWithFilters(sectionType, categoryId, sectionId);
+        const data = await fetchProductsWithFilters(sectionType, undefined, categoryId, sectionId);
         setProducts(data);
         
       } catch (err) {
@@ -215,8 +103,8 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
           )}
           
           {/* View All button */}
-          {!searchQuery && storeDomain && (sectionTitle || activeCategory) && (
-            <Link to={`/store/${storeDomain}/category/الكل`} className="flex items-center text-blue-600 text-sm font-medium">
+          {!searchQuery && currentStoreDomain && (sectionTitle || activeCategory) && (
+            <Link to={`/store/${currentStoreDomain}/category/الكل`} className="flex items-center text-blue-600 text-sm font-medium">
               مشاهدة الكل <ChevronLeft size={16} />
             </Link>
           )}

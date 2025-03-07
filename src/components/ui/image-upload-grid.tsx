@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadProductImage } from "@/utils/product-helpers";
 
 interface ImageUploadGridProps {
   images: string[];
@@ -86,46 +87,17 @@ const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
       return;
     }
     
+    if (!storeId) {
+      toast.error("Store ID is required for uploading images");
+      return;
+    }
+    
     setIsUploading(true);
     const uploadPromises = Array.from(files).map(async (file) => {
-      // Validate the file is an image
-      if (!file.type.startsWith('image/')) {
-        toast.error(`الملف ${file.name} ليس صورة`);
-        return null;
-      }
-      
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error(`حجم الصورة ${file.name} يجب أن يكون أقل من 5 ميجابايت`);
-        return null;
-      }
-      
       try {
-        // Generate a unique file name to avoid collisions
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-        const filePath = `products/${storeId || 'uploads'}/${fileName}`;
-        
-        // Upload to public/uploads for now (in real app, would use Supabase Storage)
-        const formData = new FormData();
-        formData.append('file', file);
-        
-        // For this demo, create a URL for the uploaded file
-        const objectUrl = URL.createObjectURL(file);
-        return objectUrl;
-        
-        // In a real app with Supabase storage:
-        // const { data, error } = await supabase.storage
-        //   .from('product-images')
-        //   .upload(filePath, file);
-        //
-        // if (error) throw error;
-        // 
-        // const { data: { publicUrl } } = supabase.storage
-        //   .from('product-images')
-        //   .getPublicUrl(data.path);
-        //
-        // return publicUrl;
+        // Use the helper function to upload to Supabase storage
+        const publicUrl = await uploadProductImage(file, storeId);
+        return publicUrl;
       } catch (error) {
         console.error('Error uploading file:', error);
         toast.error(`فشل رفع الصورة ${file.name}`);
