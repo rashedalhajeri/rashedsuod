@@ -1,11 +1,11 @@
-
 import React from "react";
 import { 
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle 
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { 
-  Box, CheckCircle2, XCircle, CalendarIcon, User, Mail, Phone, MapPin, CreditCard, FileText
+  Box, CheckCircle2, XCircle, CalendarIcon, User, Mail, Phone, MapPin, CreditCard, FileText,
+  ShoppingBag, RefreshCw, Check, History
 } from "lucide-react";
 import { Order, OrderStatus } from "@/types/orders";
 import { getCurrencyFormatter } from "@/hooks/use-store-data";
@@ -15,9 +15,6 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { enUS } from "date-fns/locale";
 import "@/styles/rtl-helpers.css"; // Fixed import path with @ alias
-
-// Import the icons used later in the component
-import { ShoppingBag, RefreshCw, Check, History } from "lucide-react";
 
 interface OrderDetailsModalProps {
   order: Order | null;
@@ -40,7 +37,6 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     onUpdateStatus(order.id, status);
   };
   
-  // Format date in English
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), 'MMMM d, yyyy h:mm a', { locale: enUS });
@@ -49,7 +45,6 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     }
   };
 
-  // Calculate order total from items if available
   const calculateOrderTotal = () => {
     if (order.items && order.items.length > 0) {
       return order.items.reduce((total, item) => total + item.total_price, 0);
@@ -57,7 +52,6 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     return order.total;
   };
   
-  // Layout information for display
   const infoItems = [
     {
       label: "رقم الطلب",
@@ -96,7 +90,6 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     }
   ];
 
-  // Configure status change buttons
   const statusButtons = [
     {
       status: "processing" as OrderStatus,
@@ -132,7 +125,6 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         </DialogHeader>
         
         <div className="mt-4 space-y-6">
-          {/* معلومات الطلب */}
           <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
             <h3 className="font-medium mb-3 text-gray-700 flex items-center gap-2">
               <User className="h-4 w-4" />
@@ -159,7 +151,6 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             )}
           </div>
           
-          {/* منتجات الطلب */}
           <div>
             <h3 className="font-medium mb-3 text-gray-700 flex items-center gap-2">
               <ShoppingBag className="h-4 w-4" />
@@ -204,7 +195,6 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             </div>
           </div>
           
-          {/* أزرار تغيير الحالة */}
           <div>
             <h3 className="font-medium mb-3 text-gray-700 flex items-center gap-2">
               <RefreshCw className="h-4 w-4" />
@@ -237,7 +227,6 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             </div>
           </div>
           
-          {/* تسلسل وقت الحالات */}
           <div className="border-t pt-4 mt-4">
             <h3 className="font-medium mb-3 text-gray-700 flex items-center gap-2">
               <History className="h-4 w-4" />
@@ -312,6 +301,3 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 };
 
 export default OrderDetailsModal;
-
-// استيراد الأيقونات المستخدمة لاحقًا في الكود
-import { ShoppingBag, RefreshCw, Check, History } from "lucide-react";
