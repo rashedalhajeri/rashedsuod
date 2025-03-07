@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   Dialog,
@@ -57,10 +56,6 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
     onSuccess
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    handleChange(e);
-  };
-
   const handleColorsChange = (colors: string[]) => {
     handleSwitchChange('available_colors', colors as any);
   };
@@ -117,7 +112,7 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
                 <BasicInfoSection 
                   name={formData.name}
                   description={formData.description}
-                  handleInputChange={handleInputChange}
+                  handleInputChange={handleChange}
                 />
                 
                 <CategorySelector
@@ -129,14 +124,14 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
                 <PricingSection 
                   price={formData.price}
                   discountPrice={formData.discount_price}
-                  handleInputChange={handleInputChange}
+                  handleInputChange={handleChange}
                   toggleDiscount={toggleDiscount}
                 />
                 
                 <InventorySection 
                   trackInventory={formData.track_inventory}
                   stockQuantity={formData.stock_quantity}
-                  handleInputChange={handleInputChange}
+                  handleInputChange={handleChange}
                   handleSwitchChange={handleSwitchChange}
                 />
               </div>

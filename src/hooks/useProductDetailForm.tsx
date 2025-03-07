@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -128,7 +128,7 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     fetchProduct();
   }, [productId, reset]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     const parsedValue = type === 'number' ? parseFloat(value) : value;
     setValue(name as any, parsedValue);
