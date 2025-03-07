@@ -1,10 +1,8 @@
 
-import React, { useState } from "react";
+import React from "react";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle
 } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 
 // Import form sections
 import BasicInfoSection from "./form/BasicInfoSection";
@@ -15,8 +13,9 @@ import ProductImagesSection from "./form/ProductImagesSection";
 import ProductFormActions from "./form/ProductFormActions";
 import ConditionalSections from "./form/ConditionalSections";
 import FormSection from "./form/FormSection";
-import { useProductFormSubmit, ProductFormData } from "./form/useProductFormSubmit";
-import { useProductCategories } from "@/hooks/use-product-categories";
+import CategorySelector from "./form/CategorySelector";
+import { useProductForm } from "./form/useProductForm";
+import { useProductFormSubmit } from "./form/useProductFormSubmit";
 
 interface ProductFormDialogProps {
   isOpen: boolean;
@@ -31,86 +30,23 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
   storeId,
   onAddSuccess
 }) => {
-  const [formData, setFormData] = useState<ProductFormData>({
-    name: "",
-    description: "",
-    price: 0,
-    discount_price: null,
-    stock_quantity: 0,
-    images: [],
-    track_inventory: false,
-    has_colors: false,
-    has_sizes: false,
-    require_customer_name: false,
-    require_customer_image: false,
-    available_colors: [],
-    available_sizes: [],
-    category_id: null
-  });
+  const {
+    formData,
+    handleInputChange,
+    handleSwitchChange,
+    handleImagesChange,
+    handleColorsChange,
+    handleSizesChange,
+    handleCategoryChange,
+    toggleDiscount,
+    isFormValid
+  } = useProductForm();
   
   const { isSubmitting, handleSubmit } = useProductFormSubmit({
     storeId,
     onSuccess: onAddSuccess,
     onClose: () => onOpenChange(false)
   });
-
-  const { categories, loading: categoriesLoading } = useProductCategories(storeId);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'price' || name === 'stock_quantity' || name === 'discount_price' 
-        ? parseFloat(value) || 0 
-        : value
-    }));
-  };
-  
-  const handleSwitchChange = (name: string, checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: checked
-    }));
-  };
-  
-  const handleImagesChange = (images: string[]) => {
-    setFormData(prev => ({
-      ...prev,
-      images
-    }));
-  };
-  
-  const handleColorsChange = (colors: string[]) => {
-    setFormData(prev => ({
-      ...prev,
-      available_colors: colors
-    }));
-  };
-  
-  const handleSizesChange = (sizes: string[]) => {
-    setFormData(prev => ({
-      ...prev,
-      available_sizes: sizes
-    }));
-  };
-
-  const handleCategoryChange = (categoryId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      category_id: categoryId || null
-    }));
-  };
-
-  const toggleDiscount = () => {
-    setFormData(prev => ({
-      ...prev,
-      discount_price: prev.discount_price === null ? prev.price : null
-    }));
-  };
-
-  const isFormValid = formData.name && formData.price > 0 && formData.images.length > 0 && 
-    (!formData.has_colors || (formData.available_colors && formData.available_colors.length > 0)) &&
-    (!formData.has_sizes || (formData.available_sizes && formData.available_sizes.length > 0));
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -133,31 +69,11 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
                   handleInputChange={handleInputChange}
                 />
                 
-                <div className="space-y-2">
-                  <Label htmlFor="category_id">الفئة</Label>
-                  <Select 
-                    value={formData.category_id || ""} 
-                    onValueChange={handleCategoryChange}
-                  >
-                    <SelectTrigger id="category_id">
-                      <SelectValue placeholder="اختر الفئة" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">بدون فئة</SelectItem>
-                      {categories.map(category => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {categoriesLoading && (
-                    <p className="text-xs text-gray-500">جاري تحميل الفئات...</p>
-                  )}
-                  {categories.length === 0 && !categoriesLoading && (
-                    <p className="text-xs text-gray-500">لا توجد فئات متاحة. يمكنك إضافة فئات من قسم "الفئات والأقسام"</p>
-                  )}
-                </div>
+                <CategorySelector
+                  categoryId={formData.category_id}
+                  storeId={storeId}
+                  onCategoryChange={handleCategoryChange}
+                />
                 
                 <PricingSection 
                   price={formData.price}
