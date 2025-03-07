@@ -104,7 +104,8 @@ export const fetchProductsWithFilters = async (
     const processedProducts: Product[] = [];
     
     for (const item of data) {
-      const rawData = item as RawProductData;
+      // Use type assertion here to avoid excessive type instantiation
+      const rawData = item as unknown as RawProductData;
       const product = mapRawProductToProduct(rawData);
       processedProducts.push(product);
     }
@@ -179,7 +180,8 @@ export const updateProduct = async (productId: string, updates: any) => {
     
     if (data && data.length > 0) {
       for (let i = 0; i < data.length; i++) {
-        const rawData = data[i] as RawProductData;
+        // Use type assertion to avoid excessive type instantiation
+        const rawData = data[i] as unknown as RawProductData;
         const processed = mapRawProductToProduct(rawData);
         processedData.push(processed);
       }
