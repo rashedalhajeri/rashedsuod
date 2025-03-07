@@ -1,36 +1,19 @@
 
 import React, { useState } from "react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle
 } from "@/components/ui/dialog";
 
-// Import all the smaller components
+// Import form sections
 import BasicInfoSection from "./form/BasicInfoSection";
 import PricingSection from "./form/PricingSection";
 import InventorySection from "./form/InventorySection";
 import AdvancedFeaturesSection from "./form/AdvancedFeaturesSection";
 import ProductImagesSection from "./form/ProductImagesSection";
 import ProductFormActions from "./form/ProductFormActions";
-import ColorManagementSection from "./form/ColorManagementSection";
-import SizeManagementSection from "./form/SizeManagementSection";
-
-interface ProductFormData {
-  name: string;
-  description: string;
-  price: number;
-  discount_price?: number | null;
-  stock_quantity: number;
-  images: string[];
-  track_inventory: boolean;
-  has_colors: boolean;
-  has_sizes: boolean;
-  require_customer_name: boolean;
-  require_customer_image: boolean;
-  available_colors?: string[] | null;
-  available_sizes?: string[] | null;
-}
+import ConditionalSections from "./form/ConditionalSections";
+import FormSection from "./form/FormSection";
+import { useProductFormSubmit, ProductFormData } from "./form/useProductFormSubmit";
 
 interface ProductFormDialogProps {
   isOpen: boolean;
@@ -61,105 +44,11 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
     available_sizes: []
   });
   
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleAddProduct = async () => {
-    try {
-      if (isSubmitting) return;
-      
-      setIsSubmitting(true);
-      
-      if (!storeId) {
-        toast.error("لم يتم العثور على معرف المتجر");
-        setIsSubmitting(false);
-        return;
-      }
-      
-      if (!formData.name || formData.price <= 0) {
-        toast.error("يرجى ملء جميع الحقول المطلوبة");
-        setIsSubmitting(false);
-        return;
-      }
-      
-      if (formData.images.length === 0) {
-        toast.error("يرجى إضافة صورة واحدة على الأقل");
-        setIsSubmitting(false);
-        return;
-      }
-      
-      // التحقق من تعبئة المقاسات عند تفعيل خاصية المقاسات
-      if (formData.has_sizes && (!formData.available_sizes || formData.available_sizes.length === 0)) {
-        toast.error("يرجى إضافة مقاس واحد على الأقل عند تفعيل خاصية المقاسات");
-        setIsSubmitting(false);
-        return;
-      }
-      
-      // التحقق من تعبئة الألوان عند تفعيل خاصية الألوان
-      if (formData.has_colors && (!formData.available_colors || formData.available_colors.length === 0)) {
-        toast.error("يرجى إضافة لون واحد على الأقل عند تفعيل خاصية الألوان");
-        setIsSubmitting(false);
-        return;
-      }
-      
-      const { data, error } = await supabase
-        .from('products')
-        .insert([
-          {
-            store_id: storeId,
-            name: formData.name,
-            description: formData.description,
-            price: formData.price,
-            discount_price: formData.discount_price,
-            stock_quantity: formData.track_inventory ? formData.stock_quantity : null,
-            track_inventory: formData.track_inventory,
-            has_colors: formData.has_colors,
-            has_sizes: formData.has_sizes,
-            require_customer_name: formData.require_customer_name,
-            require_customer_image: formData.require_customer_image,
-            available_colors: formData.has_colors ? formData.available_colors : null,
-            available_sizes: formData.has_sizes ? formData.available_sizes : null,
-            image_url: formData.images[0] || null,
-            additional_images: formData.images.length > 1 ? formData.images.slice(1) : []
-          }
-        ])
-        .select();
-        
-      if (error) {
-        console.error("Error adding product:", error);
-        toast.error("حدث خطأ أثناء إضافة المنتج");
-        setIsSubmitting(false);
-        return;
-      }
-      
-      toast.success("تمت إضافة المنتج بنجاح");
-      onOpenChange(false);
-      resetForm();
-      onAddSuccess();
-    } catch (error) {
-      console.error("Error in handleAddProduct:", error);
-      toast.error("حدث خطأ غير متوقع");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-  
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      description: "",
-      price: 0,
-      discount_price: null,
-      stock_quantity: 0,
-      images: [],
-      track_inventory: false,
-      has_colors: false,
-      has_sizes: false,
-      require_customer_name: false,
-      require_customer_image: false,
-      available_colors: [],
-      available_sizes: []
-    });
-  };
+  const { isSubmitting, handleSubmit } = useProductFormSubmit({
+    storeId,
+    onSuccess: onAddSuccess,
+    onClose: () => onOpenChange(false)
+  });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -222,41 +111,43 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
         
         <div className="space-y-6">
           {/* القسم العلوي: المعلومات الأساسية والسعر والصور */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-6">
-              <BasicInfoSection 
-                name={formData.name}
-                description={formData.description}
-                handleInputChange={handleInputChange}
-              />
+          <FormSection>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-6">
+                <BasicInfoSection 
+                  name={formData.name}
+                  description={formData.description}
+                  handleInputChange={handleInputChange}
+                />
+                
+                <PricingSection 
+                  price={formData.price}
+                  discountPrice={formData.discount_price}
+                  handleInputChange={handleInputChange}
+                  toggleDiscount={toggleDiscount}
+                />
+                
+                <InventorySection 
+                  trackInventory={formData.track_inventory}
+                  stockQuantity={formData.stock_quantity}
+                  handleInputChange={handleInputChange}
+                  handleSwitchChange={handleSwitchChange}
+                />
+              </div>
               
-              <PricingSection 
-                price={formData.price}
-                discountPrice={formData.discount_price}
-                handleInputChange={handleInputChange}
-                toggleDiscount={toggleDiscount}
-              />
-              
-              <InventorySection 
-                trackInventory={formData.track_inventory}
-                stockQuantity={formData.stock_quantity}
-                handleInputChange={handleInputChange}
-                handleSwitchChange={handleSwitchChange}
-              />
+              <div>
+                <ProductImagesSection 
+                  images={formData.images}
+                  storeId={storeId}
+                  handleImagesChange={handleImagesChange}
+                  maxImages={5}
+                />
+              </div>
             </div>
-            
-            <div className="space-y-6">
-              <ProductImagesSection 
-                images={formData.images}
-                storeId={storeId}
-                handleImagesChange={handleImagesChange}
-                maxImages={5}
-              />
-            </div>
-          </div>
+          </FormSection>
           
           {/* قسم الخصائص المتقدمة */}
-          <div>
+          <FormSection>
             <AdvancedFeaturesSection 
               hasColors={formData.has_colors}
               hasSizes={formData.has_sizes}
@@ -264,33 +155,19 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
               requireCustomerImage={formData.require_customer_image}
               handleSwitchChange={handleSwitchChange}
             />
-          </div>
+          </FormSection>
           
           {/* قسم الألوان والمقاسات - يظهر فقط عند تفعيلها */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {formData.has_colors && (
-              <div>
-                <ColorManagementSection 
-                  colors={formData.available_colors || []}
-                  onColorsChange={handleColorsChange}
-                />
-              </div>
-            )}
-            
-            {formData.has_sizes && (
-              <div>
-                <SizeManagementSection 
-                  sizes={formData.available_sizes || []}
-                  onSizesChange={handleSizesChange}
-                />
-              </div>
-            )}
-          </div>
+          <ConditionalSections 
+            formData={formData}
+            handleColorsChange={handleColorsChange}
+            handleSizesChange={handleSizesChange}
+          />
         </div>
         
         <ProductFormActions 
           onCancel={() => onOpenChange(false)}
-          onSubmit={handleAddProduct}
+          onSubmit={() => handleSubmit(formData)}
           isDisabled={!isFormValid || isSubmitting}
           isSubmitting={isSubmitting}
         />
