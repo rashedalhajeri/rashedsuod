@@ -4,12 +4,7 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-
-interface ImagePreviewProps {
-  imageUrl: string;
-  index: number;
-  onRemove: (index: number) => void;
-}
+import { ImagePreviewProps } from "./types";
 
 const ImagePreview: React.FC<ImagePreviewProps> = ({
   imageUrl,

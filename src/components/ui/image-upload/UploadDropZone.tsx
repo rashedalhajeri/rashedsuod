@@ -3,16 +3,7 @@ import React from "react";
 import { FileImage } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-
-interface UploadDropZoneProps {
-  isDragging: boolean;
-  isUploading: boolean;
-  onClick: () => void;
-  onDragOver: (e: React.DragEvent) => void;
-  onDragLeave: () => void;
-  onDrop: (e: React.DragEvent) => void;
-  isEmpty: boolean;
-}
+import { UploadDropZoneProps } from "./types";
 
 const UploadDropZone: React.FC<UploadDropZoneProps> = ({
   isDragging,
