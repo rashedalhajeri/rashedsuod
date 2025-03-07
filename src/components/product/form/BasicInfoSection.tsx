@@ -95,11 +95,11 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
                     value={price} 
                     onChange={handleInputChange}
                     className={`
-                      border-gray-200 focus-visible:ring-blue-500 pr-12
+                      border-gray-200 focus-visible:ring-blue-500 pl-16 dir-ltr text-left
                       ${hasDiscount ? 'text-gray-500 bg-gray-50 border-gray-200' : 'border-blue-200 bg-blue-50/30'}
                     `}
                   />
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <div className="absolute inset-y-0 left-0 flex items-center px-3 pointer-events-none bg-gray-50 border-r border-gray-200 rounded-l-md w-14 justify-center">
                     <span className={`${hasDiscount ? 'text-gray-500' : 'text-blue-700'} font-medium`}>د.ك</span>
                   </div>
                 </div>
@@ -122,9 +122,9 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
                       placeholder="أدخل سعر الخصم" 
                       value={discountPrice || ""} 
                       onChange={handleInputChange}
-                      className="border-green-200 focus-visible:ring-green-500 pr-12 bg-green-50/50"
+                      className="border-green-200 focus-visible:ring-green-500 pl-16 dir-ltr text-left bg-green-50/50"
                     />
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <div className="absolute inset-y-0 left-0 flex items-center px-3 pointer-events-none bg-green-50 border-r border-green-200 rounded-l-md w-14 justify-center">
                       <span className="text-green-700 font-medium">د.ك</span>
                     </div>
                   </div>
