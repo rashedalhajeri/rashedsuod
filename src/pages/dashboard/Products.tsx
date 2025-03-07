@@ -4,7 +4,7 @@ import { useStoreData } from "@/hooks/use-store-data";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Plus, RefreshCw, Archive, ArrowUpFromLine } from "lucide-react";
+import { Plus, RefreshCw, Search, Filter } from "lucide-react";
 import ProductDetailDialog from "@/components/product/ProductDetailDialog";
 import ProductFormDialog from "@/components/product/ProductFormDialog";
 import ProductsList from "@/components/product/ProductsList";
@@ -18,7 +18,6 @@ import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-media-query";
 import { motion } from "framer-motion";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Products = () => {
   const { data: storeData, isLoading: loadingStore } = useStoreData();
@@ -28,7 +27,6 @@ const Products = () => {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState<"active" | "archived">("active");
   const isMobile = useIsMobile();
   
   const {
@@ -37,14 +35,13 @@ const Products = () => {
     error,
     refetch
   } = useQuery({
-    queryKey: ["products", storeData?.id, activeTab],
+    queryKey: ["products", storeData?.id],
     queryFn: async () => {
       if (!storeData?.id) return [];
       const { data, error } = await supabase
         .from("products")
         .select("*, category:categories(*)")
         .eq("store_id", storeData.id)
-        .eq("is_archived", activeTab === "archived")
         .order("created_at", { ascending: false });
       
       if (error) throw error;
@@ -56,8 +53,7 @@ const Products = () => {
   const products: Product[] = rawProducts ? rawProducts.map((item: any) => mapRawProductToProduct({
     ...item,
     is_featured: item.is_featured || false,
-    sales_count: item.sales_count || 0,
-    is_archived: item.is_archived || false
+    sales_count: item.sales_count || 0
   } as RawProductData)) : [];
 
   const handleSearch = (term: string) => {
@@ -79,7 +75,6 @@ const Products = () => {
 
   const handleProductUpdate = () => {
     setIsRefreshing(true);
-    setSelectedItems([]);
     refetch().finally(() => setIsRefreshing(false));
   };
 
@@ -103,7 +98,7 @@ const Products = () => {
     );
   }
 
-  if (products?.length === 0 && activeTab === "active") {
+  if (products?.length === 0) {
     return (
       <DashboardLayout>
         <ProductEmptyState 
@@ -155,93 +150,30 @@ const Products = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.1 }}
         >
-          <Tabs 
-            defaultValue="active" 
-            value={activeTab} 
-            onValueChange={(value) => {
-              setActiveTab(value as "active" | "archived");
-              setSelectedItems([]);
-            }}
-            className="w-full"
-          >
-            <TabsList className="mb-4 w-full md:w-auto">
-              <TabsTrigger value="active" className="flex-1 md:flex-none">
-                المنتجات النشطة
-              </TabsTrigger>
-              <TabsTrigger value="archived" className="flex-1 md:flex-none">
-                <Archive className="h-4 w-4 ml-1" />
-                الأرشيف
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="active" className="mt-0">
-              <Card className="overflow-hidden shadow-sm border rounded-xl">
-                {selectedItems.length > 0 && (
-                  <motion.div 
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="p-4 sm:p-4 border-b bg-blue-50/80"
-                  >
-                    <ProductBulkActions 
-                      selectedCount={selectedItems.length}
-                      selectedIds={selectedItems}
-                      onActionComplete={handleProductUpdate}
-                      showArchived={false}
-                    />
-                  </motion.div>
-                )}
-                
-                <ProductsList 
-                  products={filteredProducts} 
-                  onEdit={handleEditProduct}
-                  onSelectionChange={handleSelectionChange}
-                  searchTerm={searchTerm}
-                  onSearch={handleSearch}
-                  onRefresh={handleProductUpdate}
+          <Card className="overflow-hidden shadow-sm border rounded-xl">
+            {selectedItems.length > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="p-4 sm:p-4 border-b bg-blue-50/80"
+              >
+                <ProductBulkActions 
+                  selectedCount={selectedItems.length}
+                  selectedIds={selectedItems}
+                  onActionComplete={handleProductUpdate}
                 />
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="archived" className="mt-0">
-              <Card className="overflow-hidden shadow-sm border rounded-xl">
-                {selectedItems.length > 0 && (
-                  <motion.div 
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="p-4 sm:p-4 border-b bg-blue-50/80"
-                  >
-                    <ProductBulkActions 
-                      selectedCount={selectedItems.length}
-                      selectedIds={selectedItems}
-                      onActionComplete={handleProductUpdate}
-                      showArchived={true}
-                    />
-                  </motion.div>
-                )}
-                
-                {filteredProducts.length === 0 ? (
-                  <div className="p-8 text-center">
-                    <ArrowUpFromLine className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-1">لا توجد منتجات في الأرشيف</h3>
-                    <p className="text-gray-500">
-                      المنتجات المؤرشفة ستظهر هنا. يمكنك أرشفة المنتجات بدلاً من حذفها للرجوع إليها لاحقاً.
-                    </p>
-                  </div>
-                ) : (
-                  <ProductsList 
-                    products={filteredProducts} 
-                    onEdit={handleEditProduct}
-                    onSelectionChange={handleSelectionChange}
-                    searchTerm={searchTerm}
-                    onSearch={handleSearch}
-                    onRefresh={handleProductUpdate}
-                  />
-                )}
-              </Card>
-            </TabsContent>
-          </Tabs>
+              </motion.div>
+            )}
+            
+            <ProductsList 
+              products={filteredProducts} 
+              onEdit={handleEditProduct}
+              onSelectionChange={handleSelectionChange}
+              searchTerm={searchTerm}
+              onSearch={handleSearch}
+            />
+          </Card>
         </motion.div>
 
         {isMobile && (

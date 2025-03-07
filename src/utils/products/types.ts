@@ -1,62 +1,57 @@
 
-export interface CategoryData {
-  id: string;
-  name: string;
-}
-
-export interface ProductColor {
-  label: string;
-  hex_code: string;
-}
-
-export interface ProductSize {
-  label: string;
-  value: string;
-}
-
 export interface RawProductData {
   id: string;
   name: string;
-  description: string | null;
+  description: string;
   price: number;
   discount_price: number | null;
-  image_url: string | null;
-  additional_images: string[] | null;
   stock_quantity: number | null;
+  image_url: string | null;
+  additional_images: any; // Could be string[] or string (JSON)
   track_inventory: boolean;
-  store_id: string;
   category_id: string | null;
-  category: CategoryData | null;
-  created_at: string;
-  updated_at: string;
   has_colors: boolean;
   has_sizes: boolean;
-  available_colors: ProductColor[] | null;
-  available_sizes: ProductSize[] | null;
-  sales_count: number;
-  is_featured: boolean;
-  is_archived: boolean;
+  require_customer_name: boolean;
+  require_customer_image: boolean;
+  available_colors: any; // Could be string[] or string (JSON)
+  available_sizes: any; // Could be string[] or string (JSON)
+  created_at: string;
+  updated_at: string;
+  store_id: string;
+  is_featured: boolean | false;
+  sales_count: number | 0;
+  category?: {
+    id: string;
+    name: string;
+  };
 }
 
 export interface Product {
   id: string;
   name: string;
-  description: string | null;
+  description: string;
   price: number;
   discount_price: number | null;
-  images: string[];
   stock_quantity: number | null;
+  image_url: string | null;
+  additional_images: string[];
   track_inventory: boolean;
-  store_id: string;
   category_id: string | null;
-  category: CategoryData | null;
-  created_at: Date;
-  updated_at: Date;
   has_colors: boolean;
   has_sizes: boolean;
-  available_colors: ProductColor[];
-  available_sizes: ProductSize[];
-  sales_count: number;
+  require_customer_name: boolean;
+  require_customer_image: boolean;
+  available_colors: string[];
+  available_sizes: string[];
+  created_at: string;
+  updated_at: string;
+  store_id: string;
   is_featured: boolean;
-  is_archived: boolean;
+  sales_count: number;
+  images: string[]; // This field is for UI purposes
+  category?: {
+    id: string;
+    name: string;
+  };
 }

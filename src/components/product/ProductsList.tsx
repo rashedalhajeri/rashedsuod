@@ -24,7 +24,6 @@ interface ProductsListProps {
   onSelectionChange: (selectedIds: string[]) => void;
   searchTerm?: string;
   onSearch?: (term: string) => void;
-  onRefresh: () => void;
 }
 
 const ProductsList: React.FC<ProductsListProps> = ({
@@ -32,8 +31,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
   onEdit,
   onSelectionChange,
   searchTerm = "",
-  onSearch,
-  onRefresh
+  onSearch
 }) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -178,7 +176,6 @@ const ProductsList: React.FC<ProductsListProps> = ({
               onSelect={handleSelect}
               isSelected={selectedItems.includes(product.id)}
               onEdit={onEdit}
-              onRefresh={onRefresh}
             />
           </motion.div>
         ))}
