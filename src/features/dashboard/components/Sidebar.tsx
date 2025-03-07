@@ -134,12 +134,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
                   <TimeIcon size={14} className="shrink-0" />
                   <span className="font-medium">{greeting}</span>
                 </div>
-                {userEmail && (
-                  <div className="flex items-center gap-2 text-gray-600 text-xs">
-                    <Mail size={12} className="shrink-0" />
-                    <span className="truncate">{userEmail}</span>
-                  </div>
-                )}
+              </div>
+            )}
+            
+            {/* عرض الايميل فوق زر تسجيل الخروج */}
+            {(!isCollapsed || isMobile) && userEmail && (
+              <div className="flex items-center gap-2 px-3 py-2 text-gray-600 text-sm">
+                <Mail size={14} className="shrink-0" />
+                <span className="truncate">{userEmail}</span>
               </div>
             )}
             

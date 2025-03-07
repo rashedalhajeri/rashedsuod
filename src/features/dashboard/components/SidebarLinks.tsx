@@ -61,31 +61,10 @@ const SidebarLinks: React.FC<SidebarLinksProps> = ({
     }
   ];
 
-  // Use staggered entrance animation for links
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.05
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 5 },
-    show: { opacity: 1, y: 0 }
-  };
-
   return (
-    <motion.div 
-      className="flex-1 py-3 px-2 space-y-1 overflow-y-auto"
-      initial="hidden"
-      animate="show"
-      variants={containerVariants}
-    >
-      {sidebarLinks.map((link, index) => (
-        <motion.div key={link.path} variants={itemVariants}>
+    <div className="flex-1 py-3 px-2 space-y-1 overflow-y-auto">
+      {sidebarLinks.map((link) => (
+        <div key={link.path}>
           <NavLink
             to={link.path}
             onClick={closeMobileMenu}
@@ -105,9 +84,9 @@ const SidebarLinks: React.FC<SidebarLinksProps> = ({
               <span>{link.label}</span>
             )}
           </NavLink>
-        </motion.div>
+        </div>
       ))}
-    </motion.div>
+    </div>
   );
 };
 
