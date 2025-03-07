@@ -95,9 +95,12 @@ class SupabaseDatabaseClient implements DatabaseClient {
 
     updateProduct: async (productId: string, updates: any) => {
       try {
+        // We need to ensure the updates object only contains valid properties for our products table
+        const validUpdates = { ...updates };
+        
         const { data, error } = await supabase
           .from('products')
-          .update(updates)
+          .update(validUpdates)
           .eq('id', productId)
           .select();
           

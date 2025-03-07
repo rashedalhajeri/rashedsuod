@@ -1,4 +1,3 @@
-
 import { useState, useEffect, ChangeEvent } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "@/components/ui/use-toast";
@@ -41,6 +40,8 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
       available_colors: [],
       available_sizes: [],
       is_featured: false,
+      is_archived: false,
+      sales_count: 0,
       images: [],
     },
   });
@@ -108,9 +109,10 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
 
         const productData = {
           ...data,
-          is_featured: data.is_featured || false,
-          sales_count: data.sales_count || 0,
-          is_archived: data.is_archived || false
+          is_featured: data.is_featured !== undefined ? data.is_featured : false,
+          sales_count: data.sales_count !== undefined ? data.sales_count : 0,
+          is_archived: data.is_archived !== undefined ? data.is_archived : false,
+          section_id: data.section_id || null
         } as unknown as RawProductData;
 
         const mappedProduct = mapRawProductToProduct(productData);
