@@ -47,7 +47,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({
       
       {discountPrice !== null && (
         <div className="grid gap-2">
-          <Label htmlFor="discount_price">السعر بعد الخصم <span className="text-red-500">*</span></Label>
+          <Label htmlFor="discount_price">السعر قبل الخصم <span className="text-red-500">*</span></Label>
           <Input 
             id="discount_price" 
             name="discount_price" 
