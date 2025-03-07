@@ -312,36 +312,38 @@ export const updateProduct = async (productId: string, updates: any) => {
       
     if (error) throw error;
     
-    // Process the returned data to match our Product interface
+    // Process the returned data
+    const processedData: Product[] = [];
+    
     if (data && data.length > 0) {
-      const rawData = data[0];
-      
-      const processedData: Product = {
-        id: rawData.id,
-        name: rawData.name,
-        description: rawData.description,
-        price: rawData.price,
-        category_id: rawData.category_id,
-        store_id: rawData.store_id,
-        image_url: rawData.image_url,
-        stock_quantity: rawData.stock_quantity,
-        created_at: rawData.created_at,
-        updated_at: rawData.updated_at,
-        discount_price: rawData.discount_price,
-        track_inventory: Boolean(rawData.track_inventory),
-        has_colors: Boolean(rawData.has_colors),
-        has_sizes: Boolean(rawData.has_sizes),
-        require_customer_name: Boolean(rawData.require_customer_name),
-        require_customer_image: Boolean(rawData.require_customer_image),
-        additional_images: convertToStringArray(rawData.additional_images),
-        available_colors: convertToStringArray(rawData.available_colors),
-        available_sizes: convertToStringArray(rawData.available_sizes)
-      };
-      
-      return { data: [processedData], error: null };
+      // Instead of using map, use for loop to avoid excessive type instantiation depth
+      for (const rawData of data) {
+        const processed: Product = {
+          id: rawData.id,
+          name: rawData.name,
+          description: rawData.description,
+          price: rawData.price,
+          category_id: rawData.category_id,
+          store_id: rawData.store_id,
+          image_url: rawData.image_url,
+          stock_quantity: rawData.stock_quantity,
+          created_at: rawData.created_at,
+          updated_at: rawData.updated_at,
+          discount_price: rawData.discount_price,
+          track_inventory: Boolean(rawData.track_inventory),
+          has_colors: Boolean(rawData.has_colors),
+          has_sizes: Boolean(rawData.has_sizes),
+          require_customer_name: Boolean(rawData.require_customer_name),
+          require_customer_image: Boolean(rawData.require_customer_image),
+          additional_images: convertToStringArray(rawData.additional_images),
+          available_colors: convertToStringArray(rawData.available_colors),
+          available_sizes: convertToStringArray(rawData.available_sizes)
+        };
+        processedData.push(processed);
+      }
     }
     
-    return { data, error: null };
+    return { data: processedData, error: null };
   } catch (error) {
     console.error("Error updating product:", error);
     return { data: null, error };
