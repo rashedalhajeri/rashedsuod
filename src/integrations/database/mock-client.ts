@@ -6,7 +6,14 @@ import { Product } from "@/utils/products/types";
 export const createMockDatabaseClient = (): DatabaseClient => {
   return {
     products: {
-      fetchProductsWithFilters: async () => {
+      fetchProductsWithFilters: async (
+        sectionType: string,
+        storeId?: string,
+        categoryId?: string,
+        sectionId?: string,
+        limit?: number,
+        includeArchived: boolean = false
+      ) => {
         return [] as Product[];
       },
       getProductById: async () => {
@@ -17,6 +24,12 @@ export const createMockDatabaseClient = (): DatabaseClient => {
       },
       deleteProduct: async () => {
         return { success: true, error: null };
+      },
+      hardDeleteProduct: async (productId: string) => {
+        return { success: true, error: null };
+      },
+      bulkDeleteProducts: async (productIds: string[]) => {
+        return { success: true, error: null, deletedCount: 0 };
       },
       archiveProduct: async (productId: string, isArchived: boolean) => {
         return { data: null, error: null };

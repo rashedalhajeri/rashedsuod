@@ -34,9 +34,12 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         className: "!bg-black !text-white border-0 shadow-lg py-2 px-3 min-w-0 max-w-[320px] !rounded-md",
         descriptionClassName: "text-gray-300 text-xs",
-        actionButtonClassName: "bg-white text-black text-xs rounded-sm",
-        cancelButtonClassName: "bg-gray-700 text-white text-xs rounded-sm",
-        closeButtonClassName: "!text-white/70 hover:!text-white",
+        style: { 
+          backgroundColor: 'black', 
+          color: 'white',
+          borderRadius: '6px',
+        },
+        closeButton: true
       }}
       {...props}
     />
