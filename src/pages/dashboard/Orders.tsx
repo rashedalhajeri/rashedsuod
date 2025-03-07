@@ -2,11 +2,18 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/layouts/DashboardLayout";
-import OrdersList from "@/features/orders/components/OrdersList";
 import OrderDetailsModal from "@/features/orders/components/OrderDetailsModal";
-import OrderStats from "@/features/orders/components/OrderStats";
-import OrderEmptyState from "@/features/orders/components/OrderEmptyState";
 import NewOrderModal from "@/features/orders/components/NewOrderModal";
+import OrderStats from "@/features/orders/components/OrderStats";
+import OrdersHeader from "@/features/orders/components/OrdersHeader";
+import OrdersFilters from "@/features/orders/components/OrdersFilters";
+import OrdersListContainer from "@/features/orders/components/OrdersListContainer";
+import OrderDeleteDialog from "@/features/orders/components/OrderDeleteDialog";
+import { Order, OrderStatus } from "@/types/orders";
+import { toast } from "sonner";
+import LoadingState from "@/components/ui/loading-state";
+import ErrorState from "@/components/ui/error-state";
+import useStoreData from "@/hooks/use-store-data";
 import {
   fetchOrders,
   fetchOrderDetails,
@@ -14,18 +21,6 @@ import {
   deleteOrder,
   fetchOrderStats
 } from "@/services/order-service";
-import { Order, OrderStatus } from "@/types/orders";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, Filter, Plus, RefreshCcw, ShoppingBag, Package, Check, X, Clock } from "lucide-react";
-import { toast } from "sonner";
-import LoadingState from "@/components/ui/loading-state";
-import ErrorState from "@/components/ui/error-state";
-import useStoreData from "@/hooks/use-store-data";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { useMediaQuery } from "@/hooks/use-media-query";
-import { Badge } from "@/components/ui/badge";
 
 const ensureOrderStatus = (status: string): OrderStatus => {
   switch(status) {
@@ -46,8 +41,8 @@ const mapToOrderType = (dbOrder: any): Order => {
 const OrdersPage: React.FC = () => {
   const { storeData } = useStoreData();
   const storeId = storeData?.id || "";
-  const isMobile = useMediaQuery("(max-width: 768px)");
   
+  // State variables
   const [activeTab, setActiveTab] = useState<OrderStatus | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -61,6 +56,7 @@ const OrdersPage: React.FC = () => {
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [isAddingOrder, setIsAddingOrder] = useState(false);
 
+  // Fetch order stats
   const { 
     data: statsData,
     isLoading: isStatsLoading,
@@ -71,6 +67,7 @@ const OrdersPage: React.FC = () => {
     enabled: !!storeId,
   });
 
+  // Fetch orders data
   const {
     data: ordersData,
     isLoading,
@@ -93,6 +90,7 @@ const OrdersPage: React.FC = () => {
     enabled: !!storeId,
   });
 
+  // Debounce search input
   React.useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(searchQuery);
@@ -102,6 +100,7 @@ const OrdersPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  // Event handlers
   const handleViewDetails = async (order: Order) => {
     try {
       if (!order.items) {
@@ -170,15 +169,6 @@ const OrdersPage: React.FC = () => {
     }
   };
 
-  const handleSort = (field: string) => {
-    if (orderBy === field) {
-      setOrderDirection(prev => prev === "asc" ? "desc" : "asc");
-    } else {
-      setOrderBy(field);
-      setOrderDirection("desc");
-    }
-  };
-
   const handleRefresh = () => {
     refetch();
     refetchStats();
@@ -192,39 +182,16 @@ const OrdersPage: React.FC = () => {
     setIsAddingOrder(false);
   };
 
-  const totalPages = Math.ceil((ordersData?.totalCount || 0) / pageSize);
-
-  // تنظيم لتصنيفات الطلبات
-  const statusItems = [
-    {
-      id: "all",
-      label: "الكل",
-      count: statsData?.total || 0,
-      icon: <ShoppingBag className="h-4 w-4" />,
-      color: "bg-gray-100 text-gray-800 border-gray-200"
-    },
-    {
-      id: "processing",
-      label: "قيد المعالجة",
-      count: statsData?.processing || 0,
-      icon: <Clock className="h-4 w-4" />,
-      color: "bg-blue-50 text-blue-800 border-blue-200"
-    },
-    {
-      id: "delivered",
-      label: "تم التوصيل",
-      count: statsData?.delivered || 0,
-      icon: <Check className="h-4 w-4" />,
-      color: "bg-green-50 text-green-800 border-green-200"
-    },
-    {
-      id: "cancelled",
-      label: "ملغي",
-      count: statsData?.cancelled || 0,
-      icon: <X className="h-4 w-4" />,
-      color: "bg-red-50 text-red-800 border-red-200"
+  const handleSort = (field: string) => {
+    if (orderBy === field) {
+      setOrderDirection(prev => prev === "asc" ? "desc" : "asc");
+    } else {
+      setOrderBy(field);
+      setOrderDirection("desc");
     }
-  ];
+  };
+
+  const totalPages = Math.ceil((ordersData?.totalCount || 0) / pageSize);
 
   if (isLoading && !ordersData) {
     return <LoadingState message="جاري تحميل الطلبات..." />;
@@ -243,126 +210,44 @@ const OrdersPage: React.FC = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">إدارة الطلبات</h1>
-            <p className="text-muted-foreground">
-              قم بإدارة وتتبع جميع طلبات متجرك من مكان واحد
-            </p>
-          </div>
-          
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              className="flex items-center gap-2"
-            >
-              <RefreshCcw className="h-4 w-4" />
-              تحديث
-            </Button>
-            
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => setIsAddingOrder(true)}
-              className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700"
-            >
-              <Plus className="h-4 w-4" />
-              طلب جديد
-            </Button>
-          </div>
-        </div>
+        {/* Header with title and actions */}
+        <OrdersHeader 
+          onRefresh={handleRefresh}
+          onAddOrder={() => setIsAddingOrder(true)}
+        />
 
-        <OrderStats stats={statsData || { total: 0, processing: 0, delivered: 0, cancelled: 0 }} isLoading={isStatsLoading} />
+        {/* Orders statistics */}
+        <OrderStats 
+          stats={statsData || { total: 0, processing: 0, delivered: 0, cancelled: 0 }} 
+          isLoading={isStatsLoading} 
+        />
         
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="البحث في الطلبات..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-3 pr-9 border-gray-200 focus:border-primary-300 focus:ring focus:ring-primary-100 focus:ring-opacity-50"
-            />
-          </div>
-          
-          <Button variant="outline" className="flex items-center gap-2 sm:w-auto w-full justify-center border-gray-200 hover:border-primary-200 hover:bg-primary-50">
-            <Filter className="h-4 w-4" />
-            تصفية متقدمة
-          </Button>
-        </div>
+        {/* Search and filters */}
+        <OrdersFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          activeTab={activeTab}
+          onTabChange={setActiveTab as (tab: OrderStatus | "all") => void}
+          stats={statsData || { total: 0, processing: 0, delivered: 0, cancelled: 0 }}
+        />
         
+        {/* Orders list with pagination */}
         <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
-          <div className="flex overflow-x-auto py-4 px-4 gap-2 border-b border-gray-100">
-            {statusItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id as OrderStatus | "all")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium whitespace-nowrap transition-all ${
-                  activeTab === item.id
-                    ? `${item.color} shadow-sm`
-                    : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-                }`}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-                <Badge variant="outline" className="ml-1 bg-white text-xs min-w-5 h-5 flex items-center justify-center">
-                  {item.count}
-                </Badge>
-              </button>
-            ))}
-          </div>
-          
-          <div className="p-4">
-            {ordersData?.orders && ordersData.orders.length > 0 ? (
-              <>
-                <OrdersList
-                  orders={ordersData.orders}
-                  isLoading={isLoading}
-                  onViewDetails={handleViewDetails}
-                  onUpdateStatus={handleUpdateStatus}
-                  onDelete={handleDeleteOrder}
-                  currency={storeData?.currency}
-                />
-                
-                {totalPages > 1 && (
-                  <div className="flex justify-center mt-6">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
-                        disabled={currentPage === 0}
-                        className="border-gray-200"
-                      >
-                        السابق
-                      </Button>
-                      
-                      <span className="text-sm">
-                        الصفحة {currentPage + 1} من {totalPages}
-                      </span>
-                      
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => (prev + 1 < totalPages ? prev + 1 : prev))}
-                        disabled={currentPage + 1 >= totalPages}
-                        className="border-gray-200"
-                      >
-                        التالي
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </>
-            ) : (
-              <OrderEmptyState />
-            )}
-          </div>
+          <OrdersListContainer
+            orders={ordersData?.orders || []}
+            isLoading={isLoading}
+            totalPages={totalPages}
+            currentPage={currentPage}
+            currency={storeData?.currency}
+            onPageChange={setCurrentPage}
+            onViewDetails={handleViewDetails}
+            onUpdateStatus={handleUpdateStatus}
+            onDelete={handleDeleteOrder}
+          />
         </div>
       </div>
       
+      {/* Modals and dialogs */}
       {selectedOrder && (
         <OrderDetailsModal
           order={selectedOrder}
@@ -375,24 +260,11 @@ const OrdersPage: React.FC = () => {
         />
       )}
       
-      <Dialog open={isConfirmingDelete} onOpenChange={(open) => !open && setIsConfirmingDelete(false)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>تأكيد حذف الطلب</DialogTitle>
-            <DialogDescription>
-              هل أنت متأكد من رغبتك في حذف هذا الطلب؟ هذا الإجراء لا يمكن التراجع عنه.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsConfirmingDelete(false)}>
-              إلغاء
-            </Button>
-            <Button variant="destructive" onClick={confirmDelete}>
-              حذف الطلب
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <OrderDeleteDialog
+        isOpen={isConfirmingDelete}
+        onClose={() => setIsConfirmingDelete(false)}
+        onConfirm={confirmDelete}
+      />
       
       <NewOrderModal
         storeId={storeId}
