@@ -156,7 +156,7 @@ const Products = () => {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="p-3 sm:p-4 border-b bg-blue-50/80"
+                className="p-4 sm:p-4 border-b bg-blue-50/80"
               >
                 <ProductBulkActions 
                   selectedCount={selectedItems.length}

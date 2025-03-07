@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Trash2, Tag, Copy, Archive, CheckCircle } from "lucide-react";
+import { Trash2, Tag, Copy, Archive, CheckCircle, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
@@ -14,6 +14,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useIsMobile } from "@/hooks/use-media-query";
+import { motion } from "framer-motion";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ProductBulkActionsProps {
   selectedCount: number;
@@ -28,6 +36,7 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
 }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const isMobile = useIsMobile();
   
   const handleBulkDelete = async () => {
     if (!selectedIds.length) return;
@@ -70,53 +79,104 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
   
   return (
     <>
-      <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-        <span className="text-sm font-medium">
-          تم تحديد {selectedCount} منتج
-        </span>
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex items-center justify-between w-full"
+      >
+        <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/10 text-primary">
+            <CheckCircle className="h-4 w-4" />
+          </div>
+          <span className="text-sm font-medium">
+            تم تحديد {selectedCount} منتج
+          </span>
+        </div>
         
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowDeleteDialog(true)}
-          className="text-red-500 hover:text-red-700 hover:bg-red-50"
-        >
-          <Trash2 className="h-4 w-4 ml-2" />
-          حذف
-        </Button>
-        
-        <Button
-          variant="ghost"
-          size="sm"
-        >
-          <Tag className="h-4 w-4 ml-2" />
-          تعيين فئة
-        </Button>
-        
-        <Button
-          variant="ghost"
-          size="sm"
-        >
-          <Copy className="h-4 w-4 ml-2" />
-          نسخ
-        </Button>
-        
-        <Button
-          variant="ghost"
-          size="sm"
-        >
-          <Archive className="h-4 w-4 ml-2" />
-          أرشفة
-        </Button>
-        
-        <Button
-          variant="ghost"
-          size="sm"
-        >
-          <CheckCircle className="h-4 w-4 ml-2" />
-          تحديث المخزون
-        </Button>
-      </div>
+        {isMobile ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="ml-auto"
+              >
+                <span className="ml-1">إجراءات</span>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem 
+                className="text-red-500 focus:text-red-600 focus:bg-red-50"
+                onClick={() => setShowDeleteDialog(true)}
+              >
+                <Trash2 className="h-4 w-4 ml-2" />
+                حذف
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Tag className="h-4 w-4 ml-2" />
+                تعيين فئة
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Copy className="h-4 w-4 ml-2" />
+                نسخ
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Archive className="h-4 w-4 ml-2" />
+                أرشفة
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <CheckCircle className="h-4 w-4 ml-2" />
+                تحديث المخزون
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <div className="flex items-center gap-2 ml-auto">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowDeleteDialog(true)}
+              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="h-4 w-4 ml-2" />
+              حذف
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+            >
+              <Tag className="h-4 w-4 ml-2" />
+              تعيين فئة
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+            >
+              <Copy className="h-4 w-4 ml-2" />
+              نسخ
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+            >
+              <Archive className="h-4 w-4 ml-2" />
+              أرشفة
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+            >
+              <CheckCircle className="h-4 w-4 ml-2" />
+              تحديث المخزون
+            </Button>
+          </div>
+        )}
+      </motion.div>
       
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
