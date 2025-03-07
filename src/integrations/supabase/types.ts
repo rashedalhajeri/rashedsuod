@@ -391,41 +391,65 @@ export type Database = {
       products: {
         Row: {
           additional_images: Json | null
+          available_colors: Json | null
+          available_sizes: Json | null
           category_id: string | null
           created_at: string
           description: string | null
+          discount_price: number | null
+          has_colors: boolean | null
+          has_sizes: boolean | null
           id: string
           image_url: string | null
           name: string
           price: number
+          require_customer_image: boolean | null
+          require_customer_name: boolean | null
           stock_quantity: number | null
           store_id: string
+          track_inventory: boolean | null
           updated_at: string
         }
         Insert: {
           additional_images?: Json | null
+          available_colors?: Json | null
+          available_sizes?: Json | null
           category_id?: string | null
           created_at?: string
           description?: string | null
+          discount_price?: number | null
+          has_colors?: boolean | null
+          has_sizes?: boolean | null
           id?: string
           image_url?: string | null
           name: string
           price: number
+          require_customer_image?: boolean | null
+          require_customer_name?: boolean | null
           stock_quantity?: number | null
           store_id: string
+          track_inventory?: boolean | null
           updated_at?: string
         }
         Update: {
           additional_images?: Json | null
+          available_colors?: Json | null
+          available_sizes?: Json | null
           category_id?: string | null
           created_at?: string
           description?: string | null
+          discount_price?: number | null
+          has_colors?: boolean | null
+          has_sizes?: boolean | null
           id?: string
           image_url?: string | null
           name?: string
           price?: number
+          require_customer_image?: boolean | null
+          require_customer_name?: boolean | null
           stock_quantity?: number | null
           store_id?: string
+          track_inventory?: boolean | null
           updated_at?: string
         }
         Relationships: [

@@ -38,14 +38,14 @@ interface RawProductData {
   created_at: string;
   updated_at: string;
   additional_images: any;
-  discount_price?: number | null;
-  track_inventory?: boolean;
-  has_colors?: boolean;
-  has_sizes?: boolean;
-  require_customer_name?: boolean;
-  require_customer_image?: boolean;
-  available_colors?: any;
-  available_sizes?: any;
+  discount_price: number | null;
+  track_inventory: boolean;
+  has_colors: boolean;
+  has_sizes: boolean;
+  require_customer_name: boolean;
+  require_customer_image: boolean;
+  available_colors: any;
+  available_sizes: any;
 }
 
 /**
@@ -216,9 +216,9 @@ export const fetchProductsWithFilters = async (
     // Process data with explicit type casting to avoid circular references
     const processedData: Product[] = [];
     
+    // Use a for loop instead of map to avoid excessive type instantiation depth
     for (const item of data) {
-      // Create a properly typed product object
-      processedData.push({
+      const product: Product = {
         id: item.id,
         name: item.name,
         description: item.description,
@@ -238,7 +238,9 @@ export const fetchProductsWithFilters = async (
         require_customer_image: Boolean(item.require_customer_image),
         available_colors: convertToStringArray(item.available_colors),
         available_sizes: convertToStringArray(item.available_sizes)
-      });
+      };
+      
+      processedData.push(product);
     }
     
     return processedData;
