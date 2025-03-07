@@ -80,6 +80,8 @@ const Products = () => {
           isRefreshing={isRefreshing}
           onRefresh={handleProductUpdate}
           onAddProduct={() => setIsAddProductOpen(true)}
+          searchTerm={searchTerm}
+          onSearch={handleSearch}
         />
 
         <ProductsContent 

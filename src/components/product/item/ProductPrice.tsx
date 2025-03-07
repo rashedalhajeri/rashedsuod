@@ -18,12 +18,12 @@ export const ProductPrice: React.FC<ProductPriceProps> = ({
   const hasDiscount = discountPrice !== null && discountPrice > 0 && discountPrice < price;
   
   // Define font sizes based on component size
-  let priceSize = "text-xl"; // Default size
+  let priceSize = "text-base"; // Default size
   
   if (size === "sm") {
-    priceSize = "text-lg";
+    priceSize = "text-sm";
   } else if (size === "lg") {
-    priceSize = "text-2xl";
+    priceSize = "text-lg";
   }
 
   return (

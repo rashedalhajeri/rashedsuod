@@ -1,7 +1,7 @@
+
 import React, { useState, useMemo } from "react";
 import { Product } from "@/utils/products/types";
-import { Input } from "@/components/ui/input";
-import { Search, Filter } from "lucide-react";
+import { Filter } from "lucide-react";
 import ProductListItem from "@/components/product/ProductListItem";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -98,109 +98,91 @@ const ProductsList: React.FC<ProductsListProps> = ({
   const filterCounts = getFilterCounts();
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-3 items-center bg-gradient-to-r from-gray-50 to-white">
-          <div className="flex-1 w-full sm:w-auto">
-            <div className="relative">
-              <div className="absolute left-3 top-3 text-gray-400">
-                <Search className="h-5 w-5" />
-              </div>
-              <Input
-                type="text"
-                placeholder="بحث في المنتجات..."
-                value={searchTerm}
-                onChange={(e) => onSearch(e.target.value)}
-                className="pr-3 pl-10 bg-white border-gray-200 focus:border-primary h-12 text-base placeholder:text-gray-400 rounded-lg"
-                dir="rtl"
-              />
+        <div className="p-3 border-b border-gray-100 flex flex-row gap-2 items-center bg-gradient-to-r from-gray-50 to-white">
+          <div className="flex overflow-x-auto py-1 scrollbar-hide flex-1">
+            <div className="flex gap-2">
+              <Button
+                variant={filterActive === "active" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterActive("active")}
+                className={cn(
+                  "rounded-full text-xs min-w-fit px-3 py-1 h-8",
+                  filterActive === "active" ? "bg-green-500 text-white border-green-500" : "bg-white text-gray-700"
+                )}
+              >
+                نشط
+                <Badge variant="secondary" className="mr-1 text-[10px] bg-white/20 text-white h-4">
+                  {filterCounts.active}
+                </Badge>
+              </Button>
+              <Button
+                variant={filterActive === "inactive" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterActive("inactive")}
+                className={cn(
+                  "rounded-full text-xs min-w-fit px-3 py-1 h-8",
+                  filterActive === "inactive" ? "bg-gray-500 text-white border-gray-500" : "bg-white text-gray-700"
+                )}
+              >
+                غير نشط
+                <Badge variant="secondary" className="mr-1 text-[10px] bg-white/20 text-white h-4">
+                  {filterCounts.inactive}
+                </Badge>
+              </Button>
+              <Button
+                variant={filterActive === "archived" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterActive("archived")}
+                className={cn(
+                  "rounded-full text-xs min-w-fit px-3 py-1 h-8",
+                  filterActive === "archived" ? "bg-blue-500 text-white border-blue-500" : "bg-white text-gray-700"
+                )}
+              >
+                مسودة
+                <Badge variant="secondary" className="mr-1 text-[10px] bg-white/20 text-white h-4">
+                  {filterCounts.archived}
+                </Badge>
+              </Button>
             </div>
           </div>
-          
-          <div className="flex items-center w-full sm:w-auto justify-between sm:justify-normal gap-2">
-            <div className="flex overflow-x-auto py-1 scrollbar-hide">
-              <div className="flex gap-2">
-                <Button
-                  variant={filterActive === "active" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setFilterActive("active")}
-                  className={cn(
-                    "rounded-full text-sm min-w-fit px-4 py-2 h-10",
-                    filterActive === "active" ? "bg-green-500 text-white border-green-500" : "bg-white text-gray-700"
-                  )}
-                >
-                  نشط
-                  <Badge variant="secondary" className="mr-1 text-xs bg-white/20 text-white">
-                    {filterCounts.active}
-                  </Badge>
-                </Button>
-                <Button
-                  variant={filterActive === "inactive" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setFilterActive("inactive")}
-                  className={cn(
-                    "rounded-full text-sm min-w-fit px-4 py-2 h-10",
-                    filterActive === "inactive" ? "bg-gray-500 text-white border-gray-500" : "bg-white text-gray-700"
-                  )}
-                >
-                  غير نشط
-                  <Badge variant="secondary" className="mr-1 text-xs bg-white/20 text-white">
-                    {filterCounts.inactive}
-                  </Badge>
-                </Button>
-                <Button
-                  variant={filterActive === "archived" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setFilterActive("archived")}
-                  className={cn(
-                    "rounded-full text-sm min-w-fit px-4 py-2 h-10",
-                    filterActive === "archived" ? "bg-blue-500 text-white border-blue-500" : "bg-white text-gray-700"
-                  )}
-                >
-                  مسودة
-                  <Badge variant="secondary" className="mr-1 text-xs bg-white/20 text-white">
-                    {filterCounts.archived}
-                  </Badge>
-                </Button>
-              </div>
-            </div>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex-shrink-0 w-10 h-10 p-0 rounded-full"
-                >
-                  <Filter className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={handleSelectAll}>
-                  {selectedItems.length === filteredProducts.length && filteredProducts.length > 0
-                    ? "إلغاء تحديد الكل"
-                    : "تحديد الكل"}
-                </DropdownMenuItem>
-                
-                <DropdownMenuSeparator />
-                
-                <DropdownMenuItem onClick={() => setFilterActive("active")}>
-                  عرض النشطة فقط
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilterActive("inactive")}>
-                  عرض غير النشطة فقط
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilterActive("archived")}>
-                  عرض المسودات فقط
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex-shrink-0 w-8 h-8 p-0 rounded-full"
+              >
+                <Filter className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={handleSelectAll}>
+                {selectedItems.length === filteredProducts.length && filteredProducts.length > 0
+                  ? "إلغاء تحديد الكل"
+                  : "تحديد الكل"}
+              </DropdownMenuItem>
+              
+              <DropdownMenuSeparator />
+              
+              <DropdownMenuItem onClick={() => setFilterActive("active")}>
+                عرض النشطة فقط
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setFilterActive("inactive")}>
+                عرض غير النشطة فقط
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setFilterActive("archived")}>
+                عرض المسودات فقط
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         
         <div className="max-h-[700px] overflow-auto">
           <ScrollArea className="h-full">
-            <div className="space-y-3 p-4">
+            <div className="space-y-2 p-3">
               {filteredProducts.length > 0 ? (
                 <AnimatePresence initial={false}>
                   {filteredProducts.map((product) => (
@@ -226,7 +208,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
                   ))}
                 </AnimatePresence>
               ) : (
-                <Card className="p-8 flex flex-col items-center">
+                <Card className="p-6 flex flex-col items-center">
                   <div className="text-center space-y-2">
                     <p className="text-gray-500 text-sm">لا يوجد منتجات تطابق البحث</p>
                     {searchTerm && (
