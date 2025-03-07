@@ -1,5 +1,5 @@
-import { RawProductData, Product } from "./types";
-import { ProductColor, ProductSize, CategoryData } from "@/types";
+
+import { RawProductData, Product, ProductColor, ProductSize, CategoryData } from "./types";
 
 export const mapRawProductToProduct = (raw: RawProductData): Product => {
   // Convert image_url and additional_images to images array

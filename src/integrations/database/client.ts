@@ -52,7 +52,7 @@ class SupabaseDatabaseClient implements DatabaseClient {
           return [];
         }
         
-        // Fix: Break recursion by casting to unknown first, then to a simple array type
+        // Cast to unknown first, then to RawProductData[] to avoid type recursion issues
         const rawData = data as unknown as RawProductData[];
         const processedProducts: Product[] = [];
         
@@ -82,7 +82,7 @@ class SupabaseDatabaseClient implements DatabaseClient {
         if (!data) return { data: null, error: null };
         
         // Process the data to ensure proper types
-        const product = mapRawProductToProduct(data as RawProductData);
+        const product = mapRawProductToProduct(data as unknown as RawProductData);
         
         return { data: product, error: null };
       } catch (error) {
