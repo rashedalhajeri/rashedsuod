@@ -17,8 +17,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import SaveButton from "@/components/ui/save-button";
 import { ImageUploadGrid } from "@/components/ui/image-upload";
 import { fetchCategories } from "@/services/category-service";
-import { Percent, Box, Tag, User, Image as ImageIcon } from "lucide-react";
+import { Percent, Box, Tag, User, Image as ImageIcon, Package } from "lucide-react";
 import { Product, getProductById, updateProduct, deleteProduct } from "@/utils/product-helpers";
+import ConditionalSections from "@/components/ui/conditional-sections";
+import { formatCurrency } from "@/utils/currency-formatter";
 
 const ProductDetail: React.FC = () => {
   const { productId } = useParams<{ productId: string }>();
@@ -213,32 +215,24 @@ const ProductDetail: React.FC = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="details" className="w-full">
-        <TabsList className="mb-6">
-          <TabsTrigger value="details">التفاصيل الأساسية</TabsTrigger>
-          <TabsTrigger value="media">الصور والوسائط</TabsTrigger>
-          <TabsTrigger value="advanced">إعدادات متقدمة</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="details">
-          <Card>
-            <CardHeader>
-              <CardTitle>معلومات المنتج</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+      <Card className="mb-8">
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="name">اسم المنتج</Label>
+                <Label htmlFor="name" className="text-lg font-medium">اسم المنتج</Label>
                 <Input
                   id="name"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="أدخل اسم المنتج"
+                  className="text-lg"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="description">وصف المنتج</Label>
+                <Label htmlFor="description" className="text-lg font-medium">وصف المنتج</Label>
                 <Textarea
                   id="description"
                   name="description"
@@ -246,12 +240,13 @@ const ProductDetail: React.FC = () => {
                   onChange={handleChange}
                   placeholder="أدخل وصف المنتج"
                   rows={5}
+                  className="resize-none"
                 />
               </div>
-              
+            
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="price">السعر</Label>
+                  <Label htmlFor="price" className="text-lg font-medium">السعر</Label>
                   <div className="flex gap-2">
                     <Input
                       id="price"
@@ -280,7 +275,7 @@ const ProductDetail: React.FC = () => {
                 
                 {formData.discount_price !== null && (
                   <div className="space-y-2">
-                    <Label htmlFor="discount_price">السعر بعد الخصم</Label>
+                    <Label htmlFor="discount_price" className="text-lg font-medium">السعر بعد الخصم</Label>
                     <Input
                       id="discount_price"
                       name="discount_price"
@@ -293,170 +288,215 @@ const ProductDetail: React.FC = () => {
                   </div>
                 )}
               </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex flex-col">
-                  <Label htmlFor="track_inventory" className="mb-1">تتبع المخزون</Label>
-                  <span className="text-sm text-gray-500">
-                    {formData.track_inventory ? 'كمية محدودة' : 'كمية غير محدودة'}
-                  </span>
+            </div>
+            
+            <div>
+              <Label className="text-lg font-medium mb-3 block">صور المنتج</Label>
+              <ImageUploadGrid 
+                images={formData.images}
+                onImagesChange={handleImagesChange}
+                maxImages={5}
+                storeId={storeData?.id}
+              />
+              <p className="text-xs text-gray-500 text-center mt-2">
+                الصورة الأولى هي الصورة الرئيسية للمنتج. يمكنك إضافة حتى 5 صور.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>معلومات متقدمة</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="category">الفئة</Label>
+                  <Select 
+                    value={formData.category_id || ""} 
+                    onValueChange={handleCategoryChange}
+                  >
+                    <SelectTrigger id="category">
+                      <SelectValue placeholder="اختر الفئة" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">بدون فئة</SelectItem>
+                      {categories.map(category => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <Switch 
-                  id="track_inventory"
-                  checked={formData.track_inventory}
-                  onCheckedChange={(checked) => handleSwitchChange('track_inventory', checked)}
-                />
+                
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="track_inventory" className="mb-1">تتبع المخزون</Label>
+                    <Switch 
+                      id="track_inventory"
+                      checked={formData.track_inventory}
+                      onCheckedChange={(checked) => handleSwitchChange('track_inventory', checked)}
+                    />
+                  </div>
+                  
+                  {formData.track_inventory && (
+                    <div className="mt-3">
+                      <Label htmlFor="stock_quantity">الكمية المتوفرة</Label>
+                      <Input
+                        id="stock_quantity"
+                        name="stock_quantity"
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={formData.stock_quantity}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
               
-              {formData.track_inventory && (
-                <div className="space-y-2">
-                  <Label htmlFor="stock_quantity">الكمية المتوفرة</Label>
-                  <Input
-                    id="stock_quantity"
-                    name="stock_quantity"
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={formData.stock_quantity}
-                    onChange={handleChange}
-                  />
-                </div>
-              )}
+              <Separator />
               
-              <div className="space-y-2">
-                <Label htmlFor="category">الفئة</Label>
-                <Select 
-                  value={formData.category_id || ""} 
-                  onValueChange={handleCategoryChange}
-                >
-                  <SelectTrigger id="category">
-                    <SelectValue placeholder="اختر الفئة" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">بدون فئة</SelectItem>
-                    {categories.map(category => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="space-y-4">
+                <h3 className="text-md font-medium">خيارات المنتج</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Colors option */}
+                  <div className="flex items-center justify-between p-3 border border-gray-100 rounded-md">
+                    <div className="flex items-center gap-2">
+                      <Box className="h-4 w-4 text-blue-500" />
+                      <div>
+                        <Label htmlFor="has_colors" className="cursor-pointer">الألوان</Label>
+                        <p className="text-xs text-gray-500">إضافة خيارات الألوان للمنتج</p>
+                      </div>
+                    </div>
+                    <Switch 
+                      id="has_colors"
+                      checked={formData.has_colors}
+                      onCheckedChange={(checked) => handleSwitchChange('has_colors', checked)}
+                    />
+                  </div>
+                  
+                  {/* Sizes option */}
+                  <div className="flex items-center justify-between p-3 border border-gray-100 rounded-md">
+                    <div className="flex items-center gap-2">
+                      <Tag className="h-4 w-4 text-green-500" />
+                      <div>
+                        <Label htmlFor="has_sizes" className="cursor-pointer">المقاسات</Label>
+                        <p className="text-xs text-gray-500">إضافة خيارات المقاسات للمنتج</p>
+                      </div>
+                    </div>
+                    <Switch 
+                      id="has_sizes"
+                      checked={formData.has_sizes}
+                      onCheckedChange={(checked) => handleSwitchChange('has_sizes', checked)}
+                    />
+                  </div>
+                </div>
+                
+                {(formData.has_colors || formData.has_sizes) && (
+                  <ConditionalSections 
+                    formData={formData}
+                    handleColorsChange={(colors) => 
+                      setFormData(prev => ({ ...prev, available_colors: colors }))
+                    }
+                    handleSizesChange={(sizes) => 
+                      setFormData(prev => ({ ...prev, available_sizes: sizes }))
+                    }
+                  />
+                )}
+              </div>
+              
+              <Separator />
+              
+              <div className="space-y-4">
+                <h3 className="text-md font-medium">خيارات إضافية</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Require customer name */}
+                  <div className="flex items-center justify-between p-3 border border-gray-100 rounded-md">
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4 text-purple-500" />
+                      <div>
+                        <Label htmlFor="require_customer_name" className="cursor-pointer">طلب اسم العميل</Label>
+                        <p className="text-xs text-gray-500">سيطلب من العميل إدخال اسمه عند إضافة المنتج للسلة</p>
+                      </div>
+                    </div>
+                    <Switch 
+                      id="require_customer_name"
+                      checked={formData.require_customer_name}
+                      onCheckedChange={(checked) => handleSwitchChange('require_customer_name', checked)}
+                    />
+                  </div>
+                  
+                  {/* Require customer image */}
+                  <div className="flex items-center justify-between p-3 border border-gray-100 rounded-md">
+                    <div className="flex items-center gap-2">
+                      <ImageIcon className="h-4 w-4 text-red-500" />
+                      <div>
+                        <Label htmlFor="require_customer_image" className="cursor-pointer">طلب صورة من العميل</Label>
+                        <p className="text-xs text-gray-500">سيطلب من العميل رفع صورة عند إضافة المنتج للسلة</p>
+                      </div>
+                    </div>
+                    <Switch 
+                      id="require_customer_image"
+                      checked={formData.require_customer_image}
+                      onCheckedChange={(checked) => handleSwitchChange('require_customer_image', checked)}
+                    />
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="media">
+        </div>
+        
+        <div>
           <Card>
-            <CardHeader>
-              <CardTitle>صور المنتج</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle>معاينة المنتج</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between mb-2">
-                    <Label>صور المنتج</Label>
-                    <span className="text-sm text-gray-500">
-                      ({formData.images.length} من 5)
-                    </span>
-                  </div>
-                  <ImageUploadGrid 
-                    images={formData.images}
-                    onImagesChange={handleImagesChange}
-                    maxImages={5}
-                    storeId={storeData?.id}
+              <div className="rounded-md border overflow-hidden mb-4">
+                {formData.images.length > 0 ? (
+                  <img 
+                    src={formData.images[0]} 
+                    alt={formData.name} 
+                    className="w-full aspect-square object-cover"
                   />
-                  <p className="text-xs text-gray-500 text-center">
-                    الصورة الأولى هي الصورة الرئيسية للمنتج. يمكنك إضافة حتى 5 صور.
-                  </p>
-                </div>
-                
-                {formData.images.length === 0 && (
-                  <div className="p-4 border rounded-md border-yellow-200 bg-yellow-50 text-yellow-700 text-sm">
-                    لم يتم إضافة أي صور للمنتج. يوصى بإضافة صورة واحدة على الأقل.
+                ) : (
+                  <div className="w-full aspect-square bg-gray-100 flex items-center justify-center">
+                    <Package className="h-16 w-16 text-gray-300" />
                   </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="advanced">
-          <Card>
-            <CardHeader>
-              <CardTitle>خصائص متقدمة</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {/* Colors option */}
-                <div className="flex items-center justify-between p-3 border border-gray-100 rounded-md">
-                  <div className="flex items-center gap-2">
-                    <Box className="h-4 w-4 text-blue-500" />
-                    <div>
-                      <Label htmlFor="has_colors" className="cursor-pointer">الألوان</Label>
-                      <p className="text-xs text-gray-500">إضافة خيارات الألوان للمنتج</p>
-                    </div>
-                  </div>
-                  <Switch 
-                    id="has_colors"
-                    checked={formData.has_colors}
-                    onCheckedChange={(checked) => handleSwitchChange('has_colors', checked)}
-                  />
-                </div>
-                
-                {/* Sizes option */}
-                <div className="flex items-center justify-between p-3 border border-gray-100 rounded-md">
-                  <div className="flex items-center gap-2">
-                    <Tag className="h-4 w-4 text-green-500" />
-                    <div>
-                      <Label htmlFor="has_sizes" className="cursor-pointer">المقاسات</Label>
-                      <p className="text-xs text-gray-500">إضافة خيارات المقاسات للمنتج</p>
-                    </div>
-                  </div>
-                  <Switch 
-                    id="has_sizes"
-                    checked={formData.has_sizes}
-                    onCheckedChange={(checked) => handleSwitchChange('has_sizes', checked)}
-                  />
-                </div>
-                
-                {/* Require customer name */}
-                <div className="flex items-center justify-between p-3 border border-gray-100 rounded-md">
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-purple-500" />
-                    <div>
-                      <Label htmlFor="require_customer_name" className="cursor-pointer">طلب اسم العميل</Label>
-                      <p className="text-xs text-gray-500">سيطلب من العميل إدخال اسمه عند إضافة المنتج للسلة</p>
-                    </div>
-                  </div>
-                  <Switch 
-                    id="require_customer_name"
-                    checked={formData.require_customer_name}
-                    onCheckedChange={(checked) => handleSwitchChange('require_customer_name', checked)}
-                  />
-                </div>
-                
-                {/* Require customer image */}
-                <div className="flex items-center justify-between p-3 border border-gray-100 rounded-md">
-                  <div className="flex items-center gap-2">
-                    <ImageIcon className="h-4 w-4 text-red-500" />
-                    <div>
-                      <Label htmlFor="require_customer_image" className="cursor-pointer">طلب صورة من العميل</Label>
-                      <p className="text-xs text-gray-500">سيطلب من العميل رفع صورة عند إضافة المنتج للسلة</p>
-                    </div>
-                  </div>
-                  <Switch 
-                    id="require_customer_image"
-                    checked={formData.require_customer_image}
-                    onCheckedChange={(checked) => handleSwitchChange('require_customer_image', checked)}
-                  />
-                </div>
+              
+              <h3 className="font-medium text-lg mb-1">{formData.name || "اسم المنتج"}</h3>
+              
+              <div className="flex items-center gap-2 mb-3">
+                <span className="font-bold text-primary">
+                  {formatCurrency(formData.discount_price || formData.price || 0)}
+                </span>
+                {formData.discount_price && (
+                  <span className="text-sm line-through text-gray-400">
+                    {formatCurrency(formData.price || 0)}
+                  </span>
+                )}
               </div>
               
-              <div className="mt-8 pt-4 border-t border-gray-200">
+              <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+                {formData.description || "لا يوجد وصف للمنتج"}
+              </p>
+              
+              <div className="mt-4 pt-4 border-t border-gray-200">
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive">حذف المنتج</Button>
+                    <Button variant="destructive" className="w-full">حذف المنتج</Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
@@ -476,8 +516,8 @@ const ProductDetail: React.FC = () => {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
     </div>
   );
 };
