@@ -171,13 +171,6 @@ export const fetchOrderStats = async (storeId: string) => {
       .eq('store_id', storeId)
       .eq('status', 'processing');
 
-    // Get shipped count
-    const { count: shippedCount, error: shippedError } = await supabase
-      .from('orders')
-      .select('*', { count: 'exact', head: true })
-      .eq('store_id', storeId)
-      .eq('status', 'shipped');
-
     // Get delivered count
     const { count: deliveredCount, error: deliveredError } = await supabase
       .from('orders')
@@ -192,9 +185,9 @@ export const fetchOrderStats = async (storeId: string) => {
       .eq('store_id', storeId)
       .eq('status', 'cancelled');
 
-    if (totalError || processingError || shippedError || deliveredError || cancelledError) {
+    if (totalError || processingError || deliveredError || cancelledError) {
       console.error("Error fetching order stats:", { 
-        totalError, processingError, shippedError, deliveredError, cancelledError 
+        totalError, processingError, deliveredError, cancelledError 
       });
       return null;
     }
@@ -202,7 +195,6 @@ export const fetchOrderStats = async (storeId: string) => {
     return {
       total: totalCount || 0,
       processing: processingCount || 0,
-      shipped: shippedCount || 0,
       delivered: deliveredCount || 0,
       cancelled: cancelledCount || 0
     };

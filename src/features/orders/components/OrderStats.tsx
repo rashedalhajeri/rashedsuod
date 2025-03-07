@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShoppingBag, Box, TruckIcon, CheckCircle2, XCircle } from "lucide-react";
+import { ShoppingBag, Box, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -10,7 +10,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 interface OrderStats {
   total: number;
   processing: number;
-  shipped: number;
   delivered: number;
   cancelled: number;
 }
@@ -33,8 +32,8 @@ const OrderStats: React.FC<OrderStatsProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            {[1, 2, 3, 4, 5].map(i => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map(i => (
               <div key={i} className="text-center">
                 <Skeleton className="h-12 w-12 rounded-full mx-auto" />
                 <Skeleton className="h-3 w-16 mx-auto mt-2" />
@@ -67,15 +66,6 @@ const OrderStats: React.FC<OrderStatsProps> = ({
       hoverBgColor: "hover:bg-blue-200"
     },
     {
-      label: "تم الشحن",
-      value: stats.shipped,
-      icon: <TruckIcon className="h-5 w-5" />,
-      bgColor: "bg-indigo-100",
-      textColor: "text-indigo-700",
-      href: "/dashboard/orders?tab=shipped",
-      hoverBgColor: "hover:bg-indigo-200"
-    },
-    {
       label: "تم التوصيل",
       value: stats.delivered,
       icon: <CheckCircle2 className="h-5 w-5" />,
@@ -101,7 +91,7 @@ const OrderStats: React.FC<OrderStatsProps> = ({
         <CardTitle className="text-lg font-medium">إحصائيات الطلبات</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {statsItems.map((item, index) => (
             <motion.div
               key={index}

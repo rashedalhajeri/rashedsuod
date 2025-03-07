@@ -1,5 +1,5 @@
 
-export type OrderStatus = "processing" | "shipped" | "delivered" | "cancelled";
+export type OrderStatus = "processing" | "delivered" | "cancelled";
 
 export interface OrderItem {
   id: string;

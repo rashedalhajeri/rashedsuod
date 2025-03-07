@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Order } from "@/types/orders";
 import OrderStatusBadge from "./OrderStatusBadge";
@@ -140,9 +141,6 @@ const OrdersList: React.FC<OrdersListProps> = ({
                       <DropdownMenuContent align="end" dir="rtl">
                         <DropdownMenuItem onClick={() => onUpdateStatus(order.id, "processing")}>
                           تغيير إلى: قيد المعالجة
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onUpdateStatus(order.id, "shipped")}>
-                          تغيير إلى: تم الشحن
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => onUpdateStatus(order.id, "delivered")}>
                           تغيير إلى: تم التوصيل

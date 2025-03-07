@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-import { Box, TruckIcon, CheckCircle2, XCircle } from "lucide-react";
+import { Box, CheckCircle2, XCircle } from "lucide-react";
 import { OrderStatus } from "@/types/orders";
 import { cn } from "@/lib/utils";
 
@@ -23,8 +23,6 @@ const OrderStatusBadge: React.FC<OrderStatusBadgeProps> = ({
     switch (status) {
       case "processing":
         return <Box className="h-3.5 w-3.5 mr-1" />;
-      case "shipped":
-        return <TruckIcon className="h-3.5 w-3.5 mr-1" />;
       case "delivered":
         return <CheckCircle2 className="h-3.5 w-3.5 mr-1" />;
       case "cancelled":
@@ -39,11 +37,6 @@ const OrderStatusBadge: React.FC<OrderStatusBadgeProps> = ({
         return { 
           text: "قيد المعالجة", 
           className: "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200" 
-        };
-      case "shipped":
-        return { 
-          text: "تم الشحن", 
-          className: "bg-indigo-100 text-indigo-800 border-indigo-200 hover:bg-indigo-200" 
         };
       case "delivered":
         return { 

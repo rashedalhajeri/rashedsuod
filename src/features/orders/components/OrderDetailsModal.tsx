@@ -5,7 +5,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { 
-  Box, TruckIcon, CheckCircle2, XCircle, CalendarIcon, User, Mail, Phone, MapPin, CreditCard, FileText
+  Box, CheckCircle2, XCircle, CalendarIcon, User, Mail, Phone, MapPin, CreditCard, FileText
 } from "lucide-react";
 import { Order, OrderStatus } from "@/types/orders";
 import { getCurrencyFormatter } from "@/hooks/use-store-data";
@@ -103,12 +103,6 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       label: "قيد المعالجة",
       icon: <Box className="h-4 w-4 ml-2" />,
       className: "text-blue-600 border-blue-200 hover:bg-blue-50"
-    },
-    {
-      status: "shipped" as OrderStatus,
-      label: "تم الشحن",
-      icon: <TruckIcon className="h-4 w-4 ml-2" />,
-      className: "text-indigo-600 border-indigo-200 hover:bg-indigo-50"
     },
     {
       status: "delivered" as OrderStatus,
@@ -227,7 +221,6 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     btn.className,
                     order.status === btn.status && "ring-2 ring-offset-1",
                     order.status === btn.status && btn.status === "processing" && "ring-blue-400",
-                    order.status === btn.status && btn.status === "shipped" && "ring-indigo-400",
                     order.status === btn.status && btn.status === "delivered" && "ring-green-400",
                     order.status === btn.status && btn.status === "cancelled" && "ring-red-400"
                   )}
@@ -271,18 +264,6 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                   </div>
                   <div className="bg-gray-50 rounded p-2 mr-2">
                     <p className="text-sm font-medium">قيد المعالجة</p>
-                    <p className="text-xs text-gray-500">{formatDate(order.updated_at)}</p>
-                  </div>
-                </div>
-              )}
-              
-              {(order.status === "shipped" || order.status === "delivered") && (
-                <div className="relative pr-10 mb-3">
-                  <div className="absolute right-1 top-1 w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center">
-                    <TruckIcon className="h-3 w-3 text-indigo-600" />
-                  </div>
-                  <div className="bg-gray-50 rounded p-2 mr-2">
-                    <p className="text-sm font-medium">تم الشحن</p>
                     <p className="text-xs text-gray-500">{formatDate(order.updated_at)}</p>
                   </div>
                 </div>

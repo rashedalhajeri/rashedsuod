@@ -16,11 +16,11 @@ const RecentOrders: React.FC<RecentOrdersProps> = ({ orders }) => {
   // تعيين لون وأيقونة لكل حالة طلب
   const getOrderStatusIcon = (status: OrderStatus) => {
     switch (status) {
-      case "completed" as OrderStatus:
+      case "delivered":
         return <CheckCircle2 className="h-4 w-4 text-green-500" />;
       case "processing":
         return <Clock className="h-4 w-4 text-amber-500" />;
-      case "canceled" as OrderStatus:
+      case "cancelled":
         return <AlertCircle className="h-4 w-4 text-red-500" />;
       default:
         return <ShoppingCart className="h-4 w-4 text-blue-500" />;
@@ -29,14 +29,12 @@ const RecentOrders: React.FC<RecentOrdersProps> = ({ orders }) => {
   
   const getOrderStatusClass = (status: OrderStatus) => {
     switch (status) {
-      case "completed" as OrderStatus:
+      case "delivered":
         return "bg-green-50 text-green-600 border-green-200";
       case "processing":
         return "bg-amber-50 text-amber-600 border-amber-200";
-      case "canceled" as OrderStatus:
+      case "cancelled":
         return "bg-red-50 text-red-600 border-red-200";
-      case "pending" as OrderStatus:
-        return "bg-blue-50 text-blue-600 border-blue-200";
       default:
         return "bg-gray-50 text-gray-600 border-gray-200";
     }
@@ -44,14 +42,12 @@ const RecentOrders: React.FC<RecentOrdersProps> = ({ orders }) => {
   
   const getOrderStatusText = (status: OrderStatus): string => {
     switch (status) {
-      case "completed" as OrderStatus:
-        return "مكتمل";
+      case "delivered":
+        return "تم التوصيل";
       case "processing":
         return "قيد المعالجة";
-      case "canceled" as OrderStatus:
+      case "cancelled":
         return "ملغي";
-      case "pending" as OrderStatus:
-        return "في الانتظار";
       default:
         return "غير معروف";
     }
