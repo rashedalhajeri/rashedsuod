@@ -1,9 +1,9 @@
 
-// Importing any necessary modules and types
-import { ProductQueryResult } from "@/utils/products/types";
+import { DatabaseClient } from './client';
+import { Product } from '@/utils/products/types';
 
 // Mock implementation of the database client for testing
-export const mockDatabaseClient = {
+export const mockDatabaseClient: DatabaseClient = {
   products: {
     fetchProductsWithFilters: async () => {
       return [];

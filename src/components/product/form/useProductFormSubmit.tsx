@@ -1,115 +1,116 @@
 
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface ProductFormData {
   name: string;
   description: string;
   price: number;
-  discount_price?: number | null;
-  stock_quantity: number;
+  discount_price: number | null;
+  stock_quantity: number | null;
   images: string[];
   track_inventory: boolean;
   has_colors: boolean;
   has_sizes: boolean;
   require_customer_name: boolean;
   require_customer_image: boolean;
-  available_colors?: string[] | null;
-  available_sizes?: string[] | null;
-  category_id?: string | null;
+  available_colors: string[];
+  available_sizes: string[];
+  category_id: string | null;
+  section_id?: string | null;
+  [key: string]: any;
 }
 
-interface UseProductFormSubmitProps {
+export interface ProductFormSubmitProps {
   storeId?: string;
-  onSuccess: () => void;
-  onClose: () => void;
+  onSuccess?: () => void;
+  onClose?: () => void;
 }
 
-export const useProductFormSubmit = ({ storeId, onSuccess, onClose }: UseProductFormSubmitProps) => {
+export const useProductFormSubmit = ({
+  storeId,
+  onSuccess,
+  onClose
+}: ProductFormSubmitProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const validateForm = (formData: ProductFormData): string | null => {
-    if (!formData.name || formData.price <= 0) {
-      return "يرجى ملء جميع الحقول المطلوبة";
-    }
-    
-    if (formData.images.length === 0) {
-      return "يرجى إضافة صورة واحدة على الأقل";
-    }
-    
-    if (formData.has_sizes && (!formData.available_sizes || formData.available_sizes.length === 0)) {
-      return "يرجى إضافة مقاس واحد على الأقل عند تفعيل خاصية المقاسات";
-    }
-    
-    if (formData.has_colors && (!formData.available_colors || formData.available_colors.length === 0)) {
-      return "يرجى إضافة لون واحد على الأقل عند تفعيل خاصية الألوان";
-    }
-    
-    return null;
-  };
-
+  
   const handleSubmit = async (formData: ProductFormData) => {
+    if (!storeId) {
+      toast({
+        title: "خطأ",
+        description: "معرف المتجر غير متوفر",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
     try {
-      if (isSubmitting) return;
+      // Prepare data for submission
+      const productData = {
+        name: formData.name,
+        description: formData.description,
+        price: formData.price,
+        discount_price: formData.discount_price,
+        image_url: formData.images[0] || null,
+        additional_images: JSON.stringify(formData.images.slice(1)),
+        stock_quantity: formData.track_inventory ? formData.stock_quantity : null,
+        track_inventory: formData.track_inventory,
+        has_colors: formData.has_colors,
+        has_sizes: formData.has_sizes,
+        require_customer_name: formData.require_customer_name,
+        require_customer_image: formData.require_customer_image,
+        available_colors: JSON.stringify(formData.available_colors),
+        available_sizes: JSON.stringify(formData.available_sizes),
+        store_id: storeId,
+        category_id: formData.category_id,
+        section_id: formData.section_id,
+        is_featured: false,
+        is_archived: false,
+        sales_count: 0
+      };
       
-      setIsSubmitting(true);
-      
-      if (!storeId) {
-        toast.error("لم يتم العثور على معرف المتجر");
-        setIsSubmitting(false);
-        return;
-      }
-      
-      const validationError = validateForm(formData);
-      if (validationError) {
-        toast.error(validationError);
-        setIsSubmitting(false);
-        return;
-      }
-      
+      // Submit to database
       const { data, error } = await supabase
         .from('products')
-        .insert([
-          {
-            store_id: storeId,
-            name: formData.name,
-            description: formData.description,
-            price: formData.price,
-            discount_price: formData.discount_price,
-            stock_quantity: formData.track_inventory ? formData.stock_quantity : null,
-            track_inventory: formData.track_inventory,
-            has_colors: formData.has_colors,
-            has_sizes: formData.has_sizes,
-            require_customer_name: formData.require_customer_name,
-            require_customer_image: formData.require_customer_image,
-            available_colors: formData.has_colors ? formData.available_colors : null,
-            available_sizes: formData.has_sizes ? formData.available_sizes : null,
-            image_url: formData.images[0] || null,
-            additional_images: formData.images.length > 1 ? formData.images.slice(1) : [],
-            category_id: formData.category_id || null
-          }
-        ])
-        .select();
-        
+        .insert(productData)
+        .select()
+        .single();
+      
       if (error) {
         console.error("Error adding product:", error);
-        toast.error("حدث خطأ أثناء إضافة المنتج");
-        setIsSubmitting(false);
-        return;
+        throw new Error(error.message);
       }
       
-      toast.success("تمت إضافة المنتج بنجاح");
-      onClose();
-      onSuccess();
-    } catch (error) {
-      console.error("Error in handleAddProduct:", error);
-      toast.error("حدث خطأ غير متوقع");
+      // Show success message
+      toast({
+        title: "تمت الإضافة بنجاح",
+        description: "تم إضافة المنتج بنجاح"
+      });
+      
+      // Call the success callback
+      if (onSuccess) {
+        onSuccess();
+      }
+      
+      // Close the dialog
+      if (onClose) {
+        onClose();
+      }
+      
+    } catch (error: any) {
+      toast({
+        title: "خطأ",
+        description: error.message || "حدث خطأ أثناء إضافة المنتج",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
-
+  
   return {
     isSubmitting,
     handleSubmit

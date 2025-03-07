@@ -1,3 +1,4 @@
+
 import { useState, useEffect, ChangeEvent } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "@/components/ui/use-toast";
@@ -32,6 +33,7 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
       additional_images: [],
       track_inventory: false,
       category_id: null,
+      section_id: null,
       has_colors: false,
       has_sizes: false,
       require_customer_name: false,
@@ -46,6 +48,12 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
   const { reset, getValues, setValue, watch } = form;
 
   const formData = getValues();
+
+  // Toggle discount function
+  const toggleDiscount = () => {
+    const currentDiscount = getValues('discount_price');
+    setValue('discount_price', currentDiscount === null ? getValues('price') : null);
+  };
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -91,8 +99,8 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
           console.error("Error fetching product:", error);
           setError(error.message);
           toast({
-            title: "Error",
-            description: "Failed to load product details.",
+            title: "خطأ",
+            description: "فشل في تحميل بيانات المنتج.",
             variant: "destructive",
           });
           return;
@@ -100,8 +108,9 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
 
         const productData = {
           ...data,
-          is_featured: false,
-          sales_count: 0
+          is_featured: data.is_featured || false,
+          sales_count: data.sales_count || 0,
+          is_archived: data.is_archived || false
         } as unknown as RawProductData;
 
         const mappedProduct = mapRawProductToProduct(productData);
@@ -110,14 +119,15 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
         
         reset({
           ...mappedProduct,
-          images: mappedProduct.images || []
+          images: mappedProduct.images || [],
+          section_id: data.section_id || null
         });
       } catch (error: any) {
         console.error("Unexpected error fetching product:", error);
         setError(error.message);
         toast({
-          title: "Error",
-          description: "Failed to load product details.",
+          title: "خطأ",
+          description: "فشل في تحميل بيانات المنتج.",
           variant: "destructive",
         });
       } finally {
@@ -148,7 +158,11 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
   };
 
   const handleCategoryChange = (categoryId: string) => {
-    setValue('category_id', categoryId);
+    setValue('category_id', categoryId === "none" ? null : categoryId);
+  };
+
+  const handleSectionChange = (sectionId: string) => {
+    setValue('section_id', sectionId === "none" ? null : sectionId);
   };
 
   const handleSubmit = async () => {
@@ -174,16 +188,16 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
         console.error("Error updating product:", error);
         setError(error.message);
         toast({
-          title: "Error",
-          description: "Failed to update product.",
+          title: "خطأ",
+          description: "فشل في تحديث المنتج.",
           variant: "destructive",
         });
         return;
       }
 
       toast({
-        title: "Success",
-        description: "Product updated successfully.",
+        title: "تم بنجاح",
+        description: "تم تحديث المنتج بنجاح.",
       });
       
       if (onSuccess) {
@@ -197,8 +211,8 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
       console.error("Unexpected error updating product:", error);
       setError(error.message);
       toast({
-        title: "Error",
-        description: "Failed to update product.",
+        title: "خطأ",
+        description: "فشل في تحديث المنتج.",
         variant: "destructive",
       });
     } finally {
@@ -209,7 +223,7 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
   const handleDelete = async () => {
     if (!productId) return;
     
-    if (!confirm("Are you sure you want to delete this product?")) {
+    if (!confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
       return;
     }
     
@@ -224,16 +238,16 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
         console.error("Error deleting product:", error);
         setError(error.message);
         toast({
-          title: "Error",
-          description: "Failed to delete product.",
+          title: "خطأ",
+          description: "فشل في حذف المنتج.",
           variant: "destructive",
         });
         return;
       }
 
       toast({
-        title: "Success",
-        description: "Product deleted successfully.",
+        title: "تم بنجاح",
+        description: "تم حذف المنتج بنجاح.",
       });
       
       if (onSuccess) {
@@ -247,8 +261,8 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
       console.error("Unexpected error deleting product:", error);
       setError(error.message);
       toast({
-        title: "Error",
-        description: "Failed to delete product.",
+        title: "خطأ",
+        description: "فشل في حذف المنتج.",
         variant: "destructive",
       });
     } finally {
@@ -272,7 +286,9 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     handleSwitchChange,
     handleImagesChange,
     handleCategoryChange,
+    handleSectionChange,
     handleSave: handleSubmit,
-    handleDelete
+    handleDelete,
+    toggleDiscount
   };
 };

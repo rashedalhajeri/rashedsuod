@@ -15,7 +15,6 @@ import { useProductDetailForm } from "@/hooks/useProductDetailForm";
 
 // Import form sections
 import BasicInfoSection from "./form/BasicInfoSection";
-import PricingSection from "./form/PricingSection";
 import InventorySection from "./form/InventorySection";
 import AdvancedFeaturesSection from "./form/AdvancedFeaturesSection";
 import ProductImagesSection from "./form/ProductImagesSection";
@@ -23,6 +22,7 @@ import ProductFormActions from "./form/ProductFormActions";
 import ConditionalSections from "./form/ConditionalSections";
 import FormSection from "./form/FormSection";
 import CategorySelector from "./form/CategorySelector";
+import SectionSelector from "./form/SectionSelector";
 
 interface ProductDetailDialogProps {
   isOpen: boolean;
@@ -49,8 +49,10 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
     handleSwitchChange,
     handleImagesChange,
     handleCategoryChange,
+    handleSectionChange,
     handleSave,
-    handleDelete
+    handleDelete,
+    toggleDiscount
   } = useProductDetailForm({ 
     productId, 
     storeData,
@@ -64,11 +66,6 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
 
   const handleSizesChange = (sizes: string[]) => {
     handleSwitchChange('available_sizes', sizes as any);
-  };
-
-  const toggleDiscount = () => {
-    const newValue = formData.discount_price === null ? formData.price : null;
-    handleSwitchChange('discount_price', newValue as any);
   };
 
   if (isLoading) {
@@ -117,7 +114,10 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
                 <BasicInfoSection 
                   name={formData.name}
                   description={formData.description}
+                  price={formData.price}
+                  discountPrice={formData.discount_price}
                   handleInputChange={handleChange}
+                  toggleDiscount={toggleDiscount}
                 />
                 
                 <CategorySelector
@@ -125,12 +125,11 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
                   storeId={storeData?.id}
                   onCategoryChange={handleCategoryChange}
                 />
-                
-                <PricingSection 
-                  price={formData.price}
-                  discountPrice={formData.discount_price}
-                  handleInputChange={handleChange}
-                  toggleDiscount={toggleDiscount}
+
+                <SectionSelector
+                  sectionId={formData.section_id}
+                  storeId={storeData?.id}
+                  onSectionChange={handleSectionChange}
                 />
                 
                 <InventorySection 

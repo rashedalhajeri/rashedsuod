@@ -6,7 +6,6 @@ import {
 
 // Import form sections
 import BasicInfoSection from "./form/BasicInfoSection";
-import PricingSection from "./form/PricingSection";
 import InventorySection from "./form/InventorySection";
 import AdvancedFeaturesSection from "./form/AdvancedFeaturesSection";
 import ProductImagesSection from "./form/ProductImagesSection";
@@ -14,6 +13,7 @@ import ProductFormActions from "./form/ProductFormActions";
 import ConditionalSections from "./form/ConditionalSections";
 import FormSection from "./form/FormSection";
 import CategorySelector from "./form/CategorySelector";
+import SectionSelector from "./form/SectionSelector";
 import { useProductForm } from "./form/useProductForm";
 import { useProductFormSubmit } from "./form/useProductFormSubmit";
 
@@ -38,6 +38,7 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
     handleColorsChange,
     handleSizesChange,
     handleCategoryChange,
+    handleSectionChange,
     toggleDiscount,
     isFormValid
   } = useProductForm();
@@ -66,7 +67,10 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
                 <BasicInfoSection 
                   name={formData.name}
                   description={formData.description}
+                  price={formData.price}
+                  discountPrice={formData.discount_price}
                   handleInputChange={handleInputChange}
+                  toggleDiscount={toggleDiscount}
                 />
                 
                 <CategorySelector
@@ -75,11 +79,10 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
                   onCategoryChange={handleCategoryChange}
                 />
                 
-                <PricingSection 
-                  price={formData.price}
-                  discountPrice={formData.discount_price}
-                  handleInputChange={handleInputChange}
-                  toggleDiscount={toggleDiscount}
+                <SectionSelector 
+                  sectionId={formData.section_id}
+                  storeId={storeId}
+                  onSectionChange={handleSectionChange}
                 />
                 
                 <InventorySection 

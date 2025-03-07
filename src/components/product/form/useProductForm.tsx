@@ -17,7 +17,8 @@ export const useProductForm = (initialData?: Partial<ProductFormData>) => {
     require_customer_image: initialData?.require_customer_image || false,
     available_colors: initialData?.available_colors || [],
     available_sizes: initialData?.available_sizes || [],
-    category_id: initialData?.category_id || null
+    category_id: initialData?.category_id || null,
+    section_id: initialData?.section_id || null
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -65,6 +66,13 @@ export const useProductForm = (initialData?: Partial<ProductFormData>) => {
     }));
   };
 
+  const handleSectionChange = (sectionId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      section_id: sectionId === "none" ? null : sectionId
+    }));
+  };
+
   const toggleDiscount = () => {
     setFormData(prev => ({
       ...prev,
@@ -84,6 +92,7 @@ export const useProductForm = (initialData?: Partial<ProductFormData>) => {
     handleColorsChange,
     handleSizesChange,
     handleCategoryChange,
+    handleSectionChange,
     toggleDiscount,
     isFormValid
   };
