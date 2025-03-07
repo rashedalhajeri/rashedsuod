@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useStoreData } from "@/hooks/use-store-data";
 import { useQuery } from "@tanstack/react-query";
@@ -23,8 +22,29 @@ import { databaseClient } from "@/integrations/database/client";
 import { toast } from "@/components/ui/use-toast";
 
 const Products = () => {
-  // Use a more descriptive type to avoid recursion issues
-  type ProductQueryResult = Omit<RawProductData, "category"> & {
+  type ProductQueryResult = {
+    id: string;
+    name: string;
+    description: string | null;
+    price: number;
+    discount_price: number | null;
+    stock_quantity: number | null;
+    image_url: string | null;
+    additional_images: any;
+    track_inventory: boolean | null;
+    category_id: string | null;
+    has_colors: boolean | null;
+    has_sizes: boolean | null;
+    require_customer_name: boolean | null;
+    require_customer_image: boolean | null;
+    available_colors: any;
+    available_sizes: any;
+    created_at: string;
+    updated_at: string;
+    store_id: string;
+    is_featured: boolean;
+    sales_count: number;
+    is_archived: boolean;
     category: { id: string; name: string } | null;
   };
 
@@ -53,7 +73,7 @@ const Products = () => {
         .order("created_at", { ascending: false });
       
       if (error) throw error;
-      return data as ProductQueryResult[];
+      return data as unknown as ProductQueryResult[];
     },
     enabled: !!storeData?.id
   });

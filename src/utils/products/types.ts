@@ -19,9 +19,9 @@ export interface RawProductData {
   created_at: string;
   updated_at: string;
   store_id: string;
-  is_featured: boolean | false;
-  sales_count: number | 0;
-  is_archived: boolean | false;
+  is_featured: boolean;
+  sales_count: number;
+  is_archived: boolean;
   category?: {
     id: string;
     name: string;
