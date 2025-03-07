@@ -55,6 +55,27 @@ const ProductActionDrawer: React.FC<ProductActionDrawerProps> = ({
     ? Math.round((1 - (discount_price / price)) * 100) 
     : null;
 
+  // Handlers with proper checks to prevent errors
+  const handleEdit = () => {
+    if (id && onEdit) {
+      onEdit(id);
+      onOpenChange(false);
+    }
+  };
+  
+  const handleActivate = () => {
+    if (id && onActivate) {
+      onActivate(id, !is_active);
+      onOpenChange(false);
+    }
+  };
+  
+  const handleDelete = () => {
+    if (id && onDelete) {
+      onDelete(id);
+    }
+  };
+
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent side="left" className="w-[95%] sm:w-[450px] overflow-y-auto" dir="rtl">
@@ -92,7 +113,7 @@ const ProductActionDrawer: React.FC<ProductActionDrawerProps> = ({
           {/* Action Buttons */}
           <div className="grid grid-cols-3 gap-4 mt-8">
             <Button
-              onClick={() => onEdit(id)}
+              onClick={handleEdit}
               className="flex flex-col items-center gap-2 h-auto py-3"
               variant="outline"
             >
@@ -101,7 +122,7 @@ const ProductActionDrawer: React.FC<ProductActionDrawerProps> = ({
             </Button>
             
             <Button
-              onClick={() => onActivate && onActivate(id, !is_active)}
+              onClick={handleActivate}
               className={`flex flex-col items-center gap-2 h-auto py-3 ${
                 is_active 
                   ? "text-green-600 border-green-200 hover:bg-green-50" 
@@ -114,7 +135,7 @@ const ProductActionDrawer: React.FC<ProductActionDrawerProps> = ({
             </Button>
             
             <Button
-              onClick={() => onDelete && onDelete(id)}
+              onClick={handleDelete}
               className="flex flex-col items-center gap-2 h-auto py-3 text-red-600 border-red-200 hover:bg-red-50"
               variant="outline"
             >

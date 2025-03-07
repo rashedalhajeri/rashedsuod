@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Dialog,
@@ -96,6 +95,10 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
     );
   };
 
+  const handleConfirmDialogChange = (open: boolean, setStateFn: React.Dispatch<React.SetStateAction<boolean>>) => {
+    setStateFn(open);
+  };
+
   if (isLoading) {
     return (
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -148,9 +151,7 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
           </DialogHeader>
           
           <div className="space-y-6 p-1">
-            {/* القسم الأول: المعلومات الأساسية والصور */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-              {/* القسم الأيمن - المعلومات الأساسية */}
               <div className="md:col-span-7 space-y-6">
                 <BasicInfoSection 
                   name={formData.name}
@@ -183,7 +184,6 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
                 />
               </div>
               
-              {/* القسم الأيسر - صور المنتج */}
               <div className="md:col-span-5">
                 <ProductImagesSection 
                   images={formData.images}
@@ -194,7 +194,6 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
               </div>
             </div>
             
-            {/* قسم الخصائص المتقدمة */}
             <FormSection>
               <AdvancedFeaturesSection 
                 hasColors={formData.has_colors}
@@ -205,7 +204,6 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
               />
             </FormSection>
             
-            {/* قسم الألوان والمقاسات - يظهر فقط عند تفعيلها */}
             <ConditionalSections 
               formData={formData}
               handleColorsChange={handleColorsChange}
@@ -273,7 +271,7 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
 
       <ConfirmDialog
         open={showDeleteConfirm}
-        onOpenChange={setShowDeleteConfirm}
+        onOpenChange={(open) => handleConfirmDialogChange(open, setShowDeleteConfirm)}
         title="تأكيد حذف المنتج"
         description={
           <>
@@ -298,7 +296,7 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
 
       <ConfirmDialog
         open={showArchiveConfirm}
-        onOpenChange={setShowArchiveConfirm}
+        onOpenChange={(open) => handleConfirmDialogChange(open, setShowArchiveConfirm)}
         title={formData.is_archived ? "تأكيد إلغاء المسودة" : "تأكيد حفظ كمسودة"}
         description={
           formData.is_archived 

@@ -38,6 +38,14 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   cancelButtonProps,
   className,
 }) => {
+  const handleConfirm = () => {
+    onConfirm();
+  };
+
+  const handleCancel = () => {
+    onOpenChange(false);
+  };
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className={cn("max-w-[450px]", className)}>
@@ -52,13 +60,14 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             <Button
               variant="outline"
               className="border border-gray-200 bg-white hover:bg-gray-50 text-gray-800"
+              onClick={handleCancel}
               {...cancelButtonProps}
             >
               {cancelText}
             </Button>
           </AlertDialogCancel>
           <AlertDialogAction asChild>
-            <Button onClick={onConfirm} {...confirmButtonProps}>
+            <Button onClick={handleConfirm} {...confirmButtonProps}>
               {confirmText}
             </Button>
           </AlertDialogAction>

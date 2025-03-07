@@ -61,6 +61,16 @@ const ProductsList: React.FC<ProductsListProps> = ({
     setIsDrawerOpen(true);
   };
 
+  const handleDrawerClose = (open: boolean) => {
+    setIsDrawerOpen(open);
+    if (!open) {
+      // إعادة تعيين المنتج المحدد عند إغلاق النافذة
+      setTimeout(() => {
+        setSelectedProduct(null);
+      }, 300); // تأخير بسيط لضمان إغلاق الانيميشن أولاً
+    }
+  };
+
   const handleDeleteClick = (id: string) => {
     setProductToDelete(id);
     setShowDeleteConfirm(true);
@@ -73,6 +83,11 @@ const ProductsList: React.FC<ProductsListProps> = ({
       setShowDeleteConfirm(false);
       setProductToDelete(null);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteConfirm(false);
+    setProductToDelete(null);
   };
 
   const filteredProducts = useMemo(() => {
@@ -158,19 +173,24 @@ const ProductsList: React.FC<ProductsListProps> = ({
       <ProductActionDrawer
         product={selectedProduct}
         isOpen={isDrawerOpen}
-        onOpenChange={setIsDrawerOpen}
+        onOpenChange={handleDrawerClose}
         onEdit={(id) => {
           onEdit(id);
           setIsDrawerOpen(false);
         }}
-        onActivate={onActivate}
+        onActivate={onActivate ? 
+          (id, isActive) => {
+            onActivate(id, isActive);
+            setIsDrawerOpen(false);
+          } : undefined
+        }
         onDelete={handleDeleteClick}
       />
 
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         open={showDeleteConfirm}
-        onOpenChange={setShowDeleteConfirm}
+        onOpenChange={handleDeleteCancel}
         title="تأكيد حذف المنتج"
         description="هل أنت متأكد من رغبتك في حذف هذا المنتج؟ لا يمكن التراجع عن هذه العملية."
         confirmText="حذف المنتج"
