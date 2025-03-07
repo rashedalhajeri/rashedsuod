@@ -188,6 +188,17 @@ export const getProductById = async (productId: string) => {
       return { data: null, error };
     }
     
+    // Process additional_images to ensure proper typing
+    if (data && data.additional_images) {
+      if (typeof data.additional_images === 'string') {
+        try {
+          data.additional_images = JSON.parse(data.additional_images);
+        } catch (e) {
+          data.additional_images = [];
+        }
+      }
+    }
+    
     return { data, error: null };
   } catch (error) {
     console.error("Error in getProductById function:", error);

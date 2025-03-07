@@ -15,6 +15,14 @@ export interface Product {
   stock_quantity?: number | null;
   created_at?: string;
   updated_at?: string;
+  discount_price?: number | null;
+  track_inventory?: boolean;
+  has_colors?: boolean;
+  has_sizes?: boolean;
+  require_customer_name?: boolean;
+  require_customer_image?: boolean;
+  available_colors?: string[] | null;
+  available_sizes?: string[] | null;
 }
 
 /**
@@ -152,7 +160,15 @@ export const fetchProductsWithFilters = async (
       return [];
     }
     
-    return data || [];
+    // Process the data to ensure additional_images is properly typed
+    const processedData = data.map(product => ({
+      ...product,
+      additional_images: Array.isArray(product.additional_images) 
+        ? product.additional_images 
+        : (product.additional_images ? JSON.parse(product.additional_images as unknown as string) : [])
+    })) as Product[];
+    
+    return processedData;
   } catch (err) {
     console.error("Error in fetchProductsWithFilters:", err);
     return [];
