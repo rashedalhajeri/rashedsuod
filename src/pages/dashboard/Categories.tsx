@@ -178,6 +178,7 @@ const CategoriesAndSections: React.FC = () => {
               newDisplayStyle={newDisplayStyle}
               setNewDisplayStyle={setNewDisplayStyle}
               handleAddSection={handleAddSection}
+              categories={categories}
             />
           </TabsContent>
         </Tabs>

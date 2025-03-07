@@ -1,13 +1,15 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { fetchUserStoreId } from "@/services/category-service";
 import { 
-  fetchSections, 
-  addSection, 
-  updateSection, 
-  deleteSection, 
-  Section 
+  fetchUserStoreId, 
+} from "@/services/category-service";
+import {
+  fetchSections,
+  addSection,
+  updateSection,
+  deleteSection,
+  Section
 } from "@/services/section-service";
 
 export const useSections = () => {
@@ -39,7 +41,7 @@ export const useSections = () => {
         const { data, error } = await fetchSections(userStoreId);
         if (error) throw error;
         
-        setSections(data as Section[]);
+        setSections(data);
       } catch (err: any) {
         console.error("Error fetching store and sections:", err);
         toast.error("حدث خطأ أثناء تحميل الأقسام");
@@ -63,8 +65,8 @@ export const useSections = () => {
         newSection, 
         newSectionType, 
         storeId, 
-        nextOrder, 
-        true,
+        nextOrder,
+        true,  // isActive default
         newCategoryId,
         newProductIds,
         newDisplayStyle
@@ -72,12 +74,8 @@ export const useSections = () => {
       
       if (error) throw error;
       if (data) {
-        setSections([...sections, data as Section]);
+        setSections([...sections, data]);
         setNewSection("");
-        setNewSectionType("best_selling");
-        setNewCategoryId(null);
-        setNewProductIds(null);
-        setNewDisplayStyle('grid');
         toast.success("تم إضافة القسم بنجاح");
       }
     } catch (err: any) {
