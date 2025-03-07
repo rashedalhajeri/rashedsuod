@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Package, SlidersHorizontal } from "lucide-react";
+import { Package, SlidersHorizontal, Search, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Product } from "@/utils/products/types";
 import ProductListItem from "./ProductListItem";
@@ -16,6 +16,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
+import { motion } from "framer-motion";
 
 interface ProductsListProps {
   products: Product[];
@@ -36,7 +37,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm);
   const isMobile = useIsMobile();
-  const itemsPerPage = isMobile ? 5 : 10;
+  const itemsPerPage = isMobile ? 6 : 10;
 
   const handleSelect = (productId: string, isSelected: boolean) => {
     const updatedSelection = isSelected 
@@ -90,24 +91,53 @@ const ProductsList: React.FC<ProductsListProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between p-4 bg-gray-50 border-b items-start sm:items-center gap-4">
-        <form onSubmit={handleSearchSubmit} className="flex w-full sm:w-auto">
-          <Input
-            value={localSearchTerm}
-            onChange={handleSearch}
-            placeholder="بحث عن منتج..."
-            className="w-full rounded-r-none rounded-l-md sm:w-64"
-          />
-          <Button type="submit" variant="default" className="rounded-l-none rounded-r-md">
+      <div className="p-4 bg-gray-50 border-b">
+        <form onSubmit={handleSearchSubmit} className="flex w-full gap-2 mb-4">
+          <div className="relative flex-grow">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              value={localSearchTerm}
+              onChange={handleSearch}
+              placeholder="بحث عن منتج..."
+              className="pr-3 pl-10 w-full bg-white"
+            />
+          </div>
+          <Button type="submit" variant="default" className="shrink-0">
             بحث
           </Button>
         </form>
         
-        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+        <div className="flex flex-wrap items-center gap-2 justify-between">
+          <div className="flex items-center">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSelectAll(selectedItems.length < products.length)}
+              className="flex items-center gap-1 text-xs"
+            >
+              {selectedItems.length === products.length ? (
+                <>
+                  <Check className="h-3.5 w-3.5" />
+                  إلغاء تحديد الكل
+                </>
+              ) : (
+                <>
+                  تحديد الكل
+                </>
+              )}
+            </Button>
+            
+            {selectedItems.length > 0 && (
+              <span className="mr-2 text-sm text-primary font-medium">
+                {selectedItems.length} منتج محدد
+              </span>
+            )}
+          </div>
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                <SlidersHorizontal className="h-4 w-4 ml-2" />
+              <Button variant="outline" size="sm" className="flex items-center gap-1 text-xs">
+                <SlidersHorizontal className="h-3.5 w-3.5 ml-1" />
                 فلترة
               </Button>
             </DropdownMenuTrigger>
@@ -130,27 +160,24 @@ const ProductsList: React.FC<ProductsListProps> = ({
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleSelectAll(selectedItems.length < products.length)}
-            className="w-full sm:w-auto"
-          >
-            {selectedItems.length === products.length ? "إلغاء تحديد الكل" : "تحديد الكل"}
-          </Button>
         </div>
       </div>
 
       <div className="divide-y">
-        {currentProducts.map((product) => (
-          <ProductListItem 
-            key={product.id} 
-            product={product} 
-            onSelect={handleSelect}
-            isSelected={selectedItems.includes(product.id)}
-            onEdit={onEdit}
-          />
+        {currentProducts.map((product, index) => (
+          <motion.div 
+            key={product.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.05 }}
+          >
+            <ProductListItem 
+              product={product} 
+              onSelect={handleSelect}
+              isSelected={selectedItems.includes(product.id)}
+              onEdit={onEdit}
+            />
+          </motion.div>
         ))}
       </div>
       

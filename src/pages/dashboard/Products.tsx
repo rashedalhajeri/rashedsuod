@@ -4,7 +4,7 @@ import { useStoreData } from "@/hooks/use-store-data";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Plus, RefreshCw } from "lucide-react";
+import { Plus, RefreshCw, Search, Filter } from "lucide-react";
 import ProductDetailDialog from "@/components/product/ProductDetailDialog";
 import ProductFormDialog from "@/components/product/ProductFormDialog";
 import ProductsList from "@/components/product/ProductsList";
@@ -17,6 +17,7 @@ import { mapRawProductToProduct } from "@/utils/products/mappers";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-media-query";
+import { motion } from "framer-motion";
 
 const Products = () => {
   const { data: storeData, isLoading: loadingStore } = useStoreData();
@@ -110,7 +111,12 @@ const Products = () => {
   return (
     <DashboardLayout>
       <div className="container mx-auto py-4 sm:py-6 px-3 sm:px-4" dir="rtl">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 sm:mb-6 space-y-4 md:space-y-0">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 sm:mb-6 space-y-4 md:space-y-0"
+        >
           <div>
             <h1 className="text-xl sm:text-2xl font-bold">المنتجات</h1>
             <p className="text-muted-foreground text-sm sm:text-base">
@@ -124,9 +130,9 @@ const Products = () => {
                 size="sm"
                 onClick={handleProductUpdate}
                 disabled={isRefreshing}
-                className="whitespace-nowrap"
+                className="whitespace-nowrap flex items-center gap-1"
               >
-                <RefreshCw className={`h-4 w-4 ml-2 ${isRefreshing ? 'animate-spin' : ''}`} /> 
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} /> 
                 تحديث
               </Button>
             )}
@@ -137,35 +143,46 @@ const Products = () => {
               <Plus className="h-4 w-4 ml-2" /> إضافة منتج
             </Button>
           </div>
-        </div>
+        </motion.div>
 
-        <Card className="overflow-hidden shadow-sm border">
-          {selectedItems.length > 0 && (
-            <div className="p-3 sm:p-4 border-b bg-blue-50">
-              <ProductBulkActions 
-                selectedCount={selectedItems.length}
-                selectedIds={selectedItems}
-                onActionComplete={handleProductUpdate}
-              />
-            </div>
-          )}
-          
-          <ProductsList 
-            products={filteredProducts} 
-            onEdit={handleEditProduct}
-            onSelectionChange={handleSelectionChange}
-            searchTerm={searchTerm}
-            onSearch={handleSearch}
-          />
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+        >
+          <Card className="overflow-hidden shadow-sm border rounded-xl">
+            {selectedItems.length > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="p-3 sm:p-4 border-b bg-blue-50/80"
+              >
+                <ProductBulkActions 
+                  selectedCount={selectedItems.length}
+                  selectedIds={selectedItems}
+                  onActionComplete={handleProductUpdate}
+                />
+              </motion.div>
+            )}
+            
+            <ProductsList 
+              products={filteredProducts} 
+              onEdit={handleEditProduct}
+              onSelectionChange={handleSelectionChange}
+              searchTerm={searchTerm}
+              onSearch={handleSearch}
+            />
+          </Card>
+        </motion.div>
 
         {isMobile && (
-          <div className="fixed bottom-6 right-6">
+          <div className="fixed bottom-20 right-4">
             <Button 
               size="icon"
               onClick={handleProductUpdate}
               disabled={isRefreshing}
-              variant="secondary"
+              variant="default"
               className="rounded-full h-12 w-12 shadow-lg"
             >
               <RefreshCw className={`h-5 w-5 ${isRefreshing ? 'animate-spin' : ''}`} />
