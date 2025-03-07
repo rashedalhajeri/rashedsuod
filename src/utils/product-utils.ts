@@ -37,8 +37,8 @@ export const getStoreProducts = async (
   options: any = {}
 ): Promise<any[]> => {
   try {
-    // Break the reference chain to avoid TypeScript's deep instantiation error
-    let query = supabase.from('products').select('*');
+    // Create a base query - use any type to avoid TypeScript recursion
+    let query: any = supabase.from('products').select('*');
     
     // Apply store filter
     query = query.eq('store_id', storeId);
