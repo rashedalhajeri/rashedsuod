@@ -57,6 +57,25 @@ const Products = () => {
     }
   };
 
+  const handleBulkAction = async (productIds: string[], action: (id: string) => Promise<void>) => {
+    if (productIds.length === 0) return;
+    
+    try {
+      await Promise.all(productIds.map(id => action(id)));
+      handleProductUpdate();
+      toast({
+        title: "تم تنفيذ العملية بنجاح",
+        description: `تم تحديث ${productIds.length} منتج`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "خطأ في تنفيذ العملية",
+        description: (error as Error).message,
+      });
+    }
+  };
+
   if (loadingStore || isLoading) {
     return (
       <DashboardLayout>
