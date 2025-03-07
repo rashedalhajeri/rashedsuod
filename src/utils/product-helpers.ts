@@ -190,16 +190,26 @@ export const fetchProductsWithFilters = async (
     const processedData = data.map(product => {
       // Create a new object with the correct types
       return {
-        ...product,
-        // Handle potentially missing properties by providing default values
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        category_id: product.category_id,
+        store_id: product.store_id,
+        image_url: product.image_url,
+        stock_quantity: product.stock_quantity,
+        created_at: product.created_at,
+        updated_at: product.updated_at,
+        // Handle potentially missing properties
         additional_images: convertToStringArray(product.additional_images),
-        available_colors: convertToStringArray(product.available_colors || null),
-        available_sizes: convertToStringArray(product.available_sizes || null),
-        track_inventory: product.track_inventory || false,
-        has_colors: product.has_colors || false,
-        has_sizes: product.has_sizes || false,
-        require_customer_name: product.require_customer_name || false,
-        require_customer_image: product.require_customer_image || false
+        discount_price: product.discount_price,
+        track_inventory: Boolean(product.track_inventory),
+        has_colors: Boolean(product.has_colors),
+        has_sizes: Boolean(product.has_sizes),
+        require_customer_name: Boolean(product.require_customer_name),
+        require_customer_image: Boolean(product.require_customer_image),
+        available_colors: convertToStringArray(product.available_colors),
+        available_sizes: convertToStringArray(product.available_sizes)
       } as Product;
     });
     

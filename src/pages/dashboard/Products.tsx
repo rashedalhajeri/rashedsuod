@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -85,19 +84,27 @@ const Products: React.FC = () => {
         throw error;
       }
       
-      // Process the data to ensure proper typing of fields
       return data.map(product => {
         return {
-          ...product,
-          // Handle potentially missing properties with defaults
+          id: product.id,
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          category_id: product.category_id,
+          store_id: product.store_id,
+          image_url: product.image_url,
+          stock_quantity: product.stock_quantity,
+          created_at: product.created_at,
+          updated_at: product.updated_at,
           additional_images: convertToStringArray(product.additional_images),
-          available_colors: convertToStringArray(product.available_colors || null),
-          available_sizes: convertToStringArray(product.available_sizes || null),
-          track_inventory: product.track_inventory || false,
-          has_colors: product.has_colors || false,
-          has_sizes: product.has_sizes || false,
-          require_customer_name: product.require_customer_name || false,
-          require_customer_image: product.require_customer_image || false
+          discount_price: product.discount_price,
+          track_inventory: Boolean(product.track_inventory),
+          has_colors: Boolean(product.has_colors),
+          has_sizes: Boolean(product.has_sizes),
+          require_customer_name: Boolean(product.require_customer_name),
+          require_customer_image: Boolean(product.require_customer_image),
+          available_colors: convertToStringArray(product.available_colors),
+          available_sizes: convertToStringArray(product.available_sizes)
         } as Product;
       });
     },
@@ -541,7 +548,7 @@ const Products: React.FC = () => {
               />
               
               <p className="text-xs text-gray-500 text-center">
-                الصورة الأولى هي الصورة الرئيسية للمنتج. يمكنك إضافة حتى 5 صور.
+                الصورة الأولى هي الصورة الرئيسية للمنتج. يمكنك إضاف�� حتى 5 صور.
               </p>
             </div>
           </div>
