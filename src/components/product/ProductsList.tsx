@@ -1,355 +1,273 @@
 
-import React, { useState, useEffect } from "react";
-import { Package, SlidersHorizontal, Search, Check, Archive, ArrowUpDown, ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React, { useState, useMemo } from "react";
 import { Product } from "@/utils/products/types";
-import ProductListItem from "./ProductListItem";
-import { Pagination } from "@/components/ui/pagination";
 import { Input } from "@/components/ui/input";
-import { useIsMobile } from "@/hooks/use-media-query";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuGroup, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem
-} from "@/components/ui/dropdown-menu";
-import { motion } from "framer-motion";
+import { Search, Filter } from "lucide-react";
+import ProductListItem from "@/components/product/ProductListItem";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 interface ProductsListProps {
   products: Product[];
   onEdit: (id: string) => void;
-  onSelectionChange: (selectedIds: string[]) => void;
-  searchTerm?: string;
-  onSearch?: (term: string) => void;
+  onSelectionChange: (items: string[]) => void;
+  searchTerm: string;
+  onSearch: (term: string) => void;
   onArchive?: (id: string, isArchived: boolean) => void;
   onActivate?: (id: string, isActive: boolean) => void;
   onRefresh?: () => void;
 }
 
-type FilterStatus = "all" | "active" | "archived" | "discount" | "low-stock";
-type SortOption = "newest" | "oldest" | "price-high" | "price-low" | "name-asc" | "name-desc";
-
 const ProductsList: React.FC<ProductsListProps> = ({
   products,
   onEdit,
   onSelectionChange,
-  searchTerm = "",
+  searchTerm,
   onSearch,
   onArchive,
   onActivate,
   onRefresh
 }) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm);
-  const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
-  const [sortOption, setSortOption] = useState<SortOption>("newest");
-  const isMobile = useIsMobile();
-  const itemsPerPage = isMobile ? 6 : 10;
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filterStatus, sortOption, searchTerm]);
-
-  useEffect(() => {
-    setLocalSearchTerm(searchTerm);
-  }, [searchTerm]);
-
-  const handleSelect = (productId: string, isSelected: boolean) => {
-    const updatedSelection = isSelected 
-      ? [...selectedItems, productId]
-      : selectedItems.filter(id => id !== productId);
-    
-    setSelectedItems(updatedSelection);
-    onSelectionChange(updatedSelection);
-  };
+  const [filterActive, setFilterActive] = useState<string>("all"); // "all", "active", "inactive", "archived"
   
-  const handleSelectAll = (isSelected: boolean) => {
-    if (isSelected) {
-      const allIds = filteredProducts.map(product => product.id);
-      setSelectedItems(allIds);
-      onSelectionChange(allIds);
-    } else {
+  const handleToggleSelection = (id: string, isSelected: boolean) => {
+    const newSelectedItems = isSelected
+      ? [...selectedItems, id]
+      : selectedItems.filter(itemId => itemId !== id);
+    
+    setSelectedItems(newSelectedItems);
+    onSelectionChange(newSelectedItems);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedItems.length === filteredProducts.length) {
+      // Deselect all if all are selected
       setSelectedItems([]);
       onSelectionChange([]);
+    } else {
+      // Select all filtered products
+      const allIds = filteredProducts.map((product) => product.id);
+      setSelectedItems(allIds);
+      onSelectionChange(allIds);
     }
   };
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLocalSearchTerm(e.target.value);
-    if (onSearch) {
-      onSearch(e.target.value);
-    }
-  };
-  
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (onSearch) {
-      onSearch(localSearchTerm);
-    }
-  };
-  
-  const handleRefresh = () => {
-    if (onRefresh) {
-      onRefresh();
-    }
-  };
-
-  const handleArchive = (id: string, isArchived: boolean) => {
-    if (onArchive) {
-      onArchive(id, isArchived);
-    }
-  };
-
-  const handleActivate = (id: string, isActive: boolean) => {
-    if (onActivate) {
-      onActivate(id, isActive);
-    }
-  };
-
-  const getFilteredProducts = () => {
-    return products.filter(product => {
-      const matchesSearch = product.name.toLowerCase().includes(localSearchTerm.toLowerCase());
-      if (!matchesSearch) return false;
-
-      switch (filterStatus) {
-        case "active":
-          return !product.is_archived && product.is_active;
-        case "archived":
-          return product.is_archived;
-        case "discount":
-          return product.discount_price !== null && !product.is_archived;
-        case "low-stock":
-          return product.track_inventory && product.stock_quantity !== null && 
-                 product.stock_quantity <= 5 && !product.is_archived;
-        default:
-          return true;
+  const filteredProducts = useMemo(() => {
+    return products.filter((product) => {
+      // Apply product status filter
+      if (filterActive === "active" && (!product.is_active || product.is_archived)) {
+        return false;
       }
-    });
-  };
-
-  const sortProducts = (products: Product[]) => {
-    return [...products].sort((a, b) => {
-      switch (sortOption) {
-        case "newest":
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        case "oldest":
-          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-        case "price-high":
-          return b.price - a.price;
-        case "price-low":
-          return a.price - b.price;
-        case "name-asc":
-          return a.name.localeCompare(b.name);
-        case "name-desc":
-          return b.name.localeCompare(a.name);
-        default:
-          return 0;
+      
+      if (filterActive === "inactive" && (product.is_active || product.is_archived)) {
+        return false;
       }
+      
+      if (filterActive === "archived" && !product.is_archived) {
+        return false;
+      }
+      
+      // Apply search filter
+      if (searchTerm.trim()) {
+        const searchLower = searchTerm.toLowerCase();
+        return (
+          product.name.toLowerCase().includes(searchLower) ||
+          (product.description && product.description.toLowerCase().includes(searchLower))
+        );
+      }
+      
+      return true;
     });
-  };
+  }, [products, searchTerm, filterActive]);
 
-  const filteredProducts = sortProducts(getFilteredProducts());
+  const getFilterCounts = () => {
+    const all = products.length;
+    const active = products.filter(p => p.is_active && !p.is_archived).length;
+    const inactive = products.filter(p => !p.is_active && !p.is_archived).length;
+    const archived = products.filter(p => p.is_archived).length;
+    
+    return { all, active, inactive, archived };
+  };
   
-  const pageCount = Math.ceil(filteredProducts.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = Math.min(startIndex + itemsPerPage, filteredProducts.length);
-  const currentProducts = filteredProducts.slice(startIndex, endIndex);
-
-  const getFilterStatusLabel = () => {
-    switch (filterStatus) {
-      case "active": return "المنتجات النشطة";
-      case "archived": return "المنتجات المؤرشفة";
-      case "discount": return "العروض والخصومات";
-      case "low-stock": return "منتجات قليلة المخزون";
-      default: return "جميع المنتجات";
-    }
-  };
-
-  const getSortOptionLabel = () => {
-    switch (sortOption) {
-      case "newest": return "الأحدث";
-      case "oldest": return "الأقدم"; 
-      case "price-high": return "السعر: من الأعلى";
-      case "price-low": return "السعر: من الأقل";
-      case "name-asc": return "الاسم: أ-ي";
-      case "name-desc": return "الاسم: ي-أ";
-      default: return "الأحدث";
-    }
-  };
-
-  const archivedCount = products.filter(p => p.is_archived).length;
-  const activeCount = products.filter(p => !p.is_archived).length;
-
-  if (!products || products.length === 0) {
-    return (
-      <div className="text-center py-8 sm:py-12">
-        <Package className="h-10 sm:h-12 w-10 sm:w-12 mx-auto text-muted-foreground" />
-        <h3 className="mt-4 text-base sm:text-lg font-medium">لا توجد منتجات</h3>
-        <p className="mt-2 text-xs sm:text-sm text-muted-foreground">قم بإضافة منتجات جديدة</p>
-      </div>
-    );
-  }
+  const filterCounts = getFilterCounts();
 
   return (
-    <div className="space-y-3 sm:space-y-4">
-      <div className="p-3 sm:p-4 bg-gray-50 border-b">
-        <form onSubmit={handleSearchSubmit} className="flex w-full gap-2 mb-3 sm:mb-4">
-          <div className="relative flex-grow">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              value={localSearchTerm}
-              onChange={handleSearch}
-              placeholder="بحث عن منتج..."
-              className="pr-3 pl-10 w-full bg-white py-1 sm:py-2 h-8 sm:h-10 text-sm"
-            />
-          </div>
-          <Button type="submit" variant="default" className="shrink-0 h-8 sm:h-10 text-xs sm:text-sm">
-            بحث
-          </Button>
-        </form>
-        
-        <div className="flex flex-wrap items-center gap-2 justify-between">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSelectAll(selectedItems.length < filteredProducts.length)}
-              className="flex items-center gap-1 text-xs h-8"
-            >
-              {selectedItems.length === filteredProducts.length ? (
-                <>
-                  <Check className="h-3 w-3" />
-                  إلغاء تحديد الكل
-                </>
-              ) : (
-                <>
-                  تحديد الكل
-                </>
-              )}
-            </Button>
-            
-            {selectedItems.length > 0 && (
-              <span className="mr-2 text-xs sm:text-sm text-primary font-medium">
-                {selectedItems.length} منتج محدد
-              </span>
-            )}
+    <div className="flex flex-col gap-4">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="p-3 sm:p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-3 items-center">
+          <div className="flex-1 w-full sm:w-auto">
+            <div className="relative">
+              <div className="absolute left-2.5 top-2.5 text-gray-400">
+                <Search className="h-4 w-4" />
+              </div>
+              <Input
+                type="text"
+                placeholder="بحث في المنتجات..."
+                value={searchTerm}
+                onChange={(e) => onSearch(e.target.value)}
+                className="pr-2 pl-8 bg-gray-50 border-gray-200 focus:bg-white placeholder:text-gray-400"
+                dir="rtl"
+              />
+            </div>
           </div>
           
-          <div className="flex gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="flex items-center gap-1 text-xs h-8">
-                  <SlidersHorizontal className="h-3.5 w-3.5 ml-1" />
-                  {getFilterStatusLabel()}
-                  {filterStatus !== "all" && 
-                    <Badge variant="secondary" className="ml-1 h-5 sm:h-5 text-[10px] sm:text-xs">{filteredProducts.length}</Badge>
-                  }
+          <div className="flex items-center w-full sm:w-auto justify-between sm:justify-normal gap-2">
+            <div className="flex overflow-x-auto py-1 scrollbar-hide">
+              <div className="flex gap-1.5">
+                <Button
+                  variant={filterActive === "all" ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => setFilterActive("all")}
+                  className={cn(
+                    "rounded-full text-xs min-w-fit",
+                    filterActive === "all" ? "bg-primary text-white" : "bg-white text-gray-700"
+                  )}
+                >
+                  الكل
+                  <Badge variant="secondary" className="ml-1 text-[10px] bg-white/20 text-white">
+                    {filterCounts.all}
+                  </Badge>
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>حالة المنتج</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuRadioGroup value={filterStatus} onValueChange={(value) => setFilterStatus(value as FilterStatus)}>
-                  <DropdownMenuRadioItem value="all">
-                    جميع المنتجات <Badge variant="outline" className="mr-2">{products.length}</Badge>
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="active">
-                    المنتجات النشطة <Badge variant="outline" className="mr-2">{activeCount}</Badge>
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="archived">
-                    المنتجات المؤرشفة <Badge variant="outline" className="mr-2">{archivedCount}</Badge>
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="discount">
-                    العروض والخصومات <Badge variant="outline" className="mr-2">{products.filter(p => p.discount_price !== null).length}</Badge>
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="low-stock">
-                    منتجات قليلة المخزون <Badge variant="outline" className="mr-2">{products.filter(p => p.track_inventory && p.stock_quantity !== null && p.stock_quantity <= 5).length}</Badge>
-                  </DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                <Button
+                  variant={filterActive === "active" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFilterActive("active")}
+                  className={cn(
+                    "rounded-full text-xs min-w-fit",
+                    filterActive === "active" ? "bg-green-500 text-white border-green-500" : "bg-white text-gray-700"
+                  )}
+                >
+                  نشط
+                  <Badge variant="secondary" className="ml-1 text-[10px] bg-white/20 text-white">
+                    {filterCounts.active}
+                  </Badge>
+                </Button>
+                <Button
+                  variant={filterActive === "inactive" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFilterActive("inactive")}
+                  className={cn(
+                    "rounded-full text-xs min-w-fit",
+                    filterActive === "inactive" ? "bg-gray-500 text-white border-gray-500" : "bg-white text-gray-700"
+                  )}
+                >
+                  غير نشط
+                  <Badge variant="secondary" className="ml-1 text-[10px] bg-white/20 text-white">
+                    {filterCounts.inactive}
+                  </Badge>
+                </Button>
+                <Button
+                  variant={filterActive === "archived" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFilterActive("archived")}
+                  className={cn(
+                    "rounded-full text-xs min-w-fit",
+                    filterActive === "archived" ? "bg-blue-500 text-white border-blue-500" : "bg-white text-gray-700"
+                  )}
+                >
+                  مؤرشف
+                  <Badge variant="secondary" className="ml-1 text-[10px] bg-white/20 text-white">
+                    {filterCounts.archived}
+                  </Badge>
+                </Button>
+              </div>
+            </div>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="flex items-center gap-1 text-xs h-8">
-                  <ArrowUpDown className="h-3.5 w-3.5 ml-1" />
-                  {getSortOptionLabel()}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-shrink-0 w-9 p-0"
+                >
+                  <Filter className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-40">
-                <DropdownMenuLabel>ترتيب حسب</DropdownMenuLabel>
+                <DropdownMenuItem onClick={handleSelectAll}>
+                  {selectedItems.length === filteredProducts.length && filteredProducts.length > 0
+                    ? "إلغاء تحديد الكل"
+                    : "تحديد الكل"}
+                </DropdownMenuItem>
+                
                 <DropdownMenuSeparator />
-                <DropdownMenuRadioGroup value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
-                  <DropdownMenuRadioItem value="newest">الأحدث</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="oldest">الأقدم</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="price-high">السعر: من الأعلى</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="price-low">السعر: من الأقل</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="name-asc">الاسم: أ-ي</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="name-desc">الاسم: ي-أ</DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
+                
+                <DropdownMenuItem onClick={() => setFilterActive("all")}>
+                  عرض الكل
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFilterActive("active")}>
+                  عرض النشطة فقط
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFilterActive("inactive")}>
+                  عرض غير النشطة فقط
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFilterActive("archived")}>
+                  عرض المؤرشفة فقط
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </div>
-      </div>
-
-      <div className="divide-y">
-        {currentProducts.length === 0 ? (
-          <div className="text-center py-8 sm:py-12">
-            <Package className="h-10 sm:h-12 w-10 sm:w-12 mx-auto text-muted-foreground" />
-            <h3 className="mt-4 text-base sm:text-lg font-medium">لا توجد منتجات تطابق البحث</h3>
-            <p className="mt-2 text-xs sm:text-sm text-muted-foreground">جرب تغيير المعايير أو إعادة ضبط الفلتر</p>
-            <Button 
-              variant="outline" 
-              className="mt-4" 
-              onClick={() => {
-                setFilterStatus("all");
-                setSortOption("newest");
-                setLocalSearchTerm("");
-                if (onSearch) onSearch("");
-              }}
-            >
-              إعادة ضبط الفلتر
-            </Button>
-          </div>
-        ) : (
-          currentProducts.map((product, index) => (
-            <motion.div 
-              key={product.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-            >
-              <ProductListItem 
-                product={product} 
-                onSelect={handleSelect}
-                isSelected={selectedItems.includes(product.id)}
-                onEdit={onEdit}
-                onArchive={handleArchive}
-                onActivate={handleActivate}
-                onRefresh={onRefresh}
-              />
-            </motion.div>
-          ))
-        )}
-      </div>
-      
-      {pageCount > 1 && (
-        <div className="flex justify-center p-3 sm:p-4">
-          <Pagination
-            pageCount={pageCount}
-            currentPage={currentPage} 
-            onPageChange={(page) => setCurrentPage(page)}
-          />
+        
+        <div className="max-h-[600px] overflow-auto">
+          <ScrollArea className="h-full">
+            <div className="space-y-2 p-3 sm:p-4">
+              {filteredProducts.length > 0 ? (
+                <AnimatePresence initial={false}>
+                  {filteredProducts.map((product) => (
+                    <motion.div
+                      key={product.id}
+                      layout
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="group"
+                    >
+                      <ProductListItem
+                        product={product}
+                        onSelect={handleToggleSelection}
+                        isSelected={selectedItems.includes(product.id)}
+                        onEdit={onEdit}
+                        onArchive={onArchive}
+                        onActivate={onActivate}
+                        onRefresh={onRefresh}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              ) : (
+                <Card className="p-8 flex flex-col items-center">
+                  <div className="text-center space-y-2">
+                    <p className="text-gray-500 text-sm">لا يوجد منتجات تطابق البحث</p>
+                    {searchTerm && (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => onSearch("")}
+                      >
+                        مسح البحث
+                      </Button>
+                    )}
+                  </div>
+                </Card>
+              )}
+            </div>
+          </ScrollArea>
         </div>
-      )}
+      </div>
     </div>
   );
 };

@@ -1,8 +1,6 @@
-
 import React, { useState } from "react";
 import { Trash2, Archive, ChevronDown, RefreshCw, ArrowUpCircle, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -48,44 +46,9 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
     
     setIsDeleting(true);
     try {
-      // First check if any selected products are referenced in order_items
-      const { data: orderItems, error: checkError } = await supabase
-        .from("order_items")
-        .select("product_id")
-        .in("product_id", selectedIds);
-        
-      if (checkError) {
-        console.error("Error checking order items:", checkError);
-        toast.error("خطأ في التحقق من الطلبات", {
-          description: checkError.message,
-        });
-        return;
-      }
+      const { success, error, deletedCount } = await databaseClient.products.bulkDeleteProducts(selectedIds);
       
-      // Filter out products that are referenced in orders
-      const productsInOrders = orderItems ? orderItems.map(item => item.product_id) : [];
-      const productsToDelete = selectedIds.filter(id => !productsInOrders.includes(id));
-      
-      // If there are products we can't delete, notify the user
-      if (productsToDelete.length < selectedIds.length) {
-        toast.warning("تنبيه", {
-          description: `${selectedIds.length - productsToDelete.length} منتجات مرتبطة بطلبات ولا يمكن حذفها.`,
-        });
-        
-        if (productsToDelete.length === 0) {
-          setIsDeleting(false);
-          setShowDeleteDialog(false);
-          return;
-        }
-      }
-      
-      // Delete products that aren't referenced in orders
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .in('id', productsToDelete);
-        
-      if (error) {
+      if (!success) {
         console.error("Error deleting products:", error);
         toast.error("خطأ في حذف المنتجات", {
           description: error.message,
@@ -93,9 +56,19 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
         return;
       }
       
-      toast.success("تم الحذف بنجاح", {
-        description: `تم حذف ${productsToDelete.length} منتج بنجاح`,
-      });
+      if (deletedCount === 0) {
+        toast.info("تنبيه", {
+          description: "جميع المنتجات المحددة مرتبطة بطلبات سابقة وتم أرشفتها بدلاً من حذفها.",
+        });
+      } else if (deletedCount < selectedIds.length) {
+        toast.success("تم الحذف بنجاح", {
+          description: `تم حذف ${deletedCount} منتج وأرشفة ${selectedIds.length - deletedCount} منتجات مرتبطة بطلبات سابقة.`,
+        });
+      } else {
+        toast.success("تم الحذف بنجاح", {
+          description: `تم حذف ${deletedCount} منتج بنجاح`,
+        });
+      }
       
       onActionComplete();
     } catch (error: any) {
@@ -266,7 +239,7 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
                   <AlertTriangle className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="font-medium mb-1">ملاحظة هامة</p>
-                    <p>المنتجات المرتبطة بطلبات سابقة لا يمكن حذفها نهائياً.</p>
+                    <p>المنتجات المرتبطة بطلبات سابقة سيتم أرشفتها بدلاً من حذفها للحفاظ على سجلات الطلبات.</p>
                   </div>
                 </div>
               </div>

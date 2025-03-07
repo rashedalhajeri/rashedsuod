@@ -4,7 +4,6 @@ import { mapRawProductToProduct } from "@/utils/products/mappers";
 import { buildProductQuery } from "@/utils/products/query-builders";
 import { Database } from "@/integrations/supabase/types";
 
-// Interface defining the shape of our database client
 export interface DatabaseClient {
   products: {
     fetchProductsWithFilters: (
@@ -21,13 +20,12 @@ export interface DatabaseClient {
     hardDeleteProduct: (productId: string) => Promise<{ success: boolean, error: any }>;
     archiveProduct: (productId: string, isArchived: boolean) => Promise<{ data: Product | null, error: any }>;
     bulkArchiveProducts: (productIds: string[], isArchived: boolean) => Promise<{ success: boolean, error: any }>;
-    bulkDeleteProducts: (productIds: string[]) => Promise<{ success: boolean, error: any, deletedCount: number }>;
+    bulkDeleteProducts: (productIds: string[]) => Promise<{ success: boolean, error: any, deletedCount: number, archivedCount: number }>;
     activateProduct: (productId: string, isActive: boolean) => Promise<{ data: Product | null, error: any }>;
     bulkActivateProducts: (productIds: string[], isActive: boolean) => Promise<{ success: boolean, error: any }>;
   };
 }
 
-// Supabase implementation of our database client
 class SupabaseDatabaseClient implements DatabaseClient {
   products = {
     fetchProductsWithFilters: async (
@@ -216,10 +214,12 @@ class SupabaseDatabaseClient implements DatabaseClient {
           .in('product_id', productIds);
           
         if (checkError) {
+          console.error("Error checking order items:", checkError);
           return { success: false, error: checkError, deletedCount: 0 };
         }
         
-        const productsInOrders = orderItems ? orderItems.map(item => item.product_id) : [];
+        const productsInOrders = orderItems ? Array.from(new Set(orderItems.map(item => item.product_id))) : [];
+        
         const productsToDelete = productIds.filter(id => !productsInOrders.includes(id));
         
         if (productsToDelete.length === 0) {
@@ -230,19 +230,45 @@ class SupabaseDatabaseClient implements DatabaseClient {
           };
         }
         
-        const { error } = await supabase
-          .from('products')
-          .delete()
-          .in('id', productsToDelete);
-          
+        let deleteError = null;
+        let archiveError = null;
+        
+        if (productsToDelete.length > 0) {
+          const { error } = await supabase
+            .from('products')
+            .delete()
+            .in('id', productsToDelete);
+            
+          if (error) {
+            deleteError = error;
+            console.error("Error deleting products:", error);
+          }
+        }
+        
+        if (productsInOrders.length > 0) {
+          const { error } = await supabase
+            .from('products')
+            .update({ is_archived: true })
+            .in('id', productsInOrders);
+            
+          if (error) {
+            archiveError = error;
+            console.error("Error archiving products:", error);
+          }
+        }
+        
+        const success = !deleteError && !archiveError;
+        const error = deleteError || archiveError || null;
+        
         return { 
-          success: !error, 
+          success, 
           error, 
-          deletedCount: productsToDelete.length 
+          deletedCount: productsToDelete.length,
+          archivedCount: productsInOrders.length
         };
       } catch (error) {
-        console.error("Error bulk deleting products:", error);
-        return { success: false, error, deletedCount: 0 };
+        console.error("Error in bulkDeleteProducts:", error);
+        return { success: false, error, deletedCount: 0, archivedCount: 0 };
       }
     },
 
@@ -320,10 +346,8 @@ class SupabaseDatabaseClient implements DatabaseClient {
   };
 }
 
-// Export a singleton instance of the database client
 export const databaseClient: DatabaseClient = new SupabaseDatabaseClient();
 
-// Function to allow mock implementation during testing
 export const setDatabaseClient = (mockClient: DatabaseClient) => {
   return mockClient;
 };

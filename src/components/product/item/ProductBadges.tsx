@@ -1,57 +1,36 @@
 
 import React from "react";
 import { Badge } from "@/components/ui/badge";
+import { TrendingUp, Percent, Box } from "lucide-react";
 import { Product } from "@/utils/products/types";
-import { Sparkles, Percent, Tag, TrendingUp } from "lucide-react";
 
 interface ProductBadgesProps {
   product: Product;
-  size?: "sm" | "md";
 }
 
-export const ProductBadges: React.FC<ProductBadgesProps> = ({ product, size = "sm" }) => {
-  const {
-    discount_price,
-    is_featured,
-    sales_count,
-    has_colors,
-    has_sizes,
-  } = product;
-
-  const iconSize = size === "sm" ? "h-3 w-3" : "h-4 w-4";
-  const textSize = size === "sm" ? "text-[10px]" : "text-xs";
-  const height = size === "sm" ? "h-5" : "h-6";
-
-  const hasDiscount = discount_price !== null && discount_price > 0;
-  const isBestSeller = sales_count >= 5; // افتراضيًا إذا كان أكثر من 5 مبيعات
+export const ProductBadges: React.FC<ProductBadgesProps> = ({ product }) => {
+  const { is_featured, discount_price, track_inventory } = product;
 
   return (
     <>
-      {hasDiscount && (
-        <Badge variant="secondary" className="bg-red-50 text-red-600 border-red-200 hover:bg-red-100 flex gap-1 items-center px-1.5" style={{ height }}>
-          <Percent className={iconSize} />
-          <span className={textSize}>خصم</span>
-        </Badge>
-      )}
-      
       {is_featured && (
-        <Badge variant="secondary" className="bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100 flex gap-1 items-center px-1.5" style={{ height }}>
-          <Sparkles className={iconSize} />
-          <span className={textSize}>مميز</span>
+        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 flex gap-1 h-5 px-1.5 items-center">
+          <TrendingUp className="h-3 w-3" />
+          <span className="text-[10px]">مميز</span>
         </Badge>
       )}
       
-      {isBestSeller && (
-        <Badge variant="secondary" className="bg-green-50 text-green-600 border-green-200 hover:bg-green-100 flex gap-1 items-center px-1.5" style={{ height }}>
-          <TrendingUp className={iconSize} />
-          <span className={textSize}>الأكثر مبيعًا</span>
+      {discount_price && (
+        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex gap-1 h-5 px-1.5 items-center">
+          <Percent className="h-3 w-3" />
+          <span className="text-[10px]">خصم</span>
         </Badge>
       )}
       
-      {(has_colors || has_sizes) && (
-        <Badge variant="secondary" className="bg-indigo-50 text-indigo-600 border-indigo-200 hover:bg-indigo-100 flex gap-1 items-center px-1.5" style={{ height }}>
-          <Tag className={iconSize} />
-          <span className={textSize}>{has_colors && has_sizes ? 'ألوان ومقاسات' : has_colors ? 'ألوان' : 'مقاسات'}</span>
+      {track_inventory && (
+        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 flex gap-1 h-5 px-1.5 items-center">
+          <Box className="h-3 w-3" />
+          <span className="text-[10px]">تتبع المخزون</span>
         </Badge>
       )}
     </>
