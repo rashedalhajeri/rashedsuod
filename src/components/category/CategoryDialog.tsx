@@ -21,7 +21,7 @@ interface CategoryDialogProps {
   setNewCategory: (name: string) => void;
   categoryImage: string | null;
   setCategoryImage: (image: string | null) => void;
-  handleAddCategory: () => void;
+  handleAddCategory: () => Promise<void>; // Ensure this is async
   storeId?: string;
   showCategoryImages: boolean;
 }
@@ -37,10 +37,29 @@ const CategoryDialog: React.FC<CategoryDialogProps> = ({
   storeId,
   showCategoryImages,
 }) => {
-  const handleSubmit = (e: React.MouseEvent) => {
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  // Reset submitting state when dialog opens/closes
+  React.useEffect(() => {
+    if (!isOpen) {
+      setIsSubmitting(false);
+    }
+  }, [isOpen]);
+
+  const handleSubmit = async (e: React.MouseEvent) => {
     e.preventDefault();
-    handleAddCategory();
-    // Don't call onClose here - it will be handled by the parent after the operation is complete
+    
+    if (isSubmitting || !newCategory.trim()) return;
+    
+    try {
+      setIsSubmitting(true);
+      await handleAddCategory();
+      onClose(); // Close the dialog after successful submission
+    } catch (error) {
+      console.error("Error adding category:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleImageChange = (images: string[]) => {
@@ -121,11 +140,17 @@ const CategoryDialog: React.FC<CategoryDialogProps> = ({
           </Button>
           <Button 
             onClick={handleSubmit}
-            disabled={!newCategory.trim()}
+            disabled={!newCategory.trim() || isSubmitting}
             className="gap-2 w-full sm:w-auto bg-primary hover:bg-primary/90"
           >
-            <Plus className="h-4 w-4" />
-            <span>إضافة الفئة</span>
+            {isSubmitting ? (
+              <span>جاري الإضافة...</span>
+            ) : (
+              <>
+                <Plus className="h-4 w-4" />
+                <span>إضافة الفئة</span>
+              </>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

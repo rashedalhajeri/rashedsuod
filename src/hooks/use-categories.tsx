@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { 
@@ -56,8 +55,10 @@ export const useCategories = () => {
     initializeCategories();
   }, []);
 
-  const handleAddCategory = async () => {
-    if (!newCategory.trim() || !storeId) return;
+  const handleAddCategory = async (): Promise<void> => {
+    if (!newCategory.trim() || !storeId) {
+      return Promise.reject("Invalid category or store ID");
+    }
     
     setIsUpdating(true);
     try {
@@ -78,10 +79,12 @@ export const useCategories = () => {
         setNewCategory("");
         setCategoryImage(null);
         toast.success("تم إضافة التصنيف بنجاح");
+        return Promise.resolve();
       }
     } catch (err: any) {
       console.error("Error adding category:", err);
       toast.error("حدث خطأ أثناء إضافة التصنيف");
+      return Promise.reject(err);
     } finally {
       setIsUpdating(false);
     }
