@@ -41,7 +41,9 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
   useEffect(() => {
     // إذا تم تمرير المنتجات مباشرة، استخدمها
     if (initialProducts && initialProducts.length > 0) {
-      setProducts(initialProducts);
+      // تأكد من أن المنتجات المعروضة نشطة فقط
+      const activeProducts = initialProducts.filter(product => product.is_active !== false);
+      setProducts(activeProducts);
       setIsLoading(false);
       return;
     }
@@ -54,7 +56,10 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
         // جلب المنتجات بناءً على المعايير
         const data = await fetchProductsWithFilters(sectionType, undefined, categoryId, sectionId);
         console.log(`Fetched ${data.length} products`, data);
-        setProducts(data);
+        
+        // تأكد من أن المنتجات المعروضة نشطة فقط
+        const activeProducts = data.filter(product => product.is_active !== false);
+        setProducts(activeProducts);
         
       } catch (err) {
         console.error("Error in fetchProducts:", err);

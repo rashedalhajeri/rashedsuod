@@ -1,4 +1,3 @@
-
 import { useState, useEffect, ChangeEvent } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -168,22 +167,19 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
       
       const payload = {
         ...formData,
-        additional_images: JSON.stringify(formData.additional_images || []),
-        available_colors: JSON.stringify(formData.available_colors || []),
-        available_sizes: JSON.stringify(formData.available_sizes || []),
       };
 
       delete (payload as any).images;
+      delete (payload as any).category;
 
-      const { error } = await supabase
-        .from("products")
-        .update(payload)
-        .eq("id", productId);
+      console.log("Submitting product update with data:", payload);
+
+      const { data, error } = await databaseClient.products.updateProduct(productId as string, payload);
 
       if (error) {
         console.error("Error updating product:", error);
-        setError(error.message);
-        toast.error("خطأ", { description: "فشل في تحديث المنتج." });
+        setError(typeof error === 'object' ? JSON.stringify(error) : error.toString());
+        toast.error("خطأ", { description: "فشل في تحديث المنتج: " + (error.message || error) });
         return;
       }
 
@@ -199,7 +195,7 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     } catch (error: any) {
       console.error("Unexpected error updating product:", error);
       setError(error.message);
-      toast.error("خطأ", { description: "فشل في تحديث المنتج." });
+      toast.error("خطأ", { description: "فشل في تحديث المنتج: " + error.message });
     } finally {
       setIsSubmitting(false);
     }
@@ -210,7 +206,6 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     
     setIsSubmitting(true);
     try {
-      // Call the deleteProduct method which will completely remove the product
       const { success, error } = await databaseClient.products.deleteProduct(productId);
       
       if (!success) {

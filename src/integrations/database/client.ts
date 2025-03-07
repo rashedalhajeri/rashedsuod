@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Product, RawProductData } from "@/utils/products/types";
 import { mapRawProductToProduct } from "@/utils/products/mappers";
@@ -36,49 +35,17 @@ class SupabaseDatabaseClient implements DatabaseClient {
       includeArchived: boolean = false
     ): Promise<Product[]> => {
       try {
-        let query = supabase
-          .from('products')
-          .select('*, category:categories(name)')
-          .eq('is_active', true);
-
-        if (storeId) {
-          query = query.eq('store_id', storeId);
-        }
-
-        if (categoryId && categoryId !== 'all' && categoryId !== 'none') {
-          query = query.eq('category_id', categoryId);
-        }
-
-        if (sectionId && sectionId !== 'all' && sectionId !== 'none') {
-          query = query.eq('section_id', sectionId);
-        }
-
-        switch (sectionType) {
-          case 'best_selling':
-            query = query.order('sales_count', { ascending: false });
-            break;
-          case 'new_arrivals':
-            query = query.order('created_at', { ascending: false });
-            break;
-          case 'featured':
-            query = query.eq('is_featured', true);
-            break;
-          case 'on_sale':
-            query = query.not('discount_price', 'is', null);
-            break;
-          case 'category':
-            break;
-          case 'custom':
-            break;
-          default:
-            query = query.order('created_at', { ascending: false });
-            break;
-        }
-
-        if (limit && limit > 0) {
-          query = query.limit(limit);
-        }
+        // استخدام buildProductQuery لبناء استعلام موحد
+        let query = buildProductQuery(
+          supabase,
+          sectionType,
+          storeId,
+          categoryId,
+          sectionId,
+          limit
+        );
         
+        // تنفيذ الاستعلام
         const { data, error } = await query;
         
         if (error) {
@@ -98,6 +65,7 @@ class SupabaseDatabaseClient implements DatabaseClient {
           processedProducts.push(product);
         }
         
+        console.log(`Fetched ${processedProducts.length} active products`);
         return processedProducts;
       } catch (err) {
         console.error("Error in fetchProductsWithFilters:", err);
@@ -129,6 +97,24 @@ class SupabaseDatabaseClient implements DatabaseClient {
     updateProduct: async (productId: string, updates: any) => {
       try {
         const validUpdates = { ...updates };
+        
+        // تحويل القيم النصية من JSON إلى سلاسل نصية
+        if (validUpdates.additional_images && Array.isArray(validUpdates.additional_images)) {
+          validUpdates.additional_images = JSON.stringify(validUpdates.additional_images);
+        }
+        
+        if (validUpdates.available_colors && Array.isArray(validUpdates.available_colors)) {
+          validUpdates.available_colors = JSON.stringify(validUpdates.available_colors);
+        }
+        
+        if (validUpdates.available_sizes && Array.isArray(validUpdates.available_sizes)) {
+          validUpdates.available_sizes = JSON.stringify(validUpdates.available_sizes);
+        }
+        
+        // حذف حقول غير ضرورية للتحديث
+        delete validUpdates.category;
+        
+        console.log("Updating product with data:", validUpdates);
         
         const { data, error } = await supabase
           .from('products')

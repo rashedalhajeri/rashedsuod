@@ -18,7 +18,7 @@ export const buildProductQuery = (
     .from('products')
     .select('*, category:categories(name)')
     .eq('is_archived', false)
-    .eq('is_active', true);
+    .eq('is_active', true); // Make sure only active products are shown
 
   console.log(`Building query for sectionType: ${sectionType}`);
 
