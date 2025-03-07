@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -84,6 +85,10 @@ const Products: React.FC = () => {
         throw error;
       }
       
+      if (!data) {
+        return [];
+      }
+      
       const processedData: Product[] = data.map(product => ({
         id: product.id,
         name: product.name,
@@ -96,14 +101,14 @@ const Products: React.FC = () => {
         created_at: product.created_at,
         updated_at: product.updated_at,
         additional_images: convertToStringArray(product.additional_images),
-        discount_price: null,
-        track_inventory: false,
-        has_colors: false,
-        has_sizes: false,
-        require_customer_name: false,
-        require_customer_image: false,
-        available_colors: null,
-        available_sizes: null
+        discount_price: product.discount_price || null,
+        track_inventory: product.track_inventory || false,
+        has_colors: product.has_colors || false,
+        has_sizes: product.has_sizes || false,
+        require_customer_name: product.require_customer_name || false,
+        require_customer_image: product.require_customer_image || false,
+        available_colors: convertToStringArray(product.available_colors) || null,
+        available_sizes: convertToStringArray(product.available_sizes) || null
       }));
       
       return processedData;
