@@ -1,53 +1,37 @@
+import { RawProductData, Product } from "./types";
+import { ProductColor, ProductSize, CategoryData } from "@/types";
 
-import { Product, RawProductData } from "./types";
-
-/**
- * Maps raw product data from the database to a structured Product object
- */
-export const mapRawProductToProduct = (rawData: RawProductData): Product => {
-  // Parse string arrays if they come as JSON strings
-  const parseJsonArray = (value: any): string[] => {
-    if (!value) return [];
-    if (Array.isArray(value)) return value;
-    
-    try {
-      if (typeof value === 'string') {
-        const parsed = JSON.parse(value);
-        return Array.isArray(parsed) ? parsed : [];
-      }
-      return [];
-    } catch (e) {
-      return [];
-    }
-  };
-
-  const additional_images = parseJsonArray(rawData.additional_images);
-  const image_url = rawData.image_url || '';
-  const images = image_url ? [image_url, ...additional_images] : additional_images;
+export const mapRawProductToProduct = (raw: RawProductData): Product => {
+  // Convert image_url and additional_images to images array
+  const images: string[] = [];
+  if (raw.image_url) {
+    images.push(raw.image_url);
+  }
+  
+  if (raw.additional_images && Array.isArray(raw.additional_images)) {
+    images.push(...raw.additional_images);
+  }
 
   return {
-    id: rawData.id,
-    name: rawData.name || '',
-    description: rawData.description || '',
-    price: rawData.price || 0,
-    discount_price: rawData.discount_price || null,
-    stock_quantity: rawData.stock_quantity || null,
-    image_url: rawData.image_url || null,
-    additional_images: additional_images,
-    track_inventory: rawData.track_inventory || false,
-    category_id: rawData.category_id || null,
-    has_colors: rawData.has_colors || false,
-    has_sizes: rawData.has_sizes || false,
-    require_customer_name: rawData.require_customer_name || false,
-    require_customer_image: rawData.require_customer_image || false,
-    available_colors: parseJsonArray(rawData.available_colors),
-    available_sizes: parseJsonArray(rawData.available_sizes),
-    created_at: rawData.created_at,
-    updated_at: rawData.updated_at,
-    store_id: rawData.store_id,
-    is_featured: rawData.is_featured !== undefined ? rawData.is_featured : false,
-    sales_count: rawData.sales_count !== undefined ? rawData.sales_count : 0,
+    id: raw.id,
+    name: raw.name,
+    description: raw.description,
+    price: raw.price,
+    discount_price: raw.discount_price,
     images: images,
-    category: rawData.category
+    stock_quantity: raw.stock_quantity,
+    track_inventory: raw.track_inventory || false,
+    store_id: raw.store_id,
+    category_id: raw.category_id,
+    category: raw.category,
+    created_at: new Date(raw.created_at),
+    updated_at: new Date(raw.updated_at),
+    has_colors: raw.has_colors || false,
+    has_sizes: raw.has_sizes || false,
+    available_colors: raw.available_colors || [],
+    available_sizes: raw.available_sizes || [],
+    sales_count: raw.sales_count || 0,
+    is_featured: raw.is_featured || false,
+    is_archived: raw.is_archived || false
   };
 };
