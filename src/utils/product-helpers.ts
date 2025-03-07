@@ -188,7 +188,7 @@ export const fetchProductsWithFilters = async (
     
     // Process the data to ensure proper typing of fields
     const processedData = data.map(product => {
-      // Create a new object with the correct types
+      // Create a new object with explicit properties instead of spreading
       return {
         id: product.id,
         name: product.name,
@@ -201,15 +201,15 @@ export const fetchProductsWithFilters = async (
         created_at: product.created_at,
         updated_at: product.updated_at,
         additional_images: convertToStringArray(product.additional_images),
-        // Add the rest of the fields with safe fallback values
-        discount_price: product.discount_price || null,
-        track_inventory: typeof product.track_inventory === 'boolean' ? product.track_inventory : false,
-        has_colors: typeof product.has_colors === 'boolean' ? product.has_colors : false,
-        has_sizes: typeof product.has_sizes === 'boolean' ? product.has_sizes : false,
-        require_customer_name: typeof product.require_customer_name === 'boolean' ? product.require_customer_name : false,
-        require_customer_image: typeof product.require_customer_image === 'boolean' ? product.require_customer_image : false,
-        available_colors: convertToStringArray(product.available_colors),
-        available_sizes: convertToStringArray(product.available_sizes)
+        // Set default values for properties that might not exist in the database
+        discount_price: null,
+        track_inventory: false,
+        has_colors: false,
+        has_sizes: false,
+        require_customer_name: false,
+        require_customer_image: false,
+        available_colors: null,
+        available_sizes: null
       } as Product;
     });
     

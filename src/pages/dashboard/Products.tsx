@@ -86,6 +86,7 @@ const Products: React.FC = () => {
       }
       
       return data.map(product => {
+        // Create a new object with explicitly defined properties instead of spreading
         return {
           id: product.id,
           name: product.name,
@@ -98,15 +99,15 @@ const Products: React.FC = () => {
           created_at: product.created_at,
           updated_at: product.updated_at,
           additional_images: convertToStringArray(product.additional_images),
-          // Safely handle optional fields with fallbacks
-          discount_price: typeof product.discount_price === 'number' ? product.discount_price : null,
-          track_inventory: typeof product.track_inventory === 'boolean' ? product.track_inventory : false,
-          has_colors: typeof product.has_colors === 'boolean' ? product.has_colors : false,
-          has_sizes: typeof product.has_sizes === 'boolean' ? product.has_sizes : false,
-          require_customer_name: typeof product.require_customer_name === 'boolean' ? product.require_customer_name : false,
-          require_customer_image: typeof product.require_customer_image === 'boolean' ? product.require_customer_image : false,
-          available_colors: convertToStringArray(product.available_colors),
-          available_sizes: convertToStringArray(product.available_sizes)
+          // Set default values for properties that might not exist in the database
+          discount_price: null,
+          track_inventory: false,
+          has_colors: false, 
+          has_sizes: false,
+          require_customer_name: false,
+          require_customer_image: false,
+          available_colors: null,
+          available_sizes: null
         } as Product;
       });
     },
