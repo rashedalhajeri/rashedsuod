@@ -100,13 +100,14 @@ export const fetchProductsWithFilters = async (
       return [];
     }
     
-    // Process data with explicit product creation - fix for excessive type instantiation
+    // Modified approach: first convert data to any[] to break type recursion
+    const rawData: any[] = data;
     const processedProducts: Product[] = [];
     
-    for (const item of data) {
-      // Use type assertion here to avoid excessive type instantiation
-      const rawData = item as unknown as RawProductData;
-      const product = mapRawProductToProduct(rawData);
+    // Then process each item individually
+    for (let i = 0; i < rawData.length; i++) {
+      const item = rawData[i] as RawProductData;
+      const product = mapRawProductToProduct(item);
       processedProducts.push(product);
     }
     
@@ -175,14 +176,17 @@ export const updateProduct = async (productId: string, updates: any) => {
       
     if (error) throw error;
     
-    // Fix for excessive type instantiation - use for loop instead of map
+    // Modified approach: break the type recursion by using any[] first
     const processedData: Product[] = [];
     
     if (data && data.length > 0) {
-      for (let i = 0; i < data.length; i++) {
-        // Use type assertion to avoid excessive type instantiation
-        const rawData = data[i] as unknown as RawProductData;
-        const processed = mapRawProductToProduct(rawData);
+      // Convert to any[] to break type recursion
+      const rawData: any[] = data;
+      
+      for (let i = 0; i < rawData.length; i++) {
+        // Use simple type casting
+        const item = rawData[i] as RawProductData;
+        const processed = mapRawProductToProduct(item);
         processedData.push(processed);
       }
     }
