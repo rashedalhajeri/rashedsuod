@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/layouts/DashboardLayout";
@@ -27,7 +28,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 const ensureOrderStatus = (status: string): OrderStatus => {
   switch(status) {
     case "processing": return "processing";
-    case "shipped": return "shipped";
     case "delivered": return "delivered";
     case "cancelled": return "cancelled";
     default: return "processing";
@@ -234,7 +234,7 @@ const OrdersPage: React.FC = () => {
           </div>
         </div>
 
-        <OrderStats stats={statsData || { total: 0, processing: 0, shipped: 0, delivered: 0, cancelled: 0 }} isLoading={isStatsLoading} />
+        <OrderStats stats={statsData || { total: 0, processing: 0, delivered: 0, cancelled: 0 }} isLoading={isStatsLoading} />
         
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
@@ -262,10 +262,9 @@ const OrdersPage: React.FC = () => {
           }}
           className="w-full"
         >
-          <TabsList className="grid grid-cols-5 w-full mb-4">
+          <TabsList className="grid grid-cols-4 w-full mb-4">
             <TabsTrigger value="all">الكل ({statsData?.total || 0})</TabsTrigger>
             <TabsTrigger value="processing">قيد المعالجة ({statsData?.processing || 0})</TabsTrigger>
-            <TabsTrigger value="shipped">تم الشحن ({statsData?.shipped || 0})</TabsTrigger>
             <TabsTrigger value="delivered">تم التوصيل ({statsData?.delivered || 0})</TabsTrigger>
             <TabsTrigger value="cancelled">ملغي ({statsData?.cancelled || 0})</TabsTrigger>
           </TabsList>

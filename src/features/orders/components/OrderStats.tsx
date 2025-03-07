@@ -32,7 +32,7 @@ const OrderStats: React.FC<OrderStatsProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map(i => (
               <div key={i} className="text-center">
                 <Skeleton className="h-12 w-12 rounded-full mx-auto" />

@@ -28,3 +28,10 @@ export interface Order {
   updated_at: string;
   items?: OrderItem[];
 }
+
+export interface OrderStats {
+  total: number;
+  processing: number;
+  delivered: number;
+  cancelled: number;
+}
