@@ -18,22 +18,19 @@ export const ProductPrice: React.FC<ProductPriceProps> = ({
   const hasDiscount = discountPrice !== null && discountPrice > 0 && discountPrice < price;
   
   // تحديد أحجام الخط بناءً على حجم المكون
-  let priceSize = "text-sm";
-  let discountSize = "text-xs";
+  let priceSize = "text-base"; // Increased from text-sm
+  let discountSize = "text-sm"; // Increased from text-xs
   
   if (size === "sm") {
-    priceSize = "text-xs";
-    discountSize = "text-[10px]";
+    priceSize = "text-sm"; // Increased from text-xs
+    discountSize = "text-xs"; // Increased from text-[10px]
   } else if (size === "lg") {
-    priceSize = "text-base";
-    discountSize = "text-sm";
+    priceSize = "text-lg"; // Increased from text-base
+    discountSize = "text-base"; // Increased from text-sm
   }
-  
-  // حساب نسبة الخصم
-  const discountPercentage = hasDiscount ? Math.round((1 - (discountPrice as number) / price) * 100) : null;
 
   return (
-    <div className={`flex items-center gap-2 ${className}`} dir="rtl">
+    <div className={`flex items-center gap-3 mr-2 ${className}`} dir="ltr">
       {hasDiscount ? (
         <>
           <span className={`font-medium text-primary ${priceSize}`}>
@@ -42,11 +39,6 @@ export const ProductPrice: React.FC<ProductPriceProps> = ({
           <span className={`line-through text-gray-400 ${discountSize}`}>
             {formatPrice(price)}
           </span>
-          {discountPercentage !== null && discountPercentage > 0 && (
-            <span className={`text-red-500 ${discountSize}`}>
-              ({discountPercentage}%-) خصم
-            </span>
-          )}
         </>
       ) : (
         <span className={`font-medium text-gray-800 ${priceSize}`}>
