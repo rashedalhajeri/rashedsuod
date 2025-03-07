@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -85,31 +84,35 @@ const Products: React.FC = () => {
         throw error;
       }
       
-      if (!data) {
+      if (!data || data.length === 0) {
         return [];
       }
       
-      const processedData: Product[] = data.map(product => ({
-        id: product.id,
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        category_id: product.category_id,
-        store_id: product.store_id,
-        image_url: product.image_url,
-        stock_quantity: product.stock_quantity,
-        created_at: product.created_at,
-        updated_at: product.updated_at,
-        additional_images: convertToStringArray(product.additional_images),
-        discount_price: product.discount_price || null,
-        track_inventory: product.track_inventory || false,
-        has_colors: product.has_colors || false,
-        has_sizes: product.has_sizes || false,
-        require_customer_name: product.require_customer_name || false,
-        require_customer_image: product.require_customer_image || false,
-        available_colors: convertToStringArray(product.available_colors) || null,
-        available_sizes: convertToStringArray(product.available_sizes) || null
-      }));
+      const processedData: Product[] = [];
+      
+      for (const item of data) {
+        processedData.push({
+          id: item.id,
+          name: item.name,
+          description: item.description,
+          price: item.price,
+          category_id: item.category_id,
+          store_id: item.store_id,
+          image_url: item.image_url,
+          stock_quantity: item.stock_quantity,
+          created_at: item.created_at,
+          updated_at: item.updated_at,
+          additional_images: convertToStringArray(item.additional_images),
+          discount_price: item.discount_price || null,
+          track_inventory: Boolean(item.track_inventory),
+          has_colors: Boolean(item.has_colors),
+          has_sizes: Boolean(item.has_sizes),
+          require_customer_name: Boolean(item.require_customer_name),
+          require_customer_image: Boolean(item.require_customer_image),
+          available_colors: convertToStringArray(item.available_colors),
+          available_sizes: convertToStringArray(item.available_sizes)
+        });
+      }
       
       return processedData;
     },
