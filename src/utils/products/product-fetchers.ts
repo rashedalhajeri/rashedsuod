@@ -16,13 +16,19 @@ export const fetchProductsWithFilters = async (
   includeArchived: boolean = false
 ): Promise<Product[]> => {
   try {
-    return await databaseClient.products.fetchProductsWithFilters(
+    console.log(`Fetching products with filters:`, { sectionType, storeId, categoryId, sectionId, limit });
+    
+    // Call database client to fetch products
+    const products = await databaseClient.products.fetchProductsWithFilters(
       sectionType,
       storeId,
       categoryId,
       sectionId,
       limit
     );
+    
+    console.log(`Fetched ${products.length} products`);
+    return products;
   } catch (err) {
     console.error("Error in fetchProductsWithFilters:", err);
     return [];

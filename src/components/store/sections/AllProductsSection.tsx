@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { X, ChevronLeft } from "lucide-react";
@@ -38,6 +39,7 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
   const currentStoreDomain = storeDomain || params.storeDomain;
   
   useEffect(() => {
+    // إذا تم تمرير المنتجات مباشرة، استخدمها
     if (initialProducts && initialProducts.length > 0) {
       setProducts(initialProducts);
       setIsLoading(false);
@@ -47,8 +49,11 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
     const loadProducts = async () => {
       try {
         setIsLoading(true);
+        console.log(`Fetching products for section ${sectionId}, category ${categoryId}, type ${sectionType}`);
         
+        // جلب المنتجات بناءً على المعايير
         const data = await fetchProductsWithFilters(sectionType, undefined, categoryId, sectionId);
+        console.log(`Fetched ${data.length} products`, data);
         setProducts(data);
         
       } catch (err) {
@@ -63,6 +68,7 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
     loadProducts();
   }, [initialProducts, sectionType, categoryId, sectionId]);
   
+  // تحديد العنوان النهائي للقسم
   const finalTitle = sectionTitle
     ? sectionTitle
     : searchQuery
@@ -71,6 +77,7 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
         ? activeCategory === 'الكل' ? 'كل المنتجات' : activeCategory
         : 'المنتجات';
   
+  // إذا لم تكن هناك منتجات ولا يوجد تحميل، لا تعرض القسم
   if (!isLoading && products.length === 0) {
     return null;
   }

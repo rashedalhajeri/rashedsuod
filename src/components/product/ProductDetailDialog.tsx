@@ -12,13 +12,13 @@ import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import SaveButton from "@/components/ui/save-button";
 import { useProductDetailForm } from "@/hooks/useProductDetailForm";
+import { AlertTriangle } from "lucide-react";
 
 // Import form sections
 import BasicInfoSection from "./form/BasicInfoSection";
 import InventorySection from "./form/InventorySection";
 import AdvancedFeaturesSection from "./form/AdvancedFeaturesSection";
 import ProductImagesSection from "./form/ProductImagesSection";
-import ProductFormActions from "./form/ProductFormActions";
 import ConditionalSections from "./form/ConditionalSections";
 import FormSection from "./form/FormSection";
 import CategorySelector from "./form/CategorySelector";
@@ -108,18 +108,18 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
         
         <div className="space-y-6">
           {/* القسم العلوي: المعلومات الأساسية والسعر والصور */}
-          <FormSection>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-6">
-                <BasicInfoSection 
-                  name={formData.name}
-                  description={formData.description}
-                  price={formData.price}
-                  discountPrice={formData.discount_price}
-                  handleInputChange={handleChange}
-                  toggleDiscount={toggleDiscount}
-                />
-                
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-6">
+              <BasicInfoSection 
+                name={formData.name}
+                description={formData.description}
+                price={formData.price}
+                discountPrice={formData.discount_price}
+                handleInputChange={handleChange}
+                toggleDiscount={toggleDiscount}
+              />
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <CategorySelector
                   categoryId={formData.category_id}
                   storeId={storeData?.id}
@@ -131,25 +131,25 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
                   storeId={storeData?.id}
                   onSectionChange={handleSectionChange}
                 />
-                
-                <InventorySection 
-                  trackInventory={formData.track_inventory}
-                  stockQuantity={formData.stock_quantity}
-                  handleInputChange={handleChange}
-                  handleSwitchChange={handleSwitchChange}
-                />
               </div>
               
-              <div>
-                <ProductImagesSection 
-                  images={formData.images}
-                  storeId={storeData?.id}
-                  onChange={handleImagesChange}
-                  maxImages={5}
-                />
-              </div>
+              <InventorySection 
+                trackInventory={formData.track_inventory}
+                stockQuantity={formData.stock_quantity}
+                handleInputChange={handleChange}
+                handleSwitchChange={handleSwitchChange}
+              />
             </div>
-          </FormSection>
+            
+            <div>
+              <ProductImagesSection 
+                images={formData.images}
+                storeId={storeData?.id}
+                onChange={handleImagesChange}
+                maxImages={5}
+              />
+            </div>
+          </div>
           
           {/* قسم الخصائص المتقدمة */}
           <FormSection>
@@ -170,14 +170,20 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
           />
         </div>
         
-        <div className="flex justify-between items-center mt-6">
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={isSubmitting || !isUpdating}
-          >
-            حذف المنتج
-          </Button>
+        <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-100">
+          {isUpdating && (
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isSubmitting}
+              className="gap-2"
+            >
+              <AlertTriangle className="h-4 w-4" />
+              حذف المنتج
+            </Button>
+          )}
+          
+          {!isUpdating && <div></div>}
           
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>

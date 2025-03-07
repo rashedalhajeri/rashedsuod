@@ -1,81 +1,74 @@
 
-import { SupabaseClient } from '@supabase/supabase-js';
-
-// Simple function to help build safe queries
-export const createSafeQueryBuilder = () => {
-  return {
-    buildSortClause: (sort: string | undefined): { column: string; ascending: boolean } => {
-      switch (sort) {
-        case 'price_low':
-          return { column: 'price', ascending: true };
-        case 'price_high':
-          return { column: 'price', ascending: false };
-        case 'best_selling':
-          return { column: 'sales_count', ascending: false };
-        default:
-          return { column: 'created_at', ascending: false };
-      }
-    }
-  };
-};
+import { createClient } from '@supabase/supabase-js';
 
 /**
- * Builds a query for fetching products based on section type and filters
+ * Builds a query to fetch products with various filters
  */
 export const buildProductQuery = (
-  supabase: SupabaseClient, 
+  supabase: ReturnType<typeof createClient>,
   sectionType: string,
   storeId?: string,
   categoryId?: string,
   sectionId?: string,
-  limit?: number,
-  includeArchived: boolean = false
+  limit?: number
 ) => {
-  let query = supabase.from('products').select('*, category:categories(*)');
-  
-  // Apply store filter
+  // Start with a base query
+  let query = supabase
+    .from('products')
+    .select('*, category:categories(name)')
+    .eq('is_archived', false)
+    .eq('is_active', true);
+
+  console.log(`Building query for sectionType: ${sectionType}`);
+
+  // Filter by store if provided
   if (storeId) {
     query = query.eq('store_id', storeId);
   }
-  
-  // Apply category filter
-  if (categoryId) {
+
+  // Filter by category if provided
+  if (categoryId && categoryId !== 'all' && categoryId !== 'none') {
     query = query.eq('category_id', categoryId);
+    console.log(`Filtering by category_id: ${categoryId}`);
   }
 
-  // Filter out archived products by default unless explicitly included
-  if (!includeArchived) {
-    query = query.eq('is_archived', false);
+  // Filter by section if provided
+  if (sectionId && sectionId !== 'all' && sectionId !== 'none') {
+    query = query.eq('section_id', sectionId);
+    console.log(`Filtering by section_id: ${sectionId}`);
   }
-  
-  // Apply section type specific filters
+
+  // Apply additional filters based on sectionType
   switch (sectionType) {
-    case 'featured':
-      query = query.eq('is_featured', true);
-      break;
     case 'best_selling':
       query = query.order('sales_count', { ascending: false });
+      break;
+    case 'new_arrivals':
+      query = query.order('created_at', { ascending: false });
+      break;
+    case 'featured':
+      query = query.eq('is_featured', true);
       break;
     case 'on_sale':
       query = query.not('discount_price', 'is', null);
       break;
-    case 'archived':
-      query = query.eq('is_archived', true);
+    case 'category':
+      // Already filtered by category_id above
+      break;
+    case 'custom':
+      // For custom sections, filtering by section_id above is enough
       break;
     default:
-      // For custom sections, could add more logic here
+      // Default sorting for 'all' and other types
+      query = query.order('created_at', { ascending: false });
       break;
   }
-  
-  // Apply default sorting if best_selling wasn't already set
-  if (sectionType !== 'best_selling') {
-    query = query.order('created_at', { ascending: false });
-  }
-  
-  // Apply limit if specified
+
+  // Apply limit if provided
   if (limit && limit > 0) {
     query = query.limit(limit);
   }
-  
+
+  console.log("Final query:", query);
   return query;
 };
