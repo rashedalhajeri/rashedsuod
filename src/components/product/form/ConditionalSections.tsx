@@ -2,7 +2,14 @@
 import React from "react";
 import ColorManagementSection from "./ColorManagementSection";
 import SizeManagementSection from "./SizeManagementSection";
-import { ProductFormData } from "./useProductFormSubmit";
+
+interface ProductFormData {
+  has_colors: boolean;
+  has_sizes: boolean;
+  available_colors?: string[] | null;
+  available_sizes?: string[] | null;
+  [key: string]: any;
+}
 
 interface ConditionalSectionsProps {
   formData: ProductFormData;
