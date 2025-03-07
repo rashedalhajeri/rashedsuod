@@ -38,12 +38,22 @@ const StatsCard: React.FC<StatsCardProps> = ({
           <div className="flex justify-between items-center">
             <div>
               <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
-              <h4 className="text-xl md:text-2xl font-bold">{value}</h4>
+              <h4 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent group-hover:from-primary-500 group-hover:to-primary-400 transition-all duration-300">{value}</h4>
+              
+              {trend && (
+                <p className={`text-xs flex items-center mt-1 ${
+                  trend.isPositive ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  <span>
+                    {trend.isPositive ? '↑' : '↓'} {trend.value}%
+                  </span>
+                </p>
+              )}
             </div>
             
             <div
               className={cn(
-                "p-3 rounded-full",
+                "p-3 rounded-full shadow-sm group-hover:shadow-md transition-all duration-300 transform group-hover:scale-110",
                 iconClassName || "bg-primary-100 text-primary-600"
               )}
             >
