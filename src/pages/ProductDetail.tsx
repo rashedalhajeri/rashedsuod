@@ -39,6 +39,7 @@ const ProductDetail = () => {
         throw new Error("المنتج غير موجود");
       }
       
+      // Ensure all fields have the correct types before returning
       return {
         ...data,
         has_colors: Boolean(data.has_colors),
@@ -46,11 +47,11 @@ const ProductDetail = () => {
         track_inventory: Boolean(data.track_inventory),
         require_customer_name: Boolean(data.require_customer_name),
         require_customer_image: Boolean(data.require_customer_image),
-        available_colors: Array.isArray(data.available_colors) ? data.available_colors : [],
-        available_sizes: Array.isArray(data.available_sizes) ? data.available_sizes : [],
+        available_colors: Array.isArray(data.available_colors) ? data.available_colors.map(color => String(color)) : [],
+        available_sizes: Array.isArray(data.available_sizes) ? data.available_sizes.map(size => String(size)) : [],
         images: [
-          ...(data.image_url ? [data.image_url] : []),
-          ...(Array.isArray(data.additional_images) ? data.additional_images : [])
+          ...(data.image_url ? [String(data.image_url)] : []),
+          ...(Array.isArray(data.additional_images) ? data.additional_images.map(img => String(img)) : [])
         ]
       };
     },
