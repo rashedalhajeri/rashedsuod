@@ -69,33 +69,33 @@ const OrdersFilters: React.FC<OrdersFiltersProps> = ({
 
   return (
     <>
-      <div className="flex flex-col sm:flex-row items-center gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="البحث في الطلبات..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-3 pr-9 border-gray-200 focus:border-primary-300 focus:ring focus:ring-primary-100 focus:ring-opacity-50"
-          />
+      <div className="relative bg-white rounded-lg border border-gray-100 shadow-sm p-4 mb-4">
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="البحث في الطلبات..."
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="pl-3 pr-9 border-gray-200 focus:border-primary-400 focus:ring focus:ring-primary-100 focus:ring-opacity-50"
+            />
+          </div>
+          
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2 sm:w-auto w-full justify-center border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-all duration-200"
+          >
+            <Filter className="h-4 w-4 text-gray-500" />
+            تصفية متقدمة
+          </Button>
         </div>
         
-        <Button 
-          variant="outline" 
-          className="flex items-center gap-2 sm:w-auto w-full justify-center border-gray-200 hover:border-primary-200 hover:bg-primary-50"
-        >
-          <Filter className="h-4 w-4" />
-          تصفية متقدمة
-        </Button>
-      </div>
-      
-      <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
-        <div className="flex overflow-x-auto py-4 px-4 gap-2 border-b border-gray-100">
+        <div className="flex overflow-x-auto py-4 px-1 gap-2 mt-4 hide-scrollbar">
           {statusItems.map((item) => (
             <button
               key={item.id}
               onClick={() => onTabChange(item.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium whitespace-nowrap transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium whitespace-nowrap transition-all duration-200 ${
                 activeTab === item.id
                   ? `${item.color} shadow-sm`
                   : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
@@ -103,7 +103,7 @@ const OrdersFilters: React.FC<OrdersFiltersProps> = ({
             >
               {item.icon}
               <span>{item.label}</span>
-              <Badge variant="outline" className="ml-1 bg-white text-xs min-w-5 h-5 flex items-center justify-center">
+              <Badge variant="outline" className={`ml-1 ${activeTab === item.id ? 'bg-white' : 'bg-gray-50'} text-xs min-w-5 h-5 flex items-center justify-center`}>
                 {item.count}
               </Badge>
             </button>
