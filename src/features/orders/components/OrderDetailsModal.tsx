@@ -12,6 +12,9 @@ import { getCurrencyFormatter } from "@/hooks/use-store-data";
 import OrderStatusBadge from "./OrderStatusBadge";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { enUS } from "date-fns/locale";
+import "../../styles/rtl-helpers.css";
 
 interface OrderDetailsModalProps {
   order: Order | null;
@@ -34,22 +37,16 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     onUpdateStatus(order.id, status);
   };
   
-  // تنسيق تاريخ الطلب
+  // Format date in English
   const formatDate = (dateString: string) => {
     try {
-      return new Date(dateString).toLocaleDateString('ar-SA', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      return format(new Date(dateString), 'MMMM d, yyyy h:mm a', { locale: enUS });
     } catch (error) {
       return dateString;
     }
   };
 
-  // حساب إجمالي الطلب من العناصر إذا كانت متوفرة
+  // Calculate order total from items if available
   const calculateOrderTotal = () => {
     if (order.items && order.items.length > 0) {
       return order.items.reduce((total, item) => total + item.total_price, 0);
@@ -57,7 +54,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     return order.total;
   };
   
-  // تخطيط المعلومات للعرض
+  // Layout information for display
   const infoItems = [
     {
       label: "رقم الطلب",
@@ -96,7 +93,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     }
   ];
 
-  // تكوين أزرار تغيير الحالة
+  // Configure status change buttons
   const statusButtons = [
     {
       status: "processing" as OrderStatus,
@@ -145,7 +142,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                   {item.icon}
                   <div>
                     <p className="text-xs text-gray-500">{item.label}</p>
-                    <p className="text-sm font-medium">{item.value}</p>
+                    <p className="text-sm font-medium force-en-nums">{item.value}</p>
                   </div>
                 </div>
               ))}
@@ -185,15 +182,15 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       className="grid grid-cols-12 py-3 px-3 border-b last:border-b-0 items-center"
                     >
                       <div className="col-span-6 font-medium">{item.product_name}</div>
-                      <div className="col-span-2 text-center">{formatCurrency(item.unit_price)}</div>
-                      <div className="col-span-2 text-center">{item.quantity}</div>
-                      <div className="col-span-2 text-center font-medium">{formatCurrency(item.total_price)}</div>
+                      <div className="col-span-2 text-center force-en-nums">{formatCurrency(item.unit_price)}</div>
+                      <div className="col-span-2 text-center force-en-nums">{item.quantity}</div>
+                      <div className="col-span-2 text-center font-medium force-en-nums">{formatCurrency(item.total_price)}</div>
                     </motion.div>
                   ))}
                   
                   <div className="flex justify-between p-3 bg-gray-50 font-medium border-t">
                     <p>المجموع</p>
-                    <p>{formatCurrency(calculateOrderTotal())}</p>
+                    <p className="force-en-nums">{formatCurrency(calculateOrderTotal())}</p>
                   </div>
                 </>
               ) : (
@@ -253,7 +250,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                 </div>
                 <div className="bg-gray-50 rounded p-2 mr-2">
                   <p className="text-sm font-medium">تم إنشاء الطلب</p>
-                  <p className="text-xs text-gray-500">{formatDate(order.created_at)}</p>
+                  <p className="text-xs text-gray-500 force-en-nums">{formatDate(order.created_at)}</p>
                 </div>
               </div>
               
@@ -264,7 +261,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                   </div>
                   <div className="bg-gray-50 rounded p-2 mr-2">
                     <p className="text-sm font-medium">قيد المعالجة</p>
-                    <p className="text-xs text-gray-500">{formatDate(order.updated_at)}</p>
+                    <p className="text-xs text-gray-500 force-en-nums">{formatDate(order.updated_at)}</p>
                   </div>
                 </div>
               )}
@@ -276,7 +273,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                   </div>
                   <div className="bg-gray-50 rounded p-2 mr-2">
                     <p className="text-sm font-medium">تم التوصيل</p>
-                    <p className="text-xs text-gray-500">{formatDate(order.updated_at)}</p>
+                    <p className="text-xs text-gray-500 force-en-nums">{formatDate(order.updated_at)}</p>
                   </div>
                 </div>
               )}
@@ -288,7 +285,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                   </div>
                   <div className="bg-gray-50 rounded p-2 mr-2">
                     <p className="text-sm font-medium">تم الإلغاء</p>
-                    <p className="text-xs text-gray-500">{formatDate(order.updated_at)}</p>
+                    <p className="text-xs text-gray-500 force-en-nums">{formatDate(order.updated_at)}</p>
                   </div>
                 </div>
               )}
