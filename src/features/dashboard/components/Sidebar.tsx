@@ -7,7 +7,7 @@ import useAuth from "@/hooks/useAuth";
 import SidebarHeader from "./SidebarHeader";
 import SidebarLinks from "./SidebarLinks";
 import LogoutButton from "./LogoutButton";
-import { Mail } from "lucide-react";
+import { Mail, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
@@ -21,6 +21,31 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
   const { signOut, session } = useAuth();
   const userEmail = session?.user?.email || "";
 
+  // تحديد وقت اليوم للتحية
+  const [greeting, setGreeting] = useState<string>("");
+  const [currentHour, setCurrentHour] = useState<number>(new Date().getHours());
+  
+  useEffect(() => {
+    const updateGreeting = () => {
+      const hour = new Date().getHours();
+      setCurrentHour(hour);
+      
+      if (hour >= 5 && hour < 12) {
+        setGreeting("صباح الخير");
+      } else if (hour >= 12 && hour < 17) {
+        setGreeting("مساء الخير");
+      } else {
+        setGreeting("مساء الخير");
+      }
+    };
+    
+    updateGreeting();
+    // تحديث التحية كل ساعة
+    const interval = setInterval(updateGreeting, 60 * 60 * 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     setIsCollapsed(isMobile && !isMobileMenuOpen);
   }, [isMobile, isMobileMenuOpen]);
@@ -30,8 +55,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
   };
 
   const closeMobileMenu = () => {
-    // فقط إغلاق في حال العرض المحمول
-    // Left empty intentionally as in the original
+    if (isMobile) {
+      setIsCollapsed(true);
+    }
   };
 
   const handleLogout = async () => {
@@ -57,6 +83,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
       ? "collapsed" 
       : "expanded";
 
+  // رمز الوقت المناسب حسب الساعة
+  const TimeIcon = currentHour >= 5 && currentHour < 18 ? Sun : Moon;
+
   return (
     <AnimatePresence>
       {isMobile && isMobileMenuOpen && (
@@ -77,7 +106,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
         initial={false}
         animate={currentVariant}
         variants={sidebarVariants}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: 0.2, ease: "easeInOut" }}
         style={{ 
           right: isMobile && !isMobileMenuOpen ? "-100%" : 0,
         }}
@@ -97,12 +126,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
             closeMobileMenu={closeMobileMenu}
           />
 
-          <div className="p-4 border-t border-gray-200 mt-auto">
-            {/* User Email Display */}
-            {userEmail && (!isCollapsed || isMobile) && (
-              <div className="flex items-center gap-2 px-3 py-2 mb-2 bg-gray-50 rounded-lg text-sm text-gray-600">
-                <Mail size={16} className="text-primary-500 shrink-0" />
-                <span className="truncate">{userEmail}</span>
+          <div className="p-4 border-t border-gray-200 mt-auto space-y-3">
+            {/* بطاقة التحية والايميل */}
+            {(!isCollapsed || isMobile) && (
+              <div className="flex flex-col px-3 py-3 rounded-lg bg-primary-50/80 text-sm">
+                <div className="flex items-center gap-2 text-primary-700 mb-1.5">
+                  <TimeIcon size={14} className="shrink-0" />
+                  <span className="font-medium">{greeting}</span>
+                </div>
+                {userEmail && (
+                  <div className="flex items-center gap-2 text-gray-600 text-xs">
+                    <Mail size={12} className="shrink-0" />
+                    <span className="truncate">{userEmail}</span>
+                  </div>
+                )}
               </div>
             )}
             
