@@ -1,7 +1,7 @@
 
-// Import the Product type and re-export it
+// Import the Product type and re-export it properly
 import { Product } from "./products/types";
-export { Product };
+export type { Product }; // Using "export type" to comply with isolatedModules
 
 // Import only what we need and rename the imported deleteProduct to avoid conflict
 import { 
