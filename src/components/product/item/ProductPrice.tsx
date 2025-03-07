@@ -1,33 +1,57 @@
 
 import React from "react";
-import { getCurrencyFormatter } from "@/hooks/use-store-data";
-import { BadgePercent } from "lucide-react";
+import { formatPrice } from "@/lib/utils";
 
 interface ProductPriceProps {
   price: number;
   discountPrice: number | null;
+  className?: string;
+  size?: "sm" | "md" | "lg";
 }
 
-export const ProductPrice: React.FC<ProductPriceProps> = ({ price, discountPrice }) => {
-  const formatCurrency = getCurrencyFormatter();
-  const hasDiscount = discountPrice !== null && discountPrice !== undefined && discountPrice < price;
-  const discountPercentage = hasDiscount ? Math.round(((price - discountPrice!) / price) * 100) : 0;
+export const ProductPrice: React.FC<ProductPriceProps> = ({ 
+  price, 
+  discountPrice, 
+  className = "",
+  size = "md"
+}) => {
+  const hasDiscount = discountPrice !== null && discountPrice > 0;
   
+  // تحديد أحجام الخط بناءً على حجم المكون
+  let priceSize = "text-sm";
+  let discountSize = "text-xs";
+  
+  if (size === "sm") {
+    priceSize = "text-xs";
+    discountSize = "text-[10px]";
+  } else if (size === "lg") {
+    priceSize = "text-base";
+    discountSize = "text-sm";
+  }
+  
+  // حساب نسبة الخصم
+  const discountPercentage = hasDiscount ? Math.round((1 - (discountPrice as number) / price) * 100) : null;
+
   return (
-    <div className="flex items-center text-sm mt-2">
+    <div className={`flex items-center gap-2 ${className}`}>
       {hasDiscount ? (
-        <div className="flex items-center gap-2">
-          <div className="flex gap-1.5 items-center">
-            <span className="text-red-600 font-bold">{formatCurrency(discountPrice!)}</span>
-            <span className="line-through text-gray-500 text-xs">{formatCurrency(price)}</span>
-          </div>
-          <div className="flex items-center gap-0.5 bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full text-xs">
-            <BadgePercent className="h-3 w-3" />
-            <span>-{discountPercentage}%</span>
-          </div>
-        </div>
+        <>
+          <span className={`font-medium text-primary ${priceSize}`}>
+            {formatPrice(discountPrice as number)}
+          </span>
+          <span className={`line-through text-gray-400 ${discountSize}`}>
+            {formatPrice(price)}
+          </span>
+          {discountPercentage !== null && discountPercentage > 0 && (
+            <span className={`text-red-500 ${discountSize}`}>
+              ({discountPercentage}%-) خصم
+            </span>
+          )}
+        </>
       ) : (
-        <span className="font-bold text-gray-900">{formatCurrency(price)}</span>
+        <span className={`font-medium text-gray-800 ${priceSize}`}>
+          {formatPrice(price)}
+        </span>
       )}
     </div>
   );

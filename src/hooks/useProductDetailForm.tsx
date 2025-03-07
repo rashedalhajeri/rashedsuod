@@ -1,9 +1,11 @@
+
 import { useState, useEffect, ChangeEvent } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Product, RawProductData } from "@/utils/products/types";
 import { mapRawProductToProduct } from "@/utils/products/mappers";
+import { databaseClient } from "@/integrations/database/client";
 
 export interface UseProductDetailFormProps {
   productId: string | null;
@@ -99,11 +101,7 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
         if (error) {
           console.error("Error fetching product:", error);
           setError(error.message);
-          toast({
-            title: "خطأ",
-            description: "فشل في تحميل بيانات المنتج.",
-            variant: "destructive",
-          });
+          toast.error("خطأ", { description: "فشل في تحميل بيانات المنتج." });
           return;
         }
 
@@ -129,11 +127,7 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
       } catch (error: any) {
         console.error("Unexpected error fetching product:", error);
         setError(error.message);
-        toast({
-          title: "خطأ",
-          description: "فشل في تحميل بيانات المنتج.",
-          variant: "destructive",
-        });
+        toast.error("خطأ", { description: "فشل في تحميل بيانات المنتج." });
       } finally {
         setIsInitialLoading(false);
       }
@@ -191,18 +185,11 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
       if (error) {
         console.error("Error updating product:", error);
         setError(error.message);
-        toast({
-          title: "خطأ",
-          description: "فشل في تحديث المنتج.",
-          variant: "destructive",
-        });
+        toast.error("خطأ", { description: "فشل في تحديث المنتج." });
         return;
       }
 
-      toast({
-        title: "تم بنجاح",
-        description: "تم تحديث المنتج بنجاح.",
-      });
+      toast.success("تم بنجاح", { description: "تم تحديث المنتج بنجاح." });
       
       if (onSuccess) {
         onSuccess();
@@ -214,11 +201,7 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     } catch (error: any) {
       console.error("Unexpected error updating product:", error);
       setError(error.message);
-      toast({
-        title: "خطأ",
-        description: "فشل في تحديث المنتج.",
-        variant: "destructive",
-      });
+      toast.error("خطأ", { description: "فشل في تحديث المنتج." });
     } finally {
       setIsSubmitting(false);
     }
@@ -226,10 +209,6 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
 
   const handleDelete = async () => {
     if (!productId) return;
-    
-    if (!confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
-      return;
-    }
     
     setIsSubmitting(true);
     try {
@@ -242,19 +221,15 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
       if (checkError) {
         console.error("Error checking order items:", checkError);
         setError(checkError.message);
-        toast({
-          title: "خطأ",
-          description: "فشل في التحقق من طلبات المنتج.",
-          variant: "destructive",
-        });
+        toast.error("خطأ", { description: "فشل في التحقق من طلبات المنتج." });
         return;
       }
       
       if (orderItems && orderItems.length > 0) {
-        toast({
-          title: "غير مسموح",
-          description: "لا يمكن حذف هذا المنتج لأنه مرتبط بطلبات سابقة.",
-          variant: "destructive",
+        // إذا كان المنتج مرتبط بطلبات، نقوم بأرشفته بدلاً من حذفه
+        await handleArchive(true);
+        toast.info("تم أرشفة المنتج", { 
+          description: "لا يمكن حذف هذا المنتج لأنه مرتبط بطلبات سابقة. تم أرشفته بدلاً من ذلك." 
         });
         return;
       }
@@ -267,18 +242,11 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
       if (error) {
         console.error("Error deleting product:", error);
         setError(error.message);
-        toast({
-          title: "خطأ",
-          description: "فشل في حذف المنتج: " + error.message,
-          variant: "destructive",
-        });
+        toast.error("خطأ", { description: "فشل في حذف المنتج: " + error.message });
         return;
       }
 
-      toast({
-        title: "تم بنجاح",
-        description: "تم حذف المنتج بنجاح.",
-      });
+      toast.success("تم بنجاح", { description: "تم حذف المنتج بنجاح." });
       
       if (onSuccess) {
         onSuccess();
@@ -290,11 +258,46 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     } catch (error: any) {
       console.error("Unexpected error deleting product:", error);
       setError(error.message);
-      toast({
-        title: "خطأ",
-        description: "فشل في حذف المنتج: " + error.message,
-        variant: "destructive",
-      });
+      toast.error("خطأ", { description: "فشل في حذف المنتج: " + error.message });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleArchive = async (isArchived: boolean) => {
+    if (!productId) return;
+    
+    setIsSubmitting(true);
+    try {
+      const { data, error } = await databaseClient.products.archiveProduct(productId, isArchived);
+        
+      if (error) {
+        console.error("Error archiving product:", error);
+        setError(error.message);
+        toast.error(
+          isArchived ? "خطأ في أرشفة المنتج" : "خطأ في إلغاء أرشفة المنتج", 
+          { description: error.message }
+        );
+        return;
+      }
+      
+      // تحديث الحالة المحلية للمنتج
+      setValue('is_archived', isArchived);
+      
+      // إغلاق النافذة وتحديث القائمة إذا طلب المستخدم
+      if (onSuccess) {
+        onSuccess();
+      }
+      
+      return true;
+    } catch (error: any) {
+      console.error("Unexpected error archiving product:", error);
+      setError(error.message);
+      toast.error(
+        isArchived ? "خطأ في أرشفة المنتج" : "خطأ في إلغاء أرشفة المنتج", 
+        { description: error.message }
+      );
+      return false;
     } finally {
       setIsSubmitting(false);
     }
@@ -311,7 +314,8 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     formData: {
       ...getValues(),
       images: watch('images') || [],
-      is_active: watch('is_active')
+      is_active: watch('is_active'),
+      is_archived: watch('is_archived')
     },
     handleChange,
     handleSwitchChange,
@@ -320,6 +324,7 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     handleSectionChange,
     handleSave: handleSubmit,
     handleDelete,
+    handleArchive,
     toggleDiscount
   };
 };

@@ -2,46 +2,58 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Product } from "@/utils/products/types";
+import { Fire, Sparkles, Percent, Tag } from "lucide-react";
 
 interface ProductBadgesProps {
   product: Product;
+  size?: "sm" | "md";
 }
 
-export const ProductBadges: React.FC<ProductBadgesProps> = ({ product }) => {
-  const { track_inventory, stock_quantity, category, is_archived, is_active } = product;
+export const ProductBadges: React.FC<ProductBadgesProps> = ({ product, size = "sm" }) => {
+  const {
+    discount_price,
+    is_featured,
+    sales_count,
+    has_colors,
+    has_sizes,
+  } = product;
 
-  // Show different stock status badges
-  const getStockBadge = () => {
-    if (!track_inventory) return (
-      <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">كمية غير محدودة</Badge>
-    );
-    
-    if (stock_quantity <= 0) {
-      return <Badge variant="destructive" className="text-xs">نفذت الكمية</Badge>;
-    } else if (stock_quantity <= 5) {
-      return <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">كمية منخفضة</Badge>;
-    }
-    
-    return <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">{stock_quantity} متوفر</Badge>;
-  };
+  const iconSize = size === "sm" ? "h-3 w-3" : "h-4 w-4";
+  const textSize = size === "sm" ? "text-[10px]" : "text-xs";
+  const height = size === "sm" ? "h-5" : "h-6";
+
+  const hasDiscount = discount_price !== null && discount_price > 0;
+  const isBestSeller = sales_count >= 5; // افتراضيًا إذا كان أكثر من 5 مبيعات
 
   return (
-    <div className="flex flex-wrap gap-1.5 mb-1">
-      {getStockBadge()}
-      
-      {category && (
-        <Badge variant="outline" className="text-xs">
-          {category.name}
+    <>
+      {hasDiscount && (
+        <Badge variant="secondary" className="bg-red-50 text-red-600 border-red-200 hover:bg-red-100 flex gap-1 items-center px-1.5" style={{ height }}>
+          <Percent className={iconSize} />
+          <span className={textSize}>خصم</span>
         </Badge>
       )}
-
-      {is_archived && (
-        <Badge variant="outline" className="text-xs bg-gray-50 text-gray-500 border-gray-200">مؤرشف</Badge>
+      
+      {is_featured && (
+        <Badge variant="secondary" className="bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100 flex gap-1 items-center px-1.5" style={{ height }}>
+          <Sparkles className={iconSize} />
+          <span className={textSize}>مميز</span>
+        </Badge>
       )}
       
-      {!is_active && !is_archived && (
-        <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-600 border-yellow-200">غير نشط</Badge>
+      {isBestSeller && (
+        <Badge variant="secondary" className="bg-green-50 text-green-600 border-green-200 hover:bg-green-100 flex gap-1 items-center px-1.5" style={{ height }}>
+          <Fire className={iconSize} />
+          <span className={textSize}>الأكثر مبيعًا</span>
+        </Badge>
       )}
-    </div>
+      
+      {(has_colors || has_sizes) && (
+        <Badge variant="secondary" className="bg-indigo-50 text-indigo-600 border-indigo-200 hover:bg-indigo-100 flex gap-1 items-center px-1.5" style={{ height }}>
+          <Tag className={iconSize} />
+          <span className={textSize}>{has_colors && has_sizes ? 'ألوان ومقاسات' : has_colors ? 'ألوان' : 'مقاسات'}</span>
+        </Badge>
+      )}
+    </>
   );
 };
