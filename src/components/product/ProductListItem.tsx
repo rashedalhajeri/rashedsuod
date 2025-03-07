@@ -6,8 +6,7 @@ import { useIsMobile } from "@/hooks/use-media-query";
 import { motion } from "framer-motion";
 import { ProductPrice } from "./item/ProductPrice";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Power, BadgePercent } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { BadgePercent } from "lucide-react";
 import { handleImageError } from "@/utils/products/image-helpers";
 
 interface ProductListItemProps {
@@ -18,14 +17,14 @@ interface ProductListItemProps {
   onArchive?: (id: string, isArchived: boolean) => void;
   onActivate?: (id: string, isActive: boolean) => void;
   onRefresh?: () => void;
+  onClick?: () => void;
 }
 
 const ProductListItem: React.FC<ProductListItemProps> = ({ 
   product, 
   onSelect, 
-  isSelected, 
-  onEdit,
-  onActivate
+  isSelected,
+  onClick
 }) => {
   const {
     id,
@@ -52,17 +51,24 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
     <motion.div 
       className={`border rounded-lg shadow-sm ${isSelected ? 'bg-blue-50/60 border-blue-200' : 'bg-white border-gray-100'} 
         ${is_archived ? 'opacity-75' : ''} 
-        ${!is_active ? 'bg-gray-50/70' : ''}`}
+        ${!is_active ? 'bg-gray-50/70' : ''} 
+        cursor-pointer hover:bg-gray-50 transition-colors`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      onClick={onClick}
     >
       <div className="flex items-center p-3 py-3" dir="rtl">
         {/* Checkbox */}
         <Checkbox
           checked={isSelected}
-          onCheckedChange={checked => onSelect(id, !!checked)}
+          onCheckedChange={checked => {
+            onSelect(id, !!checked);
+            // Stop propagation to prevent drawer from opening when checking
+            event?.stopPropagation();
+          }}
           className="h-5 w-5 flex-shrink-0 ml-3"
+          onClick={(event) => event.stopPropagation()}
         />
         
         {/* Product Image */}
@@ -98,25 +104,18 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
           </div>
         </div>
         
-        {/* Action buttons */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <Button
-            variant="outline"
-            size="icon"
-            className="rounded-full h-9 w-9 p-0 border-gray-200"
-            onClick={() => onEdit(id)}
-          >
-            <Pencil className="h-4 w-4 text-gray-500" />
-          </Button>
-          
-          <Button
-            variant="outline"
-            size="icon"
-            className={`rounded-full h-9 w-9 p-0 ${is_active ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'}`}
-            onClick={() => onActivate && onActivate(id, !is_active)}
-          >
-            <Power className={`h-4 w-4 ${is_active ? 'text-green-500' : 'text-gray-400'}`} />
-          </Button>
+        {/* Status Indicators */}
+        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+          {!is_active && (
+            <Badge variant="outline" className="bg-gray-100 text-gray-600 text-xs">
+              غير نشط
+            </Badge>
+          )}
+          {is_archived && (
+            <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200 text-xs">
+              مسودة
+            </Badge>
+          )}
         </div>
       </div>
     </motion.div>

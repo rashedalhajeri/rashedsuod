@@ -10,6 +10,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import ProductsHeader from "@/components/product/ProductsHeader";
 import ProductsContent from "@/components/product/ProductsContent";
+import { toast } from "@/components/ui/use-toast";
 
 const Products = () => {
   const { data: storeData, isLoading: loadingStore } = useStoreData();
@@ -38,6 +39,22 @@ const Products = () => {
   const handleEditProduct = (productId: string) => {
     setSelectedProductId(productId);
     setIsEditDialogOpen(true);
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    try {
+      await handleArchiveProduct(productId, true);
+      toast({
+        title: "تم حذف المنتج بنجاح",
+        description: "تم حذف المنتج وحفظه كمسودة",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "خطأ في حذف المنتج",
+        description: (error as Error).message,
+      });
+    }
   };
 
   if (loadingStore || isLoading) {

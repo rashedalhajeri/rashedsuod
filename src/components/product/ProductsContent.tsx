@@ -29,7 +29,7 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
 }) => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10; // Display 10 products per page
+  const itemsPerPage = 30; // Display 30 products per page instead of 10
   
   // Calculate pagination
   const totalPages = Math.ceil(products.length / itemsPerPage);
