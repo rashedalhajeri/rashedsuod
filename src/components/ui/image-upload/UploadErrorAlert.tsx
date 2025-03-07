@@ -20,6 +20,9 @@ const UploadErrorAlert: React.FC<UploadErrorAlertProps> = ({
       <AlertTitle>خطأ في رفع الصور</AlertTitle>
       <AlertDescription className="flex flex-col space-y-2">
         <p>{errorMessage}</p>
+        <p className="text-xs text-gray-200">
+          قد تكون المشكلة بسبب عدم وجود صلاحية للوصول إلى مخزن الصور أو مشكلة في الاتصال.
+        </p>
         <Button 
           variant="outline" 
           size="sm"
@@ -28,7 +31,7 @@ const UploadErrorAlert: React.FC<UploadErrorAlertProps> = ({
           disabled={isRetrying}
         >
           <RotateCcw className="h-4 w-4" />
-          إعادة المحاولة
+          {isRetrying ? 'جاري المحاولة...' : 'إعادة المحاولة'}
         </Button>
       </AlertDescription>
     </Alert>

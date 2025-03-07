@@ -6,14 +6,17 @@ import { uploadProductImage, doesProductImagesBucketExist } from "@/utils/produc
 export const useImageUpload = (storeId?: string, images: string[] = [], maxImages: number = 5) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [isCheckingBucket, setIsCheckingBucket] = useState(false);
+  const [isCheckingBucket, setIsCheckingBucket] = useState(true);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [bucketExists, setBucketExists] = useState<boolean | null>(null);
   
   // Check if bucket exists on component mount
   useEffect(() => {
     const checkBucket = async () => {
-      if (!storeId) return;
+      if (!storeId) {
+        setIsCheckingBucket(false);
+        return;
+      }
       
       try {
         setIsCheckingBucket(true);
@@ -21,11 +24,15 @@ export const useImageUpload = (storeId?: string, images: string[] = [], maxImage
         setBucketExists(exists);
         
         if (!exists) {
-          console.warn("Product images bucket doesn't exist");
-          setUploadError("مشكلة في الوصول إلى مخزن الصور، يرجى المحاولة مرة أخرى");
+          console.warn("Product images bucket doesn't exist or not accessible");
+          setUploadError("مشكلة في الوصول إلى مخزن الصور، يرجى التواصل مع الدعم الفني");
+        } else {
+          // Clear any previous errors if bucket exists
+          setUploadError(null);
         }
       } catch (error) {
         console.error("Error checking bucket:", error);
+        setUploadError("حدث خطأ في التحقق من مخزن الصور");
       } finally {
         setIsCheckingBucket(false);
       }
@@ -48,16 +55,11 @@ export const useImageUpload = (storeId?: string, images: string[] = [], maxImage
       return;
     }
     
-    // Check if bucket exists before attempting upload
+    // If bucket doesn't exist, don't try to upload
     if (bucketExists === false) {
-      const exists = await doesProductImagesBucketExist();
-      if (!exists) {
-        setUploadError("مشكلة في الوصول إلى مخزن الصور، يرجى المحاولة مرة أخرى");
-        toast.error("فشل في الوصول إلى مخزن الصور، يرجى المحاولة لاحقًا");
-        return;
-      } else {
-        setBucketExists(true);
-      }
+      setUploadError("مشكلة في الوصول إلى مخزن الصور، يرجى التواصل مع الدعم الفني");
+      toast.error("فشل في الوصول إلى مخزن الصور، يرجى التواصل مع الدعم الفني");
+      return;
     }
     
     setIsUploading(true);
@@ -117,7 +119,7 @@ export const useImageUpload = (storeId?: string, images: string[] = [], maxImage
         toast.success("تم الاتصال بمخزن الصور بنجاح");
       } else {
         toast.error("لا يزال هناك مشكلة في الوصول إلى مخزن الصور");
-        setUploadError("لا يزال هناك مشكلة في الوصول إلى مخزن الصور");
+        setUploadError("لا يزال هناك مشكلة في الوصول إلى مخزن الصور، يرجى التواصل مع الدعم الفني");
       }
     } catch (error) {
       console.error("Error checking bucket:", error);

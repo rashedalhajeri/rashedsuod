@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -30,14 +29,19 @@ export const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) 
  */
 export const doesProductImagesBucketExist = async (): Promise<boolean> => {
   try {
-    const { data: buckets, error } = await supabase.storage.listBuckets();
+    // Instead of checking if the bucket exists (which can cause errors),
+    // we'll try to list objects from the bucket with a limit of 1
+    // This is a more reliable way to check bucket access
+    const { data, error } = await supabase.storage
+      .from('product-images')
+      .list('', { limit: 1 });
     
     if (error) {
       console.error("Error checking bucket existence:", error);
       return false;
     }
     
-    return buckets?.some(bucket => bucket.name === 'product-images') || false;
+    return true;
   } catch (error) {
     console.error("Unexpected error in doesProductImagesBucketExist:", error);
     return false;
@@ -52,14 +56,8 @@ export const doesProductImagesBucketExist = async (): Promise<boolean> => {
  */
 export const uploadProductImage = async (file: File, storeId: string): Promise<string | null> => {
   try {
-    // Check if bucket exists
-    const bucketExists = await doesProductImagesBucketExist();
-    
-    if (!bucketExists) {
-      console.error("Product images bucket does not exist");
-      toast.error("خطأ في وصول مخزن الصور، يرجى إعادة المحاولة لاحقًا");
-      return null;
-    }
+    // We won't check bucket existence before every upload anymore
+    // since we already check it when component loads
     
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
