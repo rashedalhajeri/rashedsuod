@@ -4,7 +4,8 @@ import { X, ChevronLeft } from "lucide-react";
 import ProductGrid from "@/components/store/ProductGrid";
 import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Product, fetchProductsWithFilters } from "@/utils/product-helpers";
+import { Product } from "@/utils/products/types";
+import { fetchProductsWithFilters } from "@/utils/products/product-fetchers";
 
 interface AllProductsSectionProps {
   products: Product[];
@@ -37,14 +38,12 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
   const currentStoreDomain = storeDomain || params.storeDomain;
   
   useEffect(() => {
-    // If we received products via props, use those
     if (initialProducts && initialProducts.length > 0) {
       setProducts(initialProducts);
       setIsLoading(false);
       return;
     }
 
-    // Otherwise fetch products from the database based on section type
     const loadProducts = async () => {
       try {
         setIsLoading(true);
@@ -55,7 +54,6 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
       } catch (err) {
         console.error("Error in fetchProducts:", err);
       } finally {
-        // Add a small delay to make the transition smoother
         setTimeout(() => {
           setIsLoading(false);
         }, 300);
@@ -65,7 +63,6 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
     loadProducts();
   }, [initialProducts, sectionType, categoryId, sectionId]);
   
-  // Determine section title
   const finalTitle = sectionTitle
     ? sectionTitle
     : searchQuery
@@ -74,7 +71,6 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
         ? activeCategory === 'الكل' ? 'كل المنتجات' : activeCategory
         : 'المنتجات';
   
-  // No products to display
   if (!isLoading && products.length === 0) {
     return null;
   }
@@ -90,7 +86,6 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
         <h2 className="text-xl font-bold text-gray-800">{finalTitle}</h2>
         
         <div className="flex items-center gap-2">
-          {/* Show clear search button if there's a search query */}
           {searchQuery && onClearSearch && (
             <Button 
               variant="outline" 
@@ -102,7 +97,6 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
             </Button>
           )}
           
-          {/* View All button */}
           {!searchQuery && currentStoreDomain && (sectionTitle || activeCategory) && (
             <Link to={`/store/${currentStoreDomain}/category/الكل`} className="flex items-center text-blue-600 text-sm font-medium">
               مشاهدة الكل <ChevronLeft size={16} />
@@ -111,7 +105,6 @@ const AllProductsSection: React.FC<AllProductsSectionProps> = ({
         </div>
       </div>
       
-      {/* Product grid without extra spacing */}
       <div className="bg-white p-4 rounded-b-lg shadow-sm border border-t-0 border-gray-100">
         <ProductGrid 
           products={products} 
