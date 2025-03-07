@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
-import { ProtectedRoutes } from './ProtectedRoutes';
+import { ProtectedRoute } from './ProtectedRoutes';
 import Index from '@/pages/Index';
 import Auth from '@/pages/Auth';
 import Dashboard from '@/pages/Dashboard';
@@ -34,7 +34,7 @@ const AppRoutes = () => {
       <Route path="/create-store" element={<CreateStore />} />
       
       {/* Dashboard Routes */}
-      <Route path="/dashboard" element={<ProtectedRoutes><Dashboard /></ProtectedRoutes>}>
+      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>}>
         <Route index element={<Home />} />
         <Route path="products" element={<Products />} />
         <Route path="categories" element={<Categories />} />
@@ -46,8 +46,8 @@ const AppRoutes = () => {
       </Route>
       
       {/* Product CRUD Routes */}
-      <Route path="/products/:productId" element={<ProtectedRoutes><ProductDetail /></ProtectedRoutes>} />
-      <Route path="/products/new" element={<ProtectedRoutes><ProductDetail /></ProtectedRoutes>} />
+      <Route path="/products/:productId" element={<ProtectedRoute><ProductDetail /></ProtectedRoute>} />
+      <Route path="/products/new" element={<ProtectedRoute><ProductDetail /></ProtectedRoute>} />
       
       {/* Store Front Routes */}
       <Route path="/store/:storeDomain" element={<Store />} />

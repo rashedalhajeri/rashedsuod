@@ -46,11 +46,11 @@ const ProductDetail = () => {
         track_inventory: Boolean(data.track_inventory),
         require_customer_name: Boolean(data.require_customer_name),
         require_customer_image: Boolean(data.require_customer_image),
-        available_colors: data.available_colors || [],
-        available_sizes: data.available_sizes || [],
+        available_colors: Array.isArray(data.available_colors) ? data.available_colors : [],
+        available_sizes: Array.isArray(data.available_sizes) ? data.available_sizes : [],
         images: [
           ...(data.image_url ? [data.image_url] : []),
-          ...(data.additional_images || [])
+          ...(Array.isArray(data.additional_images) ? data.additional_images : [])
         ]
       };
     },
