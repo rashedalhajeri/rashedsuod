@@ -6,7 +6,6 @@ import { useIsMobile } from "@/hooks/use-media-query";
 import { motion } from "framer-motion";
 import { ProductImage } from "./item/ProductImage";
 import { ProductPrice } from "./item/ProductPrice";
-import { ProductActions } from "./item/ProductActions";
 import { Badge } from "@/components/ui/badge";
 
 interface ProductListItemProps {
@@ -92,28 +91,8 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
                 )}
               </div>
             </div>
-            
-            <ProductActions 
-              id={id}
-              isArchived={is_archived}
-              isActive={is_active}
-              onEdit={onEdit}
-              onArchive={onArchive}
-              onActivate={onActivate}
-              isMobile={true}
-            />
           </div>
         </div>
-        
-        <ProductActions 
-          id={id}
-          isArchived={is_archived}
-          isActive={is_active}
-          onEdit={onEdit}
-          onArchive={onArchive}
-          onActivate={onActivate}
-          isMobile={false}
-        />
       </div>
     </motion.div>
   );
