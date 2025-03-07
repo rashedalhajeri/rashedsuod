@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Product, RawProductData } from "@/utils/products/types";
 import { mapRawProductToProduct } from "@/utils/products/mappers";
@@ -51,13 +52,13 @@ class SupabaseDatabaseClient implements DatabaseClient {
           return [];
         }
         
-        // Fix: Break type recursion by using any[] type casting
-        const rawData = data as any[];
+        // Fix: Break recursion by casting to unknown first, then to a simple array type
+        const rawData = data as unknown as RawProductData[];
         const processedProducts: Product[] = [];
         
         // Use standard for loop to avoid TypeScript recursion issues
         for (let i = 0; i < rawData.length; i++) {
-          const product = mapRawProductToProduct(rawData[i] as RawProductData);
+          const product = mapRawProductToProduct(rawData[i]);
           processedProducts.push(product);
         }
         
@@ -100,17 +101,15 @@ class SupabaseDatabaseClient implements DatabaseClient {
           
         if (error) throw error;
         
-        // Modified approach: break the type recursion by using unknown first
+        // Fix: Break recursion by casting to unknown first, then to a specific array type
         const processedData: Product[] = [];
         
         if (data && data.length > 0) {
-          // Convert to unknown to break type recursion, then cast to array
-          const rawData = data as unknown as any[];
+          // Cast to unknown first to break type recursion
+          const rawData = data as unknown as RawProductData[];
           
           for (let i = 0; i < rawData.length; i++) {
-            // Use simple type casting
-            const item = rawData[i] as RawProductData;
-            const processed = mapRawProductToProduct(item);
+            const processed = mapRawProductToProduct(rawData[i]);
             processedData.push(processed);
           }
         }
