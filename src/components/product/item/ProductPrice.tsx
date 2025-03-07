@@ -22,15 +22,15 @@ export const ProductPrice: React.FC<ProductPriceProps> = ({
   let discountSize = "text-xs";
   
   if (size === "sm") {
-    priceSize = "text-xs";
-    discountSize = "text-[10px]";
+    priceSize = "text-sm";
+    discountSize = "text-xs";
   } else if (size === "lg") {
     priceSize = "text-base";
     discountSize = "text-xs";
   }
 
   return (
-    <div className={`flex items-center gap-1 ${className}`}>
+    <div className={`flex items-center gap-1.5 ${className}`}>
       {hasDiscount ? (
         <>
           <span className={`font-bold text-red-600 ${priceSize} force-en-nums`}>

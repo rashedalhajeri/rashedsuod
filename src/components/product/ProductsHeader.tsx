@@ -64,14 +64,14 @@ const ProductsHeader: React.FC<ProductsHeaderProps> = ({
       <div className="flex items-center gap-2 w-full">
         <div className="relative flex-1">
           <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-            <Search className="h-3.5 w-3.5" />
+            <Search className="h-4 w-4" />
           </div>
           <Input
             type="text"
             placeholder="بحث..."
             value={searchTerm}
             onChange={(e) => onSearch(e.target.value)}
-            className="pr-2.5 pl-8 bg-white border-gray-200 h-9 text-xs placeholder:text-gray-400 rounded-lg w-full"
+            className="pr-3 pl-9 bg-white border-gray-200 h-10 text-sm placeholder:text-gray-400 rounded-lg w-full"
             dir="rtl"
           />
         </div>
@@ -82,19 +82,19 @@ const ProductsHeader: React.FC<ProductsHeaderProps> = ({
             size="sm"
             onClick={onRefresh}
             disabled={isRefreshing}
-            className="whitespace-nowrap flex items-center gap-1 h-9 text-xs px-2.5"
+            className="whitespace-nowrap flex items-center gap-1 h-10 text-xs px-3"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} /> 
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} /> 
             تحديث
           </Button>
         )}
         
         <Button 
           onClick={onAddProduct}
-          className="h-9 whitespace-nowrap px-2.5 text-xs"
+          className="h-10 whitespace-nowrap px-3 text-sm"
           size="sm"
         >
-          <Plus className="h-3.5 w-3.5 ml-1" /> إضافة
+          <Plus className="h-4 w-4 ml-1" /> إضافة
         </Button>
       </div>
     </motion.div>
