@@ -1,4 +1,3 @@
-
 import { useState, useEffect, ChangeEvent } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "@/components/ui/use-toast";
@@ -44,6 +43,7 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
       is_archived: false,
       sales_count: 0,
       images: [],
+      is_active: true,
     },
   });
 
@@ -124,7 +124,8 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
         reset({
           ...mappedProduct,
           images: mappedProduct.images || [],
-          section_id: data.section_id || null
+          section_id: data.section_id || null,
+          is_active: mappedProduct.is_active
         });
       } catch (error: any) {
         console.error("Unexpected error fetching product:", error);
@@ -284,7 +285,8 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     isLoadingCategories,
     formData: {
       ...getValues(),
-      images: watch('images') || []
+      images: watch('images') || [],
+      is_active: watch('is_active')
     },
     handleChange,
     handleSwitchChange,

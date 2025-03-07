@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useStoreData } from "@/hooks/use-store-data";
 import { useQuery } from "@tanstack/react-query";
@@ -139,7 +138,6 @@ const Products = () => {
 
   const handleActivateProduct = async (productId: string, isActive: boolean) => {
     try {
-      // Update the product's is_active status using our database client
       const { data, error } = await databaseClient.products.activateProduct(productId, isActive);
       
       if (error) {
@@ -214,7 +212,7 @@ const Products = () => {
               {archivedCount > 0 && (
                 <Badge variant="outline" className="mr-2 font-normal">
                   <ArchiveIcon className="h-3 w-3 ml-1" />
-                  {archivedCount} مؤرشف
+                  {archivedCount} م��رشف
                 </Badge>
               )}
               {inactiveCount > 0 && (

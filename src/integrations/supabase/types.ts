@@ -401,6 +401,7 @@ export type Database = {
           has_sizes: boolean | null
           id: string
           image_url: string | null
+          is_active: boolean
           is_archived: boolean | null
           is_featured: boolean | null
           name: string
@@ -426,6 +427,7 @@ export type Database = {
           has_sizes?: boolean | null
           id?: string
           image_url?: string | null
+          is_active?: boolean
           is_archived?: boolean | null
           is_featured?: boolean | null
           name: string
@@ -451,6 +453,7 @@ export type Database = {
           has_sizes?: boolean | null
           id?: string
           image_url?: string | null
+          is_active?: boolean
           is_archived?: boolean | null
           is_featured?: boolean | null
           name?: string
