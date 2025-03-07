@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -72,28 +71,15 @@ const AdvancedFeaturesSection: React.FC<AdvancedFeaturesSectionProps> = ({
         </CardHeader>
         
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {features.map((feature) => (
-              <div 
-                key={feature.id}
-                className={`flex items-center justify-between p-3 border ${feature.checked ? 'border-primary/20 bg-primary/5' : 'border-gray-100'} rounded-md transition-colors hover:bg-gray-50`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`rounded-full ${feature.checked ? 'bg-primary/10' : 'bg-gray-100'} p-2`}>
-                    {feature.icon}
-                  </div>
-                  <div>
-                    <Label htmlFor={feature.id} className="font-medium cursor-pointer">{feature.name}</Label>
-                    <p className="text-xs text-gray-500">{feature.description}</p>
-                  </div>
-                </div>
-                <Switch 
-                  id={feature.id}
-                  checked={feature.checked}
-                  onCheckedChange={(checked) => handleSwitchChange(feature.id, checked)}
-                />
-              </div>
-            ))}
+          <div className="flex justify-center">
+            <Button 
+              variant="secondary"
+              className="w-full max-w-md flex items-center justify-center gap-2 py-6"
+              onClick={() => setDialogOpen(true)}
+            >
+              <Sparkles className="h-5 w-5 text-amber-500" />
+              <span>إضافة خصائص متقدمة للمنتج</span>
+            </Button>
           </div>
         </CardContent>
       </Card>
