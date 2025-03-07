@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle
 } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 // Import form sections
 import BasicInfoSection from "./form/BasicInfoSection";
@@ -14,6 +16,7 @@ import ProductFormActions from "./form/ProductFormActions";
 import ConditionalSections from "./form/ConditionalSections";
 import FormSection from "./form/FormSection";
 import { useProductFormSubmit, ProductFormData } from "./form/useProductFormSubmit";
+import { useProductCategories } from "@/hooks/use-product-categories";
 
 interface ProductFormDialogProps {
   isOpen: boolean;
@@ -41,7 +44,8 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
     require_customer_name: false,
     require_customer_image: false,
     available_colors: [],
-    available_sizes: []
+    available_sizes: [],
+    category_id: null
   });
   
   const { isSubmitting, handleSubmit } = useProductFormSubmit({
@@ -49,6 +53,8 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
     onSuccess: onAddSuccess,
     onClose: () => onOpenChange(false)
   });
+
+  const { categories, loading: categoriesLoading } = useProductCategories(storeId);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -88,6 +94,13 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
     }));
   };
 
+  const handleCategoryChange = (categoryId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      category_id: categoryId || null
+    }));
+  };
+
   const toggleDiscount = () => {
     setFormData(prev => ({
       ...prev,
@@ -119,6 +132,32 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
                   description={formData.description}
                   handleInputChange={handleInputChange}
                 />
+                
+                <div className="space-y-2">
+                  <Label htmlFor="category_id">الفئة</Label>
+                  <Select 
+                    value={formData.category_id || ""} 
+                    onValueChange={handleCategoryChange}
+                  >
+                    <SelectTrigger id="category_id">
+                      <SelectValue placeholder="اختر الفئة" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">بدون فئة</SelectItem>
+                      {categories.map(category => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {categoriesLoading && (
+                    <p className="text-xs text-gray-500">جاري تحميل الفئات...</p>
+                  )}
+                  {categories.length === 0 && !categoriesLoading && (
+                    <p className="text-xs text-gray-500">لا توجد فئات متاحة. يمكنك إضافة فئات من قسم "الفئات والأقسام"</p>
+                  )}
+                </div>
                 
                 <PricingSection 
                   price={formData.price}

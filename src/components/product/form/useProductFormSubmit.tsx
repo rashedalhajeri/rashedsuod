@@ -17,6 +17,7 @@ export interface ProductFormData {
   require_customer_image: boolean;
   available_colors?: string[] | null;
   available_sizes?: string[] | null;
+  category_id?: string | null;
 }
 
 interface UseProductFormSubmitProps {
@@ -85,7 +86,8 @@ export const useProductFormSubmit = ({ storeId, onSuccess, onClose }: UseProduct
             available_colors: formData.has_colors ? formData.available_colors : null,
             available_sizes: formData.has_sizes ? formData.available_sizes : null,
             image_url: formData.images[0] || null,
-            additional_images: formData.images.length > 1 ? formData.images.slice(1) : []
+            additional_images: formData.images.length > 1 ? formData.images.slice(1) : [],
+            category_id: formData.category_id || null
           }
         ])
         .select();
