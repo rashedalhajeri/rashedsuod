@@ -15,7 +15,7 @@ import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import SaveButton from "@/components/ui/save-button";
-import ImageUploadGrid from "@/components/ui/image-upload-grid";
+import { ImageUploadGrid } from "@/components/ui/image-upload";
 import { fetchCategories } from "@/services/category-service";
 import { Percent, Box, Tag, User, Image as ImageIcon } from "lucide-react";
 import { Product, getProductById, updateProduct, deleteProduct } from "@/utils/product-helpers";
