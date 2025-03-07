@@ -78,12 +78,13 @@ const DashboardHome: React.FC = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6 pb-8">
-        {/* Welcome Section with Low Stock Alert */}
+        {/* Welcome Section with Store Logo */}
         <WelcomeSection 
           storeName={storeData?.store_name || "متجرك"} 
           ownerName={userName}
           newOrdersCount={statsData?.orders || 0}
           lowStockCount={lowStockCount}
+          logoUrl={storeData?.logo_url}
         />
         
         {/* Subscription Alert for Basic Plan */}
