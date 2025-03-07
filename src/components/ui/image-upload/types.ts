@@ -21,3 +21,9 @@ export interface UploadDropZoneProps {
   onDrop: (e: React.DragEvent) => void;
   isEmpty: boolean;
 }
+
+export interface UploadErrorAlertProps {
+  errorMessage: string;
+  onRetry: () => void;
+  isRetrying: boolean;
+}
