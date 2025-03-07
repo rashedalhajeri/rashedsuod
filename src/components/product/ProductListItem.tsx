@@ -5,12 +5,9 @@ import { Product } from "@/utils/products/types";
 import { useIsMobile } from "@/hooks/use-media-query";
 import { motion } from "framer-motion";
 import { ProductImage } from "./item/ProductImage";
-import { ProductBadges } from "./item/ProductBadges";
 import { ProductPrice } from "./item/ProductPrice";
 import { ProductActions } from "./item/ProductActions";
 import { Badge } from "@/components/ui/badge";
-import { formatDate } from "@/lib/utils";
-import { Archive, EyeOff, ToggleLeft } from "lucide-react";
 
 interface ProductListItemProps {
   product: Product;
@@ -39,11 +36,6 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
     images,
     is_archived,
     is_active = true,
-    track_inventory,
-    stock_quantity,
-    sales_count = 0,
-    created_at,
-    category
   } = product;
 
   const isMobile = useIsMobile();
@@ -52,7 +44,10 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
     ? images[0]
     : "/placeholder.svg";
 
-  const hasLowStock = track_inventory && stock_quantity !== null && stock_quantity <= 5;
+  // Calculate discount percentage if applicable
+  const discountPercentage = discount_price && discount_price < price 
+    ? Math.round((1 - (discount_price / price)) * 100) 
+    : null;
 
   return (
     <motion.div 
@@ -82,50 +77,19 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
         <div className="flex-1 min-w-0 mr-2 sm:mr-3">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
             <div className="flex-1">
-              <div className="flex flex-wrap items-center gap-1 sm:gap-2 mb-1">
-                <h3 className="text-sm font-medium text-gray-900 leading-tight line-clamp-1">{name}</h3>
-                {is_archived && (
-                  <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200 flex gap-1 h-5 px-1.5 items-center">
-                    <Archive className="h-3 w-3" />
-                    <span className="text-[10px]">مسودة</span>
-                  </Badge>
-                )}
-                {!is_active && !is_archived && (
-                  <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200 flex gap-1 h-5 px-1.5 items-center">
-                    <ToggleLeft className="h-3 w-3" />
-                    <span className="text-[10px]">غير نشط</span>
-                  </Badge>
-                )}
-              </div>
+              {/* Product Name */}
+              <h3 className="text-sm font-medium text-gray-900 leading-tight line-clamp-1 mb-2">{name}</h3>
               
-              <div className="flex items-center flex-wrap gap-1 mb-1.5">
-                <ProductBadges product={product} />
-                
-                {category?.name && (
-                  <Badge variant="secondary" className="bg-gray-100 text-gray-700 hover:bg-gray-200 h-5 px-1.5">
-                    <span className="text-[10px]">{category.name}</span>
-                  </Badge>
-                )}
-                
-                {hasLowStock && (
-                  <Badge variant="destructive" className="bg-red-50 text-red-600 border-red-200 h-5 px-1.5">
-                    <span className="text-[10px]">المخزون منخفض ({stock_quantity})</span>
-                  </Badge>
-                )}
-              </div>
-              
-              <div className="flex items-center justify-between">
+              {/* Product Price */}
+              <div className="flex items-center">
                 <ProductPrice price={price} discountPrice={discount_price} size={isMobile ? "sm" : "md"} />
                 
-                {/* هذا هو العنصر الذي سيتم إخفاؤه - لن يتم عرض المبيعات وتاريخ الإضافة */}
-                {/* <div className="hidden sm:flex text-xs text-gray-500 gap-3">
-                  <span className="flex items-center gap-1">
-                    <span className="text-gray-400">المبيعات:</span> {sales_count}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span className="text-gray-400">تاريخ الإضافة:</span> {formatDate(created_at)}
-                  </span>
-                </div> */}
+                {/* Discount Badge - Only show if there's a discount */}
+                {discountPercentage && discountPercentage > 0 && (
+                  <Badge className="mr-2 bg-red-500 text-white border-0">
+                    {discountPercentage}% خصم
+                  </Badge>
+                )}
               </div>
             </div>
             
