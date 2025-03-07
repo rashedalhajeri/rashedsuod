@@ -199,7 +199,7 @@ const OrdersList: React.FC<OrdersListProps> = ({
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" dir="rtl" className="w-48">
+                      <DropdownMenuContent align="end" className="w-48 rtl">
                         <DropdownMenuItem onClick={() => onUpdateStatus(order.id, "processing")} className="flex items-center gap-2">
                           <Clock className="h-4 w-4 text-blue-500" />
                           <span>قيد المعالجة</span>

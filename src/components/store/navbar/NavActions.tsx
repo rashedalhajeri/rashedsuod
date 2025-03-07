@@ -38,7 +38,7 @@ const NavActions: React.FC<NavActionsProps> = ({
             <User className="h-5 w-5 sm:h-6 sm:w-6" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent dir="rtl" align="end" className="w-48 sm:w-56 mt-2 border-none shadow-lg rounded-xl overflow-hidden">
+        <DropdownMenuContent align="end" className="w-48 sm:w-56 mt-2 border-none shadow-lg rounded-xl overflow-hidden rtl">
           <div className="p-3 pb-2 text-center bg-gradient-to-l from-purple-50 to-indigo-50">
             <h3 className="font-semibold text-primary">حسابي</h3>
           </div>
