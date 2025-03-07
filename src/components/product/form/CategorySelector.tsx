@@ -28,6 +28,8 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
     queryFn: async () => {
       if (!storeId) return [];
       
+      console.log("Fetching categories for store ID:", storeId);
+      
       const { data, error } = await supabase
         .from('categories')
         .select('*')
@@ -39,6 +41,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
         throw new Error(error.message);
       }
       
+      console.log("Fetched categories:", data?.length || 0);
       return data || [];
     },
     enabled: !!storeId,
@@ -55,6 +58,8 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
     console.error("Error loading categories:", error);
   }
 
+  const selectedValue = categoryId || "none";
+
   return (
     <div className="space-y-2 bg-white rounded-lg border border-gray-100 p-4 shadow-sm">
       <div className="flex items-center gap-2 mb-2">
@@ -65,7 +70,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
       <div className="grid gap-2">
         <Label htmlFor="category">اختر الفئة المناسبة للمنتج</Label>
         <Select 
-          value={categoryId || "none"} 
+          value={selectedValue} 
           onValueChange={onCategoryChange}
           disabled={isLoading}
         >

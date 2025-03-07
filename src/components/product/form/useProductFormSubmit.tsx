@@ -45,13 +45,24 @@ export const useProductFormSubmit = ({
       return;
     }
     
+    if (!formData.name || formData.price <= 0 || !formData.images.length) {
+      toast({
+        title: "خطأ",
+        description: "يرجى ملء جميع الحقول المطلوبة",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
+      console.log("Submitting product data:", formData);
+      
       // Prepare data for submission
       const productData = {
         name: formData.name,
-        description: formData.description,
+        description: formData.description || '',
         price: formData.price,
         discount_price: formData.discount_price,
         image_url: formData.images[0] || null,
@@ -69,8 +80,11 @@ export const useProductFormSubmit = ({
         section_id: formData.section_id,
         is_featured: false,
         is_archived: false,
+        is_active: true,
         sales_count: 0
       };
+      
+      console.log("Product data for database:", productData);
       
       // Submit to database
       const { data, error } = await supabase
@@ -83,6 +97,8 @@ export const useProductFormSubmit = ({
         console.error("Error adding product:", error);
         throw new Error(error.message);
       }
+      
+      console.log("Product added successfully:", data);
       
       // Show success message
       toast({
@@ -101,6 +117,7 @@ export const useProductFormSubmit = ({
       }
       
     } catch (error: any) {
+      console.error("Error in handleSubmit:", error);
       toast({
         title: "خطأ",
         description: error.message || "حدث خطأ أثناء إضافة المنتج",

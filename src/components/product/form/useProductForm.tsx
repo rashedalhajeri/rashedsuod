@@ -22,12 +22,16 @@ export const useProductForm = (initialData?: Partial<ProductFormData>) => {
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+    
+    let parsedValue = value;
+    if (type === 'number') {
+      parsedValue = value === '' ? 0 : parseFloat(value) || 0;
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'price' || name === 'stock_quantity' || name === 'discount_price' 
-        ? parseFloat(value) || 0 
-        : value
+      [name]: parsedValue
     }));
   };
   
@@ -60,6 +64,7 @@ export const useProductForm = (initialData?: Partial<ProductFormData>) => {
   };
 
   const handleCategoryChange = (categoryId: string) => {
+    console.log("Category changed to:", categoryId);
     setFormData(prev => ({
       ...prev,
       category_id: categoryId === "none" ? null : categoryId
@@ -67,6 +72,7 @@ export const useProductForm = (initialData?: Partial<ProductFormData>) => {
   };
 
   const handleSectionChange = (sectionId: string) => {
+    console.log("Section changed to:", sectionId);
     setFormData(prev => ({
       ...prev,
       section_id: sectionId === "none" ? null : sectionId
