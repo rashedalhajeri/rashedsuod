@@ -40,7 +40,8 @@ const ProductsList: React.FC<ProductsListProps> = ({
   onRefresh
 }) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [filterActive, setFilterActive] = useState<string>("all"); // "all", "active", "inactive", "archived"
+  // Changed default filter to "active" instead of "all"
+  const [filterActive, setFilterActive] = useState<string>("active"); 
   
   const handleToggleSelection = (id: string, isSelected: boolean) => {
     const newSelectedItems = isSelected
@@ -93,12 +94,12 @@ const ProductsList: React.FC<ProductsListProps> = ({
   }, [products, searchTerm, filterActive]);
 
   const getFilterCounts = () => {
-    const all = products.length;
+    // Removed "all" count since we're removing that option
     const active = products.filter(p => p.is_active && !p.is_archived).length;
     const inactive = products.filter(p => !p.is_active && !p.is_archived).length;
     const archived = products.filter(p => p.is_archived).length;
     
-    return { all, active, inactive, archived };
+    return { active, inactive, archived };
   };
   
   const filterCounts = getFilterCounts();
@@ -126,20 +127,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
           <div className="flex items-center w-full sm:w-auto justify-between sm:justify-normal gap-2">
             <div className="flex overflow-x-auto py-1 scrollbar-hide">
               <div className="flex gap-1.5">
-                <Button
-                  variant={filterActive === "all" ? "default" : "outline"} 
-                  size="sm"
-                  onClick={() => setFilterActive("all")}
-                  className={cn(
-                    "rounded-full text-xs min-w-fit",
-                    filterActive === "all" ? "bg-primary text-white" : "bg-white text-gray-700"
-                  )}
-                >
-                  الكل
-                  <Badge variant="secondary" className="ml-1 text-[10px] bg-white/20 text-white">
-                    {filterCounts.all}
-                  </Badge>
-                </Button>
+                {/* Removed "all" button as requested */}
                 <Button
                   variant={filterActive === "active" ? "default" : "outline"}
                   size="sm"
@@ -177,7 +165,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
                     filterActive === "archived" ? "bg-blue-500 text-white border-blue-500" : "bg-white text-gray-700"
                   )}
                 >
-                  مؤرشف
+                  مسودة
                   <Badge variant="secondary" className="ml-1 text-[10px] bg-white/20 text-white">
                     {filterCounts.archived}
                   </Badge>
@@ -204,9 +192,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
                 
                 <DropdownMenuSeparator />
                 
-                <DropdownMenuItem onClick={() => setFilterActive("all")}>
-                  عرض الكل
-                </DropdownMenuItem>
+                {/* Updated dropdown menu items to match main filter buttons */}
                 <DropdownMenuItem onClick={() => setFilterActive("active")}>
                   عرض النشطة فقط
                 </DropdownMenuItem>
@@ -214,7 +200,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
                   عرض غير النشطة فقط
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setFilterActive("archived")}>
-                  عرض المؤرشفة فقط
+                  عرض المسودات فقط
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

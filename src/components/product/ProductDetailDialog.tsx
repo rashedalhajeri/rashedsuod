@@ -236,12 +236,12 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
                   {formData.is_archived ? (
                     <>
                       <ArrowUpCircle className="h-4 w-4" />
-                      إلغاء الأرشفة
+                      إلغاء المسودة
                     </>
                   ) : (
                     <>
                       <Archive className="h-4 w-4" />
-                      أرشفة المنتج
+                      حفظ كمسودة
                     </>
                   )}
                 </Button>
@@ -282,7 +282,7 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
               <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0" />
               <div>
                 <p className="font-medium mb-1">ملاحظة هامة</p>
-                <p>المنتجات المرتبطة بطلبات سابقة لا يمكن حذفها نهائياً، سيتم أرشفتها فقط.</p>
+                <p>المنتجات المرتبطة بطلبات سابقة لا يمكن حذفها نهائياً، سيتم حفظها كمسودة فقط.</p>
               </div>
             </div>
           </>
@@ -299,13 +299,13 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
       <ConfirmDialog
         open={showArchiveConfirm}
         onOpenChange={setShowArchiveConfirm}
-        title={formData.is_archived ? "تأكيد إلغاء أرشفة المنتج" : "تأكيد أرشفة المنتج"}
+        title={formData.is_archived ? "تأكيد إلغاء المسودة" : "تأكيد حفظ كمسودة"}
         description={
           formData.is_archived 
-            ? "إلغاء أرشفة هذا المنتج سيجعله ظاهراً مرة أخرى في المتجر. هل تريد المتابعة؟"
-            : "أرشفة هذا المنتج سيخفيه من المتجر دون حذفه من قاعدة البيانات. يمكنك إلغاء الأرشفة في أي وقت."
+            ? "إلغاء وضع المسودة لهذا المنتج سيجعله ظاهراً مرة أخرى في المتجر. هل تريد المتابعة؟"
+            : "حفظ هذا المنتج كمسودة سيخفيه من المتجر دون حذفه من قاعدة البيانات. يمكنك إلغاء المسودة في أي وقت."
         }
-        confirmText={formData.is_archived ? "إلغاء الأرشفة" : "أرشفة المنتج"}
+        confirmText={formData.is_archived ? "إلغاء المسودة" : "حفظ كمسودة"}
         cancelText="إلغاء"
         onConfirm={executeArchive}
         confirmButtonProps={{ 

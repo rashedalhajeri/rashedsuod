@@ -87,7 +87,7 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
                 {is_archived && (
                   <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200 flex gap-1 h-5 px-1.5 items-center">
                     <Archive className="h-3 w-3" />
-                    <span className="text-[10px]">مؤرشف</span>
+                    <span className="text-[10px]">مسودة</span>
                   </Badge>
                 )}
                 {!is_active && !is_archived && (
