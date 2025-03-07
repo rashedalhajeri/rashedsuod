@@ -8,14 +8,19 @@ interface ProductActionsProps {
   onQuantityChange: (type: 'increase' | 'decrease') => void;
   onAddToCart: () => void;
   isOutOfStock?: boolean;
+  trackInventory?: boolean;
 }
 
 const ProductActions: React.FC<ProductActionsProps> = ({
   quantity,
   onQuantityChange,
   onAddToCart,
-  isOutOfStock = false
+  isOutOfStock = false,
+  trackInventory = false
 }) => {
+  // If we're not tracking inventory, product is never out of stock
+  const effectivelyOutOfStock = trackInventory && isOutOfStock;
+  
   return (
     <div className="space-y-4">
       {/* Quantity selector */}
@@ -24,7 +29,7 @@ const ProductActions: React.FC<ProductActionsProps> = ({
         <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
           <button
             onClick={() => onQuantityChange('decrease')}
-            disabled={quantity <= 1 || isOutOfStock}
+            disabled={quantity <= 1 || effectivelyOutOfStock}
             className="px-3 py-2 bg-gray-50 text-gray-600 hover:bg-gray-100 disabled:opacity-50"
             aria-label="تقليل الكمية"
           >
@@ -35,7 +40,7 @@ const ProductActions: React.FC<ProductActionsProps> = ({
           
           <button
             onClick={() => onQuantityChange('increase')}
-            disabled={isOutOfStock}
+            disabled={effectivelyOutOfStock}
             className="px-3 py-2 bg-gray-50 text-gray-600 hover:bg-gray-100 disabled:opacity-50"
             aria-label="زيادة الكمية"
           >
@@ -47,13 +52,13 @@ const ProductActions: React.FC<ProductActionsProps> = ({
       {/* Add to cart button */}
       <Button
         onClick={onAddToCart}
-        disabled={isOutOfStock}
+        disabled={effectivelyOutOfStock}
         variant="default"
         size="lg"
         className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl h-12"
       >
         <ShoppingCart className="h-5 w-5 ml-2" />
-        {isOutOfStock ? 'نفدت الكمية' : 'إضافة إلى السلة'}
+        {effectivelyOutOfStock ? 'نفدت الكمية' : 'إضافة إلى السلة'}
       </Button>
     </div>
   );

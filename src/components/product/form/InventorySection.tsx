@@ -3,6 +3,7 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 
 interface InventorySectionProps {
   trackInventory: boolean;
@@ -23,7 +24,9 @@ const InventorySection: React.FC<InventorySectionProps> = ({
         <div className="flex flex-col">
           <Label htmlFor="track_inventory" className="mb-1">تتبع المخزون</Label>
           <span className="text-sm text-gray-500">
-            {trackInventory ? 'كمية محدودة' : 'كمية غير محدودة'}
+            {trackInventory 
+              ? 'كمية محدودة - سيتم تتبع المخزون المتاح' 
+              : 'كمية غير محدودة - لن يتم عرض "نفذت الكمية" أبداً'}
           </span>
         </div>
         <Switch 
@@ -44,6 +47,17 @@ const InventorySection: React.FC<InventorySectionProps> = ({
             value={stockQuantity} 
             onChange={handleInputChange} 
           />
+          {stockQuantity <= 0 && (
+            <Badge variant="outline" className="w-fit mt-1 text-red-500 border-red-200 bg-red-50">
+              تنبيه: المنتج غير متوفر حالياً
+            </Badge>
+          )}
+        </div>
+      )}
+      
+      {!trackInventory && (
+        <div className="p-3 bg-blue-50 border border-blue-100 rounded-md text-sm text-blue-700">
+          <p>تم تعطيل تتبع المخزون. سيكون المنتج متوفراً دائماً بغض النظر عن الكمية المباعة.</p>
         </div>
       )}
     </div>

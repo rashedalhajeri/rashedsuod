@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -79,10 +80,12 @@ const ProductPage = () => {
     if (type === 'decrease' && quantity > 1) {
       setQuantity(quantity - 1);
     } else if (type === 'increase') {
-      const stockLimit = product?.stock_quantity;
-      if (stockLimit && quantity >= stockLimit) {
-        toast.error(`الكمية المتوفرة: ${stockLimit} فقط`);
-        return;
+      // Only check stock limit if inventory tracking is enabled
+      if (product?.track_inventory && product?.stock_quantity) {
+        if (quantity >= product.stock_quantity) {
+          toast.error(`الكمية المتوفرة: ${product.stock_quantity} فقط`);
+          return;
+        }
       }
       setQuantity(quantity + 1);
     }
@@ -116,6 +119,11 @@ const ProductPage = () => {
       maximumFractionDigits: 3
     }).format(price) + ' ' + (currencySymbol || '');
   };
+  
+  // Check if product is out of stock, but only if inventory tracking is enabled
+  const isOutOfStock = product?.track_inventory && 
+                      product?.stock_quantity !== null && 
+                      product?.stock_quantity <= 0;
   
   if (error) {
     return (
@@ -162,7 +170,11 @@ const ProductPage = () => {
               <ProductInfoSkeleton />
             ) : (
               <ProductInfo 
-                product={product} 
+                product={{
+                  ...product,
+                  // Only show stock_quantity in UI if tracking is enabled
+                  stock_quantity: product.track_inventory ? product.stock_quantity : null
+                }} 
                 formatCurrency={formatCurrency} 
               />
             )}
@@ -209,31 +221,16 @@ const ProductPage = () => {
           {!loading && (
             <>
               <div className="text-2xl font-bold text-gray-800">
-                {formatCurrency(product.price)} <span className="text-sm font-normal">KWD</span>
+                {formatCurrency(product.price)}
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden mr-2">
-                  <button
-                    onClick={() => handleQuantityChange('decrease')}
-                    disabled={quantity <= 1}
-                    className="px-3 py-2 bg-gray-50 text-gray-600 hover:bg-gray-100"
-                  >
-                    -
-                  </button>
-                  <span className="w-10 text-center font-medium">{quantity}</span>
-                  <button
-                    onClick={() => handleQuantityChange('increase')}
-                    className="px-3 py-2 bg-gray-50 text-gray-600 hover:bg-gray-100"
-                  >
-                    +
-                  </button>
-                </div>
-                <button 
-                  onClick={handleAddToCart}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                >
-                  إضافة للسلة
-                </button>
+                <ProductActions
+                  quantity={quantity}
+                  onQuantityChange={handleQuantityChange}
+                  onAddToCart={handleAddToCart}
+                  isOutOfStock={isOutOfStock}
+                  trackInventory={product?.track_inventory || false}
+                />
               </div>
             </>
           )}

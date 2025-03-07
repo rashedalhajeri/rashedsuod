@@ -13,6 +13,7 @@ interface ProductInfoProps {
     original_price?: number;
     description?: string;
     stock_quantity?: number | null;
+    track_inventory?: boolean;
   };
   formatCurrency?: (price: number) => string;
 }
@@ -60,7 +61,8 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           )}
         </div>
         
-        {product.stock_quantity !== null && (
+        {/* Only show stock badge when track_inventory is true */}
+        {product.track_inventory && product.stock_quantity !== null && (
           <Badge className={`mb-4 px-3 py-1 ${
             product.stock_quantity > 10 
               ? 'bg-green-100 text-green-800' 
