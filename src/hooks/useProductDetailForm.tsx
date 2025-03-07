@@ -41,13 +41,13 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
       available_colors: [],
       available_sizes: [],
       is_featured: false,
+      images: [], // Add images field to form
     },
   });
 
   // Destructure form methods and state
-  const { reset, getValues, setValue, formState, watch } = form;
-  const formValues = watch();
-
+  const { reset, getValues, setValue, watch } = form;
+  
   // Get the form values (to be used as formData in components)
   const formData = getValues();
 
@@ -104,12 +104,23 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
           return;
         }
 
+        // Ensure data contains is_featured and sales_count fields
+        const enhancedData = {
+          ...data,
+          is_featured: data.is_featured !== undefined ? data.is_featured : false,
+          sales_count: data.sales_count !== undefined ? data.sales_count : 0
+        } as RawProductData;
+
         // Map raw product data to Product type
-        const mappedProduct = mapRawProductToProduct(data as RawProductData);
+        const mappedProduct = mapRawProductToProduct(enhancedData);
+        
         setProduct(mappedProduct);
         
-        // Reset form with product data
-        reset(mappedProduct);
+        // Reset form with product data and explicitly include images
+        reset({
+          ...mappedProduct,
+          images: mappedProduct.images || []
+        });
       } catch (error: any) {
         console.error("Unexpected error fetching product:", error);
         setError(error.message);
@@ -143,7 +154,7 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
 
     setValue('image_url', mainImage);
     setValue('additional_images', additionalImages);
-    setValue('images', images);
+    setValue('images', images); // Set the images array directly
   };
 
   const handleCategoryChange = (categoryId: string) => {
@@ -163,6 +174,9 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
         available_colors: JSON.stringify(formData.available_colors || []),
         available_sizes: JSON.stringify(formData.available_sizes || []),
       };
+
+      // Remove images field as it's not part of the database schema
+      delete (payload as any).images;
 
       const { error } = await supabase
         .from("products")
@@ -265,7 +279,10 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     categories,
     isLoadingCategories,
     // Export form data and handlers for components
-    formData,
+    formData: {
+      ...getValues(),
+      images: watch('images') || []
+    },
     handleChange,
     handleSwitchChange,
     handleImagesChange,

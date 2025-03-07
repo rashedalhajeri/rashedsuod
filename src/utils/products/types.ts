@@ -49,7 +49,7 @@ export interface Product {
   store_id: string;
   is_featured: boolean;
   sales_count: number;
-  images: string[]; // Add this field
+  images: string[]; // This field is for UI purposes
   category?: {
     id: string;
     name: string;
