@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Trash2, Tag, Copy, Archive, CheckCircle, ChevronDown, RefreshCw, ArrowUpCircle, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -47,16 +48,49 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
     
     setIsDeleting(true);
     try {
+      // First check if any selected products are referenced in order_items
+      const { data: orderItems, error: checkError } = await supabase
+        .from("order_items")
+        .select("product_id")
+        .in("product_id", selectedIds);
+        
+      if (checkError) {
+        console.error("Error checking order items:", checkError);
+        toast({
+          variant: "destructive",
+          title: "خطأ في التحقق من الطلبات",
+          description: checkError.message,
+        });
+        return;
+      }
+      
+      // Filter out products that are referenced in orders
+      const productsInOrders = orderItems ? orderItems.map(item => item.product_id) : [];
+      const productsToDelete = selectedIds.filter(id => !productsInOrders.includes(id));
+      
+      // If there are products we can't delete, notify the user
+      if (productsToDelete.length < selectedIds.length) {
+        toast({
+          variant: "destructive",
+          title: "تنبيه",
+          description: `${selectedIds.length - productsToDelete.length} منتجات مرتبطة بطلبات ولا يمكن حذفها.`,
+        });
+        
+        if (productsToDelete.length === 0) {
+          setIsDeleting(false);
+          setShowDeleteDialog(false);
+          return;
+        }
+      }
+      
+      // Delete products that aren't referenced in orders
       const { error } = await supabase
         .from('products')
-        .update({ 
-          is_archived: true,
-          is_active: false 
-        })
-        .in('id', selectedIds);
+        .delete()
+        .in('id', productsToDelete);
         
       if (error) {
-        console.error("Error archiving products:", error);
+        console.error("Error deleting products:", error);
         toast({
           variant: "destructive",
           title: "خطأ في حذف المنتجات",
@@ -67,7 +101,7 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
       
       toast({
         title: "تم الحذف بنجاح",
-        description: `تم حذف ${selectedCount} منتج بنجاح`,
+        description: `تم حذف ${productsToDelete.length} منتج بنجاح`,
       });
       
       onActionComplete();
@@ -287,7 +321,7 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
                   <AlertTriangle className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="font-medium mb-1">ملاحظة هامة</p>
-                    <p>المنتجات التي تم طلبها في طلبات سابقة سيتم إخفاؤها فقط وليس حذفها بالكامل للحفاظ على سجلات الطلبات سليمة.</p>
+                    <p>المنتجات المرتبطة بطلبات سابقة لا يمكن حذفها نهائياً.</p>
                   </div>
                 </div>
               </div>

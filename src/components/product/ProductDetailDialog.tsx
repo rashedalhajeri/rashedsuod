@@ -12,7 +12,7 @@ import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import SaveButton from "@/components/ui/save-button";
 import { useProductDetailForm } from "@/hooks/useProductDetailForm";
-import { AlertTriangle, X } from "lucide-react";
+import { AlertTriangle, X, Save, Trash } from "lucide-react";
 
 // Import form sections
 import BasicInfoSection from "./form/BasicInfoSection";
@@ -96,24 +96,24 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 shadow-xl rounded-lg border-0">
         <div className="absolute right-4 top-4">
           <Button 
             variant="ghost" 
             size="icon" 
             onClick={() => onOpenChange(false)}
-            className="h-6 w-6 rounded-full hover:bg-gray-100"
+            className="h-6 w-6 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <X className="h-4 w-4" />
             <span className="sr-only">إغلاق</span>
           </Button>
         </div>
         
-        <DialogHeader className="space-y-1 pb-4 mb-4 border-b border-gray-100">
-          <DialogTitle className="text-xl font-semibold bg-gradient-to-r from-primary-800 to-primary-600 bg-clip-text text-transparent">
+        <DialogHeader className="space-y-1 pb-4 mb-4 border-b border-gray-100 dark:border-gray-800">
+          <DialogTitle className="text-xl font-semibold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">
             {isUpdating ? "تعديل المنتج" : "إضافة منتج جديد"}
           </DialogTitle>
-          <DialogDescription className="text-gray-500">
+          <DialogDescription className="text-gray-500 dark:text-gray-400">
             قم بتعديل معلومات المنتج حسب احتياجك
           </DialogDescription>
         </DialogHeader>
@@ -184,30 +184,37 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
           />
         </div>
         
-        <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-100">
+        <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
           {isUpdating && (
             <Button
               variant="outline"
               onClick={handleDelete}
               disabled={isSubmitting}
-              className="gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+              className="gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/50"
             >
-              <AlertTriangle className="h-4 w-4" />
+              <Trash className="h-4 w-4" />
               حذف المنتج
             </Button>
           )}
           
           {!isUpdating && <div></div>}
           
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <Button 
               variant="outline" 
               onClick={() => onOpenChange(false)}
-              className="hover:bg-gray-50"
+              className="hover:bg-gray-50 dark:hover:bg-gray-800"
             >
               إلغاء
             </Button>
-            <SaveButton isSaving={isSubmitting} onClick={handleSave} />
+            <Button
+              onClick={handleSave}
+              disabled={isSubmitting}
+              className="gap-2 bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
+            >
+              <Save className="h-4 w-4" />
+              {isSubmitting ? "جاري الحفظ..." : "حفظ المنتج"}
+            </Button>
           </div>
         </div>
       </DialogContent>

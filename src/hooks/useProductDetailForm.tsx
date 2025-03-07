@@ -51,7 +51,6 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
 
   const formData = getValues();
 
-  // Toggle discount function
   const toggleDiscount = () => {
     const currentDiscount = getValues('discount_price');
     setValue('discount_price', currentDiscount === null ? getValues('price') : null);
@@ -234,20 +233,43 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     
     setIsSubmitting(true);
     try {
+      const { data: orderItems, error: checkError } = await supabase
+        .from("order_items")
+        .select("id")
+        .eq("product_id", productId)
+        .limit(1);
+        
+      if (checkError) {
+        console.error("Error checking order items:", checkError);
+        setError(checkError.message);
+        toast({
+          title: "خطأ",
+          description: "فشل في التحقق من طلبات المنتج.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (orderItems && orderItems.length > 0) {
+        toast({
+          title: "غير مسموح",
+          description: "لا يمكن حذف هذا المنتج لأنه مرتبط بطلبات سابقة.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       const { error } = await supabase
         .from("products")
-        .update({ 
-          is_archived: true,
-          is_active: false 
-        })
+        .delete()
         .eq("id", productId);
 
       if (error) {
-        console.error("Error archiving product:", error);
+        console.error("Error deleting product:", error);
         setError(error.message);
         toast({
           title: "خطأ",
-          description: "فشل في حذف المنتج.",
+          description: "فشل في حذف المنتج: " + error.message,
           variant: "destructive",
         });
         return;
@@ -266,11 +288,11 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
         onOpenChange(false);
       }
     } catch (error: any) {
-      console.error("Unexpected error archiving product:", error);
+      console.error("Unexpected error deleting product:", error);
       setError(error.message);
       toast({
         title: "خطأ",
-        description: "فشل في حذف المنتج.",
+        description: "فشل في حذف المنتج: " + error.message,
         variant: "destructive",
       });
     } finally {

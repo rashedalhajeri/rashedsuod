@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Product, RawProductData } from "@/utils/products/types";
 import { mapRawProductToProduct } from "@/utils/products/mappers";
@@ -19,8 +18,10 @@ export interface DatabaseClient {
     getProductById: (productId: string) => Promise<{ data: Product | null, error: any }>;
     updateProduct: (productId: string, updates: any) => Promise<{ data: Product[] | null, error: any }>;
     deleteProduct: (productId: string) => Promise<{ success: boolean, error: any }>;
+    hardDeleteProduct: (productId: string) => Promise<{ success: boolean, error: any }>;
     archiveProduct: (productId: string, isArchived: boolean) => Promise<{ data: Product | null, error: any }>;
     bulkArchiveProducts: (productIds: string[], isArchived: boolean) => Promise<{ success: boolean, error: any }>;
+    bulkDeleteProducts: (productIds: string[]) => Promise<{ success: boolean, error: any, deletedCount: number }>;
     activateProduct: (productId: string, isActive: boolean) => Promise<{ data: Product | null, error: any }>;
     bulkActivateProducts: (productIds: string[], isActive: boolean) => Promise<{ success: boolean, error: any }>;
   };
@@ -38,8 +39,6 @@ class SupabaseDatabaseClient implements DatabaseClient {
       includeArchived: boolean = false
     ): Promise<Product[]> => {
       try {
-        // We no longer pass the supabase client directly to buildProductQuery
-        // Instead we'll build the query here
         let query = supabase
           .from('products')
           .select('*, category:categories(name)')
@@ -49,22 +48,18 @@ class SupabaseDatabaseClient implements DatabaseClient {
           query = query.eq('is_archived', false);
         }
 
-        // Filter by store if provided
         if (storeId) {
           query = query.eq('store_id', storeId);
         }
 
-        // Filter by category if provided
         if (categoryId && categoryId !== 'all' && categoryId !== 'none') {
           query = query.eq('category_id', categoryId);
         }
 
-        // Filter by section if provided
         if (sectionId && sectionId !== 'all' && sectionId !== 'none') {
           query = query.eq('section_id', sectionId);
         }
 
-        // Apply additional filters based on sectionType
         switch (sectionType) {
           case 'best_selling':
             query = query.order('sales_count', { ascending: false });
@@ -79,18 +74,14 @@ class SupabaseDatabaseClient implements DatabaseClient {
             query = query.not('discount_price', 'is', null);
             break;
           case 'category':
-            // Already filtered by category_id above
             break;
           case 'custom':
-            // For custom sections, filtering by section_id above is enough
             break;
           default:
-            // Default sorting for 'all' and other types
             query = query.order('created_at', { ascending: false });
             break;
         }
 
-        // Apply limit if provided
         if (limit && limit > 0) {
           query = query.limit(limit);
         }
@@ -183,6 +174,75 @@ class SupabaseDatabaseClient implements DatabaseClient {
       } catch (error) {
         console.error("Error deleting product:", error);
         return { success: false, error };
+      }
+    },
+
+    hardDeleteProduct: async (productId: string) => {
+      try {
+        const { data: orderItems, error: checkError } = await supabase
+          .from('order_items')
+          .select('id')
+          .eq('product_id', productId)
+          .limit(1);
+          
+        if (checkError) {
+          return { success: false, error: checkError };
+        }
+        
+        if (orderItems && orderItems.length > 0) {
+          return { 
+            success: false, 
+            error: { message: "لا يمكن حذف المنتج لأنه مرتبط بطلبات." } 
+          };
+        }
+        
+        const { error } = await supabase
+          .from('products')
+          .delete()
+          .eq('id', productId);
+          
+        return { success: !error, error };
+      } catch (error) {
+        console.error("Error hard deleting product:", error);
+        return { success: false, error };
+      }
+    },
+
+    bulkDeleteProducts: async (productIds: string[]) => {
+      try {
+        const { data: orderItems, error: checkError } = await supabase
+          .from('order_items')
+          .select('product_id')
+          .in('product_id', productIds);
+          
+        if (checkError) {
+          return { success: false, error: checkError, deletedCount: 0 };
+        }
+        
+        const productsInOrders = orderItems ? orderItems.map(item => item.product_id) : [];
+        const productsToDelete = productIds.filter(id => !productsInOrders.includes(id));
+        
+        if (productsToDelete.length === 0) {
+          return { 
+            success: false, 
+            error: { message: "جميع المنتجات المحددة مرتبطة بطلبات ولا يمكن حذفها." },
+            deletedCount: 0
+          };
+        }
+        
+        const { error } = await supabase
+          .from('products')
+          .delete()
+          .in('id', productsToDelete);
+          
+        return { 
+          success: !error, 
+          error, 
+          deletedCount: productsToDelete.length 
+        };
+      } catch (error) {
+        console.error("Error bulk deleting products:", error);
+        return { success: false, error, deletedCount: 0 };
       }
     },
 

@@ -1,6 +1,7 @@
 
 import { useTheme } from "next-themes"
 import { Toaster as Sonner } from "sonner"
+import { CheckCircle, AlertTriangle, X, Info } from "lucide-react";
 
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
@@ -20,18 +21,22 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
       position="top-center"
-      duration={1000}  // Solo 1 segundo de duración
-      closeButton={false}
-      richColors
+      duration={3000}
+      closeButton={true}
+      richColors={false}
       expand={false}
+      icons={{
+        success: <CheckCircle className="h-4 w-4 text-green-500" />,
+        error: <AlertTriangle className="h-4 w-4 text-red-500" />,
+        warning: <AlertTriangle className="h-4 w-4 text-amber-500" />,
+        info: <Info className="h-4 w-4 text-blue-500" />,
+      }}
       toastOptions={{
-        classNames: {
-          toast: "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg group-[.toaster]:py-2 group-[.toaster]:px-3 group-[.toaster]:max-w-[200px]",
-          description: "group-[.toast]:text-muted-foreground group-[.toast]:text-xs",
-          title: "group-[.toast]:font-medium group-[.toast]:text-sm",
-          actionButton: "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground group-[.toast]:text-xs",
-          cancelButton: "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground group-[.toast]:text-xs",
-        },
+        className: "!bg-black !text-white border-0 shadow-lg py-2 px-3 min-w-0 max-w-[320px] !rounded-md",
+        descriptionClassName: "text-gray-300 text-xs",
+        actionButtonClassName: "bg-white text-black text-xs rounded-sm",
+        cancelButtonClassName: "bg-gray-700 text-white text-xs rounded-sm",
+        closeButtonClassName: "!text-white/70 hover:!text-white",
       }}
       {...props}
     />
