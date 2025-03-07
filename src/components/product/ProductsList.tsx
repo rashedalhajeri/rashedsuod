@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Package, SlidersHorizontal, Search, Check, Archive, ArrowUpDown, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,10 @@ const ProductsList: React.FC<ProductsListProps> = ({
   useEffect(() => {
     setCurrentPage(1);
   }, [filterStatus, sortOption, searchTerm]);
+
+  useEffect(() => {
+    setLocalSearchTerm(searchTerm);
+  }, [searchTerm]);
 
   const handleSelect = (productId: string, isSelected: boolean) => {
     const updatedSelection = isSelected 
@@ -184,28 +189,28 @@ const ProductsList: React.FC<ProductsListProps> = ({
 
   if (!products || products.length === 0) {
     return (
-      <div className="text-center py-12">
-        <Package className="h-12 w-12 mx-auto text-muted-foreground" />
-        <h3 className="mt-4 text-lg font-medium">لا توجد منتجات</h3>
-        <p className="mt-2 text-sm text-muted-foreground">قم بإضافة منتجات جديدة</p>
+      <div className="text-center py-8 sm:py-12">
+        <Package className="h-10 sm:h-12 w-10 sm:w-12 mx-auto text-muted-foreground" />
+        <h3 className="mt-4 text-base sm:text-lg font-medium">لا توجد منتجات</h3>
+        <p className="mt-2 text-xs sm:text-sm text-muted-foreground">قم بإضافة منتجات جديدة</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="p-4 bg-gray-50 border-b">
-        <form onSubmit={handleSearchSubmit} className="flex w-full gap-2 mb-4">
+    <div className="space-y-3 sm:space-y-4">
+      <div className="p-3 sm:p-4 bg-gray-50 border-b">
+        <form onSubmit={handleSearchSubmit} className="flex w-full gap-2 mb-3 sm:mb-4">
           <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               value={localSearchTerm}
               onChange={handleSearch}
               placeholder="بحث عن منتج..."
-              className="pr-3 pl-10 w-full bg-white"
+              className="pr-3 pl-10 w-full bg-white py-1 sm:py-2 h-8 sm:h-10 text-sm"
             />
           </div>
-          <Button type="submit" variant="default" className="shrink-0">
+          <Button type="submit" variant="default" className="shrink-0 h-8 sm:h-10 text-xs sm:text-sm">
             بحث
           </Button>
         </form>
@@ -216,11 +221,11 @@ const ProductsList: React.FC<ProductsListProps> = ({
               variant="outline"
               size="sm"
               onClick={() => handleSelectAll(selectedItems.length < filteredProducts.length)}
-              className="flex items-center gap-1 text-xs"
+              className="flex items-center gap-1 text-xs h-8"
             >
               {selectedItems.length === filteredProducts.length ? (
                 <>
-                  <Check className="h-3.5 w-3.5" />
+                  <Check className="h-3 w-3" />
                   إلغاء تحديد الكل
                 </>
               ) : (
@@ -230,9 +235,8 @@ const ProductsList: React.FC<ProductsListProps> = ({
               )}
             </Button>
             
-            
             {selectedItems.length > 0 && (
-              <span className="mr-2 text-sm text-primary font-medium">
+              <span className="mr-2 text-xs sm:text-sm text-primary font-medium">
                 {selectedItems.length} منتج محدد
               </span>
             )}
@@ -241,11 +245,11 @@ const ProductsList: React.FC<ProductsListProps> = ({
           <div className="flex gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="flex items-center gap-1 text-xs">
+                <Button variant="outline" size="sm" className="flex items-center gap-1 text-xs h-8">
                   <SlidersHorizontal className="h-3.5 w-3.5 ml-1" />
                   {getFilterStatusLabel()}
                   {filterStatus !== "all" && 
-                    <Badge variant="secondary" className="ml-1 h-5">{filteredProducts.length}</Badge>
+                    <Badge variant="secondary" className="ml-1 h-5 sm:h-5 text-[10px] sm:text-xs">{filteredProducts.length}</Badge>
                   }
                 </Button>
               </DropdownMenuTrigger>
@@ -274,7 +278,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="flex items-center gap-1 text-xs">
+                <Button variant="outline" size="sm" className="flex items-center gap-1 text-xs h-8">
                   <ArrowUpDown className="h-3.5 w-3.5 ml-1" />
                   {getSortOptionLabel()}
                 </Button>
@@ -298,10 +302,10 @@ const ProductsList: React.FC<ProductsListProps> = ({
 
       <div className="divide-y">
         {currentProducts.length === 0 ? (
-          <div className="text-center py-12">
-            <Package className="h-12 w-12 mx-auto text-muted-foreground" />
-            <h3 className="mt-4 text-lg font-medium">لا توجد منتجات تطابق البحث</h3>
-            <p className="mt-2 text-sm text-muted-foreground">جرب تغيير المعايير أو إعادة ضبط الفلتر</p>
+          <div className="text-center py-8 sm:py-12">
+            <Package className="h-10 sm:h-12 w-10 sm:w-12 mx-auto text-muted-foreground" />
+            <h3 className="mt-4 text-base sm:text-lg font-medium">لا توجد منتجات تطابق البحث</h3>
+            <p className="mt-2 text-xs sm:text-sm text-muted-foreground">جرب تغيير المعايير أو إعادة ضبط الفلتر</p>
             <Button 
               variant="outline" 
               className="mt-4" 
@@ -338,7 +342,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
       </div>
       
       {pageCount > 1 && (
-        <div className="flex justify-center p-4">
+        <div className="flex justify-center p-3 sm:p-4">
           <Pagination
             pageCount={pageCount}
             currentPage={currentPage} 

@@ -34,6 +34,7 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.1 }}
+      className="mx-auto"
     >
       <Card className="overflow-hidden shadow-md border rounded-xl">
         {selectedItems.length > 0 && (
@@ -41,7 +42,7 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="p-4 sm:p-4 border-b bg-blue-50/80"
+            className="p-3 sm:p-4 border-b bg-blue-50/80"
           >
             <ProductBulkActions 
               selectedCount={selectedItems.length}

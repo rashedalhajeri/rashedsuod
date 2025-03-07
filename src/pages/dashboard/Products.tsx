@@ -72,7 +72,7 @@ const Products = () => {
 
   return (
     <DashboardLayout>
-      <div className="container dashboard-container mx-auto py-5 sm:py-6 px-3 sm:px-4" dir="rtl">
+      <div className="container mx-auto py-3 sm:py-6 px-2 sm:px-4 max-w-6xl" dir="rtl">
         <ProductsHeader 
           archivedCount={archivedCount}
           inactiveCount={inactiveCount}

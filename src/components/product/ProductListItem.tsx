@@ -56,14 +56,14 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
 
   return (
     <motion.div 
-      className={`product-list-item border rounded-md mb-1 ${isSelected ? 'bg-blue-50/60 border-blue-200' : 'bg-white border-gray-100'} 
+      className={`product-list-item border rounded-md shadow-sm ${isSelected ? 'bg-blue-50/60 border-blue-200' : 'bg-white border-gray-100'} 
         ${is_archived ? 'opacity-75' : ''} 
-        ${!is_active ? 'bg-gray-50/70' : ''} transition-all duration-200 hover:shadow-sm`}
+        ${!is_active ? 'bg-gray-50/70' : ''} transition-all duration-200 hover:shadow-md`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="flex items-start sm:items-center p-4">
+      <div className="flex items-start sm:items-center p-3 sm:p-4">
         {/* Checkbox and image container */}
         <div className="flex items-start sm:items-center gap-3">
           <Checkbox
@@ -72,14 +72,14 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
             className="mt-1 sm:mt-0 h-4 w-4 flex-shrink-0"
           />
           
-          <ProductImage imageUrl={imageUrl} name={name} />
+          <ProductImage imageUrl={imageUrl} name={name} size={isMobile ? "sm" : "md"} />
         </div>
         
         {/* Product information */}
-        <div className="flex-1 min-w-0 mr-3">
-          <div className="flex items-start justify-between">
+        <div className="flex-1 min-w-0 mr-2 sm:mr-3">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex flex-wrap items-center gap-1 sm:gap-2 mb-1">
                 <h3 className="text-sm font-medium text-gray-900 leading-tight line-clamp-1">{name}</h3>
                 {is_archived && (
                   <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200 flex gap-1 h-5 px-1.5 items-center">
@@ -112,7 +112,7 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
               </div>
               
               <div className="flex items-center justify-between">
-                <ProductPrice price={price} discountPrice={discount_price} />
+                <ProductPrice price={price} discountPrice={discount_price} size={isMobile ? "sm" : "md"} />
                 
                 <div className="hidden sm:flex text-xs text-gray-500 gap-3">
                   <span className="flex items-center gap-1">

@@ -1,9 +1,9 @@
 
 import React, { useState } from "react";
-import { Trash2, Tag, Copy, Archive, CheckCircle, ChevronDown, RefreshCw, ArrowUpCircle, AlertTriangle } from "lucide-react";
+import { Trash2, Archive, ChevronDown, RefreshCw, ArrowUpCircle, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,9 +56,7 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
         
       if (checkError) {
         console.error("Error checking order items:", checkError);
-        toast({
-          variant: "destructive",
-          title: "خطأ في التحقق من الطلبات",
+        toast.error("خطأ في التحقق من الطلبات", {
           description: checkError.message,
         });
         return;
@@ -70,9 +68,7 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
       
       // If there are products we can't delete, notify the user
       if (productsToDelete.length < selectedIds.length) {
-        toast({
-          variant: "destructive",
-          title: "تنبيه",
+        toast.warning("تنبيه", {
           description: `${selectedIds.length - productsToDelete.length} منتجات مرتبطة بطلبات ولا يمكن حذفها.`,
         });
         
@@ -91,25 +87,20 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
         
       if (error) {
         console.error("Error deleting products:", error);
-        toast({
-          variant: "destructive",
-          title: "خطأ في حذف المنتجات",
+        toast.error("خطأ في حذف المنتجات", {
           description: error.message,
         });
         return;
       }
       
-      toast({
-        title: "تم الحذف بنجاح",
+      toast.success("تم الحذف بنجاح", {
         description: `تم حذف ${productsToDelete.length} منتج بنجاح`,
       });
       
       onActionComplete();
     } catch (error: any) {
       console.error("Unexpected error:", error);
-      toast({
-        variant: "destructive",
-        title: "خطأ غير متوقع",
+      toast.error("خطأ غير متوقع", {
         description: error.message,
       });
     } finally {
@@ -127,25 +118,20 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
         
       if (!success) {
         console.error("Error archiving products:", error);
-        toast({
-          variant: "destructive",
-          title: "خطأ في أرشفة المنتجات",
+        toast.error("خطأ في أرشفة المنتجات", {
           description: error.message,
         });
         return;
       }
       
-      toast({
-        title: "تمت الأرشفة بنجاح",
+      toast.success("تمت الأرشفة بنجاح", {
         description: `تم أرشفة ${selectedCount} منتج بنجاح`,
       });
       
       onActionComplete();
     } catch (error: any) {
       console.error("Unexpected error:", error);
-      toast({
-        variant: "destructive",
-        title: "خطأ غير متوقع",
+      toast.error("خطأ غير متوقع", {
         description: error.message,
       });
     } finally {
@@ -163,25 +149,20 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
         
       if (!success) {
         console.error("Error unarchiving products:", error);
-        toast({
-          variant: "destructive",
-          title: "خطأ في إلغاء ��رشفة المنتجات",
+        toast.error("خطأ في إلغاء أرشفة المنتجات", {
           description: error.message,
         });
         return;
       }
       
-      toast({
-        title: "تم إلغاء الأرشفة بنجاح",
+      toast.success("تم إلغاء الأرشفة بنجاح", {
         description: `تم إلغاء أرشفة ${selectedCount} منتج بنجاح`,
       });
       
       onActionComplete();
     } catch (error: any) {
       console.error("Unexpected error:", error);
-      toast({
-        variant: "destructive",
-        title: "خطأ غير متوقع",
+      toast.error("خطأ غير متوقع", {
         description: error.message,
       });
     } finally {
@@ -199,10 +180,10 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
       >
         <div className="flex items-center gap-2">
           <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/10 text-primary">
-            <CheckCircle className="h-4 w-4" />
+            <span className="text-sm font-bold">{selectedCount}</span>
           </div>
           <span className="text-sm font-medium">
-            تم تحديد {selectedCount} منتج
+            منتج محدد
           </span>
         </div>
         
@@ -238,18 +219,6 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
                 <ArrowUpCircle className="h-4 w-4 ml-2" />
                 إلغاء الأرشفة
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Tag className="h-4 w-4 ml-2" />
-                تعيين فئة
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Copy className="h-4 w-4 ml-2" />
-                نسخ
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CheckCircle className="h-4 w-4 ml-2" />
-                تحديث المخزون
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
@@ -280,30 +249,6 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
             >
               <ArrowUpCircle className="h-4 w-4 ml-2" />
               إلغاء الأرشفة
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-            >
-              <Tag className="h-4 w-4 ml-2" />
-              تعيين فئة
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-            >
-              <Copy className="h-4 w-4 ml-2" />
-              نسخ
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-            >
-              <CheckCircle className="h-4 w-4 ml-2" />
-              تحديث المخزون
             </Button>
           </div>
         )}
