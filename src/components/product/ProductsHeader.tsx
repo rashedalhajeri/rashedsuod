@@ -60,7 +60,7 @@ const ProductsHeader: React.FC<ProductsHeaderProps> = ({
         </div>
       </div>
       
-      {/* حقل البحث وأزرار الإجراءات */}
+      {/* حقل البحث وأزرار الإجراءات - في صف واحد */}
       <div className="flex items-center gap-2 w-full">
         <div className="relative flex-1">
           <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400">
@@ -76,26 +76,36 @@ const ProductsHeader: React.FC<ProductsHeaderProps> = ({
           />
         </div>
         
-        {!isMobile && (
+        {isMobile ? (
           <Button 
-            variant="outline" 
+            onClick={onAddProduct}
+            className="h-10 whitespace-nowrap px-3 text-sm min-w-[90px]"
             size="sm"
-            onClick={onRefresh}
-            disabled={isRefreshing}
-            className="whitespace-nowrap flex items-center gap-1 h-10 text-xs px-3"
           >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} /> 
-            تحديث
+            <Plus className="h-4 w-4 ml-1" /> إضافة
           </Button>
+        ) : (
+          <>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={onRefresh}
+              disabled={isRefreshing}
+              className="whitespace-nowrap flex items-center gap-1 h-10 text-xs px-3"
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} /> 
+              تحديث
+            </Button>
+            
+            <Button 
+              onClick={onAddProduct}
+              className="h-10 whitespace-nowrap px-3 text-sm"
+              size="sm"
+            >
+              <Plus className="h-4 w-4 ml-1" /> إضافة
+            </Button>
+          </>
         )}
-        
-        <Button 
-          onClick={onAddProduct}
-          className="h-10 whitespace-nowrap px-3 text-sm"
-          size="sm"
-        >
-          <Plus className="h-4 w-4 ml-1" /> إضافة
-        </Button>
       </div>
     </motion.div>
   );

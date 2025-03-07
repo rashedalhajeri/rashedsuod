@@ -22,11 +22,11 @@ export const ProductPrice: React.FC<ProductPriceProps> = ({
   let discountSize = "text-xs";
   
   if (size === "sm") {
-    priceSize = "text-sm";
-    discountSize = "text-xs";
-  } else if (size === "lg") {
     priceSize = "text-base";
     discountSize = "text-xs";
+  } else if (size === "lg") {
+    priceSize = "text-lg";
+    discountSize = "text-sm";
   }
 
   return (
