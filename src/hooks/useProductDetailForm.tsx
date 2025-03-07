@@ -104,15 +104,15 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
           return;
         }
 
-        // Ensure data contains is_featured and sales_count fields
-        const enhancedData = {
-          ...data,
+        // Create a complete product data object with default values for missing fields
+        const productData: RawProductData = {
+          ...(data as any),
           is_featured: data.is_featured !== undefined ? data.is_featured : false,
           sales_count: data.sales_count !== undefined ? data.sales_count : 0
-        } as RawProductData;
+        };
 
         // Map raw product data to Product type
-        const mappedProduct = mapRawProductToProduct(enhancedData);
+        const mappedProduct = mapRawProductToProduct(productData);
         
         setProduct(mappedProduct);
         
