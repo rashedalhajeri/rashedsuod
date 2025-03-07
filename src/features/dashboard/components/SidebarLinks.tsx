@@ -2,7 +2,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { LayoutDashboard, ShoppingBag, Package, Tags, Users, CreditCard, Settings, FileText } from "lucide-react";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface SidebarLinksProps {
@@ -70,7 +69,7 @@ const SidebarLinks: React.FC<SidebarLinksProps> = ({
             onClick={closeMobileMenu}
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-2 px-3 py-2.5 rounded-md transition-all duration-200 text-sm font-medium",
+                "flex items-center gap-2 px-3 py-2.5 rounded-md transition-colors duration-200 text-sm font-medium",
                 isActive
                   ? "bg-primary-100 text-primary-800"
                   : "text-gray-700 hover:bg-gray-50 hover:text-primary-700",

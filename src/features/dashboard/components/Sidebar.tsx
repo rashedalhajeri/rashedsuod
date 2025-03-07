@@ -87,28 +87,24 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
   const TimeIcon = currentHour >= 5 && currentHour < 18 ? Sun : Moon;
 
   return (
-    <AnimatePresence>
+    <>
       {isMobile && isMobileMenuOpen && (
-        <motion.div
+        <div
           className="fixed inset-0 bg-black/50 z-30 backdrop-blur-sm"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
           onClick={closeMobileMenu}
         />
       )}
 
-      <motion.div
+      <div
         className={cn(
           "fixed top-0 right-0 h-screen bg-white shadow-md z-40 overflow-hidden rtl flex flex-col",
           isMobile ? "border-none" : "border-l border-gray-200"
         )}
-        initial={false}
-        animate={currentVariant}
-        variants={sidebarVariants}
-        transition={{ duration: 0.2, ease: "easeInOut" }}
         style={{ 
+          width: isMobile && !isMobileMenuOpen ? 0 : 
+                 isCollapsed && !isMobile ? "80px" : "250px",
           right: isMobile && !isMobileMenuOpen ? "-100%" : 0,
+          transition: "width 0.2s ease-in-out, right 0.2s ease-in-out"
         }}
       >
         <div className="flex flex-col h-full">
@@ -152,8 +148,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
             />
           </div>
         </div>
-      </motion.div>
-    </AnimatePresence>
+      </div>
+    </>
   );
 };
 

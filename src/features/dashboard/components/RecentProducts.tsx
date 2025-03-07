@@ -1,103 +1,101 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Package, ChevronRight, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Package, ArrowRight, ImageIcon } from "lucide-react";
 import { Link } from "react-router-dom";
-import { getCurrencyFormatter } from "@/hooks/use-store-data";
-
-interface Product {
-  id: string;
-  name: string;
-  thumbnail: string | null;
-  price: number;
-  stock: number;
-  category: string;
-}
 
 interface RecentProductsProps {
-  products: Product[];
-  currency?: string;
+  products: {
+    id: string;
+    name: string;
+    thumbnail: string | null;
+    price: number;
+    stock: number;
+    category: string;
+  }[];
+  currency: string;
 }
 
-const RecentProducts: React.FC<RecentProductsProps> = ({ 
-  products, 
-  currency = "KWD" 
-}) => {
-  const getStockColor = (stock: number) => {
-    if (stock > 10) return "bg-green-100 text-green-800 border-green-200";
-    if (stock > 0) return "bg-yellow-100 text-yellow-800 border-yellow-200";
-    return "bg-red-100 text-red-800 border-red-200";
-  };
+const RecentProducts: React.FC<RecentProductsProps> = ({ products, currency }) => {
+  const placeholderImage = "/placeholder.svg";
   
-  // استخدام منسق العملة من الهوك
-  const formatCurrency = getCurrencyFormatter(currency);
-  
+  const isLowStock = (stock: number) => stock < 10;
+
   return (
-    <Card className="h-full">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-lg font-medium">
-          <Package className="h-4 w-4 inline-block ml-2" />
-          أحدث المنتجات
+    <Card className="shadow-sm bg-white">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg font-bold flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            <span className="h-6 w-6 rounded bg-orange-100 flex items-center justify-center">
+              <Package className="h-4 w-4 text-orange-600" />
+            </span>
+            أحدث المنتجات
+          </span>
+          <Button variant="ghost" size="sm" asChild className="text-xs font-normal">
+            <Link to="/dashboard/products" className="flex items-center gap-1">
+              عرض الكل
+              <ChevronRight className="h-3 w-3" />
+            </Link>
+          </Button>
         </CardTitle>
-        <Button variant="ghost" size="sm" asChild>
-          <Link to="/dashboard/products" className="text-sm text-muted-foreground flex items-center gap-1">
-            عرض الكل
-            <ArrowRight className="h-4 w-4 mr-1" />
-          </Link>
-        </Button>
       </CardHeader>
       <CardContent>
-        {products.length === 0 ? (
-          <div className="text-center py-6">
-            <p className="text-muted-foreground">لا توجد منتجات حديثة</p>
-          </div>
-        ) : (
+        {products && products.length > 0 ? (
           <div className="space-y-3">
             {products.map((product) => (
               <div 
                 key={product.id} 
-                className="flex justify-between items-center p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center overflow-hidden">
-                    {product.thumbnail ? (
-                      <img 
-                        src={product.thumbnail} 
-                        alt={product.name} 
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                    )}
+                <div className="flex items-center space-x-3 space-x-reverse">
+                  <div className="flex-shrink-0">
+                    <div className="h-12 w-12 rounded-lg bg-white border border-gray-200 flex items-center justify-center overflow-hidden">
+                      {product.thumbnail ? (
+                        <img 
+                          src={product.thumbnail} 
+                          alt={product.name} 
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <img 
+                          src={placeholderImage} 
+                          alt="صورة افتراضية" 
+                          className="h-8 w-8 opacity-30"
+                        />
+                      )}
+                    </div>
                   </div>
                   <div>
-                    <Link 
-                      to={`/dashboard/products/${product.id}`}
-                      className="font-medium hover:underline"
-                    >
-                      {product.name}
-                    </Link>
-                    <div className="text-xs text-muted-foreground">
-                      {product.category}
-                    </div>
+                    <p className="font-medium text-gray-900 truncate max-w-[150px]">{product.name}</p>
+                    <p className="text-xs text-gray-500">{product.category || "بدون تصنيف"}</p>
                   </div>
                 </div>
                 
-                <div className="flex flex-col items-end gap-1">
-                  <Badge 
-                    variant="outline" 
-                    className={getStockColor(product.stock)}
-                  >
-                    {product.stock} متوفر
-                  </Badge>
-                  <div className="font-medium text-sm">
-                    {formatCurrency(product.price)}
+                <div className="flex items-center gap-3">
+                  {isLowStock(product.stock) && (
+                    <div className="px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 bg-amber-50 text-amber-600">
+                      <AlertTriangle className="h-3 w-3" />
+                      <span>المخزون منخفض</span>
+                    </div>
+                  )}
+                  <div className="text-left">
+                    <p className="font-bold">{product.price.toFixed(2)} {currency}</p>
+                    <p className="text-xs text-gray-500">
+                      {isLowStock(product.stock) 
+                        ? <span className="text-amber-500">المخزون: {product.stock}</span> 
+                        : <span>المخزون: {product.stock}</span>
+                      }
+                    </p>
                   </div>
                 </div>
               </div>
             ))}
+          </div>
+        ) : (
+          <div className="text-center py-6">
+            <Package className="h-10 w-10 mx-auto text-gray-300 mb-3" />
+            <p className="text-gray-500">لا توجد منتجات حتى الآن</p>
           </div>
         )}
       </CardContent>

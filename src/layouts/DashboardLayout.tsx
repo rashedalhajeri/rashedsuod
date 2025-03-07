@@ -2,7 +2,6 @@
 import React, { ReactNode, useState, useEffect } from "react";
 import Sidebar from "@/features/dashboard/components/Sidebar";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { motion, AnimatePresence } from "framer-motion";
 import useStoreData from "@/hooks/use-store-data";
 import RealTimeNotifications from "@/features/dashboard/components/RealTimeNotifications";
 import { Menu } from "lucide-react";
@@ -56,28 +55,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         </div>
       )}
       
-      <motion.main 
+      <main 
         className={`flex-1 overflow-x-hidden overflow-y-auto py-2 px-0 transition-all duration-300 ${
           isMobile ? "mr-0" : isTablet ? "mr-[80px]" : "mr-[250px]"
         }`}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.2 }}
-        key={location.pathname}
       >
-        <AnimatePresence mode="wait">
-          <motion.div 
-            key={location.pathname}
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            transition={{ duration: 0.2 }}
-            className="container py-2 px-3 md:px-6 max-w-7xl mx-auto h-full"
-          >
-            {children}
-          </motion.div>
-        </AnimatePresence>
-      </motion.main>
+        <div 
+          className="container py-2 px-3 md:px-6 max-w-7xl mx-auto h-full"
+        >
+          {children}
+        </div>
+      </main>
     </div>
   );
 };

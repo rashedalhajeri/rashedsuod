@@ -1,80 +1,117 @@
 
-import React from 'react';
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Order } from "@/types/orders";
-import { formatDistanceToNow } from "date-fns";
-import { ar } from "date-fns/locale";
+import { CheckCircle2, AlertCircle, Clock, ShoppingCart, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import OrderStatusBadge from '@/features/orders/components/OrderStatusBadge';
-import { getCurrencyFormatter } from '@/hooks/use-store-data';
+import { Order, OrderStatus } from "@/types/orders";
 
 interface RecentOrdersProps {
   orders: Order[];
 }
 
 const RecentOrders: React.FC<RecentOrdersProps> = ({ orders }) => {
-  const formatCurrency = getCurrencyFormatter();
-  
-  const formatDate = (dateString: string) => {
-    try {
-      return formatDistanceToNow(new Date(dateString), { 
-        addSuffix: true,
-        locale: ar 
-      });
-    } catch (err) {
-      return dateString;
+  // تعيين لون وأيقونة لكل حالة طلب
+  const getOrderStatusIcon = (status: OrderStatus) => {
+    switch (status) {
+      case "completed":
+        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+      case "processing":
+        return <Clock className="h-4 w-4 text-amber-500" />;
+      case "canceled":
+        return <AlertCircle className="h-4 w-4 text-red-500" />;
+      default:
+        return <ShoppingCart className="h-4 w-4 text-blue-500" />;
     }
   };
   
+  const getOrderStatusClass = (status: OrderStatus) => {
+    switch (status) {
+      case "completed":
+        return "text-green-600 bg-green-50";
+      case "processing":
+        return "text-amber-600 bg-amber-50";
+      case "canceled":
+        return "text-red-600 bg-red-50";
+      case "pending":
+        return "text-blue-600 bg-blue-50";
+      default:
+        return "text-gray-600 bg-gray-50";
+    }
+  };
+  
+  const getOrderStatusText = (status: OrderStatus): string => {
+    switch (status) {
+      case "completed":
+        return "مكتمل";
+      case "processing":
+        return "قيد المعالجة";
+      case "canceled":
+        return "ملغي";
+      case "pending":
+        return "في الانتظار";
+      default:
+        return "غير معروف";
+    }
+  };
+
   return (
-    <Card className="h-full">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-lg font-medium">آخر الطلبات</CardTitle>
-        <Button variant="ghost" size="sm" asChild>
-          <Link to="/dashboard/orders" className="flex items-center gap-1 text-sm font-normal">
-            عرض الكل
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </Button>
+    <Card className="shadow-sm bg-white">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg font-bold flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            <span className="h-6 w-6 rounded bg-blue-100 flex items-center justify-center">
+              <ShoppingCart className="h-4 w-4 text-blue-600" />
+            </span>
+            أحدث الطلبات
+          </span>
+          <Button variant="ghost" size="sm" asChild className="text-xs font-normal">
+            <Link to="/dashboard/orders" className="flex items-center gap-1">
+              عرض الكل
+              <ChevronRight className="h-3 w-3" />
+            </Link>
+          </Button>
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        {orders.length > 0 ? (
+        {orders && orders.length > 0 ? (
           <div className="space-y-3">
             {orders.map((order) => (
-              <Link 
+              <div 
                 key={order.id} 
-                to={`/dashboard/orders?view=${order.id}`}
-                className="flex items-center justify-between gap-2 rounded-lg border p-3 hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-full bg-primary-50 flex items-center justify-center">
-                    <ShoppingBag className="h-4 w-4 text-primary-500" />
+                <div className="flex items-center space-x-3 space-x-reverse">
+                  <div className="flex-shrink-0">
+                    <div className="h-10 w-10 rounded-full bg-primary-50 flex items-center justify-center text-primary-700 font-medium">
+                      {order.customer_name?.charAt(0) || "#"}
+                    </div>
                   </div>
                   <div>
-                    <p className="text-sm font-medium">#{order.order_number}</p>
-                    <p className="text-xs text-gray-500">{order.customer_name}</p>
+                    <p className="font-medium text-gray-900">#{order.order_number}</p>
+                    <p className="text-sm text-gray-500">{order.customer_name}</p>
                   </div>
                 </div>
+                
                 <div className="flex items-center gap-3">
-                  <OrderStatusBadge status={order.status} size="sm" />
-                  <div className="text-right">
-                    <p className="text-sm font-medium">{formatCurrency(order.total)}</p>
-                    <p className="text-xs text-gray-500">{formatDate(order.created_at)}</p>
+                  <div className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getOrderStatusClass(order.status)}`}>
+                    {getOrderStatusIcon(order.status)}
+                    <span>{getOrderStatusText(order.status)}</span>
+                  </div>
+                  <div className="text-left">
+                    <p className="font-bold">{order.total_amount?.toFixed(2)} د.ك</p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(order.created_at).toLocaleDateString('ar-KW')}
+                    </p>
                   </div>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-6 text-center">
-            <ShoppingBag className="h-10 w-10 text-gray-300 mb-2" />
-            <h3 className="text-sm font-medium text-gray-600">لا توجد طلبات حتى الآن</h3>
-            <p className="text-xs text-gray-500 mt-1">ستظهر آخر الطلبات هنا عند إضافتها</p>
-            <Button asChild variant="outline" size="sm" className="mt-4">
-              <Link to="/dashboard/orders/new">إنشاء طلب جديد</Link>
-            </Button>
+          <div className="text-center py-6">
+            <ShoppingCart className="h-10 w-10 mx-auto text-gray-300 mb-3" />
+            <p className="text-gray-500">لا توجد طلبات حتى الآن</p>
           </div>
         )}
       </CardContent>
