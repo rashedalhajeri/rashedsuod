@@ -18,26 +18,28 @@ export const ProductPrice: React.FC<ProductPriceProps> = ({
   const hasDiscount = discountPrice !== null && discountPrice > 0 && discountPrice < price;
   
   // تحديد أحجام الخط بناءً على حجم المكون
-  let priceSize = "text-lg"; // Increased size
-  let discountSize = "text-base"; // Increased size
+  let priceSize = "text-xl"; // Increased size further
   
   if (size === "sm") {
-    priceSize = "text-base"; // Increased size
-    discountSize = "text-sm"; // Increased size
+    priceSize = "text-lg"; // Increased size
   } else if (size === "lg") {
-    priceSize = "text-xl"; // Increased size
-    discountSize = "text-lg"; // Increased size
+    priceSize = "text-2xl"; // Increased size
   }
 
+  // Helper function to ensure numbers are displayed in English format
+  const formatEnglishNumbers = (formattedPrice: string): string => {
+    return formattedPrice.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d).toString());
+  };
+
   return (
-    <div className={`flex items-center gap-3 mr-4 ${className}`} dir="ltr">
+    <div className={`flex items-center gap-3 mr-6 ltr ${className}`}>
       {hasDiscount ? (
-        <span className={`font-bold text-primary ${priceSize}`}>
-          {formatPrice(discountPrice as number)}
+        <span className={`font-bold text-primary ${priceSize} force-en-nums`}>
+          {formatEnglishNumbers(formatPrice(discountPrice as number))}
         </span>
       ) : (
-        <span className={`font-bold text-gray-800 ${priceSize}`}>
-          {formatPrice(price)}
+        <span className={`font-bold text-gray-800 ${priceSize} force-en-nums`}>
+          {formatEnglishNumbers(formatPrice(price))}
         </span>
       )}
     </div>

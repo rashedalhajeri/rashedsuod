@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatPrice(price: number): string {
-  return new Intl.NumberFormat('ar-KW', {
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'KWD', // الدينار الكويتي
     minimumFractionDigits: 0,
@@ -23,8 +23,8 @@ export function formatDate(dateString: string): string {
   // التحقق من صحة التاريخ
   if (isNaN(date.getTime())) return '';
   
-  // تنسيق بسيط ليوم-شهر-سنة
-  return new Intl.DateTimeFormat('ar-EG', {
+  // تنسيق بسيط ليوم-شهر-سنة - حرص على أن تكون الأرقام بالإنجليزية
+  return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric'

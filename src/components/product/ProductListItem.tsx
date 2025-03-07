@@ -59,8 +59,8 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="flex items-start p-4 sm:p-5" dir="rtl">
-        <div className="flex items-start gap-3">
+      <div className={`flex items-start p-4 ${isMobile ? 'flex-col gap-3' : 'p-5'}`} dir="rtl">
+        <div className={`flex items-start gap-3 ${isMobile ? 'w-full' : ''}`}>
           <Checkbox
             checked={isSelected}
             onCheckedChange={checked => onSelect(id, !!checked)}
@@ -70,50 +70,50 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
           <ProductImage 
             imageUrl={imageUrl} 
             name={name} 
-            size={isMobile ? "md" : "lg"} 
-            className="rounded-xl overflow-hidden"
+            size={isMobile ? "lg" : "lg"} 
+            className={`rounded-xl overflow-hidden ${isMobile ? 'max-w-[100px]' : ''}`}
           />
-        </div>
-        
-        <div className="flex-1 min-w-0 mr-6 flex flex-col justify-between">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <div className="flex-1">
-              {/* Product Name */}
-              <h3 className="text-base font-medium text-gray-900 leading-tight mb-3">{name}</h3>
-              
-              {/* Product Price */}
-              <div className="flex items-center">
-                <ProductPrice price={price} discountPrice={discount_price} size={isMobile ? "md" : "lg"} />
+          
+          <div className={`flex-1 min-w-0 ${isMobile ? 'mr-3' : 'mr-6'} flex flex-col justify-between`}>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="flex-1">
+                {/* Product Name */}
+                <h3 className={`text-base font-medium text-gray-900 leading-tight mb-2 ${isMobile ? 'line-clamp-2' : ''}`}>{name}</h3>
                 
-                {/* Discount Badge - Only show if there's a discount */}
-                {discountPercentage && discountPercentage > 0 && (
-                  <Badge className="mr-3 bg-red-500 text-white border-0 px-2 flex items-center">
-                    <BadgePercent className="h-3.5 w-3.5 mr-1" />
-                    {discountPercentage}%
-                  </Badge>
-                )}
+                {/* Product Price */}
+                <div className="flex items-center">
+                  <ProductPrice price={price} discountPrice={discount_price} size={isMobile ? "md" : "lg"} />
+                  
+                  {/* Discount Badge - Only show if there's a discount */}
+                  {discountPercentage && discountPercentage > 0 && (
+                    <Badge className="bg-red-500 text-white border-0 px-2 flex items-center">
+                      <BadgePercent className="h-3.5 w-3.5 mr-1" />
+                      <span className="force-en-nums">{discountPercentage}%</span>
+                    </Badge>
+                  )}
+                </div>
               </div>
-            </div>
-            
-            {/* Action buttons */}
-            <div className="flex items-center gap-2 mt-2 sm:mt-0">
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full h-9 w-9 p-0 border-gray-200"
-                onClick={() => onEdit(id)}
-              >
-                <Pencil className="h-4 w-4 text-gray-500" />
-              </Button>
               
-              <Button
-                variant="outline"
-                size="sm"
-                className={`rounded-full h-9 w-9 p-0 ${is_active ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'}`}
-                onClick={() => onActivate && onActivate(id, !is_active)}
-              >
-                <Power className={`h-4 w-4 ${is_active ? 'text-green-500' : 'text-gray-400'}`} />
-              </Button>
+              {/* Action buttons */}
+              <div className={`flex items-center gap-2 ${isMobile ? 'mt-2 self-end' : 'mt-0'}`}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full h-9 w-9 p-0 border-gray-200"
+                  onClick={() => onEdit(id)}
+                >
+                  <Pencil className="h-4 w-4 text-gray-500" />
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={`rounded-full h-9 w-9 p-0 ${is_active ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'}`}
+                  onClick={() => onActivate && onActivate(id, !is_active)}
+                >
+                  <Power className={`h-4 w-4 ${is_active ? 'text-green-500' : 'text-gray-400'}`} />
+                </Button>
+              </div>
             </div>
           </div>
         </div>

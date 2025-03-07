@@ -88,11 +88,16 @@
   
   /* تحسينات جديدة لقائمة المنتجات */
   .product-list-item {
-    @apply rounded-md mb-2;
+    @apply rounded-md mb-3;
   }
   
   .product-list-item h3 {
-    @apply text-sm font-semibold mb-0.5;
+    @apply text-sm font-semibold;
+  }
+  
+  /* تعديلات جديدة لتحسين عرض المنتجات في الجوال */
+  .product-list-item .product-image-container {
+    @apply mx-auto;
   }
   
   /* تعديل المسافات في صفحة المنتجات */
@@ -112,6 +117,20 @@
   
   .product-search-container {
     @apply sticky top-0 z-10 bg-white py-2 border-b;
+  }
+  
+  /* تحسينات إضافية للمحتوى في الموبايل */
+  .product-list-item {
+    @apply p-2;
+  }
+  
+  .product-item-actions {
+    @apply justify-end;
+  }
+  
+  /* تحسين عرض المنتجات على الموبايل */
+  .product-list-container .product-list-item {
+    @apply mb-3 shadow-sm;
   }
 }
 
@@ -272,4 +291,10 @@
 
 .product-grid-container {
   @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4;
+}
+
+/* Force English numerals */
+.force-en-nums {
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
 }
