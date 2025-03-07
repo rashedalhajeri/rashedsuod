@@ -22,6 +22,7 @@ export interface RawProductData {
   is_featured: boolean;
   sales_count: number;
   is_archived: boolean;
+  is_active: boolean;
   section_id?: string | null;
   category?: {
     id: string;
@@ -52,6 +53,7 @@ export interface Product {
   is_featured: boolean;
   sales_count: number;
   is_archived: boolean;
+  is_active: boolean;
   section_id?: string | null;
   images: string[]; // This field is for UI purposes
   category?: {

@@ -46,6 +46,7 @@ const Products = () => {
     is_featured: boolean;
     sales_count: number;
     is_archived: boolean;
+    is_active: boolean | null;
     category: { id: string; name: string } | null;
   };
 

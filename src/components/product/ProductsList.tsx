@@ -27,6 +27,7 @@ interface ProductsListProps {
   searchTerm?: string;
   onSearch?: (term: string) => void;
   onArchive?: (id: string, isArchived: boolean) => void;
+  onActivate?: (id: string, isActive: boolean) => void;
   onRefresh?: () => void;
 }
 
@@ -40,6 +41,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
   searchTerm = "",
   onSearch,
   onArchive,
+  onActivate,
   onRefresh
 }) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -50,7 +52,6 @@ const ProductsList: React.FC<ProductsListProps> = ({
   const isMobile = useIsMobile();
   const itemsPerPage = isMobile ? 6 : 10;
 
-  // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [filterStatus, sortOption, searchTerm]);
@@ -101,17 +102,20 @@ const ProductsList: React.FC<ProductsListProps> = ({
     }
   };
 
-  // Filter products based on status
+  const handleActivate = (id: string, isActive: boolean) => {
+    if (onActivate) {
+      onActivate(id, isActive);
+    }
+  };
+
   const getFilteredProducts = () => {
     return products.filter(product => {
-      // First apply search term
       const matchesSearch = product.name.toLowerCase().includes(localSearchTerm.toLowerCase());
       if (!matchesSearch) return false;
 
-      // Then apply status filter
       switch (filterStatus) {
         case "active":
-          return !product.is_archived;
+          return !product.is_archived && product.is_active;
         case "archived":
           return product.is_archived;
         case "discount":
@@ -125,7 +129,6 @@ const ProductsList: React.FC<ProductsListProps> = ({
     });
   };
 
-  // Sort products
   const sortProducts = (products: Product[]) => {
     return [...products].sort((a, b) => {
       switch (sortOption) {
@@ -147,10 +150,8 @@ const ProductsList: React.FC<ProductsListProps> = ({
     });
   };
 
-  // Apply filtering and sorting
   const filteredProducts = sortProducts(getFilteredProducts());
   
-  // Pagination logic
   const pageCount = Math.ceil(filteredProducts.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = Math.min(startIndex + itemsPerPage, filteredProducts.length);
@@ -178,7 +179,6 @@ const ProductsList: React.FC<ProductsListProps> = ({
     }
   };
 
-  // Count of archived products
   const archivedCount = products.filter(p => p.is_archived).length;
   const activeCount = products.filter(p => !p.is_archived).length;
 
@@ -329,6 +329,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
                 isSelected={selectedItems.includes(product.id)}
                 onEdit={onEdit}
                 onArchive={handleArchive}
+                onActivate={handleActivate}
                 onRefresh={onRefresh}
               />
             </motion.div>
