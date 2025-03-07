@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Search, RotateCcw } from "lucide-react";
+import { Search, RotateCcw, SlidersHorizontal } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion } from "framer-motion";
 import { fetchUniquePaymentMethods } from "@/services/payments";
@@ -12,6 +12,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useStoreData } from "@/hooks/use-store-data";
 import DatePicker from "react-tailwindcss-datepicker";
 import type { DateValueType } from "react-tailwindcss-datepicker/dist/types";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface PaymentFiltersProps {
   onFilterChange: (filters: {
@@ -112,10 +118,26 @@ const PaymentFilters: React.FC<PaymentFiltersProps> = ({
                 <Input
                   id="search"
                   placeholder="اسم العميل، البريد، الرقم..."
-                  className="pl-3 pr-9"
+                  className="pl-10 pr-9"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="absolute left-1 top-1/2 -translate-y-1/2 h-8 w-8 p-1.5 text-gray-500 hover:text-primary-500 hover:bg-primary-50/50"
+                      >
+                        <SlidersHorizontal className="h-full w-full" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>تصفية متقدمة</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
             

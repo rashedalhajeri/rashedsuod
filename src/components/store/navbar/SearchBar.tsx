@@ -1,7 +1,14 @@
 
 import React, { useState, useRef, useEffect } from "react";
-import { Search } from "lucide-react";
+import { Search, SlidersHorizontal } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface SearchBarProps {
   searchQuery: string;
@@ -66,7 +73,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         className="flex items-center w-full"
       >
         <div 
-          className={`flex items-center w-full px-4 py-2 bg-white border rounded-full ${
+          className={`relative flex items-center w-full px-4 py-2 bg-white border rounded-full ${
             isFocused 
               ? 'border-primary shadow-sm' 
               : 'border-gray-200'
@@ -88,6 +95,23 @@ const SearchBar: React.FC<SearchBarProps> = ({
             className="w-full bg-transparent border-none focus:outline-none text-right px-2 py-1 placeholder-gray-400 text-base"
             dir="rtl"
           />
+          
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="h-8 w-8 p-1.5 text-gray-500 hover:text-primary-500 hover:bg-primary-50/50 ml-1"
+                >
+                  <SlidersHorizontal className="h-full w-full" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p>تصفية متقدمة</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </form>
       
