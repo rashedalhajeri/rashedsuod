@@ -255,12 +255,11 @@ const Dashboard: React.FC = () => {
   return (
     <DashboardLayout>
       <div className="flex justify-between items-center mb-4">
-        {/* Welcome Section */}
+        {/* Welcome Section - Updated to match props */}
         <WelcomeSection 
           storeName={storeData?.store_name || "متجرك"} 
           ownerName={userName}
-          newOrdersCount={7}
-          lowStockCount={5}
+          logoUrl={storeData?.logo_url}
         />
         
         {/* Notification Center */}
