@@ -9,7 +9,7 @@ const QuickActionButtons: React.FC = () => {
     {
       icon: <Package className="h-4 w-4" />,
       label: "إضافة منتج",
-      path: "/dashboard/products/new"
+      path: "/products/new"
     },
     {
       icon: <Tags className="h-4 w-4" />,
