@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 interface SaveButtonProps {
   isSaving: boolean;
-  onClick?: (() => Promise<void>) | (() => void);
+  onClick?: () => Promise<void>;
   className?: string;
   type?: "button" | "submit" | "reset";
 }
