@@ -10,6 +10,7 @@ interface ProductActionsProps {
   onAddToCart: () => void;
   isOutOfStock?: boolean;
   trackInventory?: boolean;
+  stockQuantity?: number; // Added this prop to receive stock quantity
 }
 
 const ProductActions: React.FC<ProductActionsProps> = ({
@@ -17,7 +18,8 @@ const ProductActions: React.FC<ProductActionsProps> = ({
   onQuantityChange,
   onAddToCart,
   isOutOfStock = false,
-  trackInventory = false
+  trackInventory = false,
+  stockQuantity = 0 // Set default value
 }) => {
   // If we're not tracking inventory, product is never out of stock
   const effectivelyOutOfStock = trackInventory && isOutOfStock;
@@ -63,11 +65,11 @@ const ProductActions: React.FC<ProductActionsProps> = ({
         {effectivelyOutOfStock ? 'نفذت الكمية' : 'إضافة إلى السلة'}
       </Button>
       
-      {trackInventory && (
+      {trackInventory && stockQuantity !== undefined && (
         <div className={`text-sm text-center ${isOutOfStock ? 'text-red-500' : 'text-green-600'}`}>
           {isOutOfStock 
             ? 'هذا المنتج غير متوفر حالياً' 
-            : `متبقي ${stock_quantity} قطعة في المخزون`}
+            : `متبقي ${stockQuantity} قطعة في المخزون`}
         </div>
       )}
     </div>

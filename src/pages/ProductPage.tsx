@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -80,7 +79,6 @@ const ProductPage = () => {
     if (type === 'decrease' && quantity > 1) {
       setQuantity(quantity - 1);
     } else if (type === 'increase') {
-      // Only check stock limit if inventory tracking is enabled
       if (product?.track_inventory && product?.stock_quantity) {
         if (quantity >= product.stock_quantity) {
           toast.error(`الكمية المتوفرة: ${product.stock_quantity} فقط`);
@@ -120,7 +118,6 @@ const ProductPage = () => {
     }).format(price) + ' ' + (currencySymbol || '');
   };
   
-  // Check if product is out of stock, but only if inventory tracking is enabled
   const isOutOfStock = product?.track_inventory && 
                       product?.stock_quantity !== null && 
                       product?.stock_quantity <= 0;
@@ -172,7 +169,6 @@ const ProductPage = () => {
               <ProductInfo 
                 product={{
                   ...product,
-                  // Only show stock_quantity in UI if tracking is enabled
                   stock_quantity: product.track_inventory ? product.stock_quantity : null
                 }} 
                 formatCurrency={formatCurrency} 
@@ -230,6 +226,7 @@ const ProductPage = () => {
                   onAddToCart={handleAddToCart}
                   isOutOfStock={isOutOfStock}
                   trackInventory={product?.track_inventory || false}
+                  stockQuantity={product?.stock_quantity || 0}
                 />
               </div>
             </>
