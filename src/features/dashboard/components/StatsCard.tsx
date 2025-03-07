@@ -1,18 +1,13 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowUp, ArrowDown } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface StatsCardProps {
   title: string;
   value: string | number;
   icon: React.ReactNode;
-  trend?: {
-    value: number;
-    isPositive: boolean;
-  };
   iconClassName?: string;
 }
 
@@ -20,7 +15,6 @@ const StatsCard: React.FC<StatsCardProps> = ({
   title,
   value,
   icon,
-  trend,
   iconClassName
 }) => {
   return (
@@ -28,40 +22,23 @@ const StatsCard: React.FC<StatsCardProps> = ({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="w-full card-hover"
+      className="w-full"
     >
-      <Card className="hover:border-primary-200 transition-colors h-full">
-        <CardContent className="p-4 md:p-6">
-          <div className="flex justify-between items-start">
+      <Card className="overflow-hidden border border-gray-100 hover:border-primary-200 transition-all duration-200 hover:shadow-md group h-full bg-gradient-to-br from-white to-gray-50">
+        <CardContent className="p-4 md:p-6 relative">
+          <div className="absolute top-0 right-0 w-20 h-20 opacity-5 -mr-6 -mt-6">
+            {icon}
+          </div>
+          
+          <div className="flex justify-between items-center">
             <div>
               <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
               <h4 className="text-xl md:text-2xl font-bold">{value}</h4>
-              
-              {trend && (
-                <div className="flex items-center mt-2">
-                  <span
-                    className={cn(
-                      "text-xs font-medium flex items-center",
-                      trend.isPositive ? "text-green-600" : "text-red-600"
-                    )}
-                  >
-                    {trend.isPositive ? (
-                      <ArrowUp className="h-3 w-3 ml-1" />
-                    ) : (
-                      <ArrowDown className="h-3 w-3 ml-1" />
-                    )}
-                    {trend.value}%
-                  </span>
-                  <span className="text-xs text-muted-foreground mr-1">
-                    مقارنة بالشهر الماضي
-                  </span>
-                </div>
-              )}
             </div>
             
             <div
               className={cn(
-                "p-2 rounded-full",
+                "p-3 rounded-full",
                 iconClassName || "bg-primary-100 text-primary-600"
               )}
             >

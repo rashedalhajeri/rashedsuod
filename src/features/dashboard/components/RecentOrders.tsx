@@ -14,11 +14,11 @@ const RecentOrders: React.FC<RecentOrdersProps> = ({ orders }) => {
   // تعيين لون وأيقونة لكل حالة طلب
   const getOrderStatusIcon = (status: OrderStatus) => {
     switch (status) {
-      case "completed":
+      case "completed" as OrderStatus:
         return <CheckCircle2 className="h-4 w-4 text-green-500" />;
       case "processing":
         return <Clock className="h-4 w-4 text-amber-500" />;
-      case "canceled":
+      case "canceled" as OrderStatus:
         return <AlertCircle className="h-4 w-4 text-red-500" />;
       default:
         return <ShoppingCart className="h-4 w-4 text-blue-500" />;
@@ -27,13 +27,13 @@ const RecentOrders: React.FC<RecentOrdersProps> = ({ orders }) => {
   
   const getOrderStatusClass = (status: OrderStatus) => {
     switch (status) {
-      case "completed":
+      case "completed" as OrderStatus:
         return "text-green-600 bg-green-50";
       case "processing":
         return "text-amber-600 bg-amber-50";
-      case "canceled":
+      case "canceled" as OrderStatus:
         return "text-red-600 bg-red-50";
-      case "pending":
+      case "pending" as OrderStatus:
         return "text-blue-600 bg-blue-50";
       default:
         return "text-gray-600 bg-gray-50";
@@ -42,13 +42,13 @@ const RecentOrders: React.FC<RecentOrdersProps> = ({ orders }) => {
   
   const getOrderStatusText = (status: OrderStatus): string => {
     switch (status) {
-      case "completed":
+      case "completed" as OrderStatus:
         return "مكتمل";
       case "processing":
         return "قيد المعالجة";
-      case "canceled":
+      case "canceled" as OrderStatus:
         return "ملغي";
-      case "pending":
+      case "pending" as OrderStatus:
         return "في الانتظار";
       default:
         return "غير معروف";
@@ -99,7 +99,7 @@ const RecentOrders: React.FC<RecentOrdersProps> = ({ orders }) => {
                     <span>{getOrderStatusText(order.status)}</span>
                   </div>
                   <div className="text-left">
-                    <p className="font-bold">{order.total_amount?.toFixed(2)} د.ك</p>
+                    <p className="font-bold">{order.amount?.toFixed(2)} د.ك</p>
                     <p className="text-xs text-gray-500">
                       {new Date(order.created_at).toLocaleDateString('ar-KW')}
                     </p>

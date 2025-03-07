@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import useStoreData, { getCurrencyFormatter } from "@/hooks/use-store-data";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import LoadingState from "@/components/ui/loading-state";
@@ -9,7 +9,6 @@ import WelcomeSection from "@/features/dashboard/components/WelcomeSection";
 import SalesChart from "@/features/dashboard/components/SalesChart";
 import DashboardStatsSection from "@/features/dashboard/components/DashboardStatsSection";
 import SubscriptionAlert from "@/features/dashboard/components/SubscriptionAlert";
-import QuickActionButtons from "@/features/dashboard/components/QuickActionButtons";
 import ActivitySummarySection from "@/features/dashboard/components/ActivitySummarySection";
 import DashboardErrorHandler from "@/features/dashboard/components/DashboardErrorHandler";
 
@@ -31,8 +30,14 @@ const DashboardHome: React.FC = () => {
     statsError,
     salesError,
     ordersError,
-    productsError
+    productsError,
+    setPeriod
   } = useDashboardData();
+  
+  // Handle period changes from the stats section
+  const handlePeriodChange = (period: string) => {
+    setPeriod(period);
+  };
   
   // Handle errors
   const hasErrors = storeError || statsError || salesError || ordersError || productsError;
@@ -58,6 +63,12 @@ const DashboardHome: React.FC = () => {
   // Subscription plan status
   const subscriptionStatus = storeData?.subscription_plan || "free";
   const isBasicPlan = subscriptionStatus === "basic";
+
+  // Transform salesData to match the expected format if needed
+  const formattedSalesData = salesData?.map(item => ({
+    name: item.name,
+    sales: item.value
+  })) || [];
   
   return (
     <DashboardLayout>
@@ -70,30 +81,31 @@ const DashboardHome: React.FC = () => {
       />
       
       {/* Subscription Alert for Basic Plan */}
-      <SubscriptionAlert isBasicPlan={isBasicPlan} />
+      {isBasicPlan && <SubscriptionAlert isBasicPlan={isBasicPlan} />}
       
-      {/* Stats Cards */}
-      <DashboardStatsSection stats={statsData || {
-        products: 0,
-        orders: 0,
-        customers: 0,
-        revenue: 0
-      }} formatCurrency={formatCurrency} />
+      {/* Stats Cards with Period Selector */}
+      <DashboardStatsSection 
+        stats={statsData || {
+          products: 0,
+          orders: 0,
+          customers: 0,
+          revenue: 0
+        }} 
+        formatCurrency={formatCurrency}
+        onPeriodChange={handlePeriodChange}
+      />
       
       {/* Sales Chart */}
       <SalesChart 
-        data={salesData || []}
-        currency="د.ك"
+        data={formattedSalesData}
+        currency={storeData?.currency || "د.ك"}
       />
-      
-      {/* Quick Actions */}
-      <QuickActionButtons />
       
       {/* Activity Summary Section */}
       <ActivitySummarySection
         orders={ordersData?.orders || []}
         products={productsData || []}
-        currency="KWD"
+        currency={storeData?.currency || "KWD"}
       />
     </DashboardLayout>
   );
