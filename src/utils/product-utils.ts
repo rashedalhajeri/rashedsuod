@@ -27,9 +27,6 @@ export const getImageWithFallback = (imageUrl: string | null, fallbackUrl: strin
   return imageUrl;
 };
 
-// Define a return type for our query to avoid deep type instantiation
-type StoreProductsReturn = Promise<any[]>;
-
 /**
  * Get a store's products with filtering options
  * @param storeId The ID of the store
@@ -45,40 +42,39 @@ export const getStoreProducts = async (
     sort?: 'latest' | 'price_low' | 'price_high' | 'best_selling';
     limit?: number;
   } = {}
-): StoreProductsReturn => {
+): Promise<Array<any>> => {
   try {
-    // Build query in stages with proper typing
-    const baseQuery = supabase
+    // Use type assertion to avoid deep type instantiation
+    const query = supabase
       .from('products')
-      .select('*');
-
-    // First filter by store ID
-    let query = baseQuery.eq('store_id', storeId);
+      .select('*')
+      .eq('store_id', storeId);
     
-    // Apply additional filters with proper type handling
+    // Apply additional filters
+    let filteredQuery = query;
     if (options.categoryId) {
-      query = query.eq('category_id', options.categoryId);
+      filteredQuery = filteredQuery.eq('category_id', options.categoryId);
     }
     
     if (options.featured) {
-      query = query.eq('is_featured', true);
+      filteredQuery = filteredQuery.eq('is_featured', true);
     }
     
     if (options.onSale) {
-      query = query.not('discount_price', 'is', null);
+      filteredQuery = filteredQuery.not('discount_price', 'is', null);
     }
     
     // Apply sorting based on options
-    let sortedQuery = query;
+    let sortedQuery = filteredQuery;
     if (options.sort === 'price_low') {
-      sortedQuery = query.order('price', { ascending: true });
+      sortedQuery = filteredQuery.order('price', { ascending: true });
     } else if (options.sort === 'price_high') {
-      sortedQuery = query.order('price', { ascending: false });
+      sortedQuery = filteredQuery.order('price', { ascending: false });
     } else if (options.sort === 'best_selling') {
-      sortedQuery = query.order('sales_count', { ascending: false });
+      sortedQuery = filteredQuery.order('sales_count', { ascending: false });
     } else {
       // default to latest
-      sortedQuery = query.order('created_at', { ascending: false });
+      sortedQuery = filteredQuery.order('created_at', { ascending: false });
     }
     
     // Apply limit if specified
@@ -86,8 +82,9 @@ export const getStoreProducts = async (
       ? sortedQuery.limit(options.limit)
       : sortedQuery;
     
-    // Execute query and handle response
-    const { data, error } = await finalQuery;
+    // Break the type inference chain by using a simple Promise resolution
+    const response = await finalQuery;
+    const { data, error } = response;
     
     if (error) {
       console.error("Error fetching store products:", error);
@@ -100,3 +97,4 @@ export const getStoreProducts = async (
     return [];
   }
 };
+
