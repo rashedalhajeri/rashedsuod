@@ -2,10 +2,16 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Filter } from "lucide-react";
+import { Search, SlidersHorizontal } from "lucide-react";
 import { OrderStatus } from "@/types/orders";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingBag, Clock, Check, X } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface StatusItem {
   id: OrderStatus | "all";
@@ -72,22 +78,32 @@ const OrdersFilters: React.FC<OrdersFiltersProps> = ({
       <div className="relative bg-white rounded-lg border border-gray-100 shadow-sm p-4 mb-4">
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <div className="relative flex-1 w-full">
-            <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="البحث في الطلبات..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-3 pr-9 border-gray-200 focus:border-primary-400 focus:ring focus:ring-primary-100 focus:ring-opacity-50"
-            />
+            <div className="relative flex items-center">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="البحث في الطلبات..."
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                className="pl-10 pr-9 border-gray-200 focus:border-primary-400 focus:ring focus:ring-primary-100 focus:ring-opacity-50"
+              />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      className="absolute left-1 top-1/2 -translate-y-1/2 h-8 w-8 p-1.5 text-gray-500 hover:text-primary-500 hover:bg-primary-50/50"
+                    >
+                      <SlidersHorizontal className="h-full w-full" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>تصفية متقدمة</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
           </div>
-          
-          <Button 
-            variant="outline" 
-            className="flex items-center gap-2 sm:w-auto w-full justify-center border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-all duration-200"
-          >
-            <Filter className="h-4 w-4 text-gray-500" />
-            تصفية متقدمة
-          </Button>
         </div>
         
         <div className="flex overflow-x-auto py-4 px-1 gap-2 mt-4 hide-scrollbar">
