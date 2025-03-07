@@ -99,7 +99,7 @@ const RecentOrders: React.FC<RecentOrdersProps> = ({ orders }) => {
                     <span>{getOrderStatusText(order.status)}</span>
                   </div>
                   <div className="text-left">
-                    <p className="font-bold">{order.amount?.toFixed(2)} د.ك</p>
+                    <p className="font-bold">{order.total.toFixed(2)} د.ك</p>
                     <p className="text-xs text-gray-500">
                       {new Date(order.created_at).toLocaleDateString('ar-KW')}
                     </p>
