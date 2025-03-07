@@ -13,8 +13,8 @@ interface ProductsContentProps {
   onEdit: (id: string) => void;
   onSelectionChange: (items: string[]) => void;
   onSearch: (term: string) => void;
-  onArchive?: (id: string, isArchived: boolean) => void;
-  onActivate?: (id: string, isActive: boolean) => void;
+  onDelete: (id: string) => Promise<void>;
+  onActivate?: (id: string, isActive: boolean) => Promise<void>;
   onRefresh?: () => void;
 }
 
@@ -25,7 +25,7 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
   onEdit,
   onSelectionChange,
   onSearch,
-  onArchive,
+  onDelete,
   onActivate,
   onRefresh
 }) => {
@@ -85,7 +85,7 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
         onSelectionChange={onSelectionChange}
         searchTerm={searchTerm}
         onSearch={onSearch}
-        onArchive={onArchive}
+        onDelete={onDelete}
         onActivate={onActivate}
         onRefresh={onRefresh}
       />

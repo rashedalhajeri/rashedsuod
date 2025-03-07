@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { Product } from "@/utils/products/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ProductActionDrawer from "./ProductActionDrawer";
@@ -13,8 +13,8 @@ interface ProductsListProps {
   onSelectionChange: (items: string[]) => void;
   searchTerm: string;
   onSearch: (term: string) => void;
-  onArchive?: (id: string, isArchived: boolean) => void;
-  onActivate?: (id: string, isActive: boolean) => void;
+  onDelete?: (id: string) => Promise<void>;
+  onActivate?: (id: string, isActive: boolean) => Promise<void>;
   onRefresh?: () => void;
 }
 
@@ -24,7 +24,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
   onSelectionChange,
   searchTerm,
   onSearch,
-  onArchive,
+  onDelete,
   onActivate,
   onRefresh
 }) => {
@@ -78,8 +78,8 @@ const ProductsList: React.FC<ProductsListProps> = ({
   };
 
   const confirmDelete = () => {
-    if (productToDelete && onArchive) {
-      onArchive(productToDelete, true);
+    if (productToDelete && onDelete) {
+      onDelete(productToDelete);
       setShowDeleteConfirm(false);
       setProductToDelete(null);
     }
@@ -93,15 +93,11 @@ const ProductsList: React.FC<ProductsListProps> = ({
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
       // Filter by active status
-      if (filterActive === "active" && (!product.is_active || product.is_archived)) {
+      if (filterActive === "active" && !product.is_active) {
         return false;
       }
       
-      if (filterActive === "inactive" && (product.is_active || product.is_archived)) {
-        return false;
-      }
-      
-      if (filterActive === "archived" && !product.is_archived) {
+      if (filterActive === "inactive" && product.is_active) {
         return false;
       }
       
@@ -124,11 +120,10 @@ const ProductsList: React.FC<ProductsListProps> = ({
   }, [products, searchTerm, filterActive, categoryFilter]);
 
   const getFilterCounts = () => {
-    const active = products.filter(p => p.is_active && !p.is_archived).length;
-    const inactive = products.filter(p => !p.is_active && !p.is_archived).length;
-    const archived = products.filter(p => p.is_archived).length;
+    const active = products.filter(p => p.is_active).length;
+    const inactive = products.filter(p => !p.is_active).length;
     
-    return { active, inactive, archived };
+    return { active, inactive };
   };
   
   const filterCounts = getFilterCounts();
@@ -158,7 +153,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
             handleToggleSelection={handleToggleSelection}
             handleProductClick={handleProductClick}
             onEdit={onEdit}
-            onArchive={onArchive}
+            onDelete={onDelete}
             onActivate={onActivate}
             onRefresh={onRefresh}
             searchTerm={searchTerm}

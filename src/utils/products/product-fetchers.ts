@@ -48,25 +48,25 @@ export const getProductById = async (productId: string) => {
 };
 
 /**
- * Archive or unarchive a product
+ * Delete a product
  */
-export const archiveProduct = async (productId: string, isArchived: boolean) => {
+export const deleteProduct = async (productId: string) => {
   try {
-    return await databaseClient.products.archiveProduct(productId, isArchived);
+    return await databaseClient.products.deleteProduct(productId);
   } catch (error) {
-    console.error('Error archiving product:', error);
-    return { data: null, error };
+    console.error('Error deleting product:', error);
+    return { success: false, error };
   }
 };
 
 /**
- * Bulk archive or unarchive products
+ * Bulk delete products
  */
-export const bulkArchiveProducts = async (productIds: string[], isArchived: boolean) => {
+export const bulkDeleteProducts = async (productIds: string[]) => {
   try {
-    return await databaseClient.products.bulkArchiveProducts(productIds, isArchived);
+    return await databaseClient.products.bulkDeleteProducts(productIds);
   } catch (error) {
-    console.error('Error bulk archiving products:', error);
+    console.error('Error bulk deleting products:', error);
     return { success: false, error };
   }
 };

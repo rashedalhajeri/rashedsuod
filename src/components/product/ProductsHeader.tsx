@@ -1,14 +1,13 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Plus, RefreshCw, ArchiveIcon, Search } from "lucide-react";
+import { Plus, RefreshCw, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from "@/hooks/use-media-query";
 import { Input } from "@/components/ui/input";
 
 interface ProductsHeaderProps {
-  archivedCount: number;
   inactiveCount: number;
   totalProducts: number;
   isRefreshing: boolean;
@@ -19,7 +18,6 @@ interface ProductsHeaderProps {
 }
 
 const ProductsHeader: React.FC<ProductsHeaderProps> = ({
-  archivedCount,
   inactiveCount,
   totalProducts,
   isRefreshing,
@@ -46,15 +44,9 @@ const ProductsHeader: React.FC<ProductsHeaderProps> = ({
           </p>
         </div>
         <div className="flex items-center gap-1.5">
-          {archivedCount > 0 && (
-            <Badge variant="outline" className="font-normal text-xs">
-              <ArchiveIcon className="h-3 w-3 ml-1" />
-              {archivedCount}
-            </Badge>
-          )}
           {inactiveCount > 0 && (
             <Badge variant="outline" className="font-normal bg-yellow-50 text-yellow-600 border-yellow-200 text-xs">
-              {inactiveCount}
+              {inactiveCount} غير مفعل
             </Badge>
           )}
         </div>
