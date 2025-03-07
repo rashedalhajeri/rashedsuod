@@ -1,5 +1,7 @@
 
 import React from "react";
+import { AlertCircle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ErrorStateProps {
   title?: string;
@@ -15,26 +17,25 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
   onRetry 
 }) => {
   return (
-    <div className="flex flex-col justify-center items-center h-full py-12">
-      <div className="text-red-500 mb-4">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
+    <div className="flex flex-col justify-center items-center h-full py-10">
+      <div className="bg-red-50 text-red-500 p-3 rounded-full mb-4">
+        <AlertCircle size={32} />
       </div>
       <h3 className="text-xl font-bold text-gray-800 mb-2">{title}</h3>
-      <p className="text-gray-600 mb-2">{message}</p>
+      <p className="text-gray-600 mb-2 text-center max-w-md">{message}</p>
       {details && (
-        <p className="text-sm text-gray-500 mb-4 max-w-md text-center">{details}</p>
+        <div className="text-sm text-gray-500 mb-4 max-w-md text-center p-3 bg-gray-50 rounded-md border border-gray-100">
+          {details}
+        </div>
       )}
       {onRetry && (
-        <button 
+        <Button 
           onClick={onRetry}
-          className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600 transition-colors"
+          className="mt-2 gap-2"
         >
+          <RefreshCw className="h-4 w-4" />
           إعادة المحاولة
-        </button>
+        </Button>
       )}
     </div>
   );

@@ -236,11 +236,14 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     try {
       const { error } = await supabase
         .from("products")
-        .delete()
+        .update({ 
+          is_archived: true,
+          is_active: false 
+        })
         .eq("id", productId);
 
       if (error) {
-        console.error("Error deleting product:", error);
+        console.error("Error archiving product:", error);
         setError(error.message);
         toast({
           title: "خطأ",
@@ -263,7 +266,7 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
         onOpenChange(false);
       }
     } catch (error: any) {
-      console.error("Unexpected error deleting product:", error);
+      console.error("Unexpected error archiving product:", error);
       setError(error.message);
       toast({
         title: "خطأ",

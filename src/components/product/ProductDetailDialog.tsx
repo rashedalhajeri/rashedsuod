@@ -12,7 +12,7 @@ import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import SaveButton from "@/components/ui/save-button";
 import { useProductDetailForm } from "@/hooks/useProductDetailForm";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, X } from "lucide-react";
 
 // Import form sections
 import BasicInfoSection from "./form/BasicInfoSection";
@@ -97,8 +97,20 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
+        <div className="absolute right-4 top-4">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => onOpenChange(false)}
+            className="h-6 w-6 rounded-full hover:bg-gray-100"
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">إغلاق</span>
+          </Button>
+        </div>
+        
+        <DialogHeader className="space-y-1 pb-4 mb-4 border-b border-gray-100">
+          <DialogTitle className="text-xl font-semibold bg-gradient-to-r from-primary-800 to-primary-600 bg-clip-text text-transparent">
             {isUpdating ? "تعديل المنتج" : "إضافة منتج جديد"}
           </DialogTitle>
           <DialogDescription className="text-gray-500">
@@ -175,10 +187,10 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
         <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-100">
           {isUpdating && (
             <Button
-              variant="destructive"
+              variant="outline"
               onClick={handleDelete}
               disabled={isSubmitting}
-              className="gap-2"
+              className="gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
             >
               <AlertTriangle className="h-4 w-4" />
               حذف المنتج
@@ -188,7 +200,11 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
           {!isUpdating && <div></div>}
           
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              className="hover:bg-gray-50"
+            >
               إلغاء
             </Button>
             <SaveButton isSaving={isSubmitting} onClick={handleSave} />

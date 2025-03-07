@@ -1,6 +1,5 @@
-
 import React, { useState } from "react";
-import { Trash2, Tag, Copy, Archive, CheckCircle, ChevronDown, RefreshCw, ArrowUpCircle } from "lucide-react";
+import { Trash2, Tag, Copy, Archive, CheckCircle, ChevronDown, RefreshCw, ArrowUpCircle, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
@@ -50,11 +49,14 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
     try {
       const { error } = await supabase
         .from('products')
-        .delete()
+        .update({ 
+          is_archived: true,
+          is_active: false 
+        })
         .in('id', selectedIds);
         
       if (error) {
-        console.error("Error deleting products:", error);
+        console.error("Error archiving products:", error);
         toast({
           variant: "destructive",
           title: "خطأ في حذف المنتجات",
@@ -129,7 +131,7 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
         console.error("Error unarchiving products:", error);
         toast({
           variant: "destructive",
-          title: "خطأ في إلغاء أرشفة المنتجات",
+          title: "خطأ في إلغاء ��رشفة المنتجات",
           description: error.message,
         });
         return;
@@ -278,21 +280,32 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
           <AlertDialogHeader>
             <AlertDialogTitle>تأكيد الحذف</AlertDialogTitle>
             <AlertDialogDescription>
-              هل أنت متأكد من حذف {selectedCount} منتج؟ هذا الإجراء لا يمكن التراجع عنه.
+              هل أنت متأكد من حذف {selectedCount} منتج؟
               
-              <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-md text-sm font-medium">
-                سيتم حذف هذه المنتجات نهائياً من قاعدة البيانات. إذا كنت تريد إخفاءها مؤقتاً، يمكنك أرشفتها بدلاً من ذلك.
+              <div className="mt-4 p-3 bg-orange-50 text-orange-700 rounded-md text-sm">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-medium mb-1">ملاحظة هامة</p>
+                    <p>المنتجات التي تم طلبها في طلبات سابقة سيتم إخفاؤها فقط وليس حذفها بالكامل للحفاظ على سجلات الطلبات سليمة.</p>
+                  </div>
+                </div>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogCancel className="hover:bg-gray-100">إلغاء</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleBulkDelete}
-              className="bg-red-500 hover:bg-red-600"
+              className="bg-red-500 hover:bg-red-600 text-white"
               disabled={isDeleting}
             >
-              {isDeleting ? "جاري الحذف..." : "تأكيد الحذف"}
+              {isDeleting ? (
+                <span className="flex items-center gap-2">
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  جاري الحذف...
+                </span>
+              ) : "تأكيد الحذف"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
