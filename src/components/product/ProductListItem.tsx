@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Product } from "@/utils/products/types";
@@ -62,7 +63,7 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="flex items-start sm:items-center p-3 sm:p-4">
+      <div className="flex items-start sm:items-center p-3 sm:p-4" dir="rtl">
         <div className="flex items-start sm:items-center gap-3">
           <Checkbox
             checked={isSelected}
@@ -116,14 +117,15 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
               <div className="flex items-center justify-between">
                 <ProductPrice price={price} discountPrice={discount_price} size={isMobile ? "sm" : "md"} />
                 
-                <div className="hidden sm:flex text-xs text-gray-500 gap-3">
+                {/* هذا هو العنصر الذي سيتم إخفاؤه - لن يتم عرض المبيعات وتاريخ الإضافة */}
+                {/* <div className="hidden sm:flex text-xs text-gray-500 gap-3">
                   <span className="flex items-center gap-1">
                     <span className="text-gray-400">المبيعات:</span> {sales_count}
                   </span>
                   <span className="flex items-center gap-1">
                     <span className="text-gray-400">تاريخ الإضافة:</span> {formatDate(created_at)}
                   </span>
-                </div>
+                </div> */}
               </div>
             </div>
             

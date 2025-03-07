@@ -15,7 +15,7 @@ export const ProductPrice: React.FC<ProductPriceProps> = ({
   className = "",
   size = "md"
 }) => {
-  const hasDiscount = discountPrice !== null && discountPrice > 0;
+  const hasDiscount = discountPrice !== null && discountPrice > 0 && discountPrice < price;
   
   // تحديد أحجام الخط بناءً على حجم المكون
   let priceSize = "text-sm";
@@ -33,7 +33,7 @@ export const ProductPrice: React.FC<ProductPriceProps> = ({
   const discountPercentage = hasDiscount ? Math.round((1 - (discountPrice as number) / price) * 100) : null;
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
+    <div className={`flex items-center gap-2 ${className}`} dir="rtl">
       {hasDiscount ? (
         <>
           <span className={`font-medium text-primary ${priceSize}`}>
