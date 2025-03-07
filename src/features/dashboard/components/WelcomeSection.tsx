@@ -1,85 +1,81 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { CalendarCheck2, Store } from "lucide-react";
+import { Sparkles, Store } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import StorePreviewButton from "./StorePreviewButton";
 
 interface WelcomeSectionProps {
   storeName: string;
-  ownerName?: string;
+  ownerName: string;
+  newOrdersCount: number;
+  lowStockCount: number;
   logoUrl?: string | null;
 }
 
-const WelcomeSection: React.FC<WelcomeSectionProps> = ({ 
-  storeName, 
-  ownerName = "المدير", 
+const WelcomeSection: React.FC<WelcomeSectionProps> = ({
+  storeName,
+  ownerName,
   logoUrl
 }) => {
-  const today = new Date();
-  const timeOfDay = getTimeOfDay();
-  const formattedDate = formatArabicDate(today);
+  const currentHour = new Date().getHours();
+  
+  let greeting = "مرحباً";
+  let greeting2 = "بك مجدداً";
+  if (currentHour < 12) {
+    greeting = "صباح الخير";
+    greeting2 = "يوم موفق";
+  } else if (currentHour < 18) {
+    greeting = "مساء الخير";
+    greeting2 = "نهار سعيد";
+  } else {
+    greeting = "مساء الخير";
+    greeting2 = "ليلة طيبة";
+  }
   
   return (
     <motion.div
-      initial={{ opacity: 0, y: -20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-white rounded-xl border border-gray-100 p-4 md:p-6 shadow-sm"
     >
-      <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-        {/* Store Logo */}
-        <div className="flex-shrink-0">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden">
-            {logoUrl ? (
-              <img 
-                src={logoUrl} 
-                alt={`${storeName} logo`} 
-                className="w-full h-full object-contain"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = '/store-placeholder.svg';
-                }}
-              />
-            ) : (
-              <Store className="h-8 w-8 text-gray-400" />
-            )}
-          </div>
-        </div>
+      <Card className="bg-gradient-to-r from-primary-50/80 to-primary-100/50 border-primary-100 overflow-hidden shadow-sm">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary-200/20 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-primary-300/20 rounded-full -ml-10 -mb-10 blur-2xl"></div>
         
-        {/* Greeting & Date */}
-        <div className="flex-1">
-          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
-            {timeOfDay} {ownerName} 👋
-          </h2>
-          <div className="flex items-center text-sm text-gray-500 mt-1">
-            <CalendarCheck2 className="h-4 w-4 mr-1" />
-            <span>{formattedDate}</span>
+        <CardContent className="pt-6 relative z-10">
+          <div className="flex items-start justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-3">
+              <div className="h-14 w-14 rounded-xl overflow-hidden bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-200">
+                {logoUrl ? (
+                  <img 
+                    src={logoUrl} 
+                    alt={storeName} 
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <Store className="h-7 w-7 text-primary-600" />
+                )}
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold flex items-center gap-2 text-gray-900">
+                  {greeting}
+                  <Sparkles className="h-5 w-5 text-amber-500 animate-pulse" />
+                </h2>
+                <p className="text-muted-foreground mt-1 flex items-center text-gray-700">
+                  {storeName} <span className="mx-1 text-xs">•</span> <span className="text-xs text-gray-500">{greeting2}</span>
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <StorePreviewButton />
+            </div>
           </div>
-          <p className="mt-2 text-gray-600">
-            مرحباً بك في لوحة تحكم متجرك <span className="font-medium text-primary-600">{storeName}</span>
-          </p>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 };
-
-// Helper functions for date and time formatting
-function getTimeOfDay() {
-  const hour = new Date().getHours();
-  if (hour >= 5 && hour < 12) return "صباح الخير،";
-  if (hour >= 12 && hour < 17) return "ظهر سعيد،";
-  if (hour >= 17 && hour < 21) return "مساء الخير،";
-  return "مساء سعيد،";
-}
-
-function formatArabicDate(date: Date) {
-  const options: Intl.DateTimeFormatOptions = { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  };
-  return date.toLocaleDateString('ar-EG', options);
-}
 
 export default WelcomeSection;

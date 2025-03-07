@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import useStoreData, { getCurrencyFormatter } from "@/hooks/use-store-data";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import LoadingState from "@/components/ui/loading-state";
@@ -45,24 +45,18 @@ const DashboardHome: React.FC = () => {
   const hasErrors = storeError || statsError || salesError || ordersError || productsError;
   if (hasErrors) {
     return (
-      <DashboardLayout>
-        <DashboardErrorHandler
-          storeError={storeError}
-          statsError={statsError}
-          salesError={salesError}
-          ordersError={ordersError}
-          productsError={productsError}
-        />
-      </DashboardLayout>
+      <DashboardErrorHandler
+        storeError={storeError}
+        statsError={statsError}
+        salesError={salesError}
+        ordersError={ordersError}
+        productsError={productsError}
+      />
     );
   }
   
   if (isLoading && (!storeData || !statsData)) {
-    return (
-      <DashboardLayout>
-        <LoadingState message="جاري تحميل البيانات..." />
-      </DashboardLayout>
-    );
+    return <LoadingState message="جاري تحميل البيانات..." />;
   }
   
   // Format currency based on store settings
@@ -71,6 +65,9 @@ const DashboardHome: React.FC = () => {
   // Subscription plan status
   const subscriptionStatus = storeData?.subscription_plan || "free";
   const isBasicPlan = subscriptionStatus === "basic";
+
+  // Check for low stock products
+  const lowStockCount = productsData?.filter(p => p.stock < 10).length || 0;
 
   // Transform salesData to match the expected format if needed
   const formattedSalesData = salesData?.map(item => ({
@@ -85,6 +82,8 @@ const DashboardHome: React.FC = () => {
         <WelcomeSection 
           storeName={storeData?.store_name || "متجرك"} 
           ownerName={userName}
+          newOrdersCount={statsData?.orders || 0}
+          lowStockCount={lowStockCount}
           logoUrl={storeData?.logo_url}
         />
         
