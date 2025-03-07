@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Label } from "@/components/ui/label";
-import ImageUploadGrid from "@/components/ui/image-upload-grid";
+import { ImageUploadGrid } from "@/components/ui/image-upload";
 
 interface ProductImagesSectionProps {
   images: string[];

@@ -1,6 +1,5 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { Product, RawProductData } from "./types";
+import { Product } from "./types";
 import { convertToStringArray } from "./format-helpers";
 
 /**
@@ -119,27 +118,45 @@ export const fetchProductsWithFilters = async (
 /**
  * Get a product by its ID 
  */
-export const getProductById = async (productId: string): Promise<{ data: Product | null, error: Error | null }> => {
+export const getProductById = async (productId: string) => {
   try {
     const { data, error } = await supabase
       .from('products')
       .select('*')
       .eq('id', productId)
       .single();
-      
-    if (error) {
-      return { data: null, error };
-    }
     
-    if (!data) {
-      return { data: null, error: new Error('Product not found') };
-    }
+    if (error) throw error;
     
-    const product = mapRawProductToProduct(data as RawProductData);
+    if (!data) return { data: null, error: null };
+    
+    // Process the data to ensure proper types
+    const product: Product = {
+      id: data.id,
+      name: data.name,
+      description: data.description,
+      price: data.price,
+      category_id: data.category_id,
+      store_id: data.store_id,
+      image_url: data.image_url,
+      stock_quantity: data.stock_quantity,
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+      discount_price: data.discount_price,
+      track_inventory: Boolean(data.track_inventory),
+      has_colors: Boolean(data.has_colors),
+      has_sizes: Boolean(data.has_sizes),
+      require_customer_name: Boolean(data.require_customer_name),
+      require_customer_image: Boolean(data.require_customer_image),
+      additional_images: convertToStringArray(data.additional_images),
+      available_colors: convertToStringArray(data.available_colors),
+      available_sizes: convertToStringArray(data.available_sizes)
+    };
     
     return { data: product, error: null };
-  } catch (err) {
-    return { data: null, error: err instanceof Error ? err : new Error('Unknown error') };
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    return { data: null, error };
   }
 };
 
