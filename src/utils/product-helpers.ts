@@ -161,12 +161,30 @@ export const fetchProductsWithFilters = async (
     }
     
     // Process the data to ensure additional_images is properly typed
-    const processedData = data.map(product => ({
-      ...product,
-      additional_images: Array.isArray(product.additional_images) 
-        ? product.additional_images 
-        : (product.additional_images ? JSON.parse(product.additional_images as unknown as string) : [])
-    })) as Product[];
+    const processedData = data.map(product => {
+      let additionalImages: string[] | null = null;
+      
+      if (product.additional_images) {
+        if (Array.isArray(product.additional_images)) {
+          additionalImages = product.additional_images;
+        } else if (typeof product.additional_images === 'string') {
+          try {
+            additionalImages = JSON.parse(product.additional_images);
+          } catch (e) {
+            additionalImages = [];
+            console.error("Error parsing additional_images:", e);
+          }
+        } else {
+          // If it's a Json object from Supabase, convert it appropriately
+          additionalImages = [];
+        }
+      }
+      
+      return {
+        ...product,
+        additional_images: additionalImages
+      } as Product;
+    });
     
     return processedData;
   } catch (err) {

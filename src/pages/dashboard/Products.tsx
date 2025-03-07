@@ -1,9 +1,8 @@
-
 import React, { useState } from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, Plus, Filter, Search, Edit, Trash2, Eye, MoreHorizontal, Percent, Tag, Box, User, Image as ImageIcon, Eye as EyeIcon } from "lucide-react";
+import { Package, Plus, Filter, Search, Edit, Trash2, Eye, MoreHorizontal, Percent, Tag, Box, User, Image as ImageIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
@@ -86,7 +85,30 @@ const Products: React.FC = () => {
         throw error;
       }
       
-      return data || [];
+      // Process products to ensure correct typing
+      return data.map(product => {
+        let additionalImages: string[] | null = null;
+        
+        if (product.additional_images) {
+          if (Array.isArray(product.additional_images)) {
+            additionalImages = product.additional_images;
+          } else if (typeof product.additional_images === 'string') {
+            try {
+              additionalImages = JSON.parse(product.additional_images);
+            } catch (e) {
+              additionalImages = [];
+            }
+          } else {
+            // Handle JSON object from Supabase
+            additionalImages = [];
+          }
+        }
+        
+        return {
+          ...product,
+          additional_images: additionalImages
+        } as Product;
+      });
     },
     enabled: !!storeData?.id,
   });
@@ -263,8 +285,8 @@ const Products: React.FC = () => {
               <div className="text-right">
                 <div className="font-bold">{formatCurrency(product.price)}</div>
                 <div className="text-sm">
-                  <Badge variant={product.stock_quantity > 0 ? "outline" : "destructive"} className="mt-1">
-                    {product.stock_quantity > 0 ? `${product.stock_quantity} في المخزون` : "نفذت الكمية"}
+                  <Badge variant={product.stock_quantity && product.stock_quantity > 0 ? "outline" : "destructive"} className="mt-1">
+                    {product.stock_quantity && product.stock_quantity > 0 ? `${product.stock_quantity} في المخزون` : "نفذت الكمية"}
                   </Badge>
                 </div>
               </div>
@@ -285,6 +307,7 @@ const Products: React.FC = () => {
                   <DropdownMenuItem 
                     className="flex items-center gap-2 text-red-600"
                     onClick={() => {
+                      // Ensure product is properly typed when setting to state
                       setSelectedProduct(product);
                       setIsDeleteDialogOpen(true);
                     }}
