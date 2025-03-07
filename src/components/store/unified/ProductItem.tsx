@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, ShoppingCart } from "lucide-react";
+import { Heart, ShoppingCart, BadgePercent } from "lucide-react";
 import { motion } from "framer-motion";
 import { getCurrencyFormatter } from "@/hooks/use-store-data";
 
@@ -33,6 +33,12 @@ const ProductItem: React.FC<ProductItemProps> = ({
     console.log("Product image failed to load:", product.image_url);
     setImageError(true);
   };
+
+  // Calculate discount percentage if there's a discount
+  const hasDiscount = product.discount_price && product.discount_price < product.price;
+  const discountPercentage = hasDiscount 
+    ? Math.round(((product.price - product.discount_price) / product.price) * 100) 
+    : 0;
   
   // If in list mode, use a different layout
   if (displayStyle === 'list') {
@@ -55,6 +61,14 @@ const ProductItem: React.FC<ProductItemProps> = ({
               className="w-full h-full object-cover"
               onError={handleImageError}
             />
+            
+            {/* Discount badge */}
+            {hasDiscount && (
+              <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1">
+                <BadgePercent className="h-3 w-3" />
+                <span>خصم {discountPercentage}%</span>
+              </div>
+            )}
           </div>
         </Link>
         
@@ -71,9 +85,16 @@ const ProductItem: React.FC<ProductItemProps> = ({
           </div>
           
           <div className="flex items-center justify-between mt-2">
-            <p className="text-primary font-bold">
-              {formatCurrency(product.price)}
-            </p>
+            <div className="flex items-center gap-2">
+              {hasDiscount ? (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-red-600 font-bold">{formatCurrency(product.discount_price)}</span>
+                  <span className="text-gray-400 text-xs line-through">{formatCurrency(product.price)}</span>
+                </div>
+              ) : (
+                <span className="text-primary font-bold">{formatCurrency(product.price)}</span>
+              )}
+            </div>
             
             <div className="flex gap-2">
               <button className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 transition-all hover:bg-gray-200">
@@ -121,9 +142,10 @@ const ProductItem: React.FC<ProductItemProps> = ({
           </button>
           
           {/* If there's a discount, show discount badge */}
-          {product.discount_price && (
-            <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md">
-              خصم {Math.round(((product.price - product.discount_price) / product.price) * 100)}%
+          {hasDiscount && (
+            <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1">
+              <BadgePercent className="h-3 w-3" />
+              <span>خصم {discountPercentage}%</span>
             </div>
           )}
         </div>
@@ -137,7 +159,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
         
         {/* Price with discount display */}
         <div className="flex items-center mt-1">
-          {product.discount_price ? (
+          {hasDiscount ? (
             <>
               <span className="font-bold text-red-600">{formatCurrency(product.discount_price)}</span>
               <span className="text-gray-400 text-xs line-through mr-2">{formatCurrency(product.price)}</span>
