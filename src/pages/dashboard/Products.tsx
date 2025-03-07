@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -84,12 +85,19 @@ const Products: React.FC = () => {
         throw error;
       }
       
+      // Process the data to ensure proper typing of fields
       return data.map(product => {
         return {
           ...product,
+          // Handle potentially missing properties with defaults
           additional_images: convertToStringArray(product.additional_images),
-          available_colors: convertToStringArray(product.available_colors),
-          available_sizes: convertToStringArray(product.available_sizes)
+          available_colors: convertToStringArray(product.available_colors || null),
+          available_sizes: convertToStringArray(product.available_sizes || null),
+          track_inventory: product.track_inventory || false,
+          has_colors: product.has_colors || false,
+          has_sizes: product.has_sizes || false,
+          require_customer_name: product.require_customer_name || false,
+          require_customer_image: product.require_customer_image || false
         } as Product;
       });
     },

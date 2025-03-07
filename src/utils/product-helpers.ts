@@ -188,11 +188,18 @@ export const fetchProductsWithFilters = async (
     
     // Process the data to ensure proper typing of fields
     const processedData = data.map(product => {
+      // Create a new object with the correct types
       return {
         ...product,
+        // Handle potentially missing properties by providing default values
         additional_images: convertToStringArray(product.additional_images),
-        available_colors: convertToStringArray(product.available_colors),
-        available_sizes: convertToStringArray(product.available_sizes)
+        available_colors: convertToStringArray(product.available_colors || null),
+        available_sizes: convertToStringArray(product.available_sizes || null),
+        track_inventory: product.track_inventory || false,
+        has_colors: product.has_colors || false,
+        has_sizes: product.has_sizes || false,
+        require_customer_name: product.require_customer_name || false,
+        require_customer_image: product.require_customer_image || false
       } as Product;
     });
     
