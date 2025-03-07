@@ -38,15 +38,21 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   cancelButtonProps,
   className,
 }) => {
-  const handleConfirm = () => {
+  // Create a dedicated handler for confirmation to avoid duplicate calls
+  const handleConfirm = (e: React.MouseEvent) => {
+    e.preventDefault();
     onConfirm();
-    // Let the onConfirm function handle closing the dialog if needed
-    // This prevents double closing which can cause the UI freeze
+    // Let the parent component handle dialog closing
   };
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className={cn("max-w-[450px]", className)}>
+      <AlertDialogContent 
+        className={cn(
+          "fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 max-w-[450px] bg-background",
+          className
+        )}
+      >
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription className="py-2 text-base text-gray-700 dark:text-gray-300">

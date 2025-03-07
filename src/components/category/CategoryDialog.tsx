@@ -37,9 +37,10 @@ const CategoryDialog: React.FC<CategoryDialogProps> = ({
   storeId,
   showCategoryImages,
 }) => {
-  const handleSubmit = () => {
+  const handleSubmit = (e: React.MouseEvent) => {
+    e.preventDefault();
     handleAddCategory();
-    onClose();
+    // Don't call onClose here - it will be handled by the parent after the operation is complete
   };
 
   const handleImageChange = (images: string[]) => {
@@ -47,8 +48,8 @@ const CategoryDialog: React.FC<CategoryDialogProps> = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => onClose()}>
-      <DialogContent className="sm:max-w-[425px] p-6 rounded-xl">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 sm:max-w-[425px] p-6 rounded-xl bg-background">
         <DialogHeader className="pb-4 border-b">
           <motion.div 
             initial={{ opacity: 0, y: -5 }}
