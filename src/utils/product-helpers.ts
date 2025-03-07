@@ -95,6 +95,32 @@ export const uploadProductImage = async (file: File, storeId: string): Promise<s
 };
 
 /**
+ * Convert any Supabase JSON value to string array safely
+ */
+export const convertToStringArray = (value: any): string[] | null => {
+  if (!value) {
+    return null;
+  }
+  
+  if (Array.isArray(value)) {
+    // Ensure all array elements are strings
+    return value.map(item => String(item));
+  }
+  
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed.map(item => String(item)) : null;
+    } catch (e) {
+      console.error("Error parsing string to array:", e);
+      return null;
+    }
+  }
+  
+  return null;
+};
+
+/**
  * Fetch products with filters
  */
 export const fetchProductsWithFilters = async (
@@ -160,29 +186,13 @@ export const fetchProductsWithFilters = async (
       return [];
     }
     
-    // Process the data to ensure additional_images is properly typed
+    // Process the data to ensure proper typing of fields
     const processedData = data.map(product => {
-      let additionalImages: string[] | null = null;
-      
-      if (product.additional_images) {
-        if (Array.isArray(product.additional_images)) {
-          additionalImages = product.additional_images;
-        } else if (typeof product.additional_images === 'string') {
-          try {
-            additionalImages = JSON.parse(product.additional_images);
-          } catch (e) {
-            additionalImages = [];
-            console.error("Error parsing additional_images:", e);
-          }
-        } else {
-          // If it's a Json object from Supabase, convert it appropriately
-          additionalImages = [];
-        }
-      }
-      
       return {
         ...product,
-        additional_images: additionalImages
+        additional_images: convertToStringArray(product.additional_images),
+        available_colors: convertToStringArray(product.available_colors),
+        available_sizes: convertToStringArray(product.available_sizes)
       } as Product;
     });
     

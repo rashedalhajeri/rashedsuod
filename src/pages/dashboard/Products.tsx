@@ -24,7 +24,7 @@ import LoadingState from "@/components/ui/loading-state";
 import useStoreData, { getCurrencyFormatter } from "@/hooks/use-store-data";
 import ImageUploadGrid from "@/components/ui/image-upload-grid";
 import { Switch } from "@/components/ui/switch";
-import { Product } from "@/utils/product-helpers";
+import { Product, convertToStringArray } from "@/utils/product-helpers";
 
 interface ProductFormData {
   name: string;
@@ -69,7 +69,6 @@ const Products: React.FC = () => {
   const { data: products, isLoading, refetch } = useQuery({
     queryKey: ['products'],
     queryFn: async () => {
-      // قم بجلب بيانات المتجر من الحالة المخزنة بدلاً من استدعاء useStoreData
       if (!storeData?.id) {
         return [];
       }
@@ -85,28 +84,12 @@ const Products: React.FC = () => {
         throw error;
       }
       
-      // Process products to ensure correct typing
       return data.map(product => {
-        let additionalImages: string[] | null = null;
-        
-        if (product.additional_images) {
-          if (Array.isArray(product.additional_images)) {
-            additionalImages = product.additional_images;
-          } else if (typeof product.additional_images === 'string') {
-            try {
-              additionalImages = JSON.parse(product.additional_images);
-            } catch (e) {
-              additionalImages = [];
-            }
-          } else {
-            // Handle JSON object from Supabase
-            additionalImages = [];
-          }
-        }
-        
         return {
           ...product,
-          additional_images: additionalImages
+          additional_images: convertToStringArray(product.additional_images),
+          available_colors: convertToStringArray(product.available_colors),
+          available_sizes: convertToStringArray(product.available_sizes)
         } as Product;
       });
     },
@@ -307,7 +290,6 @@ const Products: React.FC = () => {
                   <DropdownMenuItem 
                     className="flex items-center gap-2 text-red-600"
                     onClick={() => {
-                      // Ensure product is properly typed when setting to state
                       setSelectedProduct(product);
                       setIsDeleteDialogOpen(true);
                     }}
@@ -383,7 +365,6 @@ const Products: React.FC = () => {
           </DialogHeader>
           
           <div className="mt-4 space-y-6">
-            {/* Basic Product Information */}
             <div className="space-y-4">
               <div className="grid gap-2">
                 <Label htmlFor="name">اسم المنتج <span className="text-red-500">*</span></Label>
@@ -408,7 +389,6 @@ const Products: React.FC = () => {
                 />
               </div>
               
-              {/* Price with discount option */}
               <div className="grid gap-2">
                 <Label htmlFor="price">السعر <span className="text-red-500">*</span></Label>
                 <div className="flex gap-2">
@@ -451,7 +431,6 @@ const Products: React.FC = () => {
                 </div>
               )}
               
-              {/* Inventory tracking switch */}
               <div className="flex items-center justify-between">
                 <div className="flex flex-col">
                   <Label htmlFor="track_inventory" className="mb-1">تتبع المخزون</Label>
@@ -466,7 +445,6 @@ const Products: React.FC = () => {
                 />
               </div>
               
-              {/* Stock quantity, only shown if tracking inventory */}
               {formData.track_inventory && (
                 <div className="grid gap-2">
                   <Label htmlFor="stock_quantity">الكمية المتوفرة</Label>
@@ -481,7 +459,6 @@ const Products: React.FC = () => {
                 </div>
               )}
               
-              {/* Advanced properties section */}
               <div className="pt-4 mt-4 border-t border-gray-200">
                 <h3 className="text-md font-medium mb-3 flex items-center gap-2">
                   <Tag className="h-4 w-4" />
@@ -489,7 +466,6 @@ const Products: React.FC = () => {
                 </h3>
                 
                 <div className="grid gap-4">
-                  {/* Colors option */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Box className="h-4 w-4 text-blue-500" />
@@ -502,7 +478,6 @@ const Products: React.FC = () => {
                     />
                   </div>
                   
-                  {/* Sizes option */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Tag className="h-4 w-4 text-green-500" />
@@ -515,7 +490,6 @@ const Products: React.FC = () => {
                     />
                   </div>
                   
-                  {/* Require customer name */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-purple-500" />
@@ -528,7 +502,6 @@ const Products: React.FC = () => {
                     />
                   </div>
                   
-                  {/* Require customer image */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <ImageIcon className="h-4 w-4 text-red-500" />
@@ -544,7 +517,6 @@ const Products: React.FC = () => {
               </div>
             </div>
             
-            {/* Product Images */}
             <div className="space-y-4 pt-4 border-t border-gray-200">
               <div className="flex items-center justify-between mb-2">
                 <Label className="text-md font-medium">صور المنتج <span className="text-red-500">*</span></Label>
