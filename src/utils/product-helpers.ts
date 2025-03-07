@@ -187,31 +187,28 @@ export const fetchProductsWithFilters = async (
     }
     
     // Process the data to ensure proper typing of fields
-    const processedData = data.map(product => {
-      // Create a new object with explicit properties instead of spreading
-      return {
-        id: product.id,
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        category_id: product.category_id,
-        store_id: product.store_id,
-        image_url: product.image_url,
-        stock_quantity: product.stock_quantity,
-        created_at: product.created_at,
-        updated_at: product.updated_at,
-        additional_images: convertToStringArray(product.additional_images),
-        // Set default values for properties that might not exist in the database
-        discount_price: null,
-        track_inventory: false,
-        has_colors: false,
-        has_sizes: false,
-        require_customer_name: false,
-        require_customer_image: false,
-        available_colors: null,
-        available_sizes: null
-      } as Product;
-    });
+    const processedData: Product[] = data.map(product => ({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      category_id: product.category_id,
+      store_id: product.store_id,
+      image_url: product.image_url,
+      stock_quantity: product.stock_quantity,
+      created_at: product.created_at,
+      updated_at: product.updated_at,
+      additional_images: convertToStringArray(product.additional_images),
+      // Set default values for properties that might not exist in the database
+      discount_price: null,
+      track_inventory: false,
+      has_colors: false,
+      has_sizes: false,
+      require_customer_name: false,
+      require_customer_image: false,
+      available_colors: null,
+      available_sizes: null
+    }));
     
     return processedData;
   } catch (err) {
