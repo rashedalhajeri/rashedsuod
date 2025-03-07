@@ -11,8 +11,8 @@ interface ProductDetailLayoutProps {
   isNewProduct: boolean;
   pageTitle: string;
   isSaving: boolean;
-  onSave: () => void;
-  onDelete: () => void;
+  onSave: (() => Promise<void>) | (() => void);
+  onDelete: (() => Promise<void>) | (() => void);
 }
 
 const ProductDetailLayout: React.FC<ProductDetailLayoutProps> = ({

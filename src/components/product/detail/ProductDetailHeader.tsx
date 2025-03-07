@@ -8,8 +8,8 @@ interface ProductDetailHeaderProps {
   pageTitle: string;
   isNewProduct: boolean;
   isSaving: boolean;
-  onSave: () => void;
-  onDelete: () => void;
+  onSave: (() => Promise<void>) | (() => void);
+  onDelete: (() => Promise<void>) | (() => void);
 }
 
 const ProductDetailHeader: React.FC<ProductDetailHeaderProps> = ({
