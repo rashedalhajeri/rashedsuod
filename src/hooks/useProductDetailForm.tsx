@@ -104,12 +104,13 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
           return;
         }
 
-        // Create a complete product data object with default values for missing fields
-        const productData: RawProductData = {
+        // Add default values for fields that might not exist in the database
+        const productData = {
           ...(data as any),
-          is_featured: data.is_featured !== undefined ? data.is_featured : false,
-          sales_count: data.sales_count !== undefined ? data.sales_count : 0
-        };
+          // Use optional chaining and nullish coalescing to safely access properties
+          is_featured: data?.is_featured ?? false,
+          sales_count: data?.sales_count ?? 0
+        } as RawProductData;
 
         // Map raw product data to Product type
         const mappedProduct = mapRawProductToProduct(productData);
