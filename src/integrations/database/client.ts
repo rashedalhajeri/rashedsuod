@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Product, RawProductData } from "@/utils/products/types";
 import { mapRawProductToProduct } from "@/utils/products/mappers";
@@ -144,19 +145,18 @@ class SupabaseDatabaseClient implements DatabaseClient {
 
     deleteProduct: async (productId: string) => {
       try {
-        // Check if the product is associated with any orders before deleting
-        const { data: orderItems, error: checkError } = await supabase
+        // أولاً، حذف جميع عناصر الطلبات المرتبطة بهذا المنتج
+        const { error: orderItemsError } = await supabase
           .from('order_items')
-          .select('id')
-          .eq('product_id', productId)
-          .limit(1);
+          .delete()
+          .eq('product_id', productId);
           
-        if (checkError) {
-          return { success: false, error: checkError };
+        if (orderItemsError) {
+          console.error("Error deleting related order items:", orderItemsError);
+          return { success: false, error: orderItemsError };
         }
         
-        // Even if the product is in orders, we will delete it completely
-        // This is a change from the previous behavior where we would archive products in orders
+        // ثم حذف المنتج نفسه
         const { error } = await supabase
           .from('products')
           .delete()
@@ -171,7 +171,7 @@ class SupabaseDatabaseClient implements DatabaseClient {
 
     hardDeleteProduct: async (productId: string) => {
       try {
-        // This is now the same as regular deleteProduct
+        // الآن أصبحت هذه الوظيفة متطابقة مع deleteProduct
         return this.products.deleteProduct(productId);
       } catch (error) {
         console.error("Error hard deleting product:", error);
@@ -190,7 +190,23 @@ class SupabaseDatabaseClient implements DatabaseClient {
           };
         }
         
-        // Delete all products, regardless of whether they're associated with orders
+        // أولاً، حذف جميع عناصر الطلبات المرتبطة بهذه المنتجات
+        const { error: orderItemsError } = await supabase
+          .from('order_items')
+          .delete()
+          .in('product_id', productIds);
+          
+        if (orderItemsError) {
+          console.error("Error deleting related order items:", orderItemsError);
+          return { 
+            success: false, 
+            error: orderItemsError, 
+            deletedCount: 0,
+            archivedCount: 0 
+          };
+        }
+        
+        // ثم حذف المنتجات نفسها
         const { error } = await supabase
           .from('products')
           .delete()
