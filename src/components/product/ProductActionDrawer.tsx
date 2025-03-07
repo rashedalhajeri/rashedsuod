@@ -56,23 +56,46 @@ const ProductActionDrawer: React.FC<ProductActionDrawerProps> = ({
 
   // Handlers with proper checks to prevent errors
   const handleEdit = () => {
-    if (id && onEdit) {
-      onEdit(id);
+    try {
+      if (id && onEdit) {
+        onEdit(id);
+        onOpenChange(false);
+      }
+    } catch (error) {
+      console.error("Error in edit handler:", error);
       onOpenChange(false);
     }
   };
   
   const handleActivate = () => {
-    if (id && onActivate) {
-      onActivate(id, !is_active);
+    try {
+      if (id && onActivate) {
+        onActivate(id, !is_active);
+        onOpenChange(false);
+      }
+    } catch (error) {
+      console.error("Error in activate handler:", error);
       onOpenChange(false);
     }
   };
   
   const handleDelete = () => {
-    if (id && onDelete) {
-      onDelete(id);
-      // Do not close the drawer here, let the parent handle this after confirmation
+    try {
+      if (id && onDelete) {
+        onDelete(id);
+        // Intentionally not closing the drawer here as this is typically followed by a confirmation
+      }
+    } catch (error) {
+      console.error("Error in delete handler:", error);
+      onOpenChange(false);
+    }
+  };
+  
+  const handleSheetClose = () => {
+    try {
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Error closing sheet:", error);
     }
   };
 
@@ -147,7 +170,13 @@ const ProductActionDrawer: React.FC<ProductActionDrawerProps> = ({
 
         <SheetFooter className="mt-8 flex justify-center">
           <SheetClose asChild>
-            <Button className="w-full" variant="outline">إغلاق</Button>
+            <Button 
+              className="w-full" 
+              variant="outline" 
+              onClick={handleSheetClose}
+            >
+              إغلاق
+            </Button>
           </SheetClose>
         </SheetFooter>
       </SheetContent>

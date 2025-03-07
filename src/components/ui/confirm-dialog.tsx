@@ -39,12 +39,22 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   className,
 }) => {
   const handleConfirm = () => {
-    onConfirm();
-    // Dialog will close automatically when onConfirm changes the open state
+    try {
+      onConfirm();
+    } catch (error) {
+      console.error("Error in confirm action:", error);
+    } finally {
+      // Ensure dialog always closes even if there's an error
+      onOpenChange(false);
+    }
   };
 
   const handleCancel = () => {
-    onOpenChange(false);
+    try {
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Error when canceling dialog:", error);
+    }
   };
 
   return (

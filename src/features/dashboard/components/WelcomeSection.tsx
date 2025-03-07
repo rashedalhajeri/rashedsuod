@@ -1,7 +1,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { CalendarCheck2, Package, Store } from "lucide-react";
+import { CalendarCheck2, Store } from "lucide-react";
 
 interface WelcomeSectionProps {
   storeName: string;
