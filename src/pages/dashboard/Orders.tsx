@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/layouts/DashboardLayout";
@@ -17,12 +18,14 @@ import { Order, OrderStatus } from "@/types/orders";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Filter, Plus, RefreshCcw } from "lucide-react";
+import { Search, Filter, Plus, RefreshCcw, ShoppingBag, Package, Check, X, Clock } from "lucide-react";
 import { toast } from "sonner";
 import LoadingState from "@/components/ui/loading-state";
 import ErrorState from "@/components/ui/error-state";
 import useStoreData from "@/hooks/use-store-data";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { Badge } from "@/components/ui/badge";
 
 const ensureOrderStatus = (status: string): OrderStatus => {
   switch(status) {
@@ -43,6 +46,7 @@ const mapToOrderType = (dbOrder: any): Order => {
 const OrdersPage: React.FC = () => {
   const { storeData } = useStoreData();
   const storeId = storeData?.id || "";
+  const isMobile = useMediaQuery("(max-width: 768px)");
   
   const [activeTab, setActiveTab] = useState<OrderStatus | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -128,6 +132,9 @@ const OrdersPage: React.FC = () => {
       if (selectedOrder && selectedOrder.id === orderId) {
         setSelectedOrder(prev => prev ? { ...prev, status } : null);
       }
+      
+      const statusText = status === "processing" ? "قيد المعالجة" : status === "delivered" ? "تم التوصيل" : "ملغي";
+      toast.success(`تم تحديث حالة الطلب إلى ${statusText}`);
     } catch (error) {
       console.error("Error updating order status:", error);
       toast.error("حدث خطأ أثناء تحديث حالة الطلب");
@@ -148,6 +155,7 @@ const OrdersPage: React.FC = () => {
         refetch();
         refetchStats();
         setIsConfirmingDelete(false);
+        toast.success("تم حذف الطلب بنجاح");
         
         if (selectedOrder && selectedOrder.id === orderToDelete) {
           setIsViewingDetails(false);
@@ -181,9 +189,42 @@ const OrdersPage: React.FC = () => {
     refetch();
     refetchStats();
     toast.success("تم إضافة الطلب بنجاح");
+    setIsAddingOrder(false);
   };
 
   const totalPages = Math.ceil((ordersData?.totalCount || 0) / pageSize);
+
+  // تنظيف لتصنيفات الطلبات
+  const statusItems = [
+    {
+      id: "all",
+      label: "الكل",
+      count: statsData?.total || 0,
+      icon: <ShoppingBag className="h-4 w-4" />,
+      color: "bg-gray-100 text-gray-800 border-gray-200"
+    },
+    {
+      id: "processing",
+      label: "قيد المعالجة",
+      count: statsData?.processing || 0,
+      icon: <Clock className="h-4 w-4" />,
+      color: "bg-blue-50 text-blue-800 border-blue-200"
+    },
+    {
+      id: "delivered",
+      label: "تم التوصيل",
+      count: statsData?.delivered || 0,
+      icon: <Check className="h-4 w-4" />,
+      color: "bg-green-50 text-green-800 border-green-200"
+    },
+    {
+      id: "cancelled",
+      label: "ملغي",
+      count: statsData?.cancelled || 0,
+      icon: <X className="h-4 w-4" />,
+      color: "bg-red-50 text-red-800 border-red-200"
+    }
+  ];
 
   if (isLoading && !ordersData) {
     return <LoadingState message="جاري تحميل الطلبات..." />;
@@ -225,7 +266,7 @@ const OrdersPage: React.FC = () => {
               variant="default"
               size="sm"
               onClick={() => setIsAddingOrder(true)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700"
             >
               <Plus className="h-4 w-4" />
               طلب جديد
@@ -242,33 +283,38 @@ const OrdersPage: React.FC = () => {
               placeholder="البحث في الطلبات..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-3 pr-9"
+              className="pl-3 pr-9 border-gray-200 focus:border-primary-300 focus:ring focus:ring-primary-100 focus:ring-opacity-50"
             />
           </div>
           
-          <Button variant="outline" className="flex items-center gap-2 sm:w-auto w-full justify-center">
+          <Button variant="outline" className="flex items-center gap-2 sm:w-auto w-full justify-center border-gray-200 hover:border-primary-200 hover:bg-primary-50">
             <Filter className="h-4 w-4" />
             تصفية متقدمة
           </Button>
         </div>
         
-        <Tabs 
-          defaultValue="all" 
-          value={activeTab}
-          onValueChange={(value) => {
-            setActiveTab(value as OrderStatus | "all");
-            setCurrentPage(0);
-          }}
-          className="w-full"
-        >
-          <TabsList className="grid grid-cols-4 w-full mb-4">
-            <TabsTrigger value="all">الكل ({statsData?.total || 0})</TabsTrigger>
-            <TabsTrigger value="processing">قيد المعالجة ({statsData?.processing || 0})</TabsTrigger>
-            <TabsTrigger value="delivered">تم التوصيل ({statsData?.delivered || 0})</TabsTrigger>
-            <TabsTrigger value="cancelled">ملغي ({statsData?.cancelled || 0})</TabsTrigger>
-          </TabsList>
+        <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
+          <div className="flex overflow-x-auto py-4 px-4 gap-2 border-b border-gray-100">
+            {statusItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id as OrderStatus | "all")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium whitespace-nowrap transition-all ${
+                  activeTab === item.id
+                    ? `${item.color} shadow-sm`
+                    : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                }`}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+                <Badge variant="outline" className="ml-1 bg-white text-xs min-w-5 h-5 flex items-center justify-center">
+                  {item.count}
+                </Badge>
+              </button>
+            ))}
+          </div>
           
-          <TabsContent value={activeTab} className="mt-0">
+          <div className="p-4">
             {ordersData?.orders && ordersData.orders.length > 0 ? (
               <>
                 <OrdersList
@@ -288,6 +334,7 @@ const OrdersPage: React.FC = () => {
                         size="sm"
                         onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
                         disabled={currentPage === 0}
+                        className="border-gray-200"
                       >
                         السابق
                       </Button>
@@ -301,6 +348,7 @@ const OrdersPage: React.FC = () => {
                         size="sm"
                         onClick={() => setCurrentPage(prev => (prev + 1 < totalPages ? prev + 1 : prev))}
                         disabled={currentPage + 1 >= totalPages}
+                        className="border-gray-200"
                       >
                         التالي
                       </Button>
@@ -311,8 +359,8 @@ const OrdersPage: React.FC = () => {
             ) : (
               <OrderEmptyState />
             )}
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
       </div>
       
       {selectedOrder && (

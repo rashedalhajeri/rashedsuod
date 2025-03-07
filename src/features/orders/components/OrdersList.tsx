@@ -1,9 +1,8 @@
-
 import React from "react";
 import { Order } from "@/types/orders";
 import OrderStatusBadge from "./OrderStatusBadge";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag, MoreHorizontal } from "lucide-react";
+import { ShoppingBag, MoreHorizontal, Eye, RefreshCw, Clock, CheckCircle2, X, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ar } from "date-fns/locale";
 import { motion } from "framer-motion";
@@ -17,6 +16,7 @@ import {
 import OrderEmptyState from "./OrderEmptyState";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 interface OrdersListProps {
   orders: Order[];

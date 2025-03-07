@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 interface OrderStats {
   total: number;
@@ -23,9 +24,17 @@ const OrderStats: React.FC<OrderStatsProps> = ({
   stats,
   isLoading = false
 }) => {
+  // استخدام استعلام الميديا لتحديد ما إذا كنا في وضع الهاتف
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
+  // إذا كنا في وضع الهاتف، نخفي المكون تمامًا
+  if (isMobile) {
+    return null;
+  }
+
   if (isLoading) {
     return (
-      <Card className="border-primary-100">
+      <Card className="border-primary-100 shadow-md">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg font-medium">
             <Skeleton className="h-6 w-32" />
@@ -54,43 +63,54 @@ const OrderStats: React.FC<OrderStatsProps> = ({
       bgColor: "bg-gray-100",
       textColor: "text-gray-700",
       href: "/dashboard/orders?tab=all",
-      hoverBgColor: "hover:bg-gray-200"
+      hoverBgColor: "hover:bg-gray-200",
+      borderColor: "border-gray-200"
     },
     {
       label: "قيد المعالجة",
       value: stats.processing,
       icon: <Box className="h-5 w-5" />,
-      bgColor: "bg-blue-100",
+      bgColor: "bg-blue-50",
       textColor: "text-blue-700",
       href: "/dashboard/orders?tab=processing",
-      hoverBgColor: "hover:bg-blue-200"
+      hoverBgColor: "hover:bg-blue-100",
+      borderColor: "border-blue-200"
     },
     {
       label: "تم التوصيل",
       value: stats.delivered,
       icon: <CheckCircle2 className="h-5 w-5" />,
-      bgColor: "bg-green-100",
+      bgColor: "bg-green-50",
       textColor: "text-green-700",
       href: "/dashboard/orders?tab=delivered",
-      hoverBgColor: "hover:bg-green-200"
+      hoverBgColor: "hover:bg-green-100",
+      borderColor: "border-green-200"
     },
     {
       label: "ملغي",
       value: stats.cancelled,
       icon: <XCircle className="h-5 w-5" />,
-      bgColor: "bg-red-100",
+      bgColor: "bg-red-50",
       textColor: "text-red-700",
       href: "/dashboard/orders?tab=cancelled",
-      hoverBgColor: "hover:bg-red-200"
+      hoverBgColor: "hover:bg-red-100",
+      borderColor: "border-red-200"
     }
   ];
 
   return (
-    <Card className="border-primary-100">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-medium">إحصائيات الطلبات</CardTitle>
+    <Card className="border-none shadow-md bg-white overflow-hidden">
+      <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 to-primary-50 border-b">
+        <CardTitle className="text-lg font-bold flex items-center gap-2">
+          <span className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+            <ShoppingBag className="h-4 w-4 text-blue-600" />
+          </span>
+          <span className="bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+            إحصائيات الطلبات
+          </span>
+        </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4">
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {statsItems.map((item, index) => (
             <motion.div
@@ -100,17 +120,18 @@ const OrderStats: React.FC<OrderStatsProps> = ({
               transition={{ duration: 0.3, delay: index * 0.1 }}
               className="w-full"
             >
-              <Link to={item.href} className="block">
+              <Link to={item.href} className="block h-full">
                 <div className={cn(
-                  "flex flex-col items-center justify-center p-3 rounded-lg transition-all h-full",
+                  "flex flex-col items-center justify-center p-4 rounded-xl transition-all h-full border",
                   item.bgColor,
-                  item.hoverBgColor
+                  item.hoverBgColor,
+                  item.borderColor
                 )}>
-                  <div className={cn("p-2 rounded-full mb-2", `${item.bgColor}/60`)}>
+                  <div className={cn("p-3 rounded-full mb-3", `${item.bgColor}/80`)}>
                     <span className={item.textColor}>{item.icon}</span>
                   </div>
-                  <span className="text-xs font-medium mb-1 text-center">{item.label}</span>
-                  <span className={cn("text-lg font-bold", item.textColor)}>{item.value}</span>
+                  <span className="text-sm font-medium mb-1 text-center">{item.label}</span>
+                  <span className={cn("text-xl font-bold", item.textColor)}>{item.value}</span>
                 </div>
               </Link>
             </motion.div>
