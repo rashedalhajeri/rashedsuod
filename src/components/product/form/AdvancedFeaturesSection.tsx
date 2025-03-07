@@ -57,17 +57,8 @@ const AdvancedFeaturesSection: React.FC<AdvancedFeaturesSectionProps> = ({
   return (
     <>
       <Card className="border border-gray-200">
-        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+        <CardHeader className="pb-3">
           <CardTitle className="text-md font-medium">خصائص متقدمة</CardTitle>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="flex items-center gap-1" 
-            onClick={() => setDialogOpen(true)}
-          >
-            <Sparkles className="h-4 w-4 text-amber-500" />
-            <span>إدارة الخصائص المتقدمة</span>
-          </Button>
         </CardHeader>
         
         <CardContent>
