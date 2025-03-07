@@ -3,11 +3,14 @@ import React, { useState, useRef } from "react";
 import { AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { uploadProductImage } from "@/utils/products/image-helpers";
+import { uploadProductImage, doesProductImagesBucketExist } from "@/utils/products/image-helpers";
 import ImagePreview from "./ImagePreview";
 import UploadDropZone from "./UploadDropZone";
 import { ImageUploadProps } from "./types";
 import { ErrorState } from "@/components/ui/error-state";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { RotateCcw } from "lucide-react";
 
 const ImageUploadGrid: React.FC<ImageUploadProps> = ({
   images,
@@ -17,8 +20,34 @@ const ImageUploadGrid: React.FC<ImageUploadProps> = ({
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isCheckingBucket, setIsCheckingBucket] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [bucketExists, setBucketExists] = useState<boolean | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Check if bucket exists on component mount
+  React.useEffect(() => {
+    const checkBucket = async () => {
+      if (!storeId) return;
+      
+      try {
+        setIsCheckingBucket(true);
+        const exists = await doesProductImagesBucketExist();
+        setBucketExists(exists);
+        
+        if (!exists) {
+          console.warn("Product images bucket doesn't exist");
+          setUploadError("مشكلة في الوصول إلى مخزن الصور، يرجى المحاولة مرة أخرى");
+        }
+      } catch (error) {
+        console.error("Error checking bucket:", error);
+      } finally {
+        setIsCheckingBucket(false);
+      }
+    };
+    
+    checkBucket();
+  }, [storeId]);
   
   const handleAddImage = (url: string) => {
     if (images.length < maxImages) {
@@ -84,6 +113,18 @@ const ImageUploadGrid: React.FC<ImageUploadProps> = ({
       return;
     }
     
+    // Check if bucket exists before attempting upload
+    if (bucketExists === false) {
+      const exists = await doesProductImagesBucketExist();
+      if (!exists) {
+        setUploadError("مشكلة في الوصول إلى مخزن الصور، يرجى المحاولة مرة أخرى");
+        toast.error("فشل في الوصول إلى مخزن الصور، يرجى المحاولة لاحقًا");
+        return;
+      } else {
+        setBucketExists(true);
+      }
+    }
+    
     setIsUploading(true);
     setUploadError(null);
     let successCount = 0;
@@ -114,6 +155,7 @@ const ImageUploadGrid: React.FC<ImageUploadProps> = ({
       if (validUrls.length > 0) {
         onImagesChange([...images, ...validUrls]);
         toast.success(`تم رفع ${validUrls.length} صورة بنجاح`);
+        setUploadError(null);
       } else {
         toast.error('فشل في رفع الصور، يرجى المحاولة مرة أخرى');
         setUploadError('فشل في رفع الصور، يرجى المحاولة مرة أخرى');
@@ -143,9 +185,37 @@ const ImageUploadGrid: React.FC<ImageUploadProps> = ({
     }
   };
   
-  const retryUpload = () => {
+  const retryUpload = async () => {
     setUploadError(null);
+    
+    // Re-check bucket existence
+    setIsCheckingBucket(true);
+    try {
+      const exists = await doesProductImagesBucketExist();
+      setBucketExists(exists);
+      
+      if (exists) {
+        toast.success("تم الاتصال بمخزن الصور بنجاح");
+      } else {
+        toast.error("لا يزال هناك مشكلة في الوصول إلى مخزن الصور");
+        setUploadError("لا يزال هناك مشكلة في الوصول إلى مخزن الصور");
+      }
+    } catch (error) {
+      console.error("Error checking bucket:", error);
+      setUploadError("خطأ في التحقق من مخزن الصور");
+    } finally {
+      setIsCheckingBucket(false);
+    }
   };
+  
+  if (isCheckingBucket) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="mr-3 text-sm text-gray-600">جاري التحقق من إمكانية رفع الصور...</p>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-3">
@@ -158,45 +228,54 @@ const ImageUploadGrid: React.FC<ImageUploadProps> = ({
         className="hidden" 
       />
       
-      {uploadError && images.length === 0 ? (
-        <div className="mb-4">
-          <ErrorState 
-            title="خطأ في رفع الصور"
-            message={uploadError}
-            onRetry={retryUpload}
-          />
-        </div>
-      ) : (
-        <div 
-          className={cn(
-            "grid grid-cols-2 md:grid-cols-3 gap-2",
-            images.length === 0 && "grid-cols-1"
+      {uploadError ? (
+        <Alert variant="destructive" className="mb-4">
+          <AlertTitle>خطأ في رفع الصور</AlertTitle>
+          <AlertDescription className="flex flex-col space-y-2">
+            <p>{uploadError}</p>
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="self-start mt-2 gap-2"
+              onClick={retryUpload}
+              disabled={isCheckingBucket}
+            >
+              <RotateCcw className="h-4 w-4" />
+              إعادة المحاولة
+            </Button>
+          </AlertDescription>
+        </Alert>
+      ) : null}
+      
+      <div 
+        className={cn(
+          "grid grid-cols-2 md:grid-cols-3 gap-2",
+          images.length === 0 && "grid-cols-1"
+        )}
+      >
+        <AnimatePresence>
+          {images.map((image, index) => (
+            <ImagePreview
+              key={`${image}-${index}`}
+              imageUrl={image}
+              index={index}
+              onRemove={handleRemoveImage}
+            />
+          ))}
+          
+          {images.length < maxImages && !uploadError && (
+            <UploadDropZone
+              isDragging={isDragging}
+              isUploading={isUploading}
+              onClick={triggerFileInput}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              isEmpty={images.length === 0}
+            />
           )}
-        >
-          <AnimatePresence>
-            {images.map((image, index) => (
-              <ImagePreview
-                key={`${image}-${index}`}
-                imageUrl={image}
-                index={index}
-                onRemove={handleRemoveImage}
-              />
-            ))}
-            
-            {images.length < maxImages && (
-              <UploadDropZone
-                isDragging={isDragging}
-                isUploading={isUploading}
-                onClick={triggerFileInput}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                isEmpty={images.length === 0}
-              />
-            )}
-          </AnimatePresence>
-        </div>
-      )}
+        </AnimatePresence>
+      </div>
       
       {images.length > 0 && (
         <p className="text-xs text-gray-500 text-center">

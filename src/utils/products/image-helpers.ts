@@ -1,4 +1,6 @@
+
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 /**
  * Handle image loading errors and return a fallback image URL
@@ -23,38 +25,21 @@ export const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) 
 };
 
 /**
- * Create the product-images bucket if it doesn't exist
- * @returns boolean indicating if the bucket exists or was created successfully
+ * Check if the product-images bucket exists
+ * @returns Promise<boolean> indicating if the bucket exists
  */
-const ensureProductImagesBucketExists = async (): Promise<boolean> => {
+export const doesProductImagesBucketExist = async (): Promise<boolean> => {
   try {
-    // First check if the bucket exists
-    const { data: buckets, error: listError } = await supabase.storage.listBuckets();
-    
-    if (listError) {
-      console.error("Error listing buckets:", listError);
-      return false;
-    }
-    
-    // If bucket already exists, return true
-    if (buckets && buckets.some(bucket => bucket.name === 'product-images')) {
-      return true;
-    }
-    
-    // Bucket doesn't exist, try to create it
-    const { data, error } = await supabase.storage.createBucket('product-images', {
-      public: true,
-    });
+    const { data: buckets, error } = await supabase.storage.listBuckets();
     
     if (error) {
-      console.error("Error creating product-images bucket:", error);
+      console.error("Error checking bucket existence:", error);
       return false;
     }
     
-    console.log("Successfully created product-images bucket");
-    return true;
+    return buckets?.some(bucket => bucket.name === 'product-images') || false;
   } catch (error) {
-    console.error("Error in ensureProductImagesBucketExists:", error);
+    console.error("Unexpected error in doesProductImagesBucketExist:", error);
     return false;
   }
 };
@@ -67,27 +52,52 @@ const ensureProductImagesBucketExists = async (): Promise<boolean> => {
  */
 export const uploadProductImage = async (file: File, storeId: string): Promise<string | null> => {
   try {
-    // Ensure the product-images bucket exists
-    const bucketExists = await ensureProductImagesBucketExists();
+    // Check if bucket exists
+    const bucketExists = await doesProductImagesBucketExist();
     
     if (!bucketExists) {
-      throw new Error("Product images bucket does not exist and could not be created");
+      console.error("Product images bucket does not exist");
+      toast.error("خطأ في وصول مخزن الصور، يرجى إعادة المحاولة لاحقًا");
+      return null;
     }
     
     const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+    const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
     const filePath = `${storeId}/products/${fileName}`;
+    
+    // Optimize image before upload if it's an image
+    let optimizedFile = file;
+    if (file.type.startsWith('image/')) {
+      try {
+        optimizedFile = await optimizeImage(file, 1200, 1200);
+      } catch (optimizeError) {
+        console.error("Error optimizing image:", optimizeError);
+        // Continue with original file if optimization fails
+      }
+    }
     
     // Upload the file
     const { data, error } = await supabase.storage
       .from('product-images')
-      .upload(filePath, file, {
+      .upload(filePath, optimizedFile, {
         cacheControl: '3600',
         upsert: false
       });
     
     if (error) {
       console.error('Error uploading image:', error);
+      
+      // Give more specific error messages based on error type
+      if (error.message.includes('storage bucket') || error.message.includes('not found')) {
+        toast.error("مشكلة في مخزن الصور، يرجى الاتصال بالدعم الفني");
+      } else if (error.message.includes('permission')) {
+        toast.error("ليس لديك الصلاحية لرفع الصور");
+      } else if (error.message.includes('authenticated')) {
+        toast.error("يجب تسجيل الدخول لرفع الصور");
+      } else {
+        toast.error("فشل في رفع الصورة، يرجى المحاولة مرة أخرى");
+      }
+      
       return null;
     }
     
@@ -99,6 +109,7 @@ export const uploadProductImage = async (file: File, storeId: string): Promise<s
     return urlData.publicUrl;
   } catch (error) {
     console.error('Error in uploadProductImage:', error);
+    toast.error("حدث خطأ غير متوقع أثناء رفع الصورة");
     return null;
   }
 };
