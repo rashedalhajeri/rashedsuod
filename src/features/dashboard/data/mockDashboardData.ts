@@ -61,7 +61,7 @@ export const mockRecentOrders: Order[] = [
     customer_email: "noura@example.com",
     shipping_address: "المدينة، السعودية",
     payment_method: "نقد عند الاستلام",
-    status: "shipped",
+    status: "processing",
     total: 129.99,
     created_at: "2023-07-19T16:45:00Z",
     updated_at: "2023-07-19T17:00:00Z"
