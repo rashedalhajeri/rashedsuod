@@ -155,6 +155,7 @@ const OrdersList: React.FC<OrdersListProps> = ({
                         <ProductImage 
                           imageUrl={item.product_image || '/placeholder.svg'} 
                           name={item.product_name || 'منتج'} 
+                          className=""
                         />
                         {item.quantity > 1 && (
                           <Badge 

@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Product, RawProductData } from "@/utils/products/types";
 import { mapRawProductToProduct } from "@/utils/products/mappers";
@@ -215,7 +216,7 @@ class SupabaseDatabaseClient implements DatabaseClient {
           
         if (checkError) {
           console.error("Error checking order items:", checkError);
-          return { success: false, error: checkError, deletedCount: 0 };
+          return { success: false, error: checkError, deletedCount: 0, archivedCount: 0 };
         }
         
         const productsInOrders = orderItems ? Array.from(new Set(orderItems.map(item => item.product_id))) : [];
@@ -226,12 +227,15 @@ class SupabaseDatabaseClient implements DatabaseClient {
           return { 
             success: false, 
             error: { message: "جميع المنتجات المحددة مرتبطة بطلبات ولا يمكن حذفها." },
-            deletedCount: 0
+            deletedCount: 0,
+            archivedCount: 0
           };
         }
         
         let deleteError = null;
         let archiveError = null;
+        let deletedCount = 0;
+        let archivedCount = 0;
         
         if (productsToDelete.length > 0) {
           const { error } = await supabase
@@ -242,6 +246,8 @@ class SupabaseDatabaseClient implements DatabaseClient {
           if (error) {
             deleteError = error;
             console.error("Error deleting products:", error);
+          } else {
+            deletedCount = productsToDelete.length;
           }
         }
         
@@ -254,6 +260,8 @@ class SupabaseDatabaseClient implements DatabaseClient {
           if (error) {
             archiveError = error;
             console.error("Error archiving products:", error);
+          } else {
+            archivedCount = productsInOrders.length;
           }
         }
         
@@ -263,8 +271,8 @@ class SupabaseDatabaseClient implements DatabaseClient {
         return { 
           success, 
           error, 
-          deletedCount: productsToDelete.length,
-          archivedCount: productsInOrders.length
+          deletedCount,
+          archivedCount
         };
       } catch (error) {
         console.error("Error in bulkDeleteProducts:", error);

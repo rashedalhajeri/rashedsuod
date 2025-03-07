@@ -8,7 +8,7 @@ export const ProductImage = ({
   imageUrl, 
   name, 
   size = "md", 
-  className,
+  className = "",
   zoomable = true 
 }) => {
   const [isZoomed, setIsZoomed] = useState(false);

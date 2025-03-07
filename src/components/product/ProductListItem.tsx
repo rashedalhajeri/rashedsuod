@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Product } from "@/utils/products/types";
@@ -38,7 +37,7 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
     discount_price,
     images,
     is_archived,
-    is_active = true, // Default to true if not provided
+    is_active = true,
     track_inventory,
     stock_quantity,
     sales_count = 0,
@@ -64,7 +63,6 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
       exit={{ opacity: 0 }}
     >
       <div className="flex items-start sm:items-center p-3 sm:p-4">
-        {/* Checkbox and image container */}
         <div className="flex items-start sm:items-center gap-3">
           <Checkbox
             checked={isSelected}
@@ -72,10 +70,14 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
             className="mt-1 sm:mt-0 h-4 w-4 flex-shrink-0"
           />
           
-          <ProductImage imageUrl={imageUrl} name={name} size={isMobile ? "sm" : "md"} />
+          <ProductImage 
+            imageUrl={imageUrl} 
+            name={name} 
+            size={isMobile ? "sm" : "md"} 
+            className=""
+          />
         </div>
         
-        {/* Product information */}
         <div className="flex-1 min-w-0 mr-2 sm:mr-3">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
             <div className="flex-1">
@@ -125,7 +127,6 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
               </div>
             </div>
             
-            {/* Mobile action buttons */}
             <ProductActions 
               id={id}
               isArchived={is_archived}
@@ -138,7 +139,6 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
           </div>
         </div>
         
-        {/* Desktop action buttons */}
         <ProductActions 
           id={id}
           isArchived={is_archived}
