@@ -13,7 +13,6 @@ import SaveButton from "@/components/ui/save-button";
 import { useProductDetailForm } from "@/hooks/useProductDetailForm";
 import ProductBasicInfo from "@/components/product/form/ProductBasicInfo";
 import ProductAdvancedInfo from "@/components/product/form/ProductAdvancedInfo";
-import { X } from "lucide-react";
 
 interface ProductDetailDialogProps {
   isOpen: boolean;
@@ -31,9 +30,8 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   onSuccess,
 }) => {
   const {
-    product,
-    loading,
-    saving,
+    isLoading,
+    isSubmitting,
     error,
     formData,
     categories,
@@ -46,13 +44,11 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   } = useProductDetailForm({ 
     productId, 
     storeData,
-    onSuccess: () => {
-      if (onSuccess) onSuccess();
-      onOpenChange(false);
-    } 
+    onOpenChange,
+    onSuccess
   });
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
@@ -91,7 +87,7 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               إلغاء
             </Button>
-            <SaveButton isSaving={saving} onClick={handleSave} />
+            <SaveButton isSaving={isSubmitting} onClick={handleSave} />
           </div>
         </div>
 
@@ -101,7 +97,7 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
             description={formData.description}
             price={formData.price}
             discount_price={formData.discount_price}
-            images={formData.images}
+            images={formData.images || []}
             storeId={storeData?.id}
             handleChange={handleChange}
             handleImagesChange={handleImagesChange}

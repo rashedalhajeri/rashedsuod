@@ -16,9 +16,8 @@ const ProductDetail = ({ storeId }) => {
   const { data: storeData } = useStoreData();
   
   const {
-    product,
-    loading,
-    saving,
+    isLoading,
+    isSubmitting,
     error,
     formData,
     categories,
@@ -30,14 +29,7 @@ const ProductDetail = ({ storeId }) => {
     handleDelete
   } = useProductDetailForm({ productId, storeData });
 
-  // Handle discount price toggle - Fix: Pass boolean value instead of formData.discount_price
-  const toggleDiscount = () => {
-    handleSwitchChange('discount_price', formData.discount_price === null);
-  };
-
-  const isUpdating = !!productId; // Convert to boolean
-
-  if (loading) {
+  if (isLoading) {
     return <LoadingState message="جاري تحميل بيانات المنتج..." />;
   }
 
@@ -59,7 +51,7 @@ const ProductDetail = ({ storeId }) => {
           <Button variant="outline" onClick={() => navigate("/products")}>
             العودة للمنتجات
           </Button>
-          <SaveButton isSaving={saving} onClick={handleSave} />
+          <SaveButton isSaving={isSubmitting} onClick={handleSave} />
         </div>
       </div>
 
@@ -68,7 +60,7 @@ const ProductDetail = ({ storeId }) => {
         description={formData.description}
         price={formData.price}
         discount_price={formData.discount_price}
-        images={formData.images}
+        images={formData.images || []}
         storeId={storeData?.id}
         handleChange={handleChange}
         handleImagesChange={handleImagesChange}
