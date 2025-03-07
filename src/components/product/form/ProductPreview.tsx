@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Package } from "lucide-react";
-import { formatCurrency } from "@/utils/currency-formatter";
+import { getCurrencyFormatter } from "@/hooks/use-store-data";
 
 interface ProductPreviewProps {
   name: string;
@@ -23,6 +23,8 @@ const ProductPreview: React.FC<ProductPreviewProps> = ({
   images,
   onDelete
 }) => {
+  const formatCurrency = getCurrencyFormatter();
+  
   return (
     <Card>
       <CardHeader className="pb-2">

@@ -3,7 +3,7 @@ import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Edit, EyeIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatCurrency } from "@/utils/format-currency";
+import { getCurrencyFormatter } from "@/hooks/use-store-data";
 import { Link } from "react-router-dom";
 import { Product } from "@/utils/products/types";
 
@@ -29,6 +29,8 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
     track_inventory,
     images
   } = product;
+
+  const formatCurrency = getCurrencyFormatter();
 
   const imageUrl = images && images.length > 0
     ? images[0]
