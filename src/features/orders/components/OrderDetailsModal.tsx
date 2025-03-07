@@ -1,3 +1,4 @@
+
 import React from "react";
 import { 
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle 
@@ -175,7 +176,20 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       transition={{ delay: index * 0.1 }}
                       className="grid grid-cols-12 py-3 px-3 border-b last:border-b-0 items-center"
                     >
-                      <div className="col-span-6 font-medium">{item.product_name}</div>
+                      <div className="col-span-6 flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-md bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden">
+                          {item.product_image ? (
+                            <img 
+                              src={item.product_image} 
+                              alt={item.product_name} 
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <ShoppingBag className="h-4 w-4 text-gray-400" />
+                          )}
+                        </div>
+                        <div className="font-medium line-clamp-2 text-sm">{item.product_name}</div>
+                      </div>
                       <div className="col-span-2 text-center force-en-nums">{formatCurrency(item.unit_price)}</div>
                       <div className="col-span-2 text-center force-en-nums">{item.quantity}</div>
                       <div className="col-span-2 text-center font-medium force-en-nums">{formatCurrency(item.total_price)}</div>
