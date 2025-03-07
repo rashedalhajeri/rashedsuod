@@ -25,15 +25,14 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
     name,
     price,
     discount_price,
-    category,
     stock_quantity,
     track_inventory,
-    images = []
+    images
   } = product;
 
-  const imageUrl = Array.isArray(images) && images.length > 0
+  const imageUrl = images && images.length > 0
     ? images[0]
-    : product.image_url || "/placeholder.svg";
+    : "/placeholder.svg";
 
   return (
     <div className="flex items-center p-4 hover:bg-gray-50 border-b last:border-b-0 transition-colors">

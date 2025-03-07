@@ -21,6 +21,10 @@ export const mapRawProductToProduct = (rawData: RawProductData): Product => {
     }
   };
 
+  const additional_images = parseJsonArray(rawData.additional_images);
+  const image_url = rawData.image_url || '';
+  const images = image_url ? [image_url, ...additional_images] : additional_images;
+
   return {
     id: rawData.id,
     name: rawData.name || '',
@@ -29,7 +33,7 @@ export const mapRawProductToProduct = (rawData: RawProductData): Product => {
     discount_price: rawData.discount_price || null,
     stock_quantity: rawData.stock_quantity || null,
     image_url: rawData.image_url || null,
-    additional_images: parseJsonArray(rawData.additional_images),
+    additional_images: additional_images,
     track_inventory: rawData.track_inventory || false,
     category_id: rawData.category_id || null,
     has_colors: rawData.has_colors || false,
@@ -43,6 +47,7 @@ export const mapRawProductToProduct = (rawData: RawProductData): Product => {
     store_id: rawData.store_id,
     is_featured: rawData.is_featured || false,
     sales_count: rawData.sales_count || 0,
-    images: rawData.image_url ? [rawData.image_url, ...parseJsonArray(rawData.additional_images)] : parseJsonArray(rawData.additional_images)
+    images: images,
+    category: rawData.category
   };
 };

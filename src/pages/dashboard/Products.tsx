@@ -15,6 +15,7 @@ import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { Product } from "@/utils/products/types";
 import { mapRawProductToProduct } from "@/utils/products/mappers";
+import DashboardLayout from "@/layouts/DashboardLayout";
 
 const Products = () => {
   const { data: storeData, isLoading: loadingStore } = useStoreData();
@@ -70,82 +71,92 @@ const Products = () => {
   };
 
   if (loadingStore || isLoading) {
-    return <LoadingState message="جاري تحميل المنتجات..." />;
+    return (
+      <DashboardLayout>
+        <LoadingState message="جاري تحميل المنتجات..." />
+      </DashboardLayout>
+    );
   }
 
   if (error) {
     return (
-      <ErrorState 
-        title="خطأ في تحميل المنتجات"
-        message={(error as Error).message}
-        onRetry={refetch}
-      />
+      <DashboardLayout>
+        <ErrorState 
+          title="خطأ في تحميل المنتجات"
+          message={(error as Error).message}
+          onRetry={refetch}
+        />
+      </DashboardLayout>
     );
   }
 
   if (products?.length === 0) {
     return (
-      <ProductEmptyState 
-        onAddProduct={() => setIsAddProductOpen(true)} 
-      />
+      <DashboardLayout>
+        <ProductEmptyState 
+          onAddProduct={() => setIsAddProductOpen(true)} 
+        />
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="container mx-auto py-6 px-4" dir="rtl">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
-        <h1 className="text-2xl font-bold">المنتجات</h1>
-        <Button onClick={() => setIsAddProductOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" /> إضافة منتج
-        </Button>
-      </div>
-
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-4 border-b">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
-            <div className="w-full md:w-auto">
-              <input
-                type="text"
-                placeholder="بحث عن منتج..."
-                className="w-full px-3 py-2 border rounded-md"
-                value={searchTerm}
-                onChange={(e) => handleSearch(e.target.value)}
-              />
-            </div>
-            
-            {selectedItems.length > 0 && (
-              <ProductBulkActions 
-                selectedCount={selectedItems.length} 
-                onActionComplete={handleProductUpdate}
-              />
-            )}
-          </div>
+    <DashboardLayout>
+      <div className="container mx-auto py-6 px-4" dir="rtl">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
+          <h1 className="text-2xl font-bold">المنتجات</h1>
+          <Button onClick={() => setIsAddProductOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" /> إضافة منتج
+          </Button>
         </div>
-        
-        <ProductsList 
-          products={filteredProducts} 
-          onEdit={handleEditProduct}
-          onSelectionChange={handleSelectionChange}
+
+        <div className="bg-white rounded-lg shadow">
+          <div className="p-4 border-b">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+              <div className="w-full md:w-auto">
+                <input
+                  type="text"
+                  placeholder="بحث عن منتج..."
+                  className="w-full px-3 py-2 border rounded-md"
+                  value={searchTerm}
+                  onChange={(e) => handleSearch(e.target.value)}
+                />
+              </div>
+              
+              {selectedItems.length > 0 && (
+                <ProductBulkActions 
+                  selectedCount={selectedItems.length} 
+                  onActionComplete={handleProductUpdate}
+                />
+              )}
+            </div>
+          </div>
+          
+          <ProductsList 
+            products={filteredProducts} 
+            onEdit={handleEditProduct}
+            onSelectionChange={handleSelectionChange}
+          />
+        </div>
+
+        <ProductFormDialog
+          isOpen={isAddProductOpen}
+          onOpenChange={setIsAddProductOpen}
+          storeId={storeData?.id}
+          onAddSuccess={handleProductUpdate}
         />
+
+        {isEditDialogOpen && (
+          <ProductDetailDialog
+            isOpen={isEditDialogOpen}
+            onOpenChange={setIsEditDialogOpen}
+            productId={selectedProductId}
+            storeData={storeData}
+            onSuccess={handleProductUpdate}
+          />
+        )}
       </div>
-
-      <ProductFormDialog
-        isOpen={isAddProductOpen}
-        onOpenChange={setIsAddProductOpen}
-        storeId={storeData?.id}
-        onAddSuccess={handleProductUpdate}
-      />
-
-      {isEditDialogOpen && (
-        <ProductDetailDialog
-          isOpen={isEditDialogOpen}
-          onOpenChange={setIsEditDialogOpen}
-          productId={selectedProductId}
-          storeData={storeData}
-          onSuccess={handleProductUpdate}
-        />
-      )}
-    </div>
+    </DashboardLayout>
   );
 };
 

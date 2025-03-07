@@ -1,195 +1,167 @@
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Product } from "@/utils/products/types";
 
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
-import { Product, getProductById, updateProduct, deleteProduct } from "@/utils/product-helpers";
-import { fetchCategories } from "@/services/category-service";
-
-interface UseProductDetailFormProps {
-  productId: string | undefined;
-  storeData: any;
+export interface UseProductDetailFormProps {
+  productId: string | null;
+  storeData?: any;
+  onOpenChange?: (open: boolean) => void;
   onSuccess?: () => void;
 }
 
-export const useProductDetailForm = ({ productId, storeData, onSuccess }: UseProductDetailFormProps) => {
-  const navigate = useNavigate();
+export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuccess }: UseProductDetailFormProps) => {
+  const [isLoading, setIsLoading] = useState(false);
   const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    price: 0,
-    discount_price: null as number | null,
-    stock_quantity: 0,
-    track_inventory: false,
-    images: [] as string[],
-    category_id: "" as string | null,
-    has_colors: false,
-    has_sizes: false,
-    require_customer_name: false,
-    require_customer_image: false,
-    available_colors: [] as string[] | null,
-    available_sizes: [] as string[] | null
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const form = useForm({
+    defaultValues: {
+      name: "",
+      description: "",
+      price: 0,
+      discount_price: null,
+      stock_quantity: null,
+      image_url: null,
+      additional_images: [],
+      track_inventory: false,
+      category_id: null,
+      has_colors: false,
+      has_sizes: false,
+      require_customer_name: false,
+      require_customer_image: false,
+      available_colors: [],
+      available_sizes: [],
+      is_featured: false,
+    },
   });
 
-  useEffect(() => {
-    const fetchProductData = async () => {
-      if (!productId) return;
-      
-      try {
-        setLoading(true);
-        const { data, error } = await getProductById(productId);
-        
-        if (error) throw error;
-        if (!data) {
-          setError("المنتج غير موجود");
-          return;
-        }
-        
-        setProduct(data);
-        
-        const allImages = [
-          ...(data.image_url ? [data.image_url] : []),
-          ...(data.additional_images || [])
-        ];
-        
-        setFormData({
-          name: data.name || "",
-          description: data.description || "",
-          price: data.price || 0,
-          discount_price: data.discount_price || null,
-          stock_quantity: data.stock_quantity || 0,
-          track_inventory: data.track_inventory !== undefined ? data.track_inventory : !!data.stock_quantity,
-          images: allImages,
-          category_id: data.category_id || null,
-          has_colors: data.has_colors || false,
-          has_sizes: data.has_sizes || false,
-          require_customer_name: data.require_customer_name || false,
-          require_customer_image: data.require_customer_image || false,
-          available_colors: data.available_colors || [],
-          available_sizes: data.available_sizes || []
-        });
+  const [categories, setCategories] = useState([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
 
-        if (storeData?.id) {
-          const { data: categoriesData } = await fetchCategories(storeData.id);
-          setCategories(categoriesData);
+  useState(() => {
+    const fetchCategories = async () => {
+      setIsLoadingCategories(true);
+      try {
+        const { data, error } = await supabase
+          .from("categories")
+          .select("*")
+          .eq("store_id", storeData?.id);
+
+        if (error) {
+          console.error("Error fetching categories:", error);
+          setError(error);
         }
-      } catch (err) {
-        console.error("Error fetching product:", err);
-        setError("حدث خطأ أثناء تحميل بيانات المنتج");
+
+        setCategories(data || []);
+      } catch (error: any) {
+        console.error("Unexpected error fetching categories:", error);
+        setError(error);
       } finally {
-        setLoading(false);
+        setIsLoadingCategories(false);
       }
     };
-    
-    fetchProductData();
-  }, [productId, storeData]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === "price" || name === "stock_quantity" || name === "discount_price" ? 
-        parseFloat(value) || 0 : 
-        value
-    }));
-  };
-  
-  const handleSwitchChange = (name: string, checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: checked
-    }));
-  };
-  
-  const handleImagesChange = (images: string[]) => {
-    setFormData(prev => ({
-      ...prev,
-      images
-    }));
-  };
+    if (storeData?.id) {
+      fetchCategories();
+    }
+  }, [storeData?.id]);
 
-  const handleCategoryChange = (categoryId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      category_id: categoryId
-    }));
-  };
+  useState(() => {
+    const fetchProduct = async () => {
+      if (!productId) return;
 
-  const handleSave = async () => {
-    if (!productId || !product) return;
-    
+      setIsInitialLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("products")
+          .select("*")
+          .eq("id", productId)
+          .single();
+
+        if (error) {
+          console.error("Error fetching product:", error);
+          setError(error);
+          toast({
+            title: "Error",
+            description: "Failed to load product details.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        setProduct(data);
+        form.reset(data);
+      } catch (error: any) {
+        console.error("Unexpected error fetching product:", error);
+        setError(error);
+        toast({
+          title: "Error",
+          description: "Failed to load product details.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsInitialLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [productId, form]);
+
+  const handleSubmit = async (formData: any) => {
+    setIsLoading(true);
     try {
-      setSaving(true);
-      
-      if (formData.images.length === 0) {
-        toast.error("يرجى إضافة صورة واحدة على الأقل");
-        setSaving(false);
+      const { data, error } = await supabase
+        .from("products")
+        .update(formData)
+        .eq("id", productId);
+
+      if (error) {
+        console.error("Error updating product:", error);
+        setError(error);
+        toast({
+          title: "Error",
+          description: "Failed to update product.",
+          variant: "destructive",
+        });
         return;
       }
-      
-      const updates = {
-        ...formData,
-        stock_quantity: formData.track_inventory ? formData.stock_quantity : null,
-        image_url: formData.images[0] || null,
-        additional_images: formData.images.length > 1 ? formData.images.slice(1) : [],
-        updated_at: new Date().toISOString()
-      };
-      
-      const { data, error } = await updateProduct(productId, updates);
-      
-      if (error) throw error;
-      
-      if (data && data.length > 0) {
-        setProduct(data[0]);
-        toast.success("تم حفظ التغييرات بنجاح");
-        if (onSuccess) onSuccess();
-      }
-    } catch (err) {
-      console.error("Error updating product:", err);
-      toast.error("حدث خطأ أثناء حفظ التغييرات");
-    } finally {
-      setSaving(false);
-    }
-  };
 
-  const handleDelete = async () => {
-    if (!productId) return;
-    
-    try {
-      setSaving(true);
-      const { success, error } = await deleteProduct(productId);
+      toast({
+        title: "Success",
+        description: "Product updated successfully.",
+      });
       
-      if (error) throw error;
-      if (success) {
-        toast.success("تم حذف المنتج بنجاح");
-        navigate("/products");
-        if (onSuccess) onSuccess();
+      if (onSuccess) {
+        onSuccess();
       }
-    } catch (err) {
-      console.error("Error deleting product:", err);
-      toast.error("حدث خطأ أثناء حذف المنتج");
+      
+      if (onOpenChange) {
+        onOpenChange(false);
+      }
+    } catch (error: any) {
+      console.error("Unexpected error updating product:", error);
+      setError(error);
+      toast({
+        title: "Error",
+        description: "Failed to update product.",
+        variant: "destructive",
+      });
     } finally {
-      setSaving(false);
+      setIsLoading(false);
     }
   };
 
   return {
-    product,
-    loading,
-    saving,
+    form,
+    isLoading,
+    isInitialLoading,
     error,
-    formData,
+    product,
+    handleSubmit,
     categories,
-    handleChange,
-    handleSwitchChange,
-    handleImagesChange,
-    handleCategoryChange,
-    handleSave,
-    handleDelete
+    isLoadingCategories
   };
 };
