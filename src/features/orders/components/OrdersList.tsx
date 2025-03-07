@@ -1,9 +1,8 @@
-
 import React from "react";
 import { Order } from "@/types/orders";
 import OrderStatusBadge from "./OrderStatusBadge";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag, MoreHorizontal, Eye, RefreshCw, Clock, CheckCircle2, X, Trash2 } from "lucide-react";
+import { ShoppingBag, MoreHorizontal, Eye, Clock, CheckCircle2, X, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ar } from "date-fns/locale";
 import { motion } from "framer-motion";
@@ -16,7 +15,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import OrderEmptyState from "./OrderEmptyState";
 import { Card, CardContent } from "@/components/ui/card";
-import { Link } from "react-router-dom";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Badge } from "@/components/ui/badge";
 import { ProductImage } from "@/components/product/item/ProductImage";
@@ -88,7 +86,6 @@ const OrdersList: React.FC<OrdersListProps> = ({
     return <OrderEmptyState />;
   }
 
-  // تعديل طريقة عرض الأيقونات حسب حالة الطلب
   const getStatusIcon = (status: Order["status"]) => {
     switch (status) {
       case "processing":
@@ -114,7 +111,6 @@ const OrdersList: React.FC<OrdersListProps> = ({
         >
           <Card className="border border-gray-200 hover:border-primary-100 hover:shadow-md transition-all duration-200 overflow-hidden">
             <CardContent className="p-4 relative">
-              {/* شريط حالة الطلب في الأعلى */}
               <div className={`absolute top-0 left-0 right-0 h-1 ${
                 order.status === 'processing' ? 'bg-blue-500' :
                 order.status === 'delivered' ? 'bg-green-500' :
@@ -157,8 +153,8 @@ const OrdersList: React.FC<OrdersListProps> = ({
                     {order.items.slice(0, 4).map((item, index) => (
                       <div key={index} className="relative flex-shrink-0">
                         <ProductImage 
-                          imageUrl={item.image_url || '/placeholder.svg'} 
-                          name={item.name || 'منتج'} 
+                          imageUrl={item.product_image || '/placeholder.svg'} 
+                          name={item.product_name || 'منتج'} 
                         />
                         {item.quantity > 1 && (
                           <Badge 

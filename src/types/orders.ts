@@ -10,6 +10,7 @@ export interface OrderItem {
   total_price: number;
   created_at: string;
   product_name?: string; // اسم المنتج للعرض
+  product_image?: string; // صورة المنتج للعرض
 }
 
 export interface Order {
