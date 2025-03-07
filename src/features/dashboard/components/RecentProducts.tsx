@@ -23,7 +23,7 @@ interface RecentProductsProps {
 
 const RecentProducts: React.FC<RecentProductsProps> = ({ 
   products, 
-  currency = "SAR" 
+  currency = "KWD" 
 }) => {
   const getStockColor = (stock: number) => {
     if (stock > 10) return "bg-green-100 text-green-800 border-green-200";

@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { getCurrencyFormatter } from "@/hooks/use-store-data";
 
 interface OrderSummaryProps {
   totalAmount: number;
@@ -20,11 +21,13 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   storeDomain,
   onSubmit,
 }) => {
+  const formatCurrency = getCurrencyFormatter(currency);
+
   return (
     <div className="space-y-3">
       <div className="flex justify-between">
         <span className="text-gray-600">المجموع الفرعي</span>
-        <span>{totalAmount.toFixed(2)} {currency}</span>
+        <span>{formatCurrency(totalAmount)}</span>
       </div>
       
       <div className="flex justify-between">
@@ -36,7 +39,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
       
       <div className="flex justify-between font-semibold text-lg">
         <span>الإجمالي</span>
-        <span className="text-primary">{totalAmount.toFixed(2)} {currency}</span>
+        <span className="text-primary">{formatCurrency(totalAmount)}</span>
       </div>
       
       <Button 

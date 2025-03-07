@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUploadGrid } from "@/components/ui/image-upload";
-import { formatCurrency } from "@/utils/currency-formatter";
+import { getCurrencyFormatter } from "@/hooks/use-store-data";
 
 interface ProductBasicInfoProps {
   name: string;
@@ -28,6 +28,9 @@ const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({
   handleChange,
   handleImagesChange,
 }) => {
+  // Use the currency formatter from useStoreData
+  const formatCurrency = getCurrencyFormatter();
+
   return (
     <Card className="mb-8">
       <CardContent className="p-6">

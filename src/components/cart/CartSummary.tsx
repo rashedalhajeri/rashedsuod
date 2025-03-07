@@ -3,6 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { getCurrencyFormatter } from "@/hooks/use-store-data";
 
 interface CartSummaryProps {
   totalPrice: number;
@@ -15,6 +16,8 @@ const CartSummary: React.FC<CartSummaryProps> = ({
   currency, 
   onCheckout 
 }) => {
+  const formatCurrency = getCurrencyFormatter(currency);
+  
   return (
     <Card className="border-0 shadow-md sticky top-6">
       <CardContent className="p-6">
@@ -23,7 +26,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({
         <div className="space-y-4">
           <div className="flex justify-between">
             <span className="text-gray-600">المجموع الفرعي</span>
-            <span className="font-medium">{totalPrice.toFixed(2)} {currency}</span>
+            <span className="font-medium">{formatCurrency(totalPrice)}</span>
           </div>
           
           <div className="flex justify-between">
@@ -35,7 +38,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({
           
           <div className="flex justify-between text-lg">
             <span className="font-bold">الإجمالي</span>
-            <span className="font-bold text-primary">{totalPrice.toFixed(2)} {currency}</span>
+            <span className="font-bold text-primary">{formatCurrency(totalPrice)}</span>
           </div>
           
           <div className="pt-3">

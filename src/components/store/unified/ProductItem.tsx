@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Heart, ShoppingCart } from "lucide-react";
 import { motion } from "framer-motion";
-import { formatCurrency } from "@/utils/currency-formatter";
+import { getCurrencyFormatter } from "@/hooks/use-store-data";
 
 interface ProductItemProps {
   product: any;
@@ -19,6 +19,9 @@ const ProductItem: React.FC<ProductItemProps> = ({
   displayStyle = 'grid'
 }) => {
   const [imageError, setImageError] = useState(false);
+  
+  // Use the currency formatter from useStoreData
+  const formatCurrency = getCurrencyFormatter();
   
   // Default placeholder for products without images
   const defaultPlaceholder = "/placeholder.svg";

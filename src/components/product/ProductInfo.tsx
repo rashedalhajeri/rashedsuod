@@ -4,6 +4,7 @@ import { Star, Share2, ShieldCheck, Truck, Gift, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { getCurrencyFormatter } from "@/hooks/use-store-data";
 
 interface ProductInfoProps {
   product: {
@@ -13,13 +14,16 @@ interface ProductInfoProps {
     description?: string;
     stock_quantity?: number | null;
   };
-  formatCurrency: (price: number) => string;
+  formatCurrency?: (price: number) => string;
 }
 
 const ProductInfo: React.FC<ProductInfoProps> = ({
   product,
-  formatCurrency
+  formatCurrency: propFormatCurrency
 }) => {
+  // Use the provided formatter or fall back to our own
+  const formatCurrency = propFormatCurrency || getCurrencyFormatter();
+  
   return (
     <div className="space-y-6">
       <div>

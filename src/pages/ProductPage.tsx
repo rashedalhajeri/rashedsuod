@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,10 +61,8 @@ const ProductPage = () => {
         console.error("Error fetching product data:", err);
         setError("حدث خطأ أثناء تحميل بيانات المنتج");
       } finally {
-        // Add delay for smoother transitions
         setTimeout(() => {
           setLoading(false);
-          // Short delay before showing content for smooth transition
           setTimeout(() => {
             setShowContent(true);
           }, 100);
@@ -110,10 +107,14 @@ const ProductPage = () => {
   };
   
   const formatCurrency = (price: number) => {
+    const currencySymbol = storeData?.currency === 'KWD' ? 'د.ك' : 
+                         storeData?.currency === 'SAR' ? 'ر.س' : 
+                         storeData?.currency;
+    
     return new Intl.NumberFormat('ar-SA', {
       minimumFractionDigits: 3,
       maximumFractionDigits: 3
-    }).format(price);
+    }).format(price) + ' ' + (currencySymbol || '');
   };
   
   if (error) {
