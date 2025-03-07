@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -97,12 +98,13 @@ const Products: React.FC = () => {
           created_at: product.created_at,
           updated_at: product.updated_at,
           additional_images: convertToStringArray(product.additional_images),
-          discount_price: product.discount_price,
-          track_inventory: Boolean(product.track_inventory),
-          has_colors: Boolean(product.has_colors),
-          has_sizes: Boolean(product.has_sizes),
-          require_customer_name: Boolean(product.require_customer_name),
-          require_customer_image: Boolean(product.require_customer_image),
+          // Safely handle optional fields with fallbacks
+          discount_price: typeof product.discount_price === 'number' ? product.discount_price : null,
+          track_inventory: typeof product.track_inventory === 'boolean' ? product.track_inventory : false,
+          has_colors: typeof product.has_colors === 'boolean' ? product.has_colors : false,
+          has_sizes: typeof product.has_sizes === 'boolean' ? product.has_sizes : false,
+          require_customer_name: typeof product.require_customer_name === 'boolean' ? product.require_customer_name : false,
+          require_customer_image: typeof product.require_customer_image === 'boolean' ? product.require_customer_image : false,
           available_colors: convertToStringArray(product.available_colors),
           available_sizes: convertToStringArray(product.available_sizes)
         } as Product;
