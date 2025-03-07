@@ -27,11 +27,16 @@ export const ProductPrice: React.FC<ProductPriceProps> = ({
   }
 
   return (
-    <div className={`flex items-center ltr ${className}`}>
+    <div className={`flex items-center gap-1.5 ${className}`}>
       {hasDiscount ? (
-        <span className={`font-bold text-primary ${priceSize} force-en-nums`}>
-          {formatPrice(discountPrice as number)}
-        </span>
+        <>
+          <span className={`font-bold text-red-600 ${priceSize} force-en-nums`}>
+            {formatPrice(discountPrice as number)}
+          </span>
+          <span className="text-gray-400 text-xs line-through force-en-nums">
+            {formatPrice(price)}
+          </span>
+        </>
       ) : (
         <span className={`font-bold text-gray-800 ${priceSize} force-en-nums`}>
           {formatPrice(price)}

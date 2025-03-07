@@ -68,19 +68,23 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
         
         {/* Product Image */}
         <div className="flex-shrink-0">
-          <ProductImage 
-            imageUrl={imageUrl} 
-            name={name} 
-            size={isMobile ? "md" : "lg"} 
-            className="rounded-lg overflow-hidden w-16 h-16 object-cover"
-          />
+          <div className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200 bg-white flex items-center justify-center">
+            <img 
+              src={imageUrl} 
+              alt={name} 
+              className="h-full w-full object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "/placeholder.svg";
+              }}
+            />
+          </div>
         </div>
         
         {/* Product Information */}
         <div className="flex-1 mx-3 min-w-0">
           {/* Product Name - Always on single line with ellipsis */}
-          <h3 className="text-sm font-medium text-gray-900 mb-1 truncate max-w-full">
-            {truncateText(name, 60)}
+          <h3 className="text-sm font-medium text-gray-900 mb-2 truncate max-w-full">
+            {name}
           </h3>
           
           {/* Product Price and Discount Badge */}

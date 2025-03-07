@@ -37,9 +37,9 @@ const ProductsHeader: React.FC<ProductsHeaderProps> = ({
       transition={{ duration: 0.3 }}
       className="mb-5 sm:mb-6 space-y-4"
     >
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
-          <div className="flex items-center">
+          <div className="flex items-center flex-wrap gap-2">
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">المنتجات</h1>
             {archivedCount > 0 && (
               <Badge variant="outline" className="mr-2 font-normal">
@@ -57,43 +57,43 @@ const ProductsHeader: React.FC<ProductsHeaderProps> = ({
             إدارة منتجات متجرك ({totalProducts} منتج)
           </p>
         </div>
-      </div>
       
-      <div className="flex flex-row items-center gap-2 w-full">
-        <div className="relative flex-1">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-            <Search className="h-4 w-4" />
+        <div className="flex items-center gap-2 w-full sm:w-auto mt-3 sm:mt-0">
+          <div className="relative flex-1 sm:w-64">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <Search className="h-4 w-4" />
+            </div>
+            <Input
+              type="text"
+              placeholder="بحث في المنتجات..."
+              value={searchTerm}
+              onChange={(e) => onSearch(e.target.value)}
+              className="pr-3 pl-10 bg-white border-gray-200 h-10 text-sm placeholder:text-gray-400 rounded-lg w-full"
+              dir="rtl"
+            />
           </div>
-          <Input
-            type="text"
-            placeholder="بحث في المنتجات..."
-            value={searchTerm}
-            onChange={(e) => onSearch(e.target.value)}
-            className="pr-3 pl-10 bg-white border-gray-200 h-10 text-sm placeholder:text-gray-400 rounded-lg"
-            dir="rtl"
-          />
-        </div>
-        
-        {!isMobile && (
+          
+          {!isMobile && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={onRefresh}
+              disabled={isRefreshing}
+              className="whitespace-nowrap flex items-center gap-1 h-10"
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} /> 
+              تحديث
+            </Button>
+          )}
+          
           <Button 
-            variant="outline" 
-            size="sm"
-            onClick={onRefresh}
-            disabled={isRefreshing}
-            className="whitespace-nowrap flex items-center gap-1 h-10"
+            onClick={onAddProduct}
+            className="h-10 whitespace-nowrap"
+            size="default"
           >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} /> 
-            تحديث
+            <Plus className="h-4 w-4 ml-1" /> إضافة منتج
           </Button>
-        )}
-        
-        <Button 
-          onClick={onAddProduct}
-          className="h-10 whitespace-nowrap"
-          size="default"
-        >
-          <Plus className="h-4 w-4 ml-1" /> إضافة منتج
-        </Button>
+        </div>
       </div>
     </motion.div>
   );

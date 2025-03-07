@@ -27,16 +27,18 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
   onRefresh
 }) => {
   return (
-    <ProductsList 
-      products={products}
-      onEdit={onEdit}
-      onSelectionChange={onSelectionChange}
-      searchTerm={searchTerm}
-      onSearch={onSearch}
-      onArchive={onArchive}
-      onActivate={onActivate}
-      onRefresh={onRefresh}
-    />
+    <div className="bg-gray-50 rounded-xl p-1">
+      <ProductsList 
+        products={products}
+        onEdit={onEdit}
+        onSelectionChange={onSelectionChange}
+        searchTerm={searchTerm}
+        onSearch={onSearch}
+        onArchive={onArchive}
+        onActivate={onActivate}
+        onRefresh={onRefresh}
+      />
+    </div>
   );
 };
 
