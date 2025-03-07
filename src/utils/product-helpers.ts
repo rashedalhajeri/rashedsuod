@@ -1,6 +1,8 @@
 
-// Since we don't have access to view this file, we'll create a version that resolves the ambiguity
+// Import the Product type and re-export it
 import { Product } from "./products/types";
+export { Product };
+
 // Import only what we need and rename the imported deleteProduct to avoid conflict
 import { 
   fetchProductsWithFilters,

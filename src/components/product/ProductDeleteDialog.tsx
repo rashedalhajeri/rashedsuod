@@ -2,7 +2,7 @@
 import React from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Product } from "@/utils/product-helpers";
+import { Product } from "@/utils/products/types"; // Updated import path
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle
 } from "@/components/ui/dialog";
