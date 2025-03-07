@@ -18,30 +18,25 @@ export const ProductPrice: React.FC<ProductPriceProps> = ({
   const hasDiscount = discountPrice !== null && discountPrice > 0 && discountPrice < price;
   
   // تحديد أحجام الخط بناءً على حجم المكون
-  let priceSize = "text-base"; // Increased from text-sm
-  let discountSize = "text-sm"; // Increased from text-xs
+  let priceSize = "text-lg"; // Increased size
+  let discountSize = "text-base"; // Increased size
   
   if (size === "sm") {
-    priceSize = "text-sm"; // Increased from text-xs
-    discountSize = "text-xs"; // Increased from text-[10px]
+    priceSize = "text-base"; // Increased size
+    discountSize = "text-sm"; // Increased size
   } else if (size === "lg") {
-    priceSize = "text-lg"; // Increased from text-base
-    discountSize = "text-base"; // Increased from text-sm
+    priceSize = "text-xl"; // Increased size
+    discountSize = "text-lg"; // Increased size
   }
 
   return (
-    <div className={`flex items-center gap-3 mr-2 ${className}`} dir="ltr">
+    <div className={`flex items-center gap-3 mr-4 ${className}`} dir="ltr">
       {hasDiscount ? (
-        <>
-          <span className={`font-medium text-primary ${priceSize}`}>
-            {formatPrice(discountPrice as number)}
-          </span>
-          <span className={`line-through text-gray-400 ${discountSize}`}>
-            {formatPrice(price)}
-          </span>
-        </>
+        <span className={`font-bold text-primary ${priceSize}`}>
+          {formatPrice(discountPrice as number)}
+        </span>
       ) : (
-        <span className={`font-medium text-gray-800 ${priceSize}`}>
+        <span className={`font-bold text-gray-800 ${priceSize}`}>
           {formatPrice(price)}
         </span>
       )}

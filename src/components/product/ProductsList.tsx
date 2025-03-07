@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { Product } from "@/utils/products/types";
 import { Input } from "@/components/ui/input";
@@ -40,9 +39,8 @@ const ProductsList: React.FC<ProductsListProps> = ({
   onRefresh
 }) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  // Changed default filter to "active" instead of "all"
-  const [filterActive, setFilterActive] = useState<string>("active"); 
-  
+  const [filterActive, setFilterActive] = useState<string>("active");
+
   const handleToggleSelection = (id: string, isSelected: boolean) => {
     const newSelectedItems = isSelected
       ? [...selectedItems, id]
@@ -54,11 +52,9 @@ const ProductsList: React.FC<ProductsListProps> = ({
 
   const handleSelectAll = () => {
     if (selectedItems.length === filteredProducts.length) {
-      // Deselect all if all are selected
       setSelectedItems([]);
       onSelectionChange([]);
     } else {
-      // Select all filtered products
       const allIds = filteredProducts.map((product) => product.id);
       setSelectedItems(allIds);
       onSelectionChange(allIds);
@@ -67,7 +63,6 @@ const ProductsList: React.FC<ProductsListProps> = ({
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
-      // Apply product status filter
       if (filterActive === "active" && (!product.is_active || product.is_archived)) {
         return false;
       }
@@ -80,7 +75,6 @@ const ProductsList: React.FC<ProductsListProps> = ({
         return false;
       }
       
-      // Apply search filter
       if (searchTerm.trim()) {
         const searchLower = searchTerm.toLowerCase();
         return (
@@ -94,7 +88,6 @@ const ProductsList: React.FC<ProductsListProps> = ({
   }, [products, searchTerm, filterActive]);
 
   const getFilterCounts = () => {
-    // Removed "all" count since we're removing that option
     const active = products.filter(p => p.is_active && !p.is_archived).length;
     const inactive = products.filter(p => !p.is_active && !p.is_archived).length;
     const archived = products.filter(p => p.is_archived).length;
@@ -107,18 +100,18 @@ const ProductsList: React.FC<ProductsListProps> = ({
   return (
     <div className="flex flex-col gap-4">
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="p-3 sm:p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-3 items-center">
+        <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-3 items-center bg-gradient-to-r from-gray-50 to-white">
           <div className="flex-1 w-full sm:w-auto">
             <div className="relative">
-              <div className="absolute left-2.5 top-2.5 text-gray-400">
-                <Search className="h-4 w-4" />
+              <div className="absolute left-3 top-3 text-gray-400">
+                <Search className="h-5 w-5" />
               </div>
               <Input
                 type="text"
                 placeholder="بحث في المنتجات..."
                 value={searchTerm}
                 onChange={(e) => onSearch(e.target.value)}
-                className="pr-2 pl-8 bg-gray-50 border-gray-200 focus:bg-white placeholder:text-gray-400"
+                className="pr-3 pl-10 bg-white border-gray-200 focus:border-primary h-12 text-base placeholder:text-gray-400 rounded-lg"
                 dir="rtl"
               />
             </div>
@@ -126,19 +119,18 @@ const ProductsList: React.FC<ProductsListProps> = ({
           
           <div className="flex items-center w-full sm:w-auto justify-between sm:justify-normal gap-2">
             <div className="flex overflow-x-auto py-1 scrollbar-hide">
-              <div className="flex gap-1.5">
-                {/* Removed "all" button as requested */}
+              <div className="flex gap-2">
                 <Button
                   variant={filterActive === "active" ? "default" : "outline"}
                   size="sm"
                   onClick={() => setFilterActive("active")}
                   className={cn(
-                    "rounded-full text-xs min-w-fit",
+                    "rounded-full text-sm min-w-fit px-4 py-2 h-10",
                     filterActive === "active" ? "bg-green-500 text-white border-green-500" : "bg-white text-gray-700"
                   )}
                 >
                   نشط
-                  <Badge variant="secondary" className="ml-1 text-[10px] bg-white/20 text-white">
+                  <Badge variant="secondary" className="mr-1 text-xs bg-white/20 text-white">
                     {filterCounts.active}
                   </Badge>
                 </Button>
@@ -147,12 +139,12 @@ const ProductsList: React.FC<ProductsListProps> = ({
                   size="sm"
                   onClick={() => setFilterActive("inactive")}
                   className={cn(
-                    "rounded-full text-xs min-w-fit",
+                    "rounded-full text-sm min-w-fit px-4 py-2 h-10",
                     filterActive === "inactive" ? "bg-gray-500 text-white border-gray-500" : "bg-white text-gray-700"
                   )}
                 >
                   غير نشط
-                  <Badge variant="secondary" className="ml-1 text-[10px] bg-white/20 text-white">
+                  <Badge variant="secondary" className="mr-1 text-xs bg-white/20 text-white">
                     {filterCounts.inactive}
                   </Badge>
                 </Button>
@@ -161,12 +153,12 @@ const ProductsList: React.FC<ProductsListProps> = ({
                   size="sm"
                   onClick={() => setFilterActive("archived")}
                   className={cn(
-                    "rounded-full text-xs min-w-fit",
+                    "rounded-full text-sm min-w-fit px-4 py-2 h-10",
                     filterActive === "archived" ? "bg-blue-500 text-white border-blue-500" : "bg-white text-gray-700"
                   )}
                 >
                   مسودة
-                  <Badge variant="secondary" className="ml-1 text-[10px] bg-white/20 text-white">
+                  <Badge variant="secondary" className="mr-1 text-xs bg-white/20 text-white">
                     {filterCounts.archived}
                   </Badge>
                 </Button>
@@ -178,12 +170,12 @@ const ProductsList: React.FC<ProductsListProps> = ({
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="flex-shrink-0 w-9 p-0"
+                  className="flex-shrink-0 w-10 h-10 p-0 rounded-full"
                 >
-                  <Filter className="h-4 w-4" />
+                  <Filter className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem onClick={handleSelectAll}>
                   {selectedItems.length === filteredProducts.length && filteredProducts.length > 0
                     ? "إلغاء تحديد الكل"
@@ -192,7 +184,6 @@ const ProductsList: React.FC<ProductsListProps> = ({
                 
                 <DropdownMenuSeparator />
                 
-                {/* Updated dropdown menu items to match main filter buttons */}
                 <DropdownMenuItem onClick={() => setFilterActive("active")}>
                   عرض النشطة فقط
                 </DropdownMenuItem>
@@ -207,9 +198,9 @@ const ProductsList: React.FC<ProductsListProps> = ({
           </div>
         </div>
         
-        <div className="max-h-[600px] overflow-auto">
+        <div className="max-h-[700px] overflow-auto">
           <ScrollArea className="h-full">
-            <div className="space-y-2 p-3 sm:p-4">
+            <div className="space-y-3 p-4">
               {filteredProducts.length > 0 ? (
                 <AnimatePresence initial={false}>
                   {filteredProducts.map((product) => (
