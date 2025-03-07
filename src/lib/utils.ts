@@ -1,3 +1,4 @@
+
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
  
@@ -14,8 +15,13 @@ export function formatPrice(price: number): string {
     maximumFractionDigits: 3,
   });
   
+  // Get the formatted string
+  let formattedPrice = formatter.format(price);
+  
   // Force English digits in the output
-  return formatter.format(price);
+  formattedPrice = formattedPrice.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d).toString());
+  
+  return formattedPrice;
 }
 
 export function formatDate(dateString: string): string {
