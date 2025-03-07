@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useStoreData } from "@/hooks/use-store-data";
@@ -12,7 +11,7 @@ import ProductBasicInfo from "@/components/product/form/ProductBasicInfo";
 import ProductAdvancedInfo from "@/components/product/form/ProductAdvancedInfo";
 import ProductPreview from "@/components/product/form/ProductPreview";
 
-const ProductDetail: React.FC = () => {
+const ProductDetail = ({ storeId }) => {
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
   const { data: storeData } = useStoreData();
@@ -36,6 +35,8 @@ const ProductDetail: React.FC = () => {
   const toggleDiscount = () => {
     handleSwitchChange('discount_price', formData.discount_price === null ? formData.price : null);
   };
+
+  const isUpdating = !!productId; // Convert to boolean
 
   if (loading) {
     return <LoadingState message="جاري تحميل بيانات المنتج..." />;

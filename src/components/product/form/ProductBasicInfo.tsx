@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUploadGrid } from "@/components/ui/image-upload";
+import { formatCurrency } from "@/utils/currency-formatter";
 
 interface ProductBasicInfoProps {
   name: string;
@@ -70,6 +71,11 @@ const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({
                   onChange={handleChange}
                   className="flex-1"
                 />
+                {price > 0 && (
+                  <p className="text-sm text-gray-500">
+                    {formatCurrency(price)}
+                  </p>
+                )}
               </div>
               
               {discount_price !== null && (
@@ -84,6 +90,11 @@ const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({
                     value={discount_price}
                     onChange={handleChange}
                   />
+                  {discount_price > 0 && (
+                    <p className="text-sm text-gray-500">
+                      {formatCurrency(discount_price)}
+                    </p>
+                  )}
                 </div>
               )}
             </div>

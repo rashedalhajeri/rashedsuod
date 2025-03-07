@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Heart, ShoppingCart } from "lucide-react";
 import { motion } from "framer-motion";
-import { formatCurrency, handleImageError } from "@/utils/product-helpers";
+import { formatCurrency } from "@/utils/currency-formatter";
 
 interface ProductItemProps {
   product: any;
@@ -26,7 +26,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
   // Determine which image URL to use
   const displayImageUrl = imageError || !product.image_url ? defaultPlaceholder : product.image_url;
   
-  const handleLocalImageError = () => {
+  const handleImageError = () => {
     console.log("Product image failed to load:", product.image_url);
     setImageError(true);
   };
@@ -50,7 +50,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
               src={displayImageUrl} 
               alt={product.name} 
               className="w-full h-full object-cover"
-              onError={handleLocalImageError}
+              onError={handleImageError}
             />
           </div>
         </Link>
@@ -69,7 +69,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
           
           <div className="flex items-center justify-between mt-2">
             <p className="text-primary font-bold">
-              {formatCurrency(product.price)} <span className="text-xs font-normal">KWD</span>
+              {formatCurrency(product.price)}
             </p>
             
             <button className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 transition-all hover:bg-gray-200">
@@ -98,7 +98,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
             src={displayImageUrl} 
             alt={product.name} 
             className="w-full aspect-square object-cover"
-            onError={handleLocalImageError}
+            onError={handleImageError}
             key={product.id} // Add key to force re-render when product changes
           />
           
@@ -117,7 +117,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white text-lg font-bold">
-                  {formatCurrency(product.price)} <span className="text-xs font-normal">KWD</span>
+                  {formatCurrency(product.price)}
                 </p>
               </div>
             </div>

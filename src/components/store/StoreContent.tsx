@@ -45,7 +45,6 @@ const StoreContent: React.FC<StoreContentProps> = ({
   const [sectionProducts, setSectionProducts] = useState<{[key: string]: any[]}>({});
   
   useEffect(() => {
-    // Fetch product names for the search animation
     const fetchProductNames = async () => {
       if (!storeDomain) return;
       
@@ -63,20 +62,16 @@ const StoreContent: React.FC<StoreContentProps> = ({
       }
     };
     
-    // For demo purposes, we'll just hardcode this to false
-    // In a real implementation, this would be based on store settings
     setShowPromoBanner(false);
     
     fetchProductNames();
   }, [storeDomain]);
 
-  // Fetch store sections and related products
   useEffect(() => {
     const fetchSectionsWithProducts = async () => {
       if (!storeData?.id) return;
       
       try {
-        // First get all active sections
         const { data: activeSections } = await supabase
           .from('sections')
           .select('*')
@@ -85,7 +80,6 @@ const StoreContent: React.FC<StoreContentProps> = ({
           
         if (!activeSections || activeSections.length === 0) return;
         
-        // For each section, get appropriate products
         const sectionProductsObj: {[key: string]: any[]} = {};
         
         for (const section of activeSections) {
@@ -94,21 +88,17 @@ const StoreContent: React.FC<StoreContentProps> = ({
             .select('*')
             .eq('store_id', storeData.id);
             
-          // Apply different filters based on section type
           switch (section.section_type) {
             case 'best_selling':
-              // In a real app, you would sort by sales count
               productsQuery = productsQuery.limit(8);
               break;
             case 'new_arrivals':
               productsQuery = productsQuery.order('created_at', { ascending: false }).limit(8);
               break;
             case 'featured':
-              // For featured, you might have a "featured" flag in the future
               productsQuery = productsQuery.limit(4);
               break;
             case 'on_sale':
-              // In a real app, you would filter by products with discounts
               productsQuery = productsQuery.limit(6);
               break;
             case 'custom':
@@ -130,16 +120,12 @@ const StoreContent: React.FC<StoreContentProps> = ({
     fetchSectionsWithProducts();
   }, [storeData]);
 
-  // Handle search submission
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // No need to navigate, we'll just filter the products inline
   };
 
-  // Filter products by search
   const filteredBySearch = filterProductsBySearch(products, searchQuery);
 
-  // Filter products by category and section
   const displayProducts = filterProductsByCategory(
     filteredBySearch,
     activeCategory,
@@ -148,29 +134,23 @@ const StoreContent: React.FC<StoreContentProps> = ({
     searchQuery
   );
 
-  // Only show navigation if there are categories or sections
   const showNavigation = categories.length > 0 || sections.length > 0;
   
-  // Custom category change handler for navigation
   const handleCategoryChangeWithNavigation = (category: string) => {
     if (!storeDomain) return;
     
-    // Always navigate to category page, even for "All"
     if (category === "الكل") {
       navigate(`/store/${storeDomain}/category/الكل`);
     } else {
-      // For other categories, navigate to category page
       const categorySlug = encodeURIComponent(category.toLowerCase());
       navigate(`/store/${storeDomain}/category/${categorySlug}`);
     }
   };
 
-  // Determine if we're showing search results
   const isShowingSearchResults = searchQuery.trim().length > 0;
 
   return (
     <>
-      {/* Custom promotional banner - only show if enabled */}
       {showPromoBanner && (
         <div className="relative bg-gradient-to-l from-blue-500 to-blue-600 py-6 px-4 sm:px-5 rounded-xl shadow-md mt-4 mb-6 overflow-hidden border border-blue-100/80 w-full">
           <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-blue-300/20 rounded-full -mt-10 -mr-10 blur-2xl"></div>
@@ -191,7 +171,6 @@ const StoreContent: React.FC<StoreContentProps> = ({
             </div>
           </div>
           
-          {/* Indicator Dots */}
           <div className="flex items-center justify-center space-x-1 rtl:space-x-reverse mt-4 sm:mt-6">
             {[...Array(5)].map((_, index) => (
               <div 
@@ -205,7 +184,6 @@ const StoreContent: React.FC<StoreContentProps> = ({
         </div>
       )}
       
-      {/* Search Bar - Now positioned above categories */}
       <div className="mb-6 px-3 sm:px-5 w-full mx-auto">
         <SearchBar 
           searchQuery={searchQuery}
@@ -215,7 +193,6 @@ const StoreContent: React.FC<StoreContentProps> = ({
         />
       </div>
       
-      {/* Only show navigation if there are categories or sections */}
       {showNavigation && (
         <CategoryNavigation 
           activeCategory={activeCategory}
@@ -228,7 +205,6 @@ const StoreContent: React.FC<StoreContentProps> = ({
         />
       )}
       
-      {/* If showing search results, just show the filtered products */}
       {isShowingSearchResults ? (
         <AllProductsSection 
           products={displayProducts}
@@ -237,9 +213,7 @@ const StoreContent: React.FC<StoreContentProps> = ({
           onClearSearch={handleClearSearch}
         />
       ) : (
-        // Otherwise show section-specific products
         <>
-          {/* Map through all available sections and display them */}
           {Object.entries(sectionProducts).map(([sectionName, products]) => (
             <div key={sectionName} className="mb-8">
               <AllProductsSection 
@@ -250,7 +224,6 @@ const StoreContent: React.FC<StoreContentProps> = ({
             </div>
           ))}
           
-          {/* Show all products section at the bottom if no sections or as a fallback */}
           {(Object.keys(sectionProducts).length === 0 || sections.length === 0) && (
             <AllProductsSection 
               products={displayProducts}
