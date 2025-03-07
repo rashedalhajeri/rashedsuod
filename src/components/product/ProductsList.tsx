@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from "react";
 import { Product } from "@/utils/products/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -64,30 +63,37 @@ const ProductsList: React.FC<ProductsListProps> = ({
   const handleDrawerClose = (open: boolean) => {
     setIsDrawerOpen(open);
     if (!open) {
-      // إعادة تعيين المنتج المحدد عند إغلاق النافذة
+      // Clear selected product after drawer is fully closed
       setTimeout(() => {
         setSelectedProduct(null);
-      }, 300); // تأخير بسيط لضمان إغلاق الانيميشن أولاً
+      }, 300);
     }
   };
 
   const handleDeleteClick = (id: string) => {
     setProductToDelete(id);
     setShowDeleteConfirm(true);
-    setIsDrawerOpen(false);
+    // Don't close the drawer yet - we'll close it after confirmation or cancellation
   };
 
   const confirmDelete = () => {
     if (productToDelete && onArchive) {
       onArchive(productToDelete, true);
+      // Close both dialogs after successful delete
       setShowDeleteConfirm(false);
+      setIsDrawerOpen(false);
       setProductToDelete(null);
+      // Reset selected product after a short delay
+      setTimeout(() => {
+        setSelectedProduct(null);
+      }, 300);
     }
   };
 
   const handleDeleteCancel = () => {
     setShowDeleteConfirm(false);
     setProductToDelete(null);
+    // Keep the drawer open - user only canceled the delete operation
   };
 
   const filteredProducts = useMemo(() => {
@@ -170,27 +176,33 @@ const ProductsList: React.FC<ProductsListProps> = ({
       </div>
 
       {/* Product Action Drawer */}
-      <ProductActionDrawer
-        product={selectedProduct}
-        isOpen={isDrawerOpen}
-        onOpenChange={handleDrawerClose}
-        onEdit={(id) => {
-          onEdit(id);
-          setIsDrawerOpen(false);
-        }}
-        onActivate={onActivate ? 
-          (id, isActive) => {
-            onActivate(id, isActive);
-            setIsDrawerOpen(false);
-          } : undefined
-        }
-        onDelete={handleDeleteClick}
-      />
+      {selectedProduct && (
+        <ProductActionDrawer
+          product={selectedProduct}
+          isOpen={isDrawerOpen}
+          onOpenChange={handleDrawerClose}
+          onEdit={(id) => {
+            onEdit(id);
+            // Let the parent component control the drawer
+          }}
+          onActivate={onActivate ? 
+            (id, isActive) => {
+              onActivate(id, isActive);
+              // Close drawer after activation
+              setIsDrawerOpen(false);
+              setTimeout(() => {
+                setSelectedProduct(null);
+              }, 300);
+            } : undefined
+          }
+          onDelete={handleDeleteClick}
+        />
+      )}
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Confirmation Dialog - separate from the drawer */}
       <ConfirmDialog
         open={showDeleteConfirm}
-        onOpenChange={handleDeleteCancel}
+        onOpenChange={setShowDeleteConfirm}
         title="تأكيد حذف المنتج"
         description="هل أنت متأكد من رغبتك في حذف هذا المنتج؟ لا يمكن التراجع عن هذه العملية."
         confirmText="حذف المنتج"

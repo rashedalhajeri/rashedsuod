@@ -40,6 +40,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 }) => {
   const handleConfirm = () => {
     onConfirm();
+    // Dialog will close automatically when onConfirm changes the open state
   };
 
   const handleCancel = () => {

@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ProductPrice } from "./item/ProductPrice";
-import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Pencil, Power, Trash, BadgePercent } from "lucide-react";
 import { handleImageError } from "@/utils/products/image-helpers";
@@ -73,6 +72,7 @@ const ProductActionDrawer: React.FC<ProductActionDrawerProps> = ({
   const handleDelete = () => {
     if (id && onDelete) {
       onDelete(id);
+      // Do not close the drawer here, let the parent handle this after confirmation
     }
   };
 
