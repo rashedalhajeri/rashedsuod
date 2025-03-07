@@ -40,11 +40,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 }) => {
   const handleConfirm = () => {
     onConfirm();
-    onOpenChange(false); // Close dialog after confirm action
-  };
-
-  const handleCancel = () => {
-    onOpenChange(false); // Ensure dialog closes on cancel
+    // Let the onConfirm function handle closing the dialog if needed
+    // This prevents double closing which can cause the UI freeze
   };
 
   return (
@@ -57,7 +54,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex gap-2 pt-2">
-          <AlertDialogCancel asChild onClick={handleCancel}>
+          <AlertDialogCancel asChild>
             <Button
               variant="outline"
               className="border border-gray-200 bg-white hover:bg-gray-50 text-gray-800"

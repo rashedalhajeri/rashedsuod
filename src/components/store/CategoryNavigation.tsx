@@ -75,10 +75,13 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
           
         if (themeError) {
           console.error("Error fetching theme settings:", themeError);
+          // Default to showing images if there's an error
+          setShowCategoryImages(true);
           return;
         }
 
         setCategoriesWithImages(categories || []);
+        // Default to true if setting is null
         setShowCategoryImages(themeSettings?.show_category_images ?? true);
       } catch (err) {
         console.error("Error fetching category data:", err);

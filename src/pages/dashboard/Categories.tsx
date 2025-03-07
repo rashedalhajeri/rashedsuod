@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Tags, Plus, LayoutGrid, Search, ImageIcon } from "lucide-react";
+import { Tags, Plus, LayoutGrid, ImageIcon } from "lucide-react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import CategorySearchBox from "@/components/category/CategorySearchBox";
 import CategoryList from "@/components/category/CategoryList";
@@ -14,6 +14,7 @@ import { useSections } from "@/hooks/use-sections";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { toast } from "sonner";
 
 const CategoriesAndSections: React.FC = () => {
   // Categories state
@@ -61,22 +62,19 @@ const CategoriesAndSections: React.FC = () => {
   const [isAddCategoryDialogOpen, setIsAddCategoryDialogOpen] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
-  const openAddSectionDialog = () => {
-    setIsAddSectionDialogOpen(true);
-  };
-
-  const closeAddSectionDialog = () => {
-    setIsAddSectionDialogOpen(false);
-  };
-
-  const openAddCategoryDialog = () => {
-    setIsAddCategoryDialogOpen(true);
-  };
-
-  const closeAddCategoryDialog = () => {
-    setIsAddCategoryDialogOpen(false);
-    setNewCategory("");
-    setCategoryImage(null);
+  // Separate toggle image logic from main category management
+  const toggleCategoryImages = async () => {
+    try {
+      await handleToggleShowCategoryImages(!showCategoryImages);
+      toast.success(showCategoryImages 
+        ? "تم إيقاف عرض صور الفئات بنجاح"
+        : "تم تفعيل عرض صور الفئات بنجاح"
+      );
+      setConfirmDialogOpen(false);
+    } catch (error) {
+      toast.error("حدث خطأ أثناء تحديث إعدادات الفئات");
+      setConfirmDialogOpen(false);
+    }
   };
 
   return (
@@ -129,7 +127,7 @@ const CategoriesAndSections: React.FC = () => {
                     <span>{showCategoryImages ? "إيقاف صور الفئات" : "تفعيل صور الفئات"}</span>
                   </Button>
                   <Button
-                    onClick={openAddCategoryDialog}
+                    onClick={() => setIsAddCategoryDialogOpen(true)}
                     className="gap-2 bg-primary hover:bg-primary/90"
                   >
                     <Plus className="h-4 w-4" />
@@ -155,7 +153,7 @@ const CategoriesAndSections: React.FC = () => {
                     handleUpdateCategory={handleUpdateCategory}
                     handleDeleteCategory={handleDeleteCategory}
                     setNewCategory={setNewCategory}
-                    openAddDialog={openAddCategoryDialog}
+                    openAddDialog={() => setIsAddCategoryDialogOpen(true)}
                   />
                 </CardContent>
               </Card>
@@ -176,7 +174,7 @@ const CategoriesAndSections: React.FC = () => {
                   />
                 </div>
                 <Button
-                  onClick={openAddSectionDialog}
+                  onClick={() => setIsAddSectionDialogOpen(true)}
                   className="gap-2 bg-primary hover:bg-primary/90"
                 >
                   <Plus className="h-4 w-4" />
@@ -202,7 +200,7 @@ const CategoriesAndSections: React.FC = () => {
                     handleDeleteSection={handleDeleteSection}
                     setNewSection={setNewSection}
                     setNewSectionType={setNewSectionType}
-                    openAddDialog={openAddSectionDialog}
+                    openAddDialog={() => setIsAddSectionDialogOpen(true)}
                   />
                 </CardContent>
               </Card>
@@ -210,7 +208,7 @@ const CategoriesAndSections: React.FC = () => {
             
             <SectionForm
               isOpen={isAddSectionDialogOpen}
-              onClose={closeAddSectionDialog}
+              onClose={() => setIsAddSectionDialogOpen(false)}
               newSection={newSection}
               setNewSection={setNewSection}
               newSectionType={newSectionType}
@@ -226,9 +224,14 @@ const CategoriesAndSections: React.FC = () => {
           </TabsContent>
         </Tabs>
 
+        {/* Category dialog with simplified props */}
         <CategoryDialog
           isOpen={isAddCategoryDialogOpen}
-          onClose={closeAddCategoryDialog}
+          onClose={() => {
+            setIsAddCategoryDialogOpen(false);
+            setNewCategory("");
+            setCategoryImage(null);
+          }}
           newCategory={newCategory}
           setNewCategory={setNewCategory}
           categoryImage={categoryImage}
@@ -236,9 +239,9 @@ const CategoriesAndSections: React.FC = () => {
           handleAddCategory={handleAddCategory}
           storeId={storeId || undefined}
           showCategoryImages={showCategoryImages}
-          updateShowCategoryImages={handleToggleShowCategoryImages}
         />
 
+        {/* Separate confirm dialog for toggling images */}
         <ConfirmDialog
           open={confirmDialogOpen}
           onOpenChange={setConfirmDialogOpen}
@@ -249,9 +252,7 @@ const CategoriesAndSections: React.FC = () => {
           }
           confirmText={showCategoryImages ? "إيقاف" : "تفعيل"}
           cancelText="إلغاء"
-          onConfirm={() => {
-            handleToggleShowCategoryImages(!showCategoryImages);
-          }}
+          onConfirm={toggleCategoryImages}
           confirmButtonProps={{
             variant: showCategoryImages ? "destructive" : "default"
           }}

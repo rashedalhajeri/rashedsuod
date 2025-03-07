@@ -20,6 +20,7 @@ export const useCategories = () => {
   const [categoryImage, setCategoryImage] = useState<string | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [showCategoryImages, setShowCategoryImages] = useState<boolean>(true);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     const initializeCategories = async () => {
@@ -58,6 +59,7 @@ export const useCategories = () => {
   const handleAddCategory = async () => {
     if (!newCategory.trim() || !storeId) return;
     
+    setIsUpdating(true);
     try {
       const nextOrder = categories.length > 0 
         ? Math.max(...categories.map(c => c.sort_order)) + 1 
@@ -80,12 +82,15 @@ export const useCategories = () => {
     } catch (err: any) {
       console.error("Error adding category:", err);
       toast.error("حدث خطأ أثناء إضافة التصنيف");
+    } finally {
+      setIsUpdating(false);
     }
   };
   
   const handleUpdateCategory = async () => {
     if (!editingCategory || !storeId) return;
     
+    setIsUpdating(true);
     try {
       const { error } = await updateCategory(editingCategory, storeId);
       
@@ -100,12 +105,15 @@ export const useCategories = () => {
     } catch (err: any) {
       console.error("Error updating category:", err);
       toast.error("حدث خطأ أثناء تعديل التصنيف");
+    } finally {
+      setIsUpdating(false);
     }
   };
   
   const handleDeleteCategory = async (categoryId: string) => {
     if (!storeId) return;
     
+    setIsUpdating(true);
     try {
       const { error } = await deleteCategory(categoryId, storeId);
       
@@ -116,25 +124,27 @@ export const useCategories = () => {
     } catch (err: any) {
       console.error("Error deleting category:", err);
       toast.error("حدث خطأ أثناء حذف التصنيف");
+    } finally {
+      setIsUpdating(false);
     }
   };
   
   const handleToggleShowCategoryImages = async (show: boolean) => {
-    if (!storeId) return;
+    if (!storeId) return false;
     
+    setIsUpdating(true);
     try {
       const { error } = await updateShowCategoryImages(storeId, show);
       
       if (error) throw error;
       
       setShowCategoryImages(show);
-      toast.success(show 
-        ? "تم تفعيل عرض صور الفئات بنجاح" 
-        : "تم إيقاف عرض صور الفئات بنجاح"
-      );
+      return true;
     } catch (err: any) {
       console.error("Error updating show category images:", err);
-      toast.error("حدث خطأ أثناء تحديث إعدادات الفئات");
+      return false;
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -149,6 +159,7 @@ export const useCategories = () => {
     editingCategory,
     setEditingCategory,
     showCategoryImages,
+    isUpdating,
     handleAddCategory,
     handleUpdateCategory,
     handleDeleteCategory,
