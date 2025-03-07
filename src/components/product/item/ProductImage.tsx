@@ -1,6 +1,5 @@
 
 import React, { useState } from "react";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Maximize2 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -42,12 +41,10 @@ export const ProductImage: React.FC<ProductImageProps> = ({
         )}
       >
         <div className="w-full h-full relative">
-          <Image
-            src={imageUrl}
+          <img
+            src={imageUrl} 
             alt={name}
-            fill
-            sizes={size === "lg" ? "128px" : size === "md" ? "48px" : "40px"}
-            className="object-cover"
+            className="w-full h-full object-cover"
             onClick={handleZoom}
           />
           
@@ -67,12 +64,10 @@ export const ProductImage: React.FC<ProductImageProps> = ({
         <Dialog open={isZoomed} onOpenChange={setIsZoomed}>
           <DialogContent className="p-0 max-w-3xl overflow-hidden bg-transparent border-0 shadow-none">
             <div className="relative w-full h-[80vh] bg-black/80 rounded-md overflow-hidden">
-              <Image
+              <img
                 src={imageUrl}
                 alt={name}
-                fill
-                sizes="80vw"
-                className="object-contain"
+                className="w-full h-full object-contain"
               />
             </div>
           </DialogContent>

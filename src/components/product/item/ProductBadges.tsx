@@ -2,7 +2,7 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Product } from "@/utils/products/types";
-import { Fire, Sparkles, Percent, Tag } from "lucide-react";
+import { Sparkles, Percent, Tag, TrendingUp } from "lucide-react";
 
 interface ProductBadgesProps {
   product: Product;
@@ -43,7 +43,7 @@ export const ProductBadges: React.FC<ProductBadgesProps> = ({ product, size = "s
       
       {isBestSeller && (
         <Badge variant="secondary" className="bg-green-50 text-green-600 border-green-200 hover:bg-green-100 flex gap-1 items-center px-1.5" style={{ height }}>
-          <Fire className={iconSize} />
+          <TrendingUp className={iconSize} />
           <span className={textSize}>الأكثر مبيعًا</span>
         </Badge>
       )}
