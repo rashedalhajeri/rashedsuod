@@ -1,9 +1,10 @@
 
-import React, { memo, useEffect, useState } from "react";
+import React, { memo } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import CategorySkeleton from "@/components/store/skeletons/CategorySkeleton";
+import CategoryItemSkeleton from "./category/CategoryItemSkeleton";
+import CategoryItem from "./category/CategoryItem";
+import { useCategoryNavigation } from "@/hooks/use-category-navigation";
 
 interface CategoryNavigationProps {
   categories: string[];
@@ -15,105 +16,16 @@ interface CategoryNavigationProps {
   storeDomain?: string;
 }
 
-interface CategoryWithProductCount {
-  name: string;
-  product_count: number;
-}
-
-// Category images mapping with guaranteed image for "الكل" (ALL)
-const categoryImageMap: Record<string, string> = {
-  "الكل": "/public/lovable-uploads/458d1c93-d142-4466-9f1a-1085922105f5.png", // Dedicated image for ALL
-  "العيادات": "/public/lovable-uploads/c8a5c4e7-628d-4c52-acca-e8f603036b6b.png",
-  "الإلكترونيات": "/public/lovable-uploads/827a00fa-f421-45c3-96d7-b9305fb217d1.jpg",
-};
-
-// Get image for a category with fallback
-const getCategoryImage = (category: string): string => {
-  return categoryImageMap[category] || "/placeholder.svg";
-};
-
 const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
-  categories,
-  sections,
   activeCategory,
   activeSection,
   onCategoryChange,
   onSectionChange,
+  sections,
   storeDomain
 }) => {
   const navigate = useNavigate();
-  const [categoriesWithProducts, setCategoriesWithProducts] = useState<CategoryWithProductCount[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  useEffect(() => {
-    const fetchCategoriesWithProducts = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Get store ID first by domain
-        if (!storeDomain) {
-          setIsLoading(false);
-          return;
-        }
-        
-        const { data: storeData, error: storeError } = await supabase
-          .from('stores')
-          .select('id')
-          .eq('domain_name', storeDomain)
-          .maybeSingle();
-          
-        if (storeError || !storeData) {
-          console.error("Error fetching store:", storeError);
-          setIsLoading(false);
-          return;
-        }
-        
-        // Fetch categories with actual products (not just counts)
-        const { data, error } = await supabase
-          .from('categories')
-          .select(`
-            name,
-            products:products(id)
-          `)
-          .eq('store_id', storeData.id)
-          .order('sort_order');
-          
-        if (error) {
-          console.error("Error fetching categories:", error);
-          setIsLoading(false);
-          return;
-        }
-        
-        if (data && data.length > 0) {
-          // Transform data to include product counts
-          const categoriesWithCounts = data.map(category => ({
-            name: category.name,
-            product_count: category.products.length
-          }));
-          
-          // Filter out categories with no products
-          const filteredCategories = categoriesWithCounts.filter(cat => cat.product_count > 0);
-          
-          setCategoriesWithProducts(filteredCategories);
-        }
-      } catch (err) {
-        console.error("Error in fetchCategoriesWithProducts:", err);
-      } finally {
-        // Add a small delay for smoother transition
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 200);
-      }
-    };
-    
-    if (storeDomain) {
-      fetchCategoriesWithProducts();
-    }
-  }, [storeDomain]);
-  
-  // Only include "الكل" and categories with products
-  const displayCategories = ["الكل", ...categoriesWithProducts.map(cat => cat.name)];
-  const hasCategories = displayCategories.length > 1; // At least "All" and one other category
+  const { displayCategories, isLoading, hasCategories } = useCategoryNavigation(storeDomain);
   const hasSections = sections.length > 0;
 
   // If no data, don't render the component
@@ -150,50 +62,21 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
         {isLoading ? (
           // Placeholder for loading state using CategorySkeleton
           [...Array(5)].map((_, index) => (
-            <CategorySkeleton key={`category-skeleton-${index}`} index={index} />
+            <CategoryItemSkeleton key={`category-skeleton-${index}`} index={index} />
           ))
         ) : (
           displayCategories.map((category, index) => {
-            // Use the helper function to get appropriate image
-            const imagePath = getCategoryImage(category);
             const isActive = (category === "الكل" && activeCategory === "الكل") || 
-                           (category.toLowerCase() === activeCategory.toLowerCase());
+                          (category.toLowerCase() === activeCategory.toLowerCase());
             
             return (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                key={index}
-                className="flex-shrink-0"
-              >
-                <button
-                  onClick={() => handleCategoryClick(category)}
-                  className={`w-full h-full flex flex-col items-center transition-all duration-300 bg-white rounded-lg p-1.5 shadow-sm ${
-                    isActive
-                      ? 'border-2 border-blue-400'
-                      : 'border border-gray-100'
-                  }`}
-                >
-                  <div className="w-full aspect-square mb-1 flex items-center justify-center overflow-hidden rounded-lg bg-gray-50">
-                    <img 
-                      src={imagePath}
-                      alt={category} 
-                      className="w-full h-full object-cover" 
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/placeholder.svg";
-                      }}
-                    />
-                  </div>
-                  <span className={`text-xs truncate w-full text-center ${
-                    isActive
-                      ? 'text-blue-600'
-                      : 'text-gray-800'
-                  }`}>
-                    {category}
-                  </span>
-                </button>
-              </motion.div>
+              <CategoryItem
+                key={`category-${index}`}
+                category={category}
+                isActive={isActive}
+                index={index}
+                onClick={() => handleCategoryClick(category)}
+              />
             );
           })
         )}
