@@ -35,6 +35,16 @@ export const uploadProductImage = async (file: File, storeId: string): Promise<s
     const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
     const filePath = `${storeId}/products/${fileName}`;
     
+    // First, check if the bucket exists
+    const { data: bucketData, error: bucketError } = await supabase.storage
+      .getBucket('product-images');
+      
+    if (bucketError) {
+      console.error('Error checking bucket:', bucketError);
+      return null;
+    }
+    
+    // Upload the file
     const { data, error } = await supabase.storage
       .from('product-images')
       .upload(filePath, file, {
@@ -47,6 +57,7 @@ export const uploadProductImage = async (file: File, storeId: string): Promise<s
       return null;
     }
     
+    // Get the public URL
     const { data: urlData } = supabase.storage
       .from('product-images')
       .getPublicUrl(filePath);

@@ -60,21 +60,44 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
     available_colors: [],
     available_sizes: []
   });
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAddProduct = async () => {
     try {
+      if (isSubmitting) return;
+      
+      setIsSubmitting(true);
+      
       if (!storeId) {
         toast.error("لم يتم العثور على معرف المتجر");
+        setIsSubmitting(false);
         return;
       }
       
       if (!formData.name || formData.price <= 0) {
         toast.error("يرجى ملء جميع الحقول المطلوبة");
+        setIsSubmitting(false);
         return;
       }
       
       if (formData.images.length === 0) {
         toast.error("يرجى إضافة صورة واحدة على الأقل");
+        setIsSubmitting(false);
+        return;
+      }
+      
+      // التحقق من تعبئة المقاسات عند تفعيل خاصية المقاسات
+      if (formData.has_sizes && (!formData.available_sizes || formData.available_sizes.length === 0)) {
+        toast.error("يرجى إضافة مقاس واحد على الأقل عند تفعيل خاصية المقاسات");
+        setIsSubmitting(false);
+        return;
+      }
+      
+      // التحقق من تعبئة الألوان عند تفعيل خاصية الألوان
+      if (formData.has_colors && (!formData.available_colors || formData.available_colors.length === 0)) {
+        toast.error("يرجى إضافة لون واحد على الأقل عند تفعيل خاصية الألوان");
+        setIsSubmitting(false);
         return;
       }
       
@@ -104,6 +127,7 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
       if (error) {
         console.error("Error adding product:", error);
         toast.error("حدث خطأ أثناء إضافة المنتج");
+        setIsSubmitting(false);
         return;
       }
       
@@ -114,6 +138,8 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
     } catch (error) {
       console.error("Error in handleAddProduct:", error);
       toast.error("حدث خطأ غير متوقع");
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
@@ -180,14 +206,16 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
     }));
   };
 
-  const isFormValid = formData.name && formData.price > 0 && formData.images.length > 0;
+  const isFormValid = formData.name && formData.price > 0 && formData.images.length > 0 && 
+    (!formData.has_colors || (formData.available_colors && formData.available_colors.length > 0)) &&
+    (!formData.has_sizes || (formData.available_sizes && formData.available_sizes.length > 0));
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">إضافة منتج جديد</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-xl font-semibold">إضافة منتج جديد</DialogTitle>
+          <DialogDescription className="text-gray-500">
             أدخل معلومات المنتج الذي تريد إضافته إلى متجرك.
           </DialogDescription>
         </DialogHeader>
@@ -222,6 +250,7 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
                 images={formData.images}
                 storeId={storeId}
                 handleImagesChange={handleImagesChange}
+                maxImages={5}
               />
             </div>
           </div>
@@ -262,7 +291,8 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
         <ProductFormActions 
           onCancel={() => onOpenChange(false)}
           onSubmit={handleAddProduct}
-          isDisabled={!isFormValid}
+          isDisabled={!isFormValid || isSubmitting}
+          isSubmitting={isSubmitting}
         />
       </DialogContent>
     </Dialog>

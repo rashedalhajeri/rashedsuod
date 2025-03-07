@@ -85,6 +85,18 @@ const ImageUploadGrid: React.FC<ImageUploadProps> = ({
     
     try {
       const uploadPromises = Array.from(files).map(async (file) => {
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          toast.error(`الملف ${file.name} ليس صورة صالحة`);
+          return null;
+        }
+        
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          toast.error(`حجم الملف ${file.name} أكبر من 5 ميجابايت`);
+          return null;
+        }
+        
         // Use the helper function to upload to Supabase storage
         const publicUrl = await uploadProductImage(file, storeId);
         if (publicUrl) successCount++;
@@ -137,7 +149,7 @@ const ImageUploadGrid: React.FC<ImageUploadProps> = ({
       
       <div 
         className={cn(
-          "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2",
+          "grid grid-cols-2 md:grid-cols-3 gap-2",
           images.length === 0 && "grid-cols-1"
         )}
       >

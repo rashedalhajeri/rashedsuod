@@ -38,11 +38,19 @@ const SizeManagementSection: React.FC<SizeManagementSectionProps> = ({
   const sizePresets = [
     { label: "S, M, L, XL", values: ["S", "M", "L", "XL"] },
     { label: "XS-XXL", values: ["XS", "S", "M", "L", "XL", "XXL"] },
-    { label: "أرقام", values: ["36", "38", "40", "42", "44", "46"] }
+    { label: "أرقام (36-46)", values: ["36", "38", "40", "42", "44", "46"] },
+    { label: "أحذية", values: ["39", "40", "41", "42", "43", "44", "45"] }
   ];
 
   const handleUsePreset = (preset: string[]) => {
     onSizesChange(preset);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && newSize) {
+      e.preventDefault();
+      handleAddSize();
+    }
   };
 
   return (
@@ -62,6 +70,7 @@ const SizeManagementSection: React.FC<SizeManagementSectionProps> = ({
               placeholder="أدخل المقاس (مثال: M)"
               value={newSize}
               onChange={(e) => setNewSize(e.target.value)}
+              onKeyDown={handleKeyDown}
               className="w-full"
             />
           </div>
@@ -91,7 +100,7 @@ const SizeManagementSection: React.FC<SizeManagementSectionProps> = ({
         </div>
         
         {sizes.length > 0 ? (
-          <div className="flex flex-wrap gap-2 mt-4">
+          <div className="flex flex-wrap gap-2 mt-4 p-3 border rounded-md border-gray-100 bg-gray-50">
             {sizes.map((size, index) => (
               <Badge
                 key={index}
@@ -111,8 +120,8 @@ const SizeManagementSection: React.FC<SizeManagementSectionProps> = ({
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-500 text-center py-2">
-            لم تتم إضافة أي مقاسات بعد
+          <p className="text-sm text-gray-500 text-center py-4 border rounded-md border-gray-200 bg-gray-50">
+            لم تتم إضافة أي مقاسات بعد. أضف مقاس أو اختر مجموعة مقاسات.
           </p>
         )}
       </CardContent>

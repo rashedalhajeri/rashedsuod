@@ -17,7 +17,7 @@ const ColorManagementSection: React.FC<ColorManagementSectionProps> = ({
   onColorsChange
 }) => {
   const [newColor, setNewColor] = useState("");
-  const [newColorHex, setNewColorHex] = useState("#000000");
+  const [newColorHex, setNewColorHex] = useState("#3B82F6");
 
   const handleAddColor = () => {
     if (!newColor) return;
@@ -40,6 +40,32 @@ const ColorManagementSection: React.FC<ColorManagementSectionProps> = ({
     onColorsChange(colors.filter((_, index) => index !== indexToRemove));
   };
 
+  // Common color presets
+  const colorPresets = [
+    { name: "أساسية", colors: [
+      "أحمر|#EF4444", 
+      "أزرق|#3B82F6", 
+      "أخضر|#10B981", 
+      "أسود|#000000"
+    ]},
+    { name: "ألوان فاتحة", colors: [
+      "أبيض|#FFFFFF", 
+      "بيج|#F5F5DC", 
+      "رمادي فاتح|#E5E7EB", 
+      "أصفر فاتح|#FEF3C7"
+    ]},
+    { name: "ألوان غامقة", colors: [
+      "أزرق غامق|#1E3A8A", 
+      "أحمر غامق|#991B1B", 
+      "أخضر غامق|#065F46", 
+      "بني|#78350F"
+    ]}
+  ];
+
+  const handleUsePreset = (presetColors: string[]) => {
+    onColorsChange(presetColors);
+  };
+
   return (
     <Card className="border border-gray-200">
       <CardHeader className="pb-3">
@@ -49,8 +75,8 @@ const ColorManagementSection: React.FC<ColorManagementSectionProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex gap-2">
-          <div className="flex-1">
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="sm:flex-1">
             <Label htmlFor="newColor" className="sr-only">اسم اللون</Label>
             <Input
               id="newColor"
@@ -60,7 +86,7 @@ const ColorManagementSection: React.FC<ColorManagementSectionProps> = ({
               className="w-full"
             />
           </div>
-          <div className="w-24">
+          <div className="w-full sm:w-24">
             <Label htmlFor="newColorHex" className="sr-only">اختر اللون</Label>
             <div className="flex h-10 items-center">
               <Input
@@ -83,8 +109,22 @@ const ColorManagementSection: React.FC<ColorManagementSectionProps> = ({
           </Button>
         </div>
         
+        <div className="flex flex-wrap gap-2">
+          {colorPresets.map((preset, i) => (
+            <Button 
+              key={i} 
+              variant="outline" 
+              size="sm" 
+              onClick={() => handleUsePreset(preset.colors)}
+              className="text-xs"
+            >
+              {preset.name}
+            </Button>
+          ))}
+        </div>
+        
         {colors.length > 0 ? (
-          <div className="flex flex-wrap gap-2 mt-4">
+          <div className="flex flex-wrap gap-2 mt-4 p-3 border rounded-md border-gray-100 bg-gray-50">
             {colors.map((colorEntry, index) => {
               const [name, hex] = colorEntry.split('|');
               return (
@@ -111,8 +151,8 @@ const ColorManagementSection: React.FC<ColorManagementSectionProps> = ({
             })}
           </div>
         ) : (
-          <p className="text-sm text-gray-500 text-center py-2">
-            لم تتم إضافة أي ألوان بعد
+          <p className="text-sm text-gray-500 text-center py-4 border rounded-md border-gray-200 bg-gray-50">
+            لم تتم إضافة أي ألوان بعد. أضف لون أو اختر مجموعة ألوان.
           </p>
         )}
       </CardContent>
