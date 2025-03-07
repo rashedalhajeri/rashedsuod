@@ -57,6 +57,34 @@
   .scroll-container {
     @apply gap-2;
   }
+  
+  /* تحسينات خاصة بقائمة المنتجات */
+  .product-filters-container {
+    @apply flex-col gap-2;
+  }
+  
+  .product-filters-container > * {
+    @apply w-full;
+  }
+  
+  /* تحسين طريقة عرض عناصر الفلترة والتصنيف في الموبايل */
+  .filter-button {
+    @apply text-xs py-1.5;
+  }
+  
+  /* تنسيق حجم شارات الفئات على الجوال */
+  .filter-badge {
+    @apply text-xs px-1.5 h-4;
+  }
+  
+  /* تحسين واجهة تفاصيل المنتج في الموبايل */
+  .product-details-mobile {
+    @apply flex-col;
+  }
+  
+  .product-details-mobile .product-image {
+    @apply mb-3 mx-auto;
+  }
 }
 
 /* تحسينات مخصصة للأجهزة اللوحية */
@@ -91,6 +119,11 @@
   /* تحسين شكل العناصر المميزة */
   .featured-section {
     @apply py-16;
+  }
+  
+  /* تحسين تباعد عناصر قائمة المنتجات */
+  .products-list-item {
+    @apply py-4;
   }
 }
 
@@ -165,4 +198,15 @@
 
 [dir="rtl"] .mr-4 {
   margin-left: 1rem;
+}
+
+/* تحسينات إضافية للتصميم العربي - قائمة المنتجات */
+[dir="rtl"] .product-list-item .product-details {
+  padding-right: 0.75rem;
+  padding-left: 0;
+}
+
+[dir="rtl"] .product-action-buttons {
+  left: 1rem;
+  right: auto;
 }

@@ -84,15 +84,21 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
   };
 
   return (
-    <div className={`flex flex-col sm:flex-row sm:items-center p-4 transition-colors ${isSelected ? 'bg-blue-50/60' : 'hover:bg-gray-50'} border-b ${is_archived ? 'bg-gray-50 opacity-75' : ''} ${!is_active ? 'bg-gray-50/70' : ''}`}>
-      <div className="flex items-center">
+    <div className={`flex flex-col sm:flex-row sm:items-center p-4 transition-colors 
+      ${isSelected ? 'bg-blue-50/60' : 'hover:bg-gray-50'} 
+      border-b ${is_archived ? 'bg-gray-50 opacity-75' : ''} 
+      ${!is_active ? 'bg-gray-50/70' : ''}`}>
+      
+      {/* منطقة الاختيار وصورة المنتج والتفاصيل الاساسية */}
+      <div className="flex items-start sm:items-center w-full sm:w-auto">
         <Checkbox
           checked={isSelected}
           onCheckedChange={checked => onSelect(id, !!checked)}
-          className="mr-3 h-4 w-4"
+          className="mr-3 h-4 w-4 mt-1 sm:mt-0 flex-shrink-0"
         />
         
-        <div className="flex items-center flex-1">
+        <div className="flex items-start sm:items-center w-full">
+          {/* صورة المنتج */}
           <div className="h-16 w-16 sm:h-14 sm:w-14 rounded-xl overflow-hidden border border-gray-100 shadow-sm flex-shrink-0">
             <img
               src={imageUrl}
@@ -101,28 +107,73 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
             />
           </div>
           
+          {/* معلومات المنتج */}
           <div className="flex-1 min-w-0 mr-3">
-            <h3 className="text-sm font-medium text-gray-900 leading-tight line-clamp-1 mb-1">
-              {name}
-              {is_archived && (
-                <Badge variant="outline" className="text-xs ml-2 bg-gray-50 text-gray-500 border-gray-200">مؤرشف</Badge>
-              )}
-              {!is_active && !is_archived && (
-                <Badge variant="outline" className="text-xs ml-2 bg-yellow-50 text-yellow-600 border-yellow-200">غير نشط</Badge>
-              )}
-            </h3>
-            
-            <div className="flex flex-wrap gap-1.5 mb-1">
-              {getStockBadge()}
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h3 className="text-sm font-medium text-gray-900 leading-tight line-clamp-1 mb-1">
+                  {name}
+                  {is_archived && (
+                    <Badge variant="outline" className="text-xs mr-1.5 bg-gray-50 text-gray-500 border-gray-200">مؤرشف</Badge>
+                  )}
+                  {!is_active && !is_archived && (
+                    <Badge variant="outline" className="text-xs mr-1.5 bg-yellow-50 text-yellow-600 border-yellow-200">غير نشط</Badge>
+                  )}
+                </h3>
               
-              {category && (
-                <Badge variant="outline" className="text-xs">
-                  {category.name}
-                </Badge>
-              )}
+                <div className="flex flex-wrap gap-1.5 mb-1">
+                  {getStockBadge()}
+                  
+                  {category && (
+                    <Badge variant="outline" className="text-xs">
+                      {category.name}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              
+              {/* أزرار الإجراءات - تظهر على الموبايل */}
+              <div className="flex sm:hidden gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onEdit(id)}
+                  className="text-gray-500 hover:text-gray-700 h-8 w-8"
+                  title="تعديل"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleToggleActive}
+                  className={`h-8 w-8 ${is_active ? 'text-green-500 hover:text-green-600' : 'text-gray-400 hover:text-gray-500'}`}
+                  title={is_active ? "تعطيل المنتج" : "تفعيل المنتج"}
+                >
+                  {is_active ? (
+                    <ToggleRight className="h-4 w-4" />
+                  ) : (
+                    <ToggleLeft className="h-4 w-4" />
+                  )}
+                </Button>
+                
+                {onArchive && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleArchive}
+                    className={`h-8 w-8 ${is_archived ? 'text-blue-500 hover:text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                    title={is_archived ? "إلغاء الأرشفة" : "أرشفة"}
+                  >
+                    <EyeOff className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             
-            <div className="flex items-center text-sm">
+            {/* معلومات السعر */}
+            <div className="flex items-center text-sm mt-1">
               {hasDiscount ? (
                 <div className="flex gap-1.5 items-center">
                   <span className="text-red-600 font-bold">{formatCurrency(discount_price!)}</span>
@@ -136,7 +187,8 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
         </div>
       </div>
       
-      <div className="flex ml-auto mt-3 sm:mt-0 gap-1 self-end sm:self-auto">
+      {/* أزرار الإجراءات - تظهر على سطح المكتب */}
+      <div className="hidden sm:flex ml-auto gap-1 self-end sm:self-auto">
         <Button
           variant="ghost"
           size="icon"
