@@ -2,10 +2,9 @@
 import React, { useState } from "react";
 import { Product } from "@/utils/products/types";
 import ProductsList from "./ProductsList";
-import { Pagination } from "@/components/ui/pagination";
-import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Power } from "lucide-react";
+import BulkActionsBar from "./bulk-actions/BulkActionsBar";
+import ProductsPagination from "./pagination/ProductsPagination";
 
 interface ProductsContentProps {
   products: Product[];
@@ -32,7 +31,7 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
 }) => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 30; // Display 30 products per page instead of 10
+  const itemsPerPage = 30; // Display 30 products per page
   
   // Bulk action states
   const [showBulkActivateConfirm, setShowBulkActivateConfirm] = useState(false);
@@ -73,31 +72,11 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
     <div className="bg-gray-50 rounded-lg p-2">
       {/* Show bulk actions if items are selected */}
       {selectedItems.length > 0 && (
-        <div className="flex flex-wrap gap-2 p-2 mb-3 bg-gray-100 rounded-lg items-center">
-          <span className="text-sm text-gray-600 font-medium px-2">
-            تم تحديد {selectedItems.length} منتج
-          </span>
-          <div className="flex gap-2 mr-auto">
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-green-600 border-green-200 hover:bg-green-50"
-              onClick={() => handleBulkActivateClick(true)}
-            >
-              <Power className="h-4 w-4 ml-1" />
-              تفعيل المحدد
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-gray-600 border-gray-200 hover:bg-gray-50"
-              onClick={() => handleBulkActivateClick(false)}
-            >
-              <Power className="h-4 w-4 ml-1" />
-              تعطيل المحدد
-            </Button>
-          </div>
-        </div>
+        <BulkActionsBar 
+          selectedItemsCount={selectedItems.length}
+          onActivate={() => handleBulkActivateClick(true)}
+          onDeactivate={() => handleBulkActivateClick(false)}
+        />
       )}
       
       <ProductsList 
@@ -113,13 +92,11 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
       
       {/* Pagination control */}
       {totalPages > 1 && (
-        <div className="flex justify-center mt-4 pb-2">
-          <Pagination 
-            pageCount={totalPages}
-            currentPage={currentPage}
-            onPageChange={handlePageChange}
-          />
-        </div>
+        <ProductsPagination 
+          totalPages={totalPages}
+          currentPage={currentPage}
+          onPageChange={handlePageChange}
+        />
       )}
       
       {/* Bulk Activate/Deactivate Confirmation Dialog */}
