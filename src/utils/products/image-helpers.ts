@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 /**
@@ -24,6 +23,43 @@ export const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) 
 };
 
 /**
+ * Create the product-images bucket if it doesn't exist
+ * @returns boolean indicating if the bucket exists or was created successfully
+ */
+const ensureProductImagesBucketExists = async (): Promise<boolean> => {
+  try {
+    // First check if the bucket exists
+    const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+    
+    if (listError) {
+      console.error("Error listing buckets:", listError);
+      return false;
+    }
+    
+    // If bucket already exists, return true
+    if (buckets && buckets.some(bucket => bucket.name === 'product-images')) {
+      return true;
+    }
+    
+    // Bucket doesn't exist, try to create it
+    const { data, error } = await supabase.storage.createBucket('product-images', {
+      public: true,
+    });
+    
+    if (error) {
+      console.error("Error creating product-images bucket:", error);
+      return false;
+    }
+    
+    console.log("Successfully created product-images bucket");
+    return true;
+  } catch (error) {
+    console.error("Error in ensureProductImagesBucketExists:", error);
+    return false;
+  }
+};
+
+/**
  * Upload a product image to Supabase storage
  * @param file The file to upload
  * @param storeId The store ID for organizing storage
@@ -31,18 +67,16 @@ export const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) 
  */
 export const uploadProductImage = async (file: File, storeId: string): Promise<string | null> => {
   try {
+    // Ensure the product-images bucket exists
+    const bucketExists = await ensureProductImagesBucketExists();
+    
+    if (!bucketExists) {
+      throw new Error("Product images bucket does not exist and could not be created");
+    }
+    
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
     const filePath = `${storeId}/products/${fileName}`;
-    
-    // First, check if the bucket exists
-    const { data: bucketData, error: bucketError } = await supabase.storage
-      .getBucket('product-images');
-      
-    if (bucketError) {
-      console.error('Error checking bucket:', bucketError);
-      return null;
-    }
     
     // Upload the file
     const { data, error } = await supabase.storage

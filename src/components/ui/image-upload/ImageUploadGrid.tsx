@@ -7,6 +7,7 @@ import { uploadProductImage } from "@/utils/products/image-helpers";
 import ImagePreview from "./ImagePreview";
 import UploadDropZone from "./UploadDropZone";
 import { ImageUploadProps } from "./types";
+import { ErrorState } from "@/components/ui/error-state";
 
 const ImageUploadGrid: React.FC<ImageUploadProps> = ({
   images,
@@ -16,11 +17,13 @@ const ImageUploadGrid: React.FC<ImageUploadProps> = ({
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const handleAddImage = (url: string) => {
     if (images.length < maxImages) {
       onImagesChange([...images, url]);
+      setUploadError(null);
     } else {
       toast.error(`لا يمكن إضافة أكثر من ${maxImages} صور`);
     }
@@ -77,10 +80,12 @@ const ImageUploadGrid: React.FC<ImageUploadProps> = ({
     
     if (!storeId) {
       toast.error("معرف المتجر مطلوب لرفع الصور");
+      setUploadError("معرف المتجر مطلوب لرفع الصور");
       return;
     }
     
     setIsUploading(true);
+    setUploadError(null);
     let successCount = 0;
     
     try {
@@ -111,10 +116,12 @@ const ImageUploadGrid: React.FC<ImageUploadProps> = ({
         toast.success(`تم رفع ${validUrls.length} صورة بنجاح`);
       } else {
         toast.error('فشل في رفع الصور، يرجى المحاولة مرة أخرى');
+        setUploadError('فشل في رفع الصور، يرجى المحاولة مرة أخرى');
       }
     } catch (error) {
       console.error('Error processing uploads:', error);
       toast.error('حدث خطأ أثناء رفع الصور');
+      setUploadError('حدث خطأ أثناء رفع الصور، يرجى المحاولة مرة أخرى');
     } finally {
       setIsUploading(false);
     }
@@ -136,6 +143,10 @@ const ImageUploadGrid: React.FC<ImageUploadProps> = ({
     }
   };
   
+  const retryUpload = () => {
+    setUploadError(null);
+  };
+  
   return (
     <div className="space-y-3">
       <input 
@@ -147,35 +158,45 @@ const ImageUploadGrid: React.FC<ImageUploadProps> = ({
         className="hidden" 
       />
       
-      <div 
-        className={cn(
-          "grid grid-cols-2 md:grid-cols-3 gap-2",
-          images.length === 0 && "grid-cols-1"
-        )}
-      >
-        <AnimatePresence>
-          {images.map((image, index) => (
-            <ImagePreview
-              key={`${image}-${index}`}
-              imageUrl={image}
-              index={index}
-              onRemove={handleRemoveImage}
-            />
-          ))}
-          
-          {images.length < maxImages && (
-            <UploadDropZone
-              isDragging={isDragging}
-              isUploading={isUploading}
-              onClick={triggerFileInput}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              isEmpty={images.length === 0}
-            />
+      {uploadError && images.length === 0 ? (
+        <div className="mb-4">
+          <ErrorState 
+            title="خطأ في رفع الصور"
+            message={uploadError}
+            onRetry={retryUpload}
+          />
+        </div>
+      ) : (
+        <div 
+          className={cn(
+            "grid grid-cols-2 md:grid-cols-3 gap-2",
+            images.length === 0 && "grid-cols-1"
           )}
-        </AnimatePresence>
-      </div>
+        >
+          <AnimatePresence>
+            {images.map((image, index) => (
+              <ImagePreview
+                key={`${image}-${index}`}
+                imageUrl={image}
+                index={index}
+                onRemove={handleRemoveImage}
+              />
+            ))}
+            
+            {images.length < maxImages && (
+              <UploadDropZone
+                isDragging={isDragging}
+                isUploading={isUploading}
+                onClick={triggerFileInput}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                isEmpty={images.length === 0}
+              />
+            )}
+          </AnimatePresence>
+        </div>
+      )}
       
       {images.length > 0 && (
         <p className="text-xs text-gray-500 text-center">
