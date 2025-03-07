@@ -1,29 +1,38 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Product, RawProductData } from "./types";
-import { mapRawProductToProduct } from "./mappers";
-import { databaseClient } from "@/integrations/database/client";
+import { Product } from "./types";
 
 /**
- * Update a product
+ * Updates a product by its ID
  */
-export const updateProduct = async (productId: string, updates: any) => {
+export const updateProduct = async (productId: string, updates: Partial<Product>) => {
   try {
-    return await databaseClient.products.updateProduct(productId, updates);
-  } catch (error) {
-    console.error("Error updating product:", error);
-    return { data: null, error };
+    const { data, error } = await supabase
+      .from('products')
+      .update(updates)
+      .eq('id', productId)
+      .select();
+    
+    return { data, error };
+  } catch (err) {
+    console.error('Error updating product:', err);
+    return { data: null, error: err };
   }
 };
 
 /**
- * Delete a product
+ * Deletes a product by its ID
  */
 export const deleteProduct = async (productId: string) => {
   try {
-    return await databaseClient.products.deleteProduct(productId);
-  } catch (error) {
-    console.error("Error deleting product:", error);
-    return { success: false, error };
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', productId);
+    
+    return { success: !error, error };
+  } catch (err) {
+    console.error('Error deleting product:', err);
+    return { success: false, error: err };
   }
 };
