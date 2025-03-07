@@ -40,10 +40,11 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 }) => {
   const handleConfirm = () => {
     onConfirm();
+    onOpenChange(false); // Close dialog after confirm action
   };
 
   const handleCancel = () => {
-    onOpenChange(false);
+    onOpenChange(false); // Ensure dialog closes on cancel
   };
 
   return (
@@ -56,11 +57,10 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex gap-2 pt-2">
-          <AlertDialogCancel asChild>
+          <AlertDialogCancel asChild onClick={handleCancel}>
             <Button
               variant="outline"
               className="border border-gray-200 bg-white hover:bg-gray-50 text-gray-800"
-              onClick={handleCancel}
               {...cancelButtonProps}
             >
               {cancelText}

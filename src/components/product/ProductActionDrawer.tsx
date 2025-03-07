@@ -73,6 +73,7 @@ const ProductActionDrawer: React.FC<ProductActionDrawerProps> = ({
   const handleDelete = () => {
     if (id && onDelete) {
       onDelete(id);
+      onOpenChange(false);
     }
   };
 
@@ -147,7 +148,13 @@ const ProductActionDrawer: React.FC<ProductActionDrawerProps> = ({
 
         <SheetFooter className="mt-8 flex justify-center">
           <SheetClose asChild>
-            <Button className="w-full" variant="outline">إغلاق</Button>
+            <Button 
+              className="w-full" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+            >
+              إغلاق
+            </Button>
           </SheetClose>
         </SheetFooter>
       </SheetContent>

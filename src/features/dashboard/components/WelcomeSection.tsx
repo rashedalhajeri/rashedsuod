@@ -8,8 +8,6 @@ import StorePreviewButton from "./StorePreviewButton";
 interface WelcomeSectionProps {
   storeName: string;
   ownerName: string;
-  newOrdersCount: number;
-  lowStockCount: number;
   logoUrl?: string | null;
 }
 

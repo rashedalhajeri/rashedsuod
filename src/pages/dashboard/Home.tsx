@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import useStoreData, { getCurrencyFormatter } from "@/hooks/use-store-data";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import LoadingState from "@/components/ui/loading-state";
@@ -82,8 +82,6 @@ const DashboardHome: React.FC = () => {
         <WelcomeSection 
           storeName={storeData?.store_name || "متجرك"} 
           ownerName={userName}
-          newOrdersCount={statsData?.orders || 0}
-          lowStockCount={lowStockCount}
           logoUrl={storeData?.logo_url}
         />
         
