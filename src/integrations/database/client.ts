@@ -1,7 +1,9 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Product, RawProductData } from "@/utils/products/types";
 import { mapRawProductToProduct } from "@/utils/products/mappers";
 import { buildProductQuery } from "@/utils/products/query-builders";
+import { Database } from "@/integrations/supabase/types";
 
 // Interface defining the shape of our database client
 export interface DatabaseClient {
@@ -11,7 +13,8 @@ export interface DatabaseClient {
       storeId?: string,
       categoryId?: string,
       sectionId?: string,
-      limit?: number
+      limit?: number,
+      includeArchived?: boolean
     ) => Promise<Product[]>;
     getProductById: (productId: string) => Promise<{ data: Product | null, error: any }>;
     updateProduct: (productId: string, updates: any) => Promise<{ data: Product[] | null, error: any }>;
@@ -31,17 +34,66 @@ class SupabaseDatabaseClient implements DatabaseClient {
       storeId?: string,
       categoryId?: string,
       sectionId?: string,
-      limit?: number
+      limit?: number,
+      includeArchived: boolean = false
     ): Promise<Product[]> => {
       try {
-        const query = buildProductQuery(
-          supabase,
-          sectionType,
-          storeId,
-          categoryId,
-          sectionId,
-          limit
-        );
+        // We no longer pass the supabase client directly to buildProductQuery
+        // Instead we'll build the query here
+        let query = supabase
+          .from('products')
+          .select('*, category:categories(name)')
+          .eq('is_active', true);
+          
+        if (!includeArchived) {
+          query = query.eq('is_archived', false);
+        }
+
+        // Filter by store if provided
+        if (storeId) {
+          query = query.eq('store_id', storeId);
+        }
+
+        // Filter by category if provided
+        if (categoryId && categoryId !== 'all' && categoryId !== 'none') {
+          query = query.eq('category_id', categoryId);
+        }
+
+        // Filter by section if provided
+        if (sectionId && sectionId !== 'all' && sectionId !== 'none') {
+          query = query.eq('section_id', sectionId);
+        }
+
+        // Apply additional filters based on sectionType
+        switch (sectionType) {
+          case 'best_selling':
+            query = query.order('sales_count', { ascending: false });
+            break;
+          case 'new_arrivals':
+            query = query.order('created_at', { ascending: false });
+            break;
+          case 'featured':
+            query = query.eq('is_featured', true);
+            break;
+          case 'on_sale':
+            query = query.not('discount_price', 'is', null);
+            break;
+          case 'category':
+            // Already filtered by category_id above
+            break;
+          case 'custom':
+            // For custom sections, filtering by section_id above is enough
+            break;
+          default:
+            // Default sorting for 'all' and other types
+            query = query.order('created_at', { ascending: false });
+            break;
+        }
+
+        // Apply limit if provided
+        if (limit && limit > 0) {
+          query = query.limit(limit);
+        }
         
         const { data, error } = await query;
         

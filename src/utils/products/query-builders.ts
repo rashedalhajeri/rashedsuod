@@ -1,11 +1,12 @@
 
-import { createClient } from '@supabase/supabase-js';
+import { Database } from '@/integrations/supabase/types';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * Builds a query to fetch products with various filters
  */
 export const buildProductQuery = (
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient<Database>,
   sectionType: string,
   storeId?: string,
   categoryId?: string,

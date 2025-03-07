@@ -1,5 +1,4 @@
 
-import { supabase } from "@/integrations/supabase/client";
 import { Product, RawProductData } from "./types";
 import { mapRawProductToProduct } from "./mappers";
 import { databaseClient } from "@/integrations/database/client";
@@ -24,7 +23,8 @@ export const fetchProductsWithFilters = async (
       storeId,
       categoryId,
       sectionId,
-      limit
+      limit,
+      includeArchived
     );
     
     console.log(`Fetched ${products.length} products`);
