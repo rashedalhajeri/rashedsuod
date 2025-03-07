@@ -24,8 +24,8 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   toggleDiscount
 }) => {
   // Only consider it a discount if the discount price is not null and is less than the regular price
-  const hasDiscount = discountPrice !== null && discountPrice < price;
-  const discountPercentage = hasDiscount 
+  const hasDiscount = discountPrice !== null;
+  const discountPercentage = hasDiscount && price > 0 && discountPrice! > 0 && discountPrice! < price
     ? Math.round(((price - discountPrice!) / price) * 100) 
     : 0;
 
@@ -132,7 +132,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             )}
           </div>
           
-          {hasDiscount && price > 0 && discountPrice! > 0 && (
+          {hasDiscount && price > 0 && discountPrice! > 0 && discountPrice! < price && (
             <div className="bg-yellow-50 border border-yellow-100 p-3 rounded-md text-sm text-yellow-700 flex items-center justify-center gap-2">
               <BadgePercent className="h-4 w-4" />
               <span className="font-semibold">نسبة الخصم: {discountPercentage}%</span>

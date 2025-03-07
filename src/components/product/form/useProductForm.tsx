@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { ProductFormData } from "./useProductFormSubmit";
 
@@ -24,6 +25,7 @@ export const useProductForm = (initialData?: Partial<ProductFormData>) => {
     const { name, value, type } = e.target;
     
     if (type === 'number') {
+      // For number fields, convert to number or use 0 if empty
       const parsedValue = value === '' ? 0 : parseFloat(value);
       setFormData(prev => ({
         ...prev,
@@ -82,10 +84,21 @@ export const useProductForm = (initialData?: Partial<ProductFormData>) => {
   };
 
   const toggleDiscount = () => {
-    setFormData(prev => ({
-      ...prev,
-      discount_price: prev.discount_price === null ? prev.price : null
-    }));
+    setFormData(prev => {
+      // If discount_price is null, set it to a default value (can be the same as price)
+      // If discount_price is not null, set it back to null to remove the discount
+      if (prev.discount_price === null) {
+        return {
+          ...prev,
+          discount_price: prev.price > 0 ? prev.price * 0.9 : 0 // Default 10% discount
+        };
+      } else {
+        return {
+          ...prev,
+          discount_price: null
+        };
+      }
+    });
   };
 
   const isFormValid = formData.name && formData.price > 0 && formData.images.length > 0 && 
