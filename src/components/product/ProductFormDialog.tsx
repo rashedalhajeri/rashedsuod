@@ -139,7 +139,7 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
                 <ProductImagesSection 
                   images={formData.images}
                   storeId={storeId}
-                  handleImagesChange={handleImagesChange}
+                  onChange={handleImagesChange}
                   maxImages={5}
                 />
               </div>

@@ -133,7 +133,7 @@ const AppRoutes = () => {
         path="/products/:productId" 
         element={
           <ProtectedRoute>
-            <ProductDetail />
+            <ProductDetail storeId={null} />
           </ProtectedRoute>
         } 
       />

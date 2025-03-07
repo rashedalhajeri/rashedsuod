@@ -1,7 +1,4 @@
 
-// We need to update line 44 where "warning" is used as a variant type
-// Replace it with "destructive" or "default" which are valid values
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";

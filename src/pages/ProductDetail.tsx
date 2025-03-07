@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useStoreData } from "@/hooks/use-store-data";
@@ -33,7 +34,7 @@ const ProductDetail = ({ storeId }) => {
 
   // Handle discount price toggle
   const toggleDiscount = () => {
-    handleSwitchChange('discount_price', formData.discount_price === null ? formData.price : null);
+    handleSwitchChange('discount_price', formData.discount_price === null);
   };
 
   const isUpdating = !!productId; // Convert to boolean
