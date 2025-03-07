@@ -15,7 +15,6 @@ import ProductImagesSection from "./form/ProductImagesSection";
 import ProductFormActions from "./form/ProductFormActions";
 import ColorManagementSection from "./form/ColorManagementSection";
 import SizeManagementSection from "./form/SizeManagementSection";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ProductFormData {
   name: string;
@@ -61,8 +60,6 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
     available_colors: [],
     available_sizes: []
   });
-  
-  const [activeTab, setActiveTab] = useState("basic");
 
   const handleAddProduct = async () => {
     try {
@@ -136,7 +133,6 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
       available_colors: [],
       available_sizes: []
     });
-    setActiveTab("basic");
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -154,13 +150,6 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
       ...prev,
       [name]: checked
     }));
-    
-    // If colors or sizes are enabled, navigate to the appropriate tab
-    if (name === 'has_colors' && checked) {
-      setActiveTab('variations');
-    } else if (name === 'has_sizes' && checked) {
-      setActiveTab('variations');
-    }
   };
   
   const handleImagesChange = (images: string[]) => {
@@ -192,12 +181,10 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
   };
 
   const isFormValid = formData.name && formData.price > 0 && formData.images.length > 0;
-  const showColorSection = formData.has_colors;
-  const showSizeSection = formData.has_sizes;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[750px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl">إضافة منتج جديد</DialogTitle>
           <DialogDescription>
@@ -205,44 +192,42 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
         
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4 w-full">
-          <TabsList className="grid grid-cols-3 mb-6">
-            <TabsTrigger value="basic">معلومات أساسية</TabsTrigger>
-            <TabsTrigger value="media">الصور</TabsTrigger>
-            <TabsTrigger value="variations">الخيارات والميزات</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="basic" className="space-y-6">
-            <BasicInfoSection 
-              name={formData.name}
-              description={formData.description}
-              handleInputChange={handleInputChange}
-            />
+        <div className="space-y-6">
+          {/* القسم العلوي: المعلومات الأساسية والسعر والصور */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-6">
+              <BasicInfoSection 
+                name={formData.name}
+                description={formData.description}
+                handleInputChange={handleInputChange}
+              />
+              
+              <PricingSection 
+                price={formData.price}
+                discountPrice={formData.discount_price}
+                handleInputChange={handleInputChange}
+                toggleDiscount={toggleDiscount}
+              />
+              
+              <InventorySection 
+                trackInventory={formData.track_inventory}
+                stockQuantity={formData.stock_quantity}
+                handleInputChange={handleInputChange}
+                handleSwitchChange={handleSwitchChange}
+              />
+            </div>
             
-            <PricingSection 
-              price={formData.price}
-              discountPrice={formData.discount_price}
-              handleInputChange={handleInputChange}
-              toggleDiscount={toggleDiscount}
-            />
-            
-            <InventorySection 
-              trackInventory={formData.track_inventory}
-              stockQuantity={formData.stock_quantity}
-              handleInputChange={handleInputChange}
-              handleSwitchChange={handleSwitchChange}
-            />
-          </TabsContent>
+            <div className="space-y-6">
+              <ProductImagesSection 
+                images={formData.images}
+                storeId={storeId}
+                handleImagesChange={handleImagesChange}
+              />
+            </div>
+          </div>
           
-          <TabsContent value="media" className="space-y-6">
-            <ProductImagesSection 
-              images={formData.images}
-              storeId={storeId}
-              handleImagesChange={handleImagesChange}
-            />
-          </TabsContent>
-          
-          <TabsContent value="variations" className="space-y-6">
+          {/* قسم الخصائص المتقدمة */}
+          <div>
             <AdvancedFeaturesSection 
               hasColors={formData.has_colors}
               hasSizes={formData.has_sizes}
@@ -250,22 +235,29 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
               requireCustomerImage={formData.require_customer_image}
               handleSwitchChange={handleSwitchChange}
             />
-            
-            {showColorSection && (
-              <ColorManagementSection 
-                colors={formData.available_colors || []}
-                onColorsChange={handleColorsChange}
-              />
+          </div>
+          
+          {/* قسم الألوان والمقاسات - يظهر فقط عند تفعيلها */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {formData.has_colors && (
+              <div>
+                <ColorManagementSection 
+                  colors={formData.available_colors || []}
+                  onColorsChange={handleColorsChange}
+                />
+              </div>
             )}
             
-            {showSizeSection && (
-              <SizeManagementSection 
-                sizes={formData.available_sizes || []}
-                onSizesChange={handleSizesChange}
-              />
+            {formData.has_sizes && (
+              <div>
+                <SizeManagementSection 
+                  sizes={formData.available_sizes || []}
+                  onSizesChange={handleSizesChange}
+                />
+              </div>
             )}
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
         
         <ProductFormActions 
           onCancel={() => onOpenChange(false)}
