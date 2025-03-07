@@ -30,8 +30,8 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
     : 0;
 
   return (
-    <div className="space-y-5 bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-      <div className="flex items-center gap-2 border-b border-gray-100 pb-4 mb-4">
+    <div className="space-y-4 bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+      <div className="flex items-center gap-2 border-b border-gray-100 pb-3 mb-4">
         <Sparkles className="h-5 w-5 text-blue-600" />
         <h3 className="text-lg font-medium">معلومات المنتج الأساسية</h3>
       </div>
@@ -64,7 +64,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           />
         </div>
 
-        <div className="space-y-4 pt-2 border-t border-gray-100 mt-2">
+        <div className="space-y-4 pt-3 border-t border-gray-100 mt-2">
           <div className="flex justify-between items-center">
             <Label htmlFor="price" className="text-sm font-medium text-gray-700">
               السعر <span className="text-red-500">*</span>

@@ -106,10 +106,11 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-6">
-          {/* القسم العلوي: المعلومات الأساسية والسعر والصور */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-6">
+        <div className="space-y-6 p-1">
+          {/* القسم الأول: المعلومات الأساسية والصور */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+            {/* القسم الأيمن - المعلومات الأساسية */}
+            <div className="md:col-span-7 space-y-6">
               <BasicInfoSection 
                 name={formData.name}
                 description={formData.description}
@@ -141,7 +142,8 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
               />
             </div>
             
-            <div>
+            {/* القسم الأيسر - صور المنتج */}
+            <div className="md:col-span-5">
               <ProductImagesSection 
                 images={formData.images}
                 storeId={storeData?.id}

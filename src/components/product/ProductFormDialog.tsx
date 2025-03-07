@@ -59,20 +59,21 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-6">
-          {/* القسم العلوي: المعلومات الأساسية والسعر والصور */}
-          <FormSection>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-6">
-                <BasicInfoSection 
-                  name={formData.name}
-                  description={formData.description}
-                  price={formData.price}
-                  discountPrice={formData.discount_price}
-                  handleInputChange={handleInputChange}
-                  toggleDiscount={toggleDiscount}
-                />
-                
+        <div className="space-y-6 p-1">
+          {/* القسم الأول: المعلومات الأساسية والصور */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+            {/* القسم الأيمن - المعلومات الأساسية */}
+            <div className="md:col-span-7 space-y-6">
+              <BasicInfoSection 
+                name={formData.name}
+                description={formData.description}
+                price={formData.price}
+                discountPrice={formData.discount_price}
+                handleInputChange={handleInputChange}
+                toggleDiscount={toggleDiscount}
+              />
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <CategorySelector
                   categoryId={formData.category_id}
                   storeId={storeId}
@@ -84,25 +85,26 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
                   storeId={storeId}
                   onSectionChange={handleSectionChange}
                 />
-                
-                <InventorySection 
-                  trackInventory={formData.track_inventory}
-                  stockQuantity={formData.stock_quantity}
-                  handleInputChange={handleInputChange}
-                  handleSwitchChange={handleSwitchChange}
-                />
               </div>
               
-              <div>
-                <ProductImagesSection 
-                  images={formData.images}
-                  storeId={storeId}
-                  onChange={handleImagesChange}
-                  maxImages={5}
-                />
-              </div>
+              <InventorySection 
+                trackInventory={formData.track_inventory}
+                stockQuantity={formData.stock_quantity}
+                handleInputChange={handleInputChange}
+                handleSwitchChange={handleSwitchChange}
+              />
             </div>
-          </FormSection>
+            
+            {/* القسم الأيسر - صور المنتج */}
+            <div className="md:col-span-5">
+              <ProductImagesSection 
+                images={formData.images}
+                storeId={storeId}
+                onChange={handleImagesChange}
+                maxImages={5}
+              />
+            </div>
+          </div>
           
           {/* قسم الخصائص المتقدمة */}
           <FormSection>
