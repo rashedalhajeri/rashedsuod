@@ -2,7 +2,8 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useProductCategories } from "@/hooks/use-product-categories";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CategorySelectorProps {
   categoryId: string | null;
@@ -15,20 +16,39 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
   storeId,
   onCategoryChange
 }) => {
-  const { categories, loading: categoriesLoading } = useProductCategories(storeId);
+  const { data: categories = [] } = useQuery({
+    queryKey: ['categories', storeId],
+    queryFn: async () => {
+      if (!storeId) return [];
+      
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('store_id', storeId)
+        .order('name', { ascending: true });
+        
+      if (error) {
+        console.error("Error fetching categories:", error);
+        return [];
+      }
+      
+      return data || [];
+    },
+    enabled: !!storeId,
+  });
 
   return (
     <div className="space-y-2">
-      <Label htmlFor="category_id">الفئة</Label>
+      <Label htmlFor="category">الفئة</Label>
       <Select 
-        value={categoryId || ""} 
+        value={categoryId || "none"} 
         onValueChange={onCategoryChange}
       >
-        <SelectTrigger id="category_id">
+        <SelectTrigger id="category">
           <SelectValue placeholder="اختر الفئة" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">بدون فئة</SelectItem>
+          <SelectItem value="none">بدون فئة</SelectItem>
           {categories.map(category => (
             <SelectItem key={category.id} value={category.id}>
               {category.name}
@@ -36,12 +56,6 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
           ))}
         </SelectContent>
       </Select>
-      {categoriesLoading && (
-        <p className="text-xs text-gray-500">جاري تحميل الفئات...</p>
-      )}
-      {categories.length === 0 && !categoriesLoading && (
-        <p className="text-xs text-gray-500">لا توجد فئات متاحة. يمكنك إضافة فئات من قسم "الفئات والأقسام"</p>
-      )}
     </div>
   );
 };

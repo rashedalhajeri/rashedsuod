@@ -1,18 +1,12 @@
 
 import React from "react";
+import { ProductFormData } from "./useProductFormSubmit";
 import ColorManagementSection from "./ColorManagementSection";
 import SizeManagementSection from "./SizeManagementSection";
-
-interface ProductFormData {
-  has_colors: boolean;
-  has_sizes: boolean;
-  available_colors?: string[] | null;
-  available_sizes?: string[] | null;
-  [key: string]: any;
-}
+import FormSection from "./FormSection";
 
 interface ConditionalSectionsProps {
-  formData: ProductFormData;
+  formData: Partial<ProductFormData>;
   handleColorsChange: (colors: string[]) => void;
   handleSizesChange: (sizes: string[]) => void;
 }
@@ -22,30 +16,29 @@ const ConditionalSections: React.FC<ConditionalSectionsProps> = ({
   handleColorsChange,
   handleSizesChange
 }) => {
+  // إذا لم يكن هناك ألوان أو مقاسات مفعلة، لا نعرض هذا القسم
   if (!formData.has_colors && !formData.has_sizes) {
     return null;
   }
-
+  
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {formData.has_colors && (
-        <div>
+    <FormSection>
+      <div className="space-y-6">
+        {formData.has_colors && (
           <ColorManagementSection 
             colors={formData.available_colors || []}
-            onColorsChange={handleColorsChange}
+            onChange={handleColorsChange}
           />
-        </div>
-      )}
-      
-      {formData.has_sizes && (
-        <div>
+        )}
+        
+        {formData.has_sizes && (
           <SizeManagementSection 
             sizes={formData.available_sizes || []}
-            onSizesChange={handleSizesChange}
+            onChange={handleSizesChange}
           />
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </FormSection>
   );
 };
 
