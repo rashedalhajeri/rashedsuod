@@ -1,3 +1,4 @@
+
 import { useState, useEffect, ChangeEvent } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "@/components/ui/use-toast";
@@ -112,6 +113,7 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
           is_featured: data.is_featured !== undefined ? data.is_featured : false,
           sales_count: data.sales_count !== undefined ? data.sales_count : 0,
           is_archived: data.is_archived !== undefined ? data.is_archived : false,
+          is_active: data.is_active !== undefined ? data.is_active : true,
           section_id: data.section_id || null
         } as unknown as RawProductData;
 

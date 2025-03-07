@@ -47,6 +47,7 @@ const Products = () => {
     sales_count: number;
     is_archived: boolean;
     is_active: boolean | null;
+    section_id: string | null;
     category: { id: string; name: string } | null;
   };
 
@@ -138,11 +139,8 @@ const Products = () => {
 
   const handleActivateProduct = async (productId: string, isActive: boolean) => {
     try {
-      // Update the product's is_active status
-      const { data, error } = await supabase
-        .from("products")
-        .update({ is_active: isActive })
-        .eq("id", productId);
+      // Update the product's is_active status using our database client
+      const { data, error } = await databaseClient.products.activateProduct(productId, isActive);
       
       if (error) {
         toast({
@@ -153,7 +151,11 @@ const Products = () => {
         return;
       }
       
-      // No need for toast here as it's already handled in the ProductListItem component
+      toast({
+        title: isActive ? "تم تفعيل المنتج بنجاح" : "تم تعطيل المنتج بنجاح",
+        description: isActive ? "تم تفعيل المنتج وأصبح ظاهر للعملاء" : "تم تعطيل المنتج وأصبح غير ظاهر للعملاء",
+      });
+      
       handleProductUpdate();
     } catch (error: any) {
       toast({

@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Product, RawProductData } from "@/utils/products/types";
 import { mapRawProductToProduct } from "@/utils/products/mappers";
@@ -19,6 +18,8 @@ export interface DatabaseClient {
     deleteProduct: (productId: string) => Promise<{ success: boolean, error: any }>;
     archiveProduct: (productId: string, isArchived: boolean) => Promise<{ data: Product | null, error: any }>;
     bulkArchiveProducts: (productIds: string[], isArchived: boolean) => Promise<{ success: boolean, error: any }>;
+    activateProduct: (productId: string, isActive: boolean) => Promise<{ data: Product | null, error: any }>;
+    bulkActivateProducts: (productIds: string[], isActive: boolean) => Promise<{ success: boolean, error: any }>;
   };
 }
 
@@ -33,7 +34,6 @@ class SupabaseDatabaseClient implements DatabaseClient {
       limit?: number
     ): Promise<Product[]> => {
       try {
-        // Use the query builder to construct the query
         const query = buildProductQuery(
           supabase,
           sectionType,
@@ -54,11 +54,9 @@ class SupabaseDatabaseClient implements DatabaseClient {
           return [];
         }
         
-        // Fix: Break recursion by casting to unknown first, then to a simple array type
         const rawData = data as unknown as RawProductData[];
         const processedProducts: Product[] = [];
         
-        // Use standard for loop to avoid TypeScript recursion issues
         for (let i = 0; i < rawData.length; i++) {
           const product = mapRawProductToProduct(rawData[i]);
           processedProducts.push(product);
@@ -83,7 +81,6 @@ class SupabaseDatabaseClient implements DatabaseClient {
         
         if (!data) return { data: null, error: null };
         
-        // Process the data to ensure proper types
         const product = mapRawProductToProduct(data as unknown as RawProductData);
         
         return { data: product, error: null };
@@ -95,7 +92,6 @@ class SupabaseDatabaseClient implements DatabaseClient {
 
     updateProduct: async (productId: string, updates: any) => {
       try {
-        // We need to ensure the updates object only contains valid properties for our products table
         const validUpdates = { ...updates };
         
         const { data, error } = await supabase
@@ -106,11 +102,9 @@ class SupabaseDatabaseClient implements DatabaseClient {
           
         if (error) throw error;
         
-        // Fix: Break recursion by casting to unknown first, then to a specific array type
         const processedData: Product[] = [];
         
         if (data && data.length > 0) {
-          // Cast to unknown first to break type recursion
           const rawData = data as unknown as RawProductData[];
           
           for (let i = 0; i < rawData.length; i++) {
@@ -153,7 +147,6 @@ class SupabaseDatabaseClient implements DatabaseClient {
         
         if (!data) return { data: null, error: null };
         
-        // Process the data to ensure proper types
         const product = mapRawProductToProduct(data as unknown as RawProductData);
         
         return { data: product, error: null };
@@ -173,6 +166,42 @@ class SupabaseDatabaseClient implements DatabaseClient {
         return { success: !error, error };
       } catch (error) {
         console.error("Error bulk archiving products:", error);
+        return { success: false, error };
+      }
+    },
+
+    activateProduct: async (productId: string, isActive: boolean) => {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .update({ is_active: isActive })
+          .eq('id', productId)
+          .select()
+          .single();
+          
+        if (error) throw error;
+        
+        if (!data) return { data: null, error: null };
+        
+        const product = mapRawProductToProduct(data as unknown as RawProductData);
+        
+        return { data: product, error: null };
+      } catch (error) {
+        console.error("Error updating product active status:", error);
+        return { data: null, error };
+      }
+    },
+
+    bulkActivateProducts: async (productIds: string[], isActive: boolean) => {
+      try {
+        const { error } = await supabase
+          .from('products')
+          .update({ is_active: isActive })
+          .in('id', productIds);
+          
+        return { success: !error, error };
+      } catch (error) {
+        console.error("Error bulk updating products active status:", error);
         return { success: false, error };
       }
     }
