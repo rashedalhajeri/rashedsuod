@@ -3,6 +3,8 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { useIsMobile } from "@/hooks/use-media-query";
 
 interface InventoryTrackingSectionProps {
   trackInventory: boolean;
@@ -17,9 +19,11 @@ const InventoryTrackingSection: React.FC<InventoryTrackingSectionProps> = ({
   handleChange,
   handleSwitchChange
 }) => {
+  const isMobile = useIsMobile();
+  
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4">
+      <div className={`flex ${isMobile ? 'flex-col' : 'items-center justify-between'} gap-3`}>
         <div>
           <Label htmlFor="track_inventory" className="block mb-1">تتبع المخزون</Label>
           <p className="text-sm text-gray-500">
@@ -32,13 +36,14 @@ const InventoryTrackingSection: React.FC<InventoryTrackingSectionProps> = ({
           id="track_inventory"
           checked={trackInventory}
           onCheckedChange={(checked) => handleSwitchChange('track_inventory', checked)}
+          className={isMobile ? 'self-start mt-1' : ''}
         />
       </div>
       
       {trackInventory && (
         <div className="mt-3">
           <Label htmlFor="stock_quantity">الكمية المتوفرة</Label>
-          <input
+          <Input
             id="stock_quantity"
             name="stock_quantity"
             type="number"
@@ -46,12 +51,18 @@ const InventoryTrackingSection: React.FC<InventoryTrackingSectionProps> = ({
             step="1"
             value={stockQuantity}
             onChange={handleChange}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-1 bg-white"
           />
           
           {stockQuantity <= 0 && trackInventory && (
             <Badge variant="outline" className="w-fit mt-2 text-red-500 border-red-200 bg-red-50">
               تنبيه: المنتج غير متوفر حالياً
+            </Badge>
+          )}
+          
+          {stockQuantity > 0 && stockQuantity <= 5 && trackInventory && (
+            <Badge variant="outline" className="w-fit mt-2 text-yellow-600 border-yellow-200 bg-yellow-50">
+              تنبيه: كمية المنتج منخفضة
             </Badge>
           )}
         </div>

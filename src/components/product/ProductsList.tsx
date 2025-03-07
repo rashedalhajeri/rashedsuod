@@ -6,6 +6,7 @@ import { Product } from "@/utils/products/types";
 import ProductListItem from "./ProductListItem";
 import { Pagination } from "@/components/ui/pagination";
 import { Input } from "@/components/ui/input";
+import { useIsMobile } from "@/hooks/use-media-query";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -34,7 +35,8 @@ const ProductsList: React.FC<ProductsListProps> = ({
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm);
-  const itemsPerPage = 10;
+  const isMobile = useIsMobile();
+  const itemsPerPage = isMobile ? 5 : 10;
 
   const handleSelect = (productId: string, isSelected: boolean) => {
     const updatedSelection = isSelected 
@@ -94,17 +96,17 @@ const ProductsList: React.FC<ProductsListProps> = ({
             value={localSearchTerm}
             onChange={handleSearch}
             placeholder="بحث عن منتج..."
-            className="w-full sm:w-64"
+            className="w-full rounded-r-none rounded-l-md sm:w-64"
           />
-          <Button type="submit" variant="ghost" className="ml-2">
+          <Button type="submit" variant="default" className="rounded-l-none rounded-r-md">
             بحث
           </Button>
         </form>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="w-full sm:w-auto">
                 <SlidersHorizontal className="h-4 w-4 ml-2" />
                 فلترة
               </Button>
@@ -133,13 +135,14 @@ const ProductsList: React.FC<ProductsListProps> = ({
             variant="outline"
             size="sm"
             onClick={() => handleSelectAll(selectedItems.length < products.length)}
+            className="w-full sm:w-auto"
           >
             {selectedItems.length === products.length ? "إلغاء تحديد الكل" : "تحديد الكل"}
           </Button>
         </div>
       </div>
 
-      <div>
+      <div className="divide-y">
         {currentProducts.map((product) => (
           <ProductListItem 
             key={product.id} 

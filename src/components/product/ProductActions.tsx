@@ -2,6 +2,7 @@
 import React from "react";
 import { Plus, Minus, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-media-query";
 
 interface ProductActionsProps {
   quantity: number;
@@ -20,6 +21,7 @@ const ProductActions: React.FC<ProductActionsProps> = ({
 }) => {
   // If we're not tracking inventory, product is never out of stock
   const effectivelyOutOfStock = trackInventory && isOutOfStock;
+  const isMobile = useIsMobile();
   
   return (
     <div className="space-y-4">
@@ -54,12 +56,20 @@ const ProductActions: React.FC<ProductActionsProps> = ({
         onClick={onAddToCart}
         disabled={effectivelyOutOfStock}
         variant="default"
-        size="lg"
-        className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl h-12"
+        size={isMobile ? "default" : "lg"}
+        className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl h-12 transition-all duration-300 shadow-sm"
       >
         <ShoppingCart className="h-5 w-5 ml-2" />
-        {effectivelyOutOfStock ? 'نفدت الكمية' : 'إضافة إلى السلة'}
+        {effectivelyOutOfStock ? 'نفذت الكمية' : 'إضافة إلى السلة'}
       </Button>
+      
+      {trackInventory && (
+        <div className={`text-sm text-center ${isOutOfStock ? 'text-red-500' : 'text-green-600'}`}>
+          {isOutOfStock 
+            ? 'هذا المنتج غير متوفر حالياً' 
+            : `متبقي ${stock_quantity} قطعة في المخزون`}
+        </div>
+      )}
     </div>
   );
 };

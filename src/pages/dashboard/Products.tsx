@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useStoreData } from "@/hooks/use-store-data";
 import { useQuery } from "@tanstack/react-query";
@@ -15,6 +16,7 @@ import { Product, RawProductData } from "@/utils/products/types";
 import { mapRawProductToProduct } from "@/utils/products/mappers";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card } from "@/components/ui/card";
+import { useIsMobile } from "@/hooks/use-media-query";
 
 const Products = () => {
   const { data: storeData, isLoading: loadingStore } = useStoreData();
@@ -24,6 +26,7 @@ const Products = () => {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const isMobile = useIsMobile();
   
   const {
     data: rawProducts,
@@ -106,33 +109,39 @@ const Products = () => {
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto py-6 px-4" dir="rtl">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
+      <div className="container mx-auto py-4 sm:py-6 px-3 sm:px-4" dir="rtl">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 sm:mb-6 space-y-4 md:space-y-0">
           <div>
-            <h1 className="text-2xl font-bold">المنتجات</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-xl sm:text-2xl font-bold">المنتجات</h1>
+            <p className="text-muted-foreground text-sm sm:text-base">
               إدارة منتجات متجرك ({products.length} منتج)
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full md:w-auto">
+            {!isMobile && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleProductUpdate}
+                disabled={isRefreshing}
+                className="whitespace-nowrap"
+              >
+                <RefreshCw className={`h-4 w-4 ml-2 ${isRefreshing ? 'animate-spin' : ''}`} /> 
+                تحديث
+              </Button>
+            )}
             <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleProductUpdate}
-              disabled={isRefreshing}
+              onClick={() => setIsAddProductOpen(true)}
+              className="w-full md:w-auto"
             >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} /> 
-              تحديث
-            </Button>
-            <Button onClick={() => setIsAddProductOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" /> إضافة منتج
+              <Plus className="h-4 w-4 ml-2" /> إضافة منتج
             </Button>
           </div>
         </div>
 
-        <Card>
+        <Card className="overflow-hidden shadow-sm border">
           {selectedItems.length > 0 && (
-            <div className="p-4 border-b">
+            <div className="p-3 sm:p-4 border-b bg-blue-50">
               <ProductBulkActions 
                 selectedCount={selectedItems.length}
                 selectedIds={selectedItems}
@@ -149,6 +158,20 @@ const Products = () => {
             onSearch={handleSearch}
           />
         </Card>
+
+        {isMobile && (
+          <div className="fixed bottom-6 right-6">
+            <Button 
+              size="icon"
+              onClick={handleProductUpdate}
+              disabled={isRefreshing}
+              variant="secondary"
+              className="rounded-full h-12 w-12 shadow-lg"
+            >
+              <RefreshCw className={`h-5 w-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
+        )}
 
         <ProductFormDialog
           isOpen={isAddProductOpen}

@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { useIsMobile } from "@/hooks/use-media-query";
 
 interface InventorySectionProps {
   trackInventory: boolean;
@@ -18,9 +19,11 @@ const InventorySection: React.FC<InventorySectionProps> = ({
   handleInputChange,
   handleSwitchChange
 }) => {
+  const isMobile = useIsMobile();
+  
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className={`flex ${isMobile ? 'flex-col' : 'items-center justify-between'} gap-3`}>
         <div className="flex flex-col">
           <Label htmlFor="track_inventory" className="mb-1">تتبع المخزون</Label>
           <span className="text-sm text-gray-500">
@@ -33,6 +36,7 @@ const InventorySection: React.FC<InventorySectionProps> = ({
           id="track_inventory"
           checked={trackInventory}
           onCheckedChange={(checked) => handleSwitchChange('track_inventory', checked)}
+          className={isMobile ? 'self-start mt-1' : ''}
         />
       </div>
       
@@ -46,10 +50,18 @@ const InventorySection: React.FC<InventorySectionProps> = ({
             placeholder="0" 
             value={stockQuantity} 
             onChange={handleInputChange} 
+            className="bg-white"
           />
+          
           {stockQuantity <= 0 && (
             <Badge variant="outline" className="w-fit mt-1 text-red-500 border-red-200 bg-red-50">
               تنبيه: المنتج غير متوفر حالياً
+            </Badge>
+          )}
+          
+          {stockQuantity > 0 && stockQuantity <= 5 && (
+            <Badge variant="outline" className="w-fit mt-1 text-yellow-600 border-yellow-200 bg-yellow-50">
+              تنبيه: كمية المنتج منخفضة
             </Badge>
           )}
         </div>
