@@ -35,65 +35,67 @@ const ProductsHeader: React.FC<ProductsHeaderProps> = ({
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="mb-5 sm:mb-6 space-y-4"
+      className="mb-4 sm:mb-5 space-y-3"
     >
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+      {/* عنوان ومعلومات المنتجات */}
+      <div className="flex items-center justify-between gap-2">
         <div>
-          <div className="flex items-center flex-wrap gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">المنتجات</h1>
-            {archivedCount > 0 && (
-              <Badge variant="outline" className="mr-2 font-normal">
-                <ArchiveIcon className="h-3 w-3 ml-1" />
-                {archivedCount} مؤرشف
-              </Badge>
-            )}
-            {inactiveCount > 0 && (
-              <Badge variant="outline" className="mr-2 font-normal bg-yellow-50 text-yellow-600 border-yellow-200">
-                {inactiveCount} غير نشط
-              </Badge>
-            )}
-          </div>
-          <p className="text-muted-foreground text-sm sm:text-base mt-1">
-            إدارة منتجات متجرك ({totalProducts} منتج)
+          <h1 className="text-lg sm:text-xl font-bold text-gray-900">المنتجات</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm">
+            {totalProducts} منتج
           </p>
         </div>
-      
-        <div className="flex items-center gap-2 w-full sm:w-auto mt-3 sm:mt-0">
-          <div className="relative flex-1 sm:w-64">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <Search className="h-4 w-4" />
-            </div>
-            <Input
-              type="text"
-              placeholder="بحث في المنتجات..."
-              value={searchTerm}
-              onChange={(e) => onSearch(e.target.value)}
-              className="pr-3 pl-10 bg-white border-gray-200 h-10 text-sm placeholder:text-gray-400 rounded-lg w-full"
-              dir="rtl"
-            />
-          </div>
-          
-          {!isMobile && (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={onRefresh}
-              disabled={isRefreshing}
-              className="whitespace-nowrap flex items-center gap-1 h-10"
-            >
-              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} /> 
-              تحديث
-            </Button>
+        <div className="flex items-center gap-1.5">
+          {archivedCount > 0 && (
+            <Badge variant="outline" className="font-normal text-xs">
+              <ArchiveIcon className="h-3 w-3 ml-1" />
+              {archivedCount}
+            </Badge>
           )}
-          
-          <Button 
-            onClick={onAddProduct}
-            className="h-10 whitespace-nowrap"
-            size="default"
-          >
-            <Plus className="h-4 w-4 ml-1" /> إضافة منتج
-          </Button>
+          {inactiveCount > 0 && (
+            <Badge variant="outline" className="font-normal bg-yellow-50 text-yellow-600 border-yellow-200 text-xs">
+              {inactiveCount}
+            </Badge>
+          )}
         </div>
+      </div>
+      
+      {/* حقل البحث وأزرار الإجراءات */}
+      <div className="flex items-center gap-2 w-full">
+        <div className="relative flex-1">
+          <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <Search className="h-3.5 w-3.5" />
+          </div>
+          <Input
+            type="text"
+            placeholder="بحث..."
+            value={searchTerm}
+            onChange={(e) => onSearch(e.target.value)}
+            className="pr-2.5 pl-8 bg-white border-gray-200 h-9 text-xs placeholder:text-gray-400 rounded-lg w-full"
+            dir="rtl"
+          />
+        </div>
+        
+        {!isMobile && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={onRefresh}
+            disabled={isRefreshing}
+            className="whitespace-nowrap flex items-center gap-1 h-9 text-xs px-2.5"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} /> 
+            تحديث
+          </Button>
+        )}
+        
+        <Button 
+          onClick={onAddProduct}
+          className="h-9 whitespace-nowrap px-2.5 text-xs"
+          size="sm"
+        >
+          <Plus className="h-3.5 w-3.5 ml-1" /> إضافة
+        </Button>
       </div>
     </motion.div>
   );

@@ -4,12 +4,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Product } from "@/utils/products/types";
 import { useIsMobile } from "@/hooks/use-media-query";
 import { motion } from "framer-motion";
-import { ProductImage } from "./item/ProductImage";
 import { ProductPrice } from "./item/ProductPrice";
 import { Badge } from "@/components/ui/badge";
 import { Pencil, Power, BadgePercent } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { truncateText } from "@/lib/utils";
 
 interface ProductListItemProps {
   product: Product;
@@ -51,24 +49,24 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
 
   return (
     <motion.div 
-      className={`product-list-item border rounded-xl shadow-sm ${isSelected ? 'bg-blue-50/60 border-blue-200' : 'bg-white border-gray-100'} 
+      className={`border rounded-lg shadow-sm ${isSelected ? 'bg-blue-50/60 border-blue-200' : 'bg-white border-gray-100'} 
         ${is_archived ? 'opacity-75' : ''} 
         ${!is_active ? 'bg-gray-50/70' : ''}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="flex items-center p-3" dir="rtl">
-        {/* Checkbox for selection */}
+      <div className="flex items-center p-2.5 py-2" dir="rtl">
+        {/* Checkbox */}
         <Checkbox
           checked={isSelected}
           onCheckedChange={checked => onSelect(id, !!checked)}
-          className="h-4 w-4 flex-shrink-0 ml-3"
+          className="h-3.5 w-3.5 flex-shrink-0 ml-2"
         />
         
         {/* Product Image */}
-        <div className="flex-shrink-0">
-          <div className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200 bg-white flex items-center justify-center">
+        <div className="flex-shrink-0 mr-1">
+          <div className="w-12 h-12 rounded-md overflow-hidden border border-gray-200 bg-white flex items-center justify-center">
             <img 
               src={imageUrl} 
               alt={name} 
@@ -81,44 +79,44 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
         </div>
         
         {/* Product Information */}
-        <div className="flex-1 mx-3 min-w-0">
-          {/* Product Name - Always on single line with ellipsis */}
-          <h3 className="text-sm font-medium text-gray-900 mb-2 truncate max-w-full">
+        <div className="flex-1 mx-2 min-w-0">
+          {/* Product Name */}
+          <h3 className="text-xs font-medium text-gray-900 mb-1 truncate max-w-full">
             {name}
           </h3>
           
           {/* Product Price and Discount Badge */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <ProductPrice price={price} discountPrice={discount_price} size="sm" />
             
             {/* Discount Badge - Only show if there's a discount */}
             {discountPercentage && discountPercentage > 0 && (
-              <Badge className="bg-red-500 text-white border-0 px-1.5 h-5 flex items-center">
-                <BadgePercent className="h-3 w-3 ml-0.5" />
-                <span className="force-en-nums text-xs">{discountPercentage}%</span>
+              <Badge className="bg-red-500 text-white border-0 h-4 px-1 flex items-center">
+                <BadgePercent className="h-2.5 w-2.5 mr-0.5" />
+                <span className="force-en-nums text-[10px]">{discountPercentage}%</span>
               </Badge>
             )}
           </div>
         </div>
         
         {/* Action buttons */}
-        <div className="flex items-center gap-1.5 flex-shrink-0">
+        <div className="flex items-center gap-1 flex-shrink-0">
           <Button
             variant="outline"
-            size="sm"
-            className="rounded-full h-8 w-8 p-0 border-gray-200"
+            size="icon"
+            className="rounded-full h-7 w-7 p-0 border-gray-200"
             onClick={() => onEdit(id)}
           >
-            <Pencil className="h-3.5 w-3.5 text-gray-500" />
+            <Pencil className="h-3 w-3 text-gray-500" />
           </Button>
           
           <Button
             variant="outline"
-            size="sm"
-            className={`rounded-full h-8 w-8 p-0 ${is_active ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'}`}
+            size="icon"
+            className={`rounded-full h-7 w-7 p-0 ${is_active ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'}`}
             onClick={() => onActivate && onActivate(id, !is_active)}
           >
-            <Power className={`h-3.5 w-3.5 ${is_active ? 'text-green-500' : 'text-gray-400'}`} />
+            <Power className={`h-3 w-3 ${is_active ? 'text-green-500' : 'text-gray-400'}`} />
           </Button>
         </div>
       </div>

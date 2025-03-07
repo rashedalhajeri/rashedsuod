@@ -27,7 +27,7 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
   onRefresh
 }) => {
   return (
-    <div className="bg-gray-50 rounded-xl p-1">
+    <div className="bg-gray-50 rounded-lg p-0.5 sm:p-1">
       <ProductsList 
         products={products}
         onEdit={onEdit}

@@ -18,22 +18,25 @@ export const ProductPrice: React.FC<ProductPriceProps> = ({
   const hasDiscount = discountPrice !== null && discountPrice > 0 && discountPrice < price;
   
   // Define font sizes based on component size
-  let priceSize = "text-base"; // Default size
+  let priceSize = "text-sm"; // Default size
+  let discountSize = "text-xs";
   
   if (size === "sm") {
-    priceSize = "text-sm";
+    priceSize = "text-xs";
+    discountSize = "text-[10px]";
   } else if (size === "lg") {
-    priceSize = "text-lg";
+    priceSize = "text-base";
+    discountSize = "text-xs";
   }
 
   return (
-    <div className={`flex items-center gap-1.5 ${className}`}>
+    <div className={`flex items-center gap-1 ${className}`}>
       {hasDiscount ? (
         <>
           <span className={`font-bold text-red-600 ${priceSize} force-en-nums`}>
             {formatPrice(discountPrice as number)}
           </span>
-          <span className="text-gray-400 text-xs line-through force-en-nums">
+          <span className={`text-gray-400 ${discountSize} line-through force-en-nums`}>
             {formatPrice(price)}
           </span>
         </>
