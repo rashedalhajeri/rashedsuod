@@ -11,8 +11,17 @@ import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import SaveButton from "@/components/ui/save-button";
 import { useProductDetailForm } from "@/hooks/useProductDetailForm";
-import ProductBasicInfo from "@/components/product/form/ProductBasicInfo";
-import ProductAdvancedInfo from "@/components/product/form/ProductAdvancedInfo";
+
+// Import form sections
+import BasicInfoSection from "./form/BasicInfoSection";
+import PricingSection from "./form/PricingSection";
+import InventorySection from "./form/InventorySection";
+import AdvancedFeaturesSection from "./form/AdvancedFeaturesSection";
+import ProductImagesSection from "./form/ProductImagesSection";
+import ProductFormActions from "./form/ProductFormActions";
+import ConditionalSections from "./form/ConditionalSections";
+import FormSection from "./form/FormSection";
+import CategorySelector from "./form/CategorySelector";
 
 interface ProductDetailDialogProps {
   isOpen: boolean;
@@ -48,6 +57,23 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
     onSuccess
   });
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    handleChange(e);
+  };
+
+  const handleColorsChange = (colors: string[]) => {
+    handleSwitchChange('available_colors', colors as any);
+  };
+
+  const handleSizesChange = (sizes: string[]) => {
+    handleSwitchChange('available_sizes', sizes as any);
+  };
+
+  const toggleDiscount = () => {
+    const newValue = formData.discount_price === null ? formData.price : null;
+    handleSwitchChange('discount_price', newValue as any);
+  };
+
   if (isLoading) {
     return (
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -77,60 +103,89 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">
-              {isUpdating ? "تعديل المنتج" : "إضافة منتج جديد"}
-            </DialogTitle>
-          </DialogHeader>
+        <DialogHeader>
+          <DialogTitle className="text-xl font-semibold">
+            {isUpdating ? "تعديل المنتج" : "إضافة منتج جديد"}
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-6" dir="rtl">
+          {/* القسم العلوي: المعلومات الأساسية والسعر والصور */}
+          <FormSection>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-6">
+                <BasicInfoSection 
+                  name={formData.name}
+                  description={formData.description}
+                  handleInputChange={handleInputChange}
+                />
+                
+                <CategorySelector
+                  categoryId={formData.category_id}
+                  storeId={storeData?.id}
+                  onCategoryChange={handleCategoryChange}
+                />
+                
+                <PricingSection 
+                  price={formData.price}
+                  discountPrice={formData.discount_price}
+                  handleInputChange={handleInputChange}
+                  toggleDiscount={toggleDiscount}
+                />
+                
+                <InventorySection 
+                  trackInventory={formData.track_inventory}
+                  stockQuantity={formData.stock_quantity}
+                  handleInputChange={handleInputChange}
+                  handleSwitchChange={handleSwitchChange}
+                />
+              </div>
+              
+              <div>
+                <ProductImagesSection 
+                  images={formData.images}
+                  storeId={storeData?.id}
+                  onChange={handleImagesChange}
+                  maxImages={5}
+                />
+              </div>
+            </div>
+          </FormSection>
+          
+          {/* قسم الخصائص المتقدمة */}
+          <FormSection>
+            <AdvancedFeaturesSection 
+              hasColors={formData.has_colors}
+              hasSizes={formData.has_sizes}
+              requireCustomerName={formData.require_customer_name}
+              requireCustomerImage={formData.require_customer_image}
+              handleSwitchChange={handleSwitchChange}
+            />
+          </FormSection>
+          
+          {/* قسم الألوان والمقاسات - يظهر فقط عند تفعيلها */}
+          <ConditionalSections 
+            formData={formData}
+            handleColorsChange={handleColorsChange}
+            handleSizesChange={handleSizesChange}
+          />
+        </div>
+        
+        <div className="flex justify-between items-center mt-6">
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={isSubmitting}
+          >
+            حذف المنتج
+          </Button>
+          
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               إلغاء
             </Button>
             <SaveButton isSaving={isSubmitting} onClick={handleSave} />
           </div>
-        </div>
-
-        <div className="space-y-6" dir="rtl">
-          <ProductBasicInfo
-            name={formData.name}
-            description={formData.description}
-            price={formData.price}
-            discount_price={formData.discount_price}
-            images={formData.images || []}
-            storeId={storeData?.id}
-            handleChange={handleChange}
-            handleImagesChange={handleImagesChange}
-          />
-
-          <ProductAdvancedInfo
-            category_id={formData.category_id}
-            track_inventory={formData.track_inventory}
-            stock_quantity={formData.stock_quantity}
-            has_colors={formData.has_colors}
-            has_sizes={formData.has_sizes}
-            require_customer_name={formData.require_customer_name}
-            require_customer_image={formData.require_customer_image}
-            available_colors={formData.available_colors}
-            available_sizes={formData.available_sizes}
-            categories={categories}
-            handleChange={handleChange}
-            handleSwitchChange={handleSwitchChange}
-            handleCategoryChange={handleCategoryChange}
-            formData={formData}
-          />
-
-          {isUpdating && (
-            <div className="flex justify-end mt-4">
-              <Button 
-                variant="destructive" 
-                onClick={handleDelete}
-                className="mr-auto"
-              >
-                حذف المنتج
-              </Button>
-            </div>
-          )}
         </div>
       </DialogContent>
     </Dialog>
