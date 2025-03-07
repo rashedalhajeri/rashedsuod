@@ -81,7 +81,8 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="space-y-4">
+            {/* Original Price field */}
             <div className="grid gap-2">
               <div className="flex items-center gap-2">
                 <div className="relative w-full">
@@ -107,6 +108,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
               </div>
             </div>
             
+            {/* Discount Price field - shown only when discount is enabled */}
             {hasDiscount && (
               <div className="grid gap-2">
                 <div className="flex items-center gap-2">
@@ -132,6 +134,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             )}
           </div>
           
+          {/* Show discount percentage message only when discount is valid (discount price < original price) */}
           {hasDiscount && price > 0 && discountPrice! > 0 && discountPrice! < price && (
             <div className="bg-yellow-50 border border-yellow-100 p-3 rounded-md text-sm text-yellow-700 flex items-center justify-center gap-2">
               <BadgePercent className="h-4 w-4" />
