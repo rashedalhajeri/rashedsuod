@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Edit, EyeIcon, Archive, ArrowUpRight } from "lucide-react";
+import { Edit, EyeOff, ToggleLeft, ToggleRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getCurrencyFormatter } from "@/hooks/use-store-data";
 import { Link } from "react-router-dom";
@@ -17,6 +17,7 @@ interface ProductListItemProps {
   isSelected: boolean;
   onEdit: (id: string) => void;
   onArchive?: (id: string, isArchived: boolean) => void;
+  onActivate?: (id: string, isActive: boolean) => void;
   onRefresh?: () => void;
 }
 
@@ -26,6 +27,7 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
   isSelected, 
   onEdit,
   onArchive,
+  onActivate,
   onRefresh
 }) => {
   const {
@@ -37,7 +39,8 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
     track_inventory,
     images,
     category,
-    is_archived
+    is_archived,
+    is_active = true // Default to true if not provided
   } = product;
 
   const isMobile = useIsMobile();
@@ -70,8 +73,18 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
     }
   };
 
+  const handleToggleActive = () => {
+    if (onActivate) {
+      onActivate(id, !is_active);
+      toast({
+        title: is_active ? "تم تعطيل المنتج" : "تم تفعيل المنتج",
+        description: is_active ? "تم تعطيل المنتج بنجاح" : "تم تفعيل المنتج بنجاح",
+      });
+    }
+  };
+
   return (
-    <div className={`flex flex-col sm:flex-row sm:items-center p-4 transition-colors ${isSelected ? 'bg-blue-50/60' : 'hover:bg-gray-50'} border-b ${is_archived ? 'bg-gray-50 opacity-75' : ''}`}>
+    <div className={`flex flex-col sm:flex-row sm:items-center p-4 transition-colors ${isSelected ? 'bg-blue-50/60' : 'hover:bg-gray-50'} border-b ${is_archived ? 'bg-gray-50 opacity-75' : ''} ${!is_active ? 'bg-gray-50/70' : ''}`}>
       <div className="flex items-center">
         <Checkbox
           checked={isSelected}
@@ -93,6 +106,9 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
               {name}
               {is_archived && (
                 <Badge variant="outline" className="text-xs ml-2 bg-gray-50 text-gray-500 border-gray-200">مؤرشف</Badge>
+              )}
+              {!is_active && !is_archived && (
+                <Badge variant="outline" className="text-xs ml-2 bg-yellow-50 text-yellow-600 border-yellow-200">غير نشط</Badge>
               )}
             </h3>
             
@@ -134,24 +150,28 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
         <Button
           variant="ghost"
           size="icon"
-          asChild
-          className="text-gray-500 hover:text-gray-700 h-8 w-8"
-          title="معاينة"
+          onClick={handleToggleActive}
+          className={`h-8 w-8 ${is_active ? 'text-green-500 hover:text-green-600' : 'text-gray-400 hover:text-gray-500'}`}
+          title={is_active ? "تعطيل المنتج" : "تفعيل المنتج"}
         >
-          <Link to={`/product/${id}`} target="_blank">
-            <ArrowUpRight className="h-4 w-4" />
-          </Link>
+          {is_active ? (
+            <ToggleRight className="h-4 w-4" />
+          ) : (
+            <ToggleLeft className="h-4 w-4" />
+          )}
         </Button>
         
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleArchive}
-          className={`h-8 w-8 ${is_archived ? 'text-amber-500 hover:text-amber-600' : 'text-gray-500 hover:text-gray-700'}`}
-          title={is_archived ? "إلغاء الأرشفة" : "أرشفة"}
-        >
-          <Archive className="h-4 w-4" />
-        </Button>
+        {onArchive && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleArchive}
+            className={`h-8 w-8 ${is_archived ? 'text-blue-500 hover:text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+            title={is_archived ? "إلغاء الأرشفة" : "أرشفة"}
+          >
+            <EyeOff className="h-4 w-4" />
+          </Button>
+        )}
       </div>
     </div>
   );

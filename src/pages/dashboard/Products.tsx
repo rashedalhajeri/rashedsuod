@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useStoreData } from "@/hooks/use-store-data";
 import { useQuery } from "@tanstack/react-query";
@@ -82,7 +83,8 @@ const Products = () => {
     ...item,
     is_featured: item.is_featured || false,
     sales_count: item.sales_count || 0,
-    is_archived: item.is_archived || false
+    is_archived: item.is_archived || false,
+    is_active: item.is_active !== false // Default to true if not explicitly set to false
   } as RawProductData)) : [];
 
   const handleSearch = (term: string) => {
@@ -133,7 +135,36 @@ const Products = () => {
     }
   };
 
+  const handleActivateProduct = async (productId: string, isActive: boolean) => {
+    try {
+      // Update the product's is_active status
+      const { data, error } = await supabase
+        .from("products")
+        .update({ is_active: isActive })
+        .eq("id", productId);
+      
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: isActive ? "خطأ في تفعيل المنتج" : "خطأ في تعطيل المنتج",
+          description: error.message,
+        });
+        return;
+      }
+      
+      // No need for toast here as it's already handled in the ProductListItem component
+      handleProductUpdate();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "خطأ غير متوقع",
+        description: error.message,
+      });
+    }
+  };
+
   const archivedCount = products?.filter(p => p.is_archived).length || 0;
+  const inactiveCount = products?.filter(p => !p.is_archived && p.is_active === false).length || 0;
 
   if (loadingStore || isLoading) {
     return (
@@ -181,6 +212,11 @@ const Products = () => {
                 <Badge variant="outline" className="mr-2 font-normal">
                   <ArchiveIcon className="h-3 w-3 ml-1" />
                   {archivedCount} مؤرشف
+                </Badge>
+              )}
+              {inactiveCount > 0 && (
+                <Badge variant="outline" className="mr-2 font-normal bg-yellow-50 text-yellow-600 border-yellow-200">
+                  {inactiveCount} غير نشط
                 </Badge>
               )}
             </div>
@@ -238,6 +274,7 @@ const Products = () => {
               searchTerm={searchTerm}
               onSearch={handleSearch}
               onArchive={handleArchiveProduct}
+              onActivate={handleActivateProduct}
               onRefresh={handleProductUpdate}
             />
           </Card>
