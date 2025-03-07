@@ -1,4 +1,3 @@
-
 /* تحسينات التجاوب للهواتف المحمولة */
 @media (max-width: 768px) {
   /* تصغير الهوامش والحشوات في الشاشات الصغيرة */
@@ -121,7 +120,7 @@
   
   /* تحسينات إضافية للمحتوى في الموبايل */
   .product-list-item {
-    @apply p-2;
+    @apply p-3;
   }
   
   .product-item-actions {
@@ -131,6 +130,15 @@
   /* تحسين عرض المنتجات على الموبايل */
   .product-list-container .product-list-item {
     @apply mb-3 shadow-sm;
+  }
+  
+  /* تحسينات جديدة لتنسيق عناصر المنتج على الجوال */
+  .product-list-item h3 {
+    @apply mb-1;
+  }
+  
+  .product-list-item .checkbox-container {
+    @apply mt-2;
   }
 }
 

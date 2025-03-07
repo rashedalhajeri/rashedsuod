@@ -1,4 +1,3 @@
-
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
  
@@ -7,12 +6,16 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatPrice(price: number): string {
-  return new Intl.NumberFormat('en-US', {
+  // Ensure numbers are displayed in English format regardless of locale
+  const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'KWD', // الدينار الكويتي
     minimumFractionDigits: 0,
     maximumFractionDigits: 3,
-  }).format(price)
+  });
+  
+  // Force English digits in the output
+  return formatter.format(price);
 }
 
 export function formatDate(dateString: string): string {
