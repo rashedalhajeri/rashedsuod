@@ -22,8 +22,6 @@ interface ProductAdvancedInfoProps {
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSwitchChange: (name: string, checked: boolean) => void;
   handleCategoryChange: (categoryId: string) => void;
-  handleColorsChange: (colors: string[]) => void;
-  handleSizesChange: (sizes: string[]) => void;
   formData: any;
 }
 
@@ -41,10 +39,16 @@ const ProductAdvancedInfo: React.FC<ProductAdvancedInfoProps> = ({
   handleChange,
   handleSwitchChange,
   handleCategoryChange,
-  handleColorsChange,
-  handleSizesChange,
   formData,
 }) => {
+  const handleColorsChange = (colors: string[]) => {
+    handleSwitchChange('available_colors', colors as any);
+  };
+
+  const handleSizesChange = (sizes: string[]) => {
+    handleSwitchChange('available_sizes', sizes as any);
+  };
+
   return (
     <Card>
       <CardHeader>
