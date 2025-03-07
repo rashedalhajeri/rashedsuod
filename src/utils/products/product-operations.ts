@@ -104,7 +104,9 @@ export const fetchProductsWithFilters = async (
     const processedProducts: Product[] = [];
     
     for (const item of data) {
-      processedProducts.push(mapRawProductToProduct(item as RawProductData));
+      const rawData = item as RawProductData;
+      const product = mapRawProductToProduct(rawData);
+      processedProducts.push(product);
     }
     
     return processedProducts;
@@ -155,11 +157,12 @@ export const updateProduct = async (productId: string, updates: any) => {
     if (error) throw error;
     
     // Process the returned data
-    const processedData: Product[] = [];
+    let processedData: Product[] = [];
     
     if (data && data.length > 0) {
-      for (const rawData of data) {
-        const processed = mapRawProductToProduct(rawData as RawProductData);
+      for (const rawItem of data) {
+        const rawData = rawItem as RawProductData;
+        const processed = mapRawProductToProduct(rawData);
         processedData.push(processed);
       }
     }
