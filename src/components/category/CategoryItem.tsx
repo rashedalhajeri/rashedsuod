@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Edit, Trash, Save, X, Tag, ArrowRight } from "lucide-react";
+import { Edit, Trash, Save, X, Tag, ArrowRight, Image } from "lucide-react";
 import { motion } from "framer-motion";
 import { 
   Tooltip, 
@@ -10,12 +10,7 @@ import {
   TooltipProvider, 
   TooltipTrigger 
 } from "@/components/ui/tooltip";
-
-interface Category {
-  id: string;
-  name: string;
-  sort_order: number;
-}
+import { Category } from "@/services/category-service";
 
 interface CategoryItemProps {
   category: Category;
@@ -32,6 +27,8 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
   handleUpdateCategory,
   handleDeleteCategory
 }) => {
+  const hasImage = !!category.image_url;
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 5 }}
@@ -84,7 +81,20 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
       ) : (
         <>
           <div className="flex items-center">
-            <Tag className="h-4 w-4 mr-2 text-primary" />
+            {hasImage ? (
+              <div className="h-8 w-8 mr-2 rounded-md overflow-hidden flex-shrink-0 border border-gray-100">
+                <img 
+                  src={category.image_url || ''} 
+                  alt={category.name} 
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/placeholder.svg";
+                  }}
+                />
+              </div>
+            ) : (
+              <Tag className="h-4 w-4 mr-2 text-primary" />
+            )}
             <span className="text-lg">{category.name}</span>
           </div>
           <div className="flex gap-2">

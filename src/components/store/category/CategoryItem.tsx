@@ -1,24 +1,24 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { getCategoryImage } from "@/utils/category-image-utils";
 
 interface CategoryItemProps {
   category: string;
   isActive: boolean;
   index: number;
   onClick: () => void;
+  imagePath?: string;
+  showImage: boolean;
 }
 
 const CategoryItem: React.FC<CategoryItemProps> = ({ 
   category, 
   isActive, 
   index, 
-  onClick 
+  onClick,
+  imagePath,
+  showImage
 }) => {
-  // Use the helper function to get appropriate image
-  const imagePath = getCategoryImage(category);
-  
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -34,16 +34,18 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
             : 'border border-gray-100'
         }`}
       >
-        <div className="w-full aspect-square mb-1 flex items-center justify-center overflow-hidden rounded-lg bg-gray-50">
-          <img 
-            src={imagePath}
-            alt={category} 
-            className="w-full h-full object-cover" 
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = "/placeholder.svg";
-            }}
-          />
-        </div>
+        {showImage && (
+          <div className="w-full aspect-square mb-1 flex items-center justify-center overflow-hidden rounded-lg bg-gray-50">
+            <img 
+              src={imagePath || "/placeholder.svg"}
+              alt={category} 
+              className="w-full h-full object-cover" 
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "/placeholder.svg";
+              }}
+            />
+          </div>
+        )}
         <span className={`text-xs truncate w-full text-center ${
           isActive
             ? 'text-blue-600'

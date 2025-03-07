@@ -7,6 +7,7 @@ export interface Category {
   name: string;
   sort_order: number;
   store_id?: string;
+  image_url?: string | null;
 }
 
 export const fetchUserStoreId = async () => {
@@ -44,14 +45,15 @@ export const fetchCategories = async (storeId: string) => {
   }
 };
 
-export const addCategory = async (name: string, storeId: string, sortOrder: number) => {
+export const addCategory = async (name: string, storeId: string, sortOrder: number, imageUrl?: string | null) => {
   try {
     const { data, error } = await supabase
       .from('categories')
       .insert({
         name: name.trim(),
         store_id: storeId,
-        sort_order: sortOrder
+        sort_order: sortOrder,
+        image_url: imageUrl || null
       })
       .select()
       .single();
@@ -69,7 +71,8 @@ export const updateCategory = async (category: Category, storeId: string) => {
     const { error } = await supabase
       .from('categories')
       .update({
-        name: category.name
+        name: category.name,
+        image_url: category.image_url
       })
       .eq('id', category.id)
       .eq('store_id', storeId);
@@ -95,5 +98,36 @@ export const deleteCategory = async (categoryId: string, storeId: string) => {
   } catch (err) {
     console.error("Error deleting category:", err);
     return { error: err };
+  }
+};
+
+export const updateShowCategoryImages = async (storeId: string, show: boolean) => {
+  try {
+    const { error } = await supabase
+      .from('store_theme_settings')
+      .update({ show_category_images: show })
+      .eq('store_id', storeId);
+      
+    if (error) throw error;
+    return { error: null };
+  } catch (err) {
+    console.error("Error updating store settings:", err);
+    return { error: err };
+  }
+};
+
+export const getShowCategoryImages = async (storeId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('store_theme_settings')
+      .select('show_category_images')
+      .eq('store_id', storeId)
+      .maybeSingle();
+      
+    if (error) throw error;
+    return { data: data?.show_category_images ?? true, error: null };
+  } catch (err) {
+    console.error("Error fetching store settings:", err);
+    return { data: true, error: err };
   }
 };
