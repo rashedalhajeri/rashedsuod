@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ProductFormData } from "./useProductFormSubmit";
 
@@ -24,15 +23,18 @@ export const useProductForm = (initialData?: Partial<ProductFormData>) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     
-    let parsedValue = value;
     if (type === 'number') {
-      parsedValue = value === '' ? 0 : parseFloat(value) || 0;
+      const parsedValue = value === '' ? 0 : parseFloat(value);
+      setFormData(prev => ({
+        ...prev,
+        [name]: parsedValue
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
     }
-    
-    setFormData(prev => ({
-      ...prev,
-      [name]: parsedValue
-    }));
   };
   
   const handleSwitchChange = (name: string, checked: boolean) => {
