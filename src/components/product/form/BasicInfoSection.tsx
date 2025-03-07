@@ -23,6 +23,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   handleInputChange,
   toggleDiscount
 }) => {
+  // Only consider it a discount if the discount price is not null and is less than the regular price
   const hasDiscount = discountPrice !== null && discountPrice < price;
   const discountPercentage = hasDiscount 
     ? Math.round(((price - discountPrice!) / price) * 100) 
@@ -117,7 +118,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
                       min="0"
                       step="0.01"
                       placeholder="أدخل سعر الخصم" 
-                      value={discountPrice} 
+                      value={discountPrice || ""} 
                       onChange={handleInputChange}
                       className="border-green-500 focus-visible:ring-green-500 pr-12 bg-green-50"
                     />
