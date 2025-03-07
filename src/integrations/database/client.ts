@@ -19,8 +19,6 @@ export interface DatabaseClient {
     updateProduct: (productId: string, updates: any) => Promise<{ data: Product[] | null, error: any }>;
     deleteProduct: (productId: string) => Promise<{ success: boolean, error: any }>;
     hardDeleteProduct: (productId: string) => Promise<{ success: boolean, error: any }>;
-    archiveProduct: (productId: string, isArchived: boolean) => Promise<{ data: Product | null, error: any }>;
-    bulkArchiveProducts: (productIds: string[], isArchived: boolean) => Promise<{ success: boolean, error: any }>;
     bulkDeleteProducts: (productIds: string[]) => Promise<{ success: boolean, error: any, deletedCount: number, archivedCount: number }>;
     activateProduct: (productId: string, isActive: boolean) => Promise<{ data: Product | null, error: any }>;
     bulkActivateProducts: (productIds: string[], isActive: boolean) => Promise<{ success: boolean, error: any }>;
@@ -42,10 +40,6 @@ class SupabaseDatabaseClient implements DatabaseClient {
           .from('products')
           .select('*, category:categories(name)')
           .eq('is_active', true);
-          
-        if (!includeArchived) {
-          query = query.eq('is_archived', false);
-        }
 
         if (storeId) {
           query = query.eq('store_id', storeId);
@@ -164,6 +158,19 @@ class SupabaseDatabaseClient implements DatabaseClient {
 
     deleteProduct: async (productId: string) => {
       try {
+        // Check if the product is associated with any orders before deleting
+        const { data: orderItems, error: checkError } = await supabase
+          .from('order_items')
+          .select('id')
+          .eq('product_id', productId)
+          .limit(1);
+          
+        if (checkError) {
+          return { success: false, error: checkError };
+        }
+        
+        // Even if the product is in orders, we will delete it completely
+        // This is a change from the previous behavior where we would archive products in orders
         const { error } = await supabase
           .from('products')
           .delete()
@@ -178,29 +185,8 @@ class SupabaseDatabaseClient implements DatabaseClient {
 
     hardDeleteProduct: async (productId: string) => {
       try {
-        const { data: orderItems, error: checkError } = await supabase
-          .from('order_items')
-          .select('id')
-          .eq('product_id', productId)
-          .limit(1);
-          
-        if (checkError) {
-          return { success: false, error: checkError };
-        }
-        
-        if (orderItems && orderItems.length > 0) {
-          return { 
-            success: false, 
-            error: { message: "لا يمكن حذف المنتج لأنه مرتبط بطلبات." } 
-          };
-        }
-        
-        const { error } = await supabase
-          .from('products')
-          .delete()
-          .eq('id', productId);
-          
-        return { success: !error, error };
+        // This is now the same as regular deleteProduct
+        return this.products.deleteProduct(productId);
       } catch (error) {
         console.error("Error hard deleting product:", error);
         return { success: false, error };
@@ -209,110 +195,39 @@ class SupabaseDatabaseClient implements DatabaseClient {
 
     bulkDeleteProducts: async (productIds: string[]) => {
       try {
-        const { data: orderItems, error: checkError } = await supabase
-          .from('order_items')
-          .select('product_id')
-          .in('product_id', productIds);
-          
-        if (checkError) {
-          console.error("Error checking order items:", checkError);
-          return { success: false, error: checkError, deletedCount: 0, archivedCount: 0 };
-        }
-        
-        const productsInOrders = orderItems ? Array.from(new Set(orderItems.map(item => item.product_id))) : [];
-        
-        const productsToDelete = productIds.filter(id => !productsInOrders.includes(id));
-        
-        if (productsToDelete.length === 0) {
+        if (productIds.length === 0) {
           return { 
-            success: false, 
-            error: { message: "جميع المنتجات المحددة مرتبطة بطلبات ولا يمكن حذفها." },
+            success: true, 
+            error: null, 
             deletedCount: 0,
             archivedCount: 0
           };
         }
         
-        let deleteError = null;
-        let archiveError = null;
-        let deletedCount = 0;
-        let archivedCount = 0;
-        
-        if (productsToDelete.length > 0) {
-          const { error } = await supabase
-            .from('products')
-            .delete()
-            .in('id', productsToDelete);
-            
-          if (error) {
-            deleteError = error;
-            console.error("Error deleting products:", error);
-          } else {
-            deletedCount = productsToDelete.length;
-          }
+        // Delete all products, regardless of whether they're associated with orders
+        const { error } = await supabase
+          .from('products')
+          .delete()
+          .in('id', productIds);
+          
+        if (error) {
+          return { 
+            success: false, 
+            error, 
+            deletedCount: 0,
+            archivedCount: 0 
+          };
         }
-        
-        if (productsInOrders.length > 0) {
-          const { error } = await supabase
-            .from('products')
-            .update({ is_archived: true })
-            .in('id', productsInOrders);
-            
-          if (error) {
-            archiveError = error;
-            console.error("Error archiving products:", error);
-          } else {
-            archivedCount = productsInOrders.length;
-          }
-        }
-        
-        const success = !deleteError && !archiveError;
-        const error = deleteError || archiveError || null;
         
         return { 
-          success, 
-          error, 
-          deletedCount,
-          archivedCount
+          success: true, 
+          error: null, 
+          deletedCount: productIds.length,
+          archivedCount: 0
         };
       } catch (error) {
         console.error("Error in bulkDeleteProducts:", error);
         return { success: false, error, deletedCount: 0, archivedCount: 0 };
-      }
-    },
-
-    archiveProduct: async (productId: string, isArchived: boolean) => {
-      try {
-        const { data, error } = await supabase
-          .from('products')
-          .update({ is_archived: isArchived })
-          .eq('id', productId)
-          .select()
-          .single();
-          
-        if (error) throw error;
-        
-        if (!data) return { data: null, error: null };
-        
-        const product = mapRawProductToProduct(data as unknown as RawProductData);
-        
-        return { data: product, error: null };
-      } catch (error) {
-        console.error("Error archiving product:", error);
-        return { data: null, error };
-      }
-    },
-
-    bulkArchiveProducts: async (productIds: string[], isArchived: boolean) => {
-      try {
-        const { error } = await supabase
-          .from('products')
-          .update({ is_archived: isArchived })
-          .in('id', productIds);
-          
-        return { success: !error, error };
-      } catch (error) {
-        console.error("Error bulk archiving products:", error);
-        return { success: false, error };
       }
     },
 

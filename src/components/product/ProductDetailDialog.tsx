@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
   Dialog,
@@ -11,7 +12,7 @@ import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import SaveButton from "@/components/ui/save-button";
 import { useProductDetailForm } from "@/hooks/useProductDetailForm";
-import { AlertTriangle, X, Save, Trash, Archive, Eye, ArrowUpCircle } from "lucide-react";
+import { AlertTriangle, X, Save, Trash, Eye } from "lucide-react";
 import { toast } from "sonner";
 
 // Import form sections
@@ -41,7 +42,6 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   onSuccess,
 }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
   
   const {
     isLoading,
@@ -56,7 +56,6 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
     handleSectionChange,
     handleSave,
     handleDelete,
-    handleArchive,
     toggleDiscount
   } = useProductDetailForm({ 
     productId, 
@@ -77,22 +76,9 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
     setShowDeleteConfirm(true);
   };
 
-  const confirmArchive = () => {
-    setShowArchiveConfirm(true);
-  };
-
   const executeDelete = async () => {
     await handleDelete();
     setShowDeleteConfirm(false);
-  };
-
-  const executeArchive = async () => {
-    await handleArchive(!formData.is_archived);
-    setShowArchiveConfirm(false);
-    toast.success(
-      formData.is_archived ? "تم إلغاء أرشفة المنتج بنجاح" : "تم أرشفة المنتج بنجاح",
-      { description: formData.is_archived ? "المنتج الآن مرئي في المتجر" : "المنتج الآن غير مرئي في المتجر" }
-    );
   };
 
   const handleConfirmDialogChange = (open: boolean, setStateFn: React.Dispatch<React.SetStateAction<boolean>>) => {
@@ -223,26 +209,6 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
                   <Trash className="h-4 w-4" />
                   حذف المنتج
                 </Button>
-                <Button
-                  variant="outline"
-                  onClick={confirmArchive}
-                  disabled={isSubmitting}
-                  className={`gap-2 ${formData.is_archived 
-                    ? "border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700" 
-                    : "border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-700"}`}
-                >
-                  {formData.is_archived ? (
-                    <>
-                      <ArrowUpCircle className="h-4 w-4" />
-                      إلغاء المسودة
-                    </>
-                  ) : (
-                    <>
-                      <Archive className="h-4 w-4" />
-                      حفظ كمسودة
-                    </>
-                  )}
-                </Button>
               </div>
             )}
             
@@ -275,12 +241,12 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
         title="تأكيد حذف المنتج"
         description={
           <>
-            <p>هل أنت متأكد من رغبتك في حذف هذا المنتج؟</p>
+            <p>هل أنت متأكد من رغبتك في حذف هذا المنتج نهائياً؟</p>
             <div className="mt-3 p-3 bg-amber-50 text-amber-800 rounded-md text-sm flex gap-2">
               <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0" />
               <div>
                 <p className="font-medium mb-1">ملاحظة هامة</p>
-                <p>المنتجات المرتبطة بطلبات سابقة لا يمكن حذفها نهائياً، سيتم حفظها كمسودة فقط.</p>
+                <p>حذف المنتج يعني إزالته تماماً من المتجر وقاعدة البيانات. سيتم الاحتفاظ بسجل الطلبات السابقة.</p>
               </div>
             </div>
           </>
@@ -291,24 +257,6 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
         confirmButtonProps={{ 
           variant: "destructive",
           className: "bg-red-500 hover:bg-red-600"
-        }}
-      />
-
-      <ConfirmDialog
-        open={showArchiveConfirm}
-        onOpenChange={(open) => handleConfirmDialogChange(open, setShowArchiveConfirm)}
-        title={formData.is_archived ? "تأكيد إلغاء المسودة" : "تأكيد حفظ كمسودة"}
-        description={
-          formData.is_archived 
-            ? "إلغاء وضع المسودة لهذا المنتج سيجعله ظاهراً مرة أخرى في المتجر. هل تريد المتابعة؟"
-            : "حفظ هذا المنتج كمسودة سيخفيه من المتجر دون حذفه من قاعدة البيانات. يمكنك إلغاء المسودة في أي وقت."
-        }
-        confirmText={formData.is_archived ? "إلغاء المسودة" : "حفظ كمسودة"}
-        cancelText="إلغاء"
-        onConfirm={executeArchive}
-        confirmButtonProps={{ 
-          variant: "default",
-          className: "bg-blue-600 hover:bg-blue-700"
         }}
       />
     </>

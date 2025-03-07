@@ -29,7 +29,6 @@ type ProductQueryResult = {
   store_id: string;
   is_featured: boolean;
   sales_count: number;
-  is_archived: boolean;
   is_active: boolean | null;
   section_id: string | null;
   category: { id: string; name: string } | null;
@@ -65,7 +64,6 @@ export const useProducts = (storeId?: string) => {
     ...item,
     is_featured: item.is_featured || false,
     sales_count: item.sales_count || 0,
-    is_archived: item.is_archived || false,
     is_active: item.is_active !== false // Default to true if not explicitly set to false
   } as RawProductData)) : [];
 
@@ -82,22 +80,22 @@ export const useProducts = (storeId?: string) => {
     refetch().finally(() => setIsRefreshing(false));
   };
 
-  const handleArchiveProduct = async (productId: string, isArchived: boolean) => {
+  const handleDeleteProduct = async (productId: string) => {
     try {
-      const { data, error } = await databaseClient.products.archiveProduct(productId, isArchived);
+      const { success, error } = await databaseClient.products.deleteProduct(productId);
       
-      if (error) {
+      if (!success) {
         toast({
           variant: "destructive",
-          title: isArchived ? "خطأ في أرشفة المنتج" : "خطأ في إلغاء أرشفة المنتج",
+          title: "خطأ في حذف المنتج",
           description: error.message,
         });
         return;
       }
       
       toast({
-        title: isArchived ? "تمت الأرشفة بنجاح" : "تم إلغاء الأرشفة بنجاح",
-        description: isArchived ? "تم أرشفة المنتج بنجاح" : "تم إلغاء أرشفة المنتج بنجاح",
+        title: "تم الحذف بنجاح",
+        description: "تم حذف المنتج بنجاح من المتجر",
       });
       
       handleProductUpdate();
@@ -140,8 +138,7 @@ export const useProducts = (storeId?: string) => {
 
   const filteredProducts = products || [];
   
-  const archivedCount = products?.filter(p => p.is_archived).length || 0;
-  const inactiveCount = products?.filter(p => !p.is_archived && p.is_active === false).length || 0;
+  const inactiveCount = products?.filter(p => p.is_active === false).length || 0;
 
   return {
     products,
@@ -151,12 +148,11 @@ export const useProducts = (storeId?: string) => {
     searchTerm,
     selectedItems,
     isRefreshing,
-    archivedCount,
     inactiveCount,
     handleSearch,
     handleSelectionChange,
     handleProductUpdate,
-    handleArchiveProduct,
+    handleDeleteProduct,
     handleActivateProduct,
     refetch
   };

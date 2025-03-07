@@ -26,12 +26,11 @@ const Products = () => {
     searchTerm,
     selectedItems,
     isRefreshing,
-    archivedCount,
     inactiveCount,
     handleSearch,
     handleSelectionChange,
     handleProductUpdate,
-    handleArchiveProduct,
+    handleDeleteProduct,
     handleActivateProduct,
     refetch
   } = useProducts(storeData?.id);
@@ -39,22 +38,6 @@ const Products = () => {
   const handleEditProduct = (productId: string) => {
     setSelectedProductId(productId);
     setIsEditDialogOpen(true);
-  };
-
-  const handleDeleteProduct = async (productId: string) => {
-    try {
-      await handleArchiveProduct(productId, true);
-      toast({
-        title: "تم حذف المنتج بنجاح",
-        description: "تم حذف المنتج وحفظه كمسودة",
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "خطأ في حذف المنتج",
-        description: (error as Error).message,
-      });
-    }
   };
 
   const handleBulkAction = async (productIds: string[], action: (id: string) => Promise<void>) => {
@@ -110,7 +93,6 @@ const Products = () => {
     <DashboardLayout>
       <div className="container mx-auto py-3 sm:py-6 px-2 sm:px-4 max-w-6xl" dir="rtl">
         <ProductsHeader 
-          archivedCount={archivedCount}
           inactiveCount={inactiveCount}
           totalProducts={products.length}
           isRefreshing={isRefreshing}
@@ -127,7 +109,7 @@ const Products = () => {
           onEdit={handleEditProduct}
           onSelectionChange={handleSelectionChange}
           onSearch={handleSearch}
-          onArchive={handleArchiveProduct}
+          onDelete={handleDeleteProduct}
           onActivate={handleActivateProduct}
           onRefresh={handleProductUpdate}
         />

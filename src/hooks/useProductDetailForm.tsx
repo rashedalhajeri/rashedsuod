@@ -42,7 +42,6 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
       available_colors: [],
       available_sizes: [],
       is_featured: false,
-      is_archived: false,
       sales_count: 0,
       images: [],
       is_active: true,
@@ -109,7 +108,6 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
           ...data,
           is_featured: data.is_featured !== undefined ? data.is_featured : false,
           sales_count: data.sales_count !== undefined ? data.sales_count : 0,
-          is_archived: data.is_archived !== undefined ? data.is_archived : false,
           is_active: data.is_active !== undefined ? data.is_active : true,
           section_id: data.section_id || null
         } as unknown as RawProductData;
@@ -212,34 +210,10 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     
     setIsSubmitting(true);
     try {
-      const { data: orderItems, error: checkError } = await supabase
-        .from("order_items")
-        .select("id")
-        .eq("product_id", productId)
-        .limit(1);
-        
-      if (checkError) {
-        console.error("Error checking order items:", checkError);
-        setError(checkError.message);
-        toast.error("خطأ", { description: "فشل في التحقق من طلبات المنتج." });
-        return;
-      }
+      // Call the deleteProduct method which will completely remove the product
+      const { success, error } = await databaseClient.products.deleteProduct(productId);
       
-      if (orderItems && orderItems.length > 0) {
-        // إذا كان المنتج مرتبط بطلبات، نقوم بأرشفته بدلاً من حذفه
-        await handleArchive(true);
-        toast.info("تم أرشفة المنتج", { 
-          description: "لا يمكن حذف هذا المنتج لأنه مرتبط بطلبات سابقة. تم أرشفته بدلاً من ذلك." 
-        });
-        return;
-      }
-      
-      const { error } = await supabase
-        .from("products")
-        .delete()
-        .eq("id", productId);
-
-      if (error) {
+      if (!success) {
         console.error("Error deleting product:", error);
         setError(error.message);
         toast.error("خطأ", { description: "فشل في حذف المنتج: " + error.message });
@@ -264,45 +238,6 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     }
   };
 
-  const handleArchive = async (isArchived: boolean) => {
-    if (!productId) return;
-    
-    setIsSubmitting(true);
-    try {
-      const { data, error } = await databaseClient.products.archiveProduct(productId, isArchived);
-        
-      if (error) {
-        console.error("Error archiving product:", error);
-        setError(error.message);
-        toast.error(
-          isArchived ? "خطأ في أرشفة المنتج" : "خطأ في إلغاء أرشفة المنتج", 
-          { description: error.message }
-        );
-        return;
-      }
-      
-      // تحديث الحالة المحلية للمنتج
-      setValue('is_archived', isArchived);
-      
-      // إغلاق النافذة وتحديث القائمة إذا طلب المستخدم
-      if (onSuccess) {
-        onSuccess();
-      }
-      
-      return true;
-    } catch (error: any) {
-      console.error("Unexpected error archiving product:", error);
-      setError(error.message);
-      toast.error(
-        isArchived ? "خطأ في أرشفة المنتج" : "خطأ في إلغاء أرشفة المنتج", 
-        { description: error.message }
-      );
-      return false;
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return {
     form,
     isLoading: isInitialLoading,
@@ -314,8 +249,7 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     formData: {
       ...getValues(),
       images: watch('images') || [],
-      is_active: watch('is_active'),
-      is_archived: watch('is_archived')
+      is_active: watch('is_active')
     },
     handleChange,
     handleSwitchChange,
@@ -324,7 +258,6 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     handleSectionChange,
     handleSave: handleSubmit,
     handleDelete,
-    handleArchive,
     toggleDiscount
   };
 };
