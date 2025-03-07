@@ -1,4 +1,6 @@
 
+import { SupabaseClient } from '@supabase/supabase-js';
+
 // Simple function to help build safe queries
 export const createSafeQueryBuilder = () => {
   return {
@@ -15,4 +17,56 @@ export const createSafeQueryBuilder = () => {
       }
     }
   };
+};
+
+/**
+ * Builds a query for fetching products based on section type and filters
+ */
+export const buildProductQuery = (
+  supabase: SupabaseClient, 
+  sectionType: string,
+  storeId?: string,
+  categoryId?: string,
+  sectionId?: string,
+  limit?: number
+) => {
+  let query = supabase.from('products').select('*');
+  
+  // Apply store filter
+  if (storeId) {
+    query = query.eq('store_id', storeId);
+  }
+  
+  // Apply category filter
+  if (categoryId) {
+    query = query.eq('category_id', categoryId);
+  }
+  
+  // Apply section type specific filters
+  switch (sectionType) {
+    case 'featured':
+      query = query.eq('is_featured', true);
+      break;
+    case 'best_selling':
+      query = query.order('sales_count', { ascending: false });
+      break;
+    case 'on_sale':
+      query = query.not('discount_price', 'is', null);
+      break;
+    default:
+      // For custom sections, could add more logic here
+      break;
+  }
+  
+  // Apply default sorting if best_selling wasn't already set
+  if (sectionType !== 'best_selling') {
+    query = query.order('created_at', { ascending: false });
+  }
+  
+  // Apply limit if specified
+  if (limit && limit > 0) {
+    query = query.limit(limit);
+  }
+  
+  return query;
 };

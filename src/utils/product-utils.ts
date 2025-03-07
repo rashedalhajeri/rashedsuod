@@ -1,11 +1,14 @@
 
+/**
+ * DEPRECATED: Use the individual modules in the /products/ directory instead
+ * @deprecated
+ */
+
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Create a formatter function for a currency
- * @param currency Currency code (default: 'KWD')
- * @param locale Locale for formatting (default: 'en-US')
- * @returns Formatter function
+ * DEPRECATED: Use createCurrencyFormatter from format-helpers.ts instead
+ * @deprecated
  */
 export const createCurrencyFormatter = (currency: string = 'KWD', locale: string = 'en-US') => {
   return (value: number) => {
@@ -17,10 +20,8 @@ export const createCurrencyFormatter = (currency: string = 'KWD', locale: string
 };
 
 /**
- * Handle image loading errors and return a fallback image URL
- * @param imageUrl The original image URL
- * @param fallbackUrl The fallback URL (default: '/placeholder.svg')
- * @returns Either the original URL or the fallback URL
+ * DEPRECATED: Use getImageWithFallback from image-helpers.ts instead
+ * @deprecated
  */
 export const getImageWithFallback = (imageUrl: string | null, fallbackUrl: string = '/placeholder.svg'): string => {
   if (!imageUrl) return fallbackUrl;
@@ -28,63 +29,52 @@ export const getImageWithFallback = (imageUrl: string | null, fallbackUrl: strin
 };
 
 /**
- * Get a store's products with filtering options
- * @param storeId The ID of the store
- * @param options Options for filtering and sorting
- * @returns Promise with the products array
+ * DEPRECATED: Use fetchProductsWithFilters from product-fetchers.ts instead
+ * @deprecated
  */
 export const getStoreProducts = async (
   storeId: string,
-  options: {
-    categoryId?: string;
-    featured?: boolean;
-    onSale?: boolean;
-    sort?: 'latest' | 'price_low' | 'price_high' | 'best_selling';
-    limit?: number;
-  } = {}
-): Promise<Array<any>> => {
+  options: any = {}
+): Promise<any[]> => {
   try {
-    // Use type assertion to avoid deep type instantiation
-    const query = supabase
-      .from('products')
-      .select('*')
-      .eq('store_id', storeId);
+    // Break the reference chain to avoid TypeScript's deep instantiation error
+    let query = supabase.from('products').select('*');
+    
+    // Apply store filter
+    query = query.eq('store_id', storeId);
     
     // Apply additional filters
-    let filteredQuery = query;
     if (options.categoryId) {
-      filteredQuery = filteredQuery.eq('category_id', options.categoryId);
+      query = query.eq('category_id', options.categoryId);
     }
     
     if (options.featured) {
-      filteredQuery = filteredQuery.eq('is_featured', true);
+      query = query.eq('is_featured', true);
     }
     
     if (options.onSale) {
-      filteredQuery = filteredQuery.not('discount_price', 'is', null);
+      query = query.not('discount_price', 'is', null);
     }
     
-    // Apply sorting based on options
-    let sortedQuery = filteredQuery;
+    // Apply sorting
     if (options.sort === 'price_low') {
-      sortedQuery = filteredQuery.order('price', { ascending: true });
+      query = query.order('price', { ascending: true });
     } else if (options.sort === 'price_high') {
-      sortedQuery = filteredQuery.order('price', { ascending: false });
+      query = query.order('price', { ascending: false });
     } else if (options.sort === 'best_selling') {
-      sortedQuery = filteredQuery.order('sales_count', { ascending: false });
+      query = query.order('sales_count', { ascending: false });
     } else {
-      // default to latest
-      sortedQuery = filteredQuery.order('created_at', { ascending: false });
+      // Default to latest
+      query = query.order('created_at', { ascending: false });
     }
     
     // Apply limit if specified
-    const finalQuery = options.limit 
-      ? sortedQuery.limit(options.limit)
-      : sortedQuery;
+    if (options.limit) {
+      query = query.limit(options.limit);
+    }
     
-    // Break the type inference chain by using a simple Promise resolution
-    const response = await finalQuery;
-    const { data, error } = response;
+    // Execute the query
+    const { data, error } = await query;
     
     if (error) {
       console.error("Error fetching store products:", error);
@@ -97,4 +87,3 @@ export const getStoreProducts = async (
     return [];
   }
 };
-

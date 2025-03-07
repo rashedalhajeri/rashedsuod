@@ -6,3 +6,4 @@ export * from './products/image-helpers';
 export * from './products/mappers';
 export * from './products/product-fetchers';
 export * from './products/product-modifiers';
+export * from './products/query-builders';
