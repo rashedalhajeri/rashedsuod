@@ -61,7 +61,7 @@ export const useProductForm = (initialData?: Partial<ProductFormData>) => {
   const handleCategoryChange = (categoryId: string) => {
     setFormData(prev => ({
       ...prev,
-      category_id: categoryId || null
+      category_id: categoryId === "none" ? null : categoryId
     }));
   };
 

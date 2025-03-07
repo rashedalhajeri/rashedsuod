@@ -18,14 +18,14 @@ const CategorySelect: React.FC<CategorySelectProps> = ({
     <div className="space-y-2">
       <Label htmlFor="category">الفئة</Label>
       <Select 
-        value={categoryId || ""} 
+        value={categoryId || "none"} 
         onValueChange={onCategoryChange}
       >
         <SelectTrigger id="category">
           <SelectValue placeholder="اختر الفئة" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">بدون فئة</SelectItem>
+          <SelectItem value="none">بدون فئة</SelectItem>
           {categories.map(category => (
             <SelectItem key={category.id} value={category.id}>
               {category.name}
