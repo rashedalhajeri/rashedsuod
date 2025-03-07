@@ -123,7 +123,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
     const active = products.filter(p => p.is_active).length;
     const inactive = products.filter(p => !p.is_active).length;
     
-    return { active, inactive };
+    return { active, inactive, archived: 0 }; // Add archived: 0 to match the expected type
   };
   
   const filterCounts = getFilterCounts();

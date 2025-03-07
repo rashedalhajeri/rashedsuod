@@ -51,9 +51,6 @@ const MoreOptions: React.FC<MoreOptionsProps> = ({
         <DropdownMenuItem onClick={() => setFilterActive("inactive")}>
           عرض غير النشطة فقط
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setFilterActive("archived")}>
-          عرض المسودات فقط
-        </DropdownMenuItem>
         
         <DropdownMenuSeparator />
         

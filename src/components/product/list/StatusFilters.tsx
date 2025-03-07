@@ -10,7 +10,7 @@ interface StatusFiltersProps {
   filterCounts: {
     active: number;
     inactive: number;
-    archived: number;
+    archived: number; // Keep this for type compatibility
   };
 }
 
@@ -50,20 +50,7 @@ const StatusFilters: React.FC<StatusFiltersProps> = ({
             {filterCounts.inactive}
           </Badge>
         </Button>
-        <Button
-          variant={filterActive === "archived" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilterActive("archived")}
-          className={cn(
-            "rounded-full text-xs min-w-fit px-3 py-1 h-8",
-            filterActive === "archived" ? "bg-blue-500 text-white border-blue-500" : "bg-white text-gray-700"
-          )}
-        >
-          مسودة
-          <Badge variant="secondary" className="mr-1 text-[10px] bg-white/20 text-white h-4">
-            {filterCounts.archived}
-          </Badge>
-        </Button>
+        {/* Remove the archived button since we don't have archiving functionality anymore */}
       </div>
     </div>
   );

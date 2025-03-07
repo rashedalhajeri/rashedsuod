@@ -12,8 +12,8 @@ interface ProductItemsProps {
   handleToggleSelection: (id: string, isSelected: boolean) => void;
   handleProductClick: (product: Product) => void;
   onEdit: (id: string) => void;
-  onArchive?: (id: string, isArchived: boolean) => void;
-  onActivate?: (id: string, isActive: boolean) => void;
+  onDelete?: (id: string) => Promise<void>;
+  onActivate?: (id: string, isActive: boolean) => Promise<void>;
   onRefresh?: () => void;
   searchTerm: string;
   onSearch: (term: string) => void;
@@ -27,7 +27,7 @@ const ProductItems: React.FC<ProductItemsProps> = ({
   handleToggleSelection,
   handleProductClick,
   onEdit,
-  onArchive,
+  onDelete,
   onActivate,
   onRefresh,
   searchTerm,
@@ -55,7 +55,6 @@ const ProductItems: React.FC<ProductItemsProps> = ({
                   onSelect={handleToggleSelection}
                   isSelected={selectedItems.includes(product.id)}
                   onEdit={onEdit}
-                  onArchive={onArchive}
                   onActivate={onActivate}
                   onRefresh={onRefresh}
                   onClick={() => handleProductClick(product)}
