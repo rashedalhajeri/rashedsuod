@@ -19,14 +19,32 @@ export const uploadProductImage = async (file: File, storeId: string): Promise<s
   try {
     // Validate file
     if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
+      toast.error('الرجاء اختيار ملف صورة فقط');
       return null;
     }
     
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      toast.error('Image size is too large. Must be less than 5MB');
+      toast.error('حجم الصورة كبير جداً. يجب أن يكون أقل من 5 ميجابايت');
       return null;
+    }
+    
+    // Ensure the storage bucket exists
+    const { data: bucketExists } = await supabase
+      .storage
+      .getBucket('product-images');
+      
+    if (!bucketExists) {
+      // Create the bucket if it doesn't exist
+      const { error: createBucketError } = await supabase
+        .storage
+        .createBucket('product-images', { public: true });
+        
+      if (createBucketError) {
+        console.error('Error creating storage bucket:', createBucketError);
+        toast.error('فشل في إنشاء مساحة تخزين الصور');
+        return null;
+      }
     }
     
     // Generate a unique file name
@@ -44,7 +62,7 @@ export const uploadProductImage = async (file: File, storeId: string): Promise<s
     
     if (error) {
       console.error('Error uploading image:', error);
-      toast.error('Failed to upload image');
+      toast.error('فشل في رفع الصورة');
       return null;
     }
     
@@ -56,7 +74,8 @@ export const uploadProductImage = async (file: File, storeId: string): Promise<s
     return urlData.publicUrl;
   } catch (error) {
     console.error('Error in uploadProductImage:', error);
-    toast.error('An unexpected error occurred');
+    toast.error('حدث خطأ غير متوقع أثناء رفع الصورة');
     return null;
   }
 };
+

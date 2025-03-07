@@ -32,13 +32,6 @@ const ImageUploadGrid: React.FC<ImageUploadProps> = ({
     onImagesChange(newImages);
   };
   
-  const handleUrlInput = () => {
-    const url = prompt("أدخل رابط الصورة");
-    if (url && url.trim() !== "") {
-      handleAddImage(url.trim());
-    }
-  };
-  
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
@@ -55,55 +48,58 @@ const ImageUploadGrid: React.FC<ImageUploadProps> = ({
     // Handle image URLs from drag and drop
     const items = e.dataTransfer.items;
     if (items) {
-      // Check for string data (URLs)
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].kind === 'string' && items[i].type.match('^text/uri-list')) {
-          items[i].getAsString((url) => {
-            if (images.length < maxImages) {
-              handleAddImage(url);
-            }
-          });
-        }
-      }
-      
       // Check for files
       const files = e.dataTransfer.files;
       if (files && files.length > 0) {
         handleFileUpload(files);
+      } else {
+        // Check for string data (URLs)
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].kind === 'string' && items[i].type.match('^text/uri-list')) {
+            items[i].getAsString((url) => {
+              if (images.length < maxImages) {
+                handleAddImage(url);
+              }
+            });
+          }
+        }
       }
     }
   };
   
   const handleFileUpload = async (files: FileList) => {
+    if (!files || files.length === 0) return;
+    
     if (images.length + files.length > maxImages) {
       toast.error(`لا يمكن إضافة أكثر من ${maxImages} صور`);
       return;
     }
     
     if (!storeId) {
-      toast.error("Store ID is required for uploading images");
+      toast.error("معرف المتجر مطلوب لرفع الصور");
       return;
     }
     
     setIsUploading(true);
-    const uploadPromises = Array.from(files).map(async (file) => {
-      try {
-        // Use the helper function to upload to Supabase storage
-        const publicUrl = await uploadProductImage(file, storeId);
-        return publicUrl;
-      } catch (error) {
-        console.error('Error uploading file:', error);
-        toast.error(`فشل رفع الصورة ${file.name}`);
-        return null;
-      }
-    });
+    let successCount = 0;
     
     try {
+      const uploadPromises = Array.from(files).map(async (file) => {
+        // Use the helper function to upload to Supabase storage
+        const publicUrl = await uploadProductImage(file, storeId);
+        if (publicUrl) successCount++;
+        return publicUrl;
+      });
+      
       const uploadedUrls = await Promise.all(uploadPromises);
       const validUrls = uploadedUrls.filter(url => url !== null) as string[];
       
-      onImagesChange([...images, ...validUrls]);
-      toast.success(`تم رفع ${validUrls.length} صورة بنجاح`);
+      if (validUrls.length > 0) {
+        onImagesChange([...images, ...validUrls]);
+        toast.success(`تم رفع ${validUrls.length} صورة بنجاح`);
+      } else {
+        toast.error('فشل في رفع الصور، يرجى المحاولة مرة أخرى');
+      }
     } catch (error) {
       console.error('Error processing uploads:', error);
       toast.error('حدث خطأ أثناء رفع الصور');
