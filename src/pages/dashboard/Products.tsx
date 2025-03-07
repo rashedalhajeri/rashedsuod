@@ -1,10 +1,10 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useStoreData } from "@/hooks/use-store-data";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Plus, RefreshCw, Search, Filter } from "lucide-react";
+import { Plus, RefreshCw, Filter, ArchiveIcon, Package } from "lucide-react";
 import ProductDetailDialog from "@/components/product/ProductDetailDialog";
 import ProductFormDialog from "@/components/product/ProductFormDialog";
 import ProductsList from "@/components/product/ProductsList";
@@ -18,8 +18,16 @@ import DashboardLayout from "@/layouts/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-media-query";
 import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
+import { databaseClient } from "@/integrations/database/client";
+import { toast } from "@/components/ui/use-toast";
 
 const Products = () => {
+  // Use a more descriptive type to avoid recursion issues
+  type ProductQueryResult = Omit<RawProductData, "category"> & {
+    category: { id: string; name: string } | null;
+  };
+
   const { data: storeData, isLoading: loadingStore } = useStoreData();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -45,24 +53,23 @@ const Products = () => {
         .order("created_at", { ascending: false });
       
       if (error) throw error;
-      return data;
+      return data as ProductQueryResult[];
     },
     enabled: !!storeData?.id
   });
 
-  const products: Product[] = rawProducts ? rawProducts.map((item: any) => mapRawProductToProduct({
+  const products: Product[] = rawProducts ? rawProducts.map((item: ProductQueryResult) => mapRawProductToProduct({
     ...item,
     is_featured: item.is_featured || false,
-    sales_count: item.sales_count || 0
+    sales_count: item.sales_count || 0,
+    is_archived: item.is_archived || false
   } as RawProductData)) : [];
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
   };
 
-  const filteredProducts = products?.filter((product) => 
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  const filteredProducts = products || [];
 
   const handleEditProduct = (productId: string) => {
     setSelectedProductId(productId);
@@ -77,6 +84,36 @@ const Products = () => {
     setIsRefreshing(true);
     refetch().finally(() => setIsRefreshing(false));
   };
+
+  const handleArchiveProduct = async (productId: string, isArchived: boolean) => {
+    try {
+      const { data, error } = await databaseClient.products.archiveProduct(productId, isArchived);
+      
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: isArchived ? "خطأ في أرشفة المنتج" : "خطأ في إلغاء أرشفة المنتج",
+          description: error.message,
+        });
+        return;
+      }
+      
+      toast({
+        title: isArchived ? "تمت الأرشفة بنجاح" : "تم إلغاء الأرشفة بنجاح",
+        description: isArchived ? "تم أرشفة المنتج بنجاح" : "تم إلغاء أرشفة المنتج بنجاح",
+      });
+      
+      handleProductUpdate();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "خطأ غير متوقع",
+        description: error.message,
+      });
+    }
+  };
+
+  const archivedCount = products?.filter(p => p.is_archived).length || 0;
 
   if (loadingStore || isLoading) {
     return (
@@ -118,7 +155,15 @@ const Products = () => {
           className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 sm:mb-6 space-y-4 md:space-y-0"
         >
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold">المنتجات</h1>
+            <div className="flex items-center">
+              <h1 className="text-xl sm:text-2xl font-bold">المنتجات</h1>
+              {archivedCount > 0 && (
+                <Badge variant="outline" className="mr-2 font-normal">
+                  <ArchiveIcon className="h-3 w-3 ml-1" />
+                  {archivedCount} مؤرشف
+                </Badge>
+              )}
+            </div>
             <p className="text-muted-foreground text-sm sm:text-base">
               إدارة منتجات متجرك ({products.length} منتج)
             </p>
@@ -172,6 +217,8 @@ const Products = () => {
               onSelectionChange={handleSelectionChange}
               searchTerm={searchTerm}
               onSearch={handleSearch}
+              onArchive={handleArchiveProduct}
+              onRefresh={handleProductUpdate}
             />
           </Card>
         </motion.div>

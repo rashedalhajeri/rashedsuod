@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Trash2, Tag, Copy, Archive, CheckCircle, ChevronDown } from "lucide-react";
+import { Trash2, Tag, Copy, Archive, CheckCircle, ChevronDown, RefreshCw, ArrowUpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
@@ -22,6 +22,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { databaseClient } from "@/integrations/database/client";
 
 interface ProductBulkActionsProps {
   selectedCount: number;
@@ -35,7 +36,11 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
   onActionComplete
 }) => {
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
+  const [isUnarchiving, setIsUnarchiving] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
+  const [showUnarchiveDialog, setShowUnarchiveDialog] = useState(false);
   const isMobile = useIsMobile();
   
   const handleBulkDelete = async () => {
@@ -76,6 +81,78 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
       setShowDeleteDialog(false);
     }
   };
+
+  const handleBulkArchive = async () => {
+    if (!selectedIds.length) return;
+    
+    setIsArchiving(true);
+    try {
+      const { success, error } = await databaseClient.products.bulkArchiveProducts(selectedIds, true);
+        
+      if (!success) {
+        console.error("Error archiving products:", error);
+        toast({
+          variant: "destructive",
+          title: "خطأ في أرشفة المنتجات",
+          description: error.message,
+        });
+        return;
+      }
+      
+      toast({
+        title: "تمت الأرشفة بنجاح",
+        description: `تم أرشفة ${selectedCount} منتج بنجاح`,
+      });
+      
+      onActionComplete();
+    } catch (error: any) {
+      console.error("Unexpected error:", error);
+      toast({
+        variant: "destructive",
+        title: "خطأ غير متوقع",
+        description: error.message,
+      });
+    } finally {
+      setIsArchiving(false);
+      setShowArchiveDialog(false);
+    }
+  };
+
+  const handleBulkUnarchive = async () => {
+    if (!selectedIds.length) return;
+    
+    setIsUnarchiving(true);
+    try {
+      const { success, error } = await databaseClient.products.bulkArchiveProducts(selectedIds, false);
+        
+      if (!success) {
+        console.error("Error unarchiving products:", error);
+        toast({
+          variant: "destructive",
+          title: "خطأ في إلغاء أرشفة المنتجات",
+          description: error.message,
+        });
+        return;
+      }
+      
+      toast({
+        title: "تم إلغاء الأرشفة بنجاح",
+        description: `تم إلغاء أرشفة ${selectedCount} منتج بنجاح`,
+      });
+      
+      onActionComplete();
+    } catch (error: any) {
+      console.error("Unexpected error:", error);
+      toast({
+        variant: "destructive",
+        title: "خطأ غير متوقع",
+        description: error.message,
+      });
+    } finally {
+      setIsUnarchiving(false);
+      setShowUnarchiveDialog(false);
+    }
+  };
   
   return (
     <>
@@ -113,6 +190,18 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
                 <Trash2 className="h-4 w-4 ml-2" />
                 حذف
               </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setShowArchiveDialog(true)}
+              >
+                <Archive className="h-4 w-4 ml-2" />
+                أرشفة
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setShowUnarchiveDialog(true)}
+              >
+                <ArrowUpCircle className="h-4 w-4 ml-2" />
+                إلغاء الأرشفة
+              </DropdownMenuItem>
               <DropdownMenuItem>
                 <Tag className="h-4 w-4 ml-2" />
                 تعيين فئة
@@ -120,10 +209,6 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
               <DropdownMenuItem>
                 <Copy className="h-4 w-4 ml-2" />
                 نسخ
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Archive className="h-4 w-4 ml-2" />
-                أرشفة
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <CheckCircle className="h-4 w-4 ml-2" />
@@ -146,6 +231,24 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
             <Button
               variant="ghost"
               size="sm"
+              onClick={() => setShowArchiveDialog(true)}
+            >
+              <Archive className="h-4 w-4 ml-2" />
+              أرشفة
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowUnarchiveDialog(true)}
+            >
+              <ArrowUpCircle className="h-4 w-4 ml-2" />
+              إلغاء الأرشفة
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
             >
               <Tag className="h-4 w-4 ml-2" />
               تعيين فئة
@@ -157,14 +260,6 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
             >
               <Copy className="h-4 w-4 ml-2" />
               نسخ
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-            >
-              <Archive className="h-4 w-4 ml-2" />
-              أرشفة
             </Button>
             
             <Button
@@ -184,6 +279,10 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
             <AlertDialogTitle>تأكيد الحذف</AlertDialogTitle>
             <AlertDialogDescription>
               هل أنت متأكد من حذف {selectedCount} منتج؟ هذا الإجراء لا يمكن التراجع عنه.
+              
+              <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-md text-sm font-medium">
+                سيتم حذف هذه المنتجات نهائياً من قاعدة البيانات. إذا كنت تريد إخفاءها مؤقتاً، يمكنك أرشفتها بدلاً من ذلك.
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -194,6 +293,46 @@ export const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
               disabled={isDeleting}
             >
               {isDeleting ? "جاري الحذف..." : "تأكيد الحذف"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showArchiveDialog} onOpenChange={setShowArchiveDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>تأكيد الأرشفة</AlertDialogTitle>
+            <AlertDialogDescription>
+              هل أنت متأكد من أرشفة {selectedCount} منتج؟ المنتجات المؤرشفة لن تظهر في المتجر، لكن يمكنك استعادتها في أي وقت.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkArchive}
+              disabled={isArchiving}
+            >
+              {isArchiving ? "جاري الأرشفة..." : "تأكيد الأرشفة"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showUnarchiveDialog} onOpenChange={setShowUnarchiveDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>تأكيد إلغاء الأرشفة</AlertDialogTitle>
+            <AlertDialogDescription>
+              هل أنت متأكد من إلغاء أرشفة {selectedCount} منتج؟ المنتجات ستظهر مرة أخرى في المتجر.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkUnarchive}
+              disabled={isUnarchiving}
+            >
+              {isUnarchiving ? "جاري إلغاء الأرشفة..." : "تأكيد إلغاء الأرشفة"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -17,6 +17,8 @@ export interface DatabaseClient {
     getProductById: (productId: string) => Promise<{ data: Product | null, error: any }>;
     updateProduct: (productId: string, updates: any) => Promise<{ data: Product[] | null, error: any }>;
     deleteProduct: (productId: string) => Promise<{ success: boolean, error: any }>;
+    archiveProduct: (productId: string, isArchived: boolean) => Promise<{ data: Product | null, error: any }>;
+    bulkArchiveProducts: (productIds: string[], isArchived: boolean) => Promise<{ success: boolean, error: any }>;
   };
 }
 
@@ -82,7 +84,7 @@ class SupabaseDatabaseClient implements DatabaseClient {
         if (!data) return { data: null, error: null };
         
         // Process the data to ensure proper types
-        const product = mapRawProductToProduct(data as RawProductData);
+        const product = mapRawProductToProduct(data as unknown as RawProductData);
         
         return { data: product, error: null };
       } catch (error) {
@@ -131,6 +133,43 @@ class SupabaseDatabaseClient implements DatabaseClient {
         return { success: !error, error };
       } catch (error) {
         console.error("Error deleting product:", error);
+        return { success: false, error };
+      }
+    },
+
+    archiveProduct: async (productId: string, isArchived: boolean) => {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .update({ is_archived: isArchived })
+          .eq('id', productId)
+          .select()
+          .single();
+          
+        if (error) throw error;
+        
+        if (!data) return { data: null, error: null };
+        
+        // Process the data to ensure proper types
+        const product = mapRawProductToProduct(data as unknown as RawProductData);
+        
+        return { data: product, error: null };
+      } catch (error) {
+        console.error("Error archiving product:", error);
+        return { data: null, error };
+      }
+    },
+
+    bulkArchiveProducts: async (productIds: string[], isArchived: boolean) => {
+      try {
+        const { error } = await supabase
+          .from('products')
+          .update({ is_archived: isArchived })
+          .in('id', productIds);
+          
+        return { success: !error, error };
+      } catch (error) {
+        console.error("Error bulk archiving products:", error);
         return { success: false, error };
       }
     }

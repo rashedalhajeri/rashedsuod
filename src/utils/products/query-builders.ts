@@ -28,9 +28,10 @@ export const buildProductQuery = (
   storeId?: string,
   categoryId?: string,
   sectionId?: string,
-  limit?: number
+  limit?: number,
+  includeArchived: boolean = false
 ) => {
-  let query = supabase.from('products').select('*');
+  let query = supabase.from('products').select('*, category:categories(*)');
   
   // Apply store filter
   if (storeId) {
@@ -40,6 +41,11 @@ export const buildProductQuery = (
   // Apply category filter
   if (categoryId) {
     query = query.eq('category_id', categoryId);
+  }
+
+  // Filter out archived products by default unless explicitly included
+  if (!includeArchived) {
+    query = query.eq('is_archived', false);
   }
   
   // Apply section type specific filters
@@ -52,6 +58,9 @@ export const buildProductQuery = (
       break;
     case 'on_sale':
       query = query.not('discount_price', 'is', null);
+      break;
+    case 'archived':
+      query = query.eq('is_archived', true);
       break;
     default:
       // For custom sections, could add more logic here

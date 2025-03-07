@@ -12,7 +12,8 @@ export const fetchProductsWithFilters = async (
   storeId?: string,
   categoryId?: string,
   sectionId?: string,
-  limit?: number
+  limit?: number,
+  includeArchived: boolean = false
 ): Promise<Product[]> => {
   try {
     return await databaseClient.products.fetchProductsWithFilters(
@@ -37,5 +38,29 @@ export const getProductById = async (productId: string) => {
   } catch (error) {
     console.error('Error fetching product:', error);
     return { data: null, error };
+  }
+};
+
+/**
+ * Archive or unarchive a product
+ */
+export const archiveProduct = async (productId: string, isArchived: boolean) => {
+  try {
+    return await databaseClient.products.archiveProduct(productId, isArchived);
+  } catch (error) {
+    console.error('Error archiving product:', error);
+    return { data: null, error };
+  }
+};
+
+/**
+ * Bulk archive or unarchive products
+ */
+export const bulkArchiveProducts = async (productIds: string[], isArchived: boolean) => {
+  try {
+    return await databaseClient.products.bulkArchiveProducts(productIds, isArchived);
+  } catch (error) {
+    console.error('Error bulk archiving products:', error);
+    return { success: false, error };
   }
 };

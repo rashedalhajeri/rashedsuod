@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Edit, EyeIcon, ShoppingCart, Archive } from "lucide-react";
+import { Edit, EyeIcon, Archive, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getCurrencyFormatter } from "@/hooks/use-store-data";
 import { Link } from "react-router-dom";
@@ -9,19 +9,24 @@ import { Product } from "@/utils/products/types";
 import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from "@/hooks/use-media-query";
 import { motion } from "framer-motion";
+import { toast } from "@/components/ui/use-toast";
 
 interface ProductListItemProps {
   product: Product;
   onSelect: (id: string, isSelected: boolean) => void;
   isSelected: boolean;
   onEdit: (id: string) => void;
+  onArchive?: (id: string, isArchived: boolean) => void;
+  onRefresh?: () => void;
 }
 
 const ProductListItem: React.FC<ProductListItemProps> = ({ 
   product, 
   onSelect, 
   isSelected, 
-  onEdit 
+  onEdit,
+  onArchive,
+  onRefresh
 }) => {
   const {
     id,
@@ -31,7 +36,8 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
     stock_quantity,
     track_inventory,
     images,
-    category
+    category,
+    is_archived
   } = product;
 
   const isMobile = useIsMobile();
@@ -58,8 +64,14 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
     return <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">{stock_quantity} متوفر</Badge>;
   };
 
+  const handleArchive = () => {
+    if (onArchive) {
+      onArchive(id, !is_archived);
+    }
+  };
+
   return (
-    <div className={`flex flex-col sm:flex-row sm:items-center p-4 transition-colors ${isSelected ? 'bg-blue-50/60' : 'hover:bg-gray-50'} border-b`}>
+    <div className={`flex flex-col sm:flex-row sm:items-center p-4 transition-colors ${isSelected ? 'bg-blue-50/60' : 'hover:bg-gray-50'} border-b ${is_archived ? 'bg-gray-50 opacity-75' : ''}`}>
       <div className="flex items-center">
         <Checkbox
           checked={isSelected}
@@ -79,6 +91,9 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
           <div className="flex-1 min-w-0 mr-3">
             <h3 className="text-sm font-medium text-gray-900 leading-tight line-clamp-1 mb-1">
               {name}
+              {is_archived && (
+                <Badge variant="outline" className="text-xs ml-2 bg-gray-50 text-gray-500 border-gray-200">مؤرشف</Badge>
+              )}
             </h3>
             
             <div className="flex flex-wrap gap-1.5 mb-1">
@@ -124,15 +139,16 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
           title="معاينة"
         >
           <Link to={`/product/${id}`} target="_blank">
-            <EyeIcon className="h-4 w-4" />
+            <ArrowUpRight className="h-4 w-4" />
           </Link>
         </Button>
         
         <Button
           variant="ghost"
           size="icon"
-          className="text-gray-500 hover:text-red-600 h-8 w-8"
-          title="أرشفة"
+          onClick={handleArchive}
+          className={`h-8 w-8 ${is_archived ? 'text-amber-500 hover:text-amber-600' : 'text-gray-500 hover:text-gray-700'}`}
+          title={is_archived ? "إلغاء الأرشفة" : "أرشفة"}
         >
           <Archive className="h-4 w-4" />
         </Button>
