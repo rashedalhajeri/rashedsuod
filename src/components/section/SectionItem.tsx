@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Edit, Trash, Save, X, List, Grid } from "lucide-react";
+import { Edit, Trash, Save, X, List, Grid, LayoutGrid, BanknoteIcon, ShoppingBag, Sparkles, Percent, Tag, PanelTop } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +13,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
 interface Section {
   id: string;
@@ -51,6 +53,18 @@ const SectionItem: React.FC<SectionItemProps> = ({
     }
   };
 
+  const getSectionTypeIcon = (type: string) => {
+    switch (type) {
+      case 'best_selling': return <BanknoteIcon className="h-4 w-4 text-emerald-500" />;
+      case 'new_arrivals': return <ShoppingBag className="h-4 w-4 text-blue-500" />;
+      case 'featured': return <Sparkles className="h-4 w-4 text-amber-500" />;
+      case 'on_sale': return <Percent className="h-4 w-4 text-rose-500" />;
+      case 'category': return <Tag className="h-4 w-4 text-purple-500" />;
+      case 'custom': return <LayoutGrid className="h-4 w-4 text-indigo-500" />;
+      default: return <PanelTop className="h-4 w-4 text-gray-500" />;
+    }
+  };
+
   const handleSaveChanges = () => {
     handleUpdateSection();
     setIsDialogOpen(false);
@@ -68,51 +82,58 @@ const SectionItem: React.FC<SectionItemProps> = ({
 
   return (
     <>
-      <div className="flex items-center justify-between p-3 border rounded-lg bg-white">
-        <div className="flex flex-col">
-          <span className="text-lg font-medium">{section.name}</span>
-          <div className="flex items-center mt-1">
-            <span className="text-sm text-muted-foreground">
-              {getSectionTypeName(section.section_type)}
-            </span>
-            <span className={`ms-2 px-2 py-0.5 rounded-full text-xs ${section.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-              {section.is_active ? 'مفعل' : 'غير مفعل'}
-            </span>
+      <Card className="overflow-hidden border-gray-200 hover:border-gray-300 transition-colors">
+        <div className="flex items-center justify-between p-4 bg-white">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              {getSectionTypeIcon(section.section_type)}
+              <span className="text-lg font-medium">{section.name}</span>
+            </div>
+            <div className="flex items-center mt-2 gap-2">
+              <Badge variant="outline" className="text-xs font-normal bg-gray-50">
+                {getSectionTypeName(section.section_type)}
+              </Badge>
+              <Badge variant={section.is_active ? "default" : "outline"} className={`text-xs ${section.is_active ? 'bg-green-500' : 'text-gray-500'}`}>
+                {section.is_active ? 'مفعل' : 'غير مفعل'}
+              </Badge>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              size="sm" 
+              variant="ghost"
+              className="h-8 w-8"
+              onClick={openEditDialog}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button 
+              size="sm" 
+              variant="ghost"
+              className="h-8 w-8 text-destructive hover:text-destructive-foreground hover:bg-destructive"
+              onClick={() => handleDeleteSection(section.id)}
+            >
+              <Trash className="h-4 w-4" />
+            </Button>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button 
-            size="sm" 
-            variant="ghost"
-            onClick={openEditDialog}
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button 
-            size="sm" 
-            variant="ghost"
-            className="text-red-500 hover:text-red-700"
-            onClick={() => handleDeleteSection(section.id)}
-          >
-            <Trash className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      </Card>
 
       {editingSection && editingSection.id === section.id && (
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>تعديل القسم</DialogTitle>
+              <DialogTitle className="text-xl">تعديل القسم</DialogTitle>
             </DialogHeader>
             
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-5 py-4">
               <div className="space-y-2">
                 <Label htmlFor="edit-section-name">اسم القسم</Label>
                 <Input 
                   id="edit-section-name"
                   value={editingSection.name}
                   onChange={(e) => setEditingSection({...editingSection, name: e.target.value})}
+                  className="border-gray-300"
                 />
               </div>
               
@@ -122,16 +143,46 @@ const SectionItem: React.FC<SectionItemProps> = ({
                   value={editingSection.section_type}
                   onValueChange={(value) => setEditingSection({...editingSection, section_type: value})}
                 >
-                  <SelectTrigger id="edit-section-type">
+                  <SelectTrigger id="edit-section-type" className="border-gray-300">
                     <SelectValue placeholder="اختر نوع القسم" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="best_selling">الأكثر مبيعاً</SelectItem>
-                    <SelectItem value="new_arrivals">وصل حديثاً</SelectItem>
-                    <SelectItem value="featured">منتجات مميزة</SelectItem>
-                    <SelectItem value="on_sale">تخفيضات</SelectItem>
-                    <SelectItem value="category">فئة محددة</SelectItem>
-                    <SelectItem value="custom">مخصص</SelectItem>
+                    <SelectItem value="best_selling" className="flex items-center gap-2">
+                      <div className="flex items-center gap-2">
+                        <BanknoteIcon className="h-4 w-4 text-emerald-500" />
+                        <span>الأكثر مبيعاً</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="new_arrivals">
+                      <div className="flex items-center gap-2">
+                        <ShoppingBag className="h-4 w-4 text-blue-500" />
+                        <span>وصل حديثاً</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="featured">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-amber-500" />
+                        <span>منتجات مميزة</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="on_sale">
+                      <div className="flex items-center gap-2">
+                        <Percent className="h-4 w-4 text-rose-500" />
+                        <span>تخفيضات</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="category">
+                      <div className="flex items-center gap-2">
+                        <Tag className="h-4 w-4 text-purple-500" />
+                        <span>فئة محددة</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="custom">
+                      <div className="flex items-center gap-2">
+                        <LayoutGrid className="h-4 w-4 text-indigo-500" />
+                        <span>مخصص</span>
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -140,7 +191,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
                 <div className="space-y-2">
                   <Label htmlFor="edit-category-select">اختر الفئة</Label>
                   <Select>
-                    <SelectTrigger id="edit-category-select">
+                    <SelectTrigger id="edit-category-select" className="border-gray-300">
                       <SelectValue placeholder="اختر الفئة" />
                     </SelectTrigger>
                     <SelectContent>
@@ -155,7 +206,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
               {editingSection.section_type === 'custom' && (
                 <div className="space-y-2">
                   <Label htmlFor="edit-product-select">اختر المنتجات</Label>
-                  <div className="border p-2 rounded-md h-24 overflow-y-auto">
+                  <div className="border p-3 rounded-md h-24 overflow-y-auto bg-gray-50">
                     <div className="space-y-2">
                       <div className="flex items-center space-x-2 space-x-reverse">
                         <input type="checkbox" id="edit-product1" className="rounded" />
@@ -205,8 +256,9 @@ const SectionItem: React.FC<SectionItemProps> = ({
               <Button 
                 onClick={handleSaveChanges}
                 disabled={!editingSection.name.trim()}
+                className="gap-2 bg-primary hover:bg-primary/90"
               >
-                <Save className="h-4 w-4 mr-2" />
+                <Save className="h-4 w-4" />
                 حفظ التغييرات
               </Button>
             </DialogFooter>

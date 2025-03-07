@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Tags, Plus } from "lucide-react";
+import { Tags, Plus, LayoutGrid, Search } from "lucide-react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import CategorySearchBox from "@/components/category/CategorySearchBox";
 import CategoryList from "@/components/category/CategoryList";
@@ -12,6 +12,7 @@ import SectionForm from "@/components/section/SectionForm";
 import { useCategories } from "@/hooks/use-categories";
 import { useSections } from "@/hooks/use-sections";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 
 const CategoriesAndSections: React.FC = () => {
   // Categories state
@@ -64,17 +65,36 @@ const CategoriesAndSections: React.FC = () => {
     <DashboardLayout>
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">الفئات والأقسام</h1>
+          <motion.h1 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-2xl font-bold"
+          >
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
+              الفئات والأقسام
+            </span>
+          </motion.h1>
         </div>
         
         <Tabs defaultValue="categories" onValueChange={setActiveTab} value={activeTab}>
-          <TabsList className="mb-6 w-full justify-start">
-            <TabsTrigger value="categories" className="flex-1 md:flex-none">الفئات</TabsTrigger>
-            <TabsTrigger value="sections" className="flex-1 md:flex-none">الأقسام</TabsTrigger>
+          <TabsList className="mb-6 w-full max-w-md bg-background border">
+            <TabsTrigger value="categories" className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-white">
+              <Tags className="h-4 w-4 mr-2" />
+              الفئات
+            </TabsTrigger>
+            <TabsTrigger value="sections" className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-white">
+              <LayoutGrid className="h-4 w-4 mr-2" />
+              الأقسام
+            </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="categories">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <TabsContent value="categories" className="outline-none">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="grid grid-cols-1 md:grid-cols-3 gap-6"
+            >
               <div className="md:col-span-2">
                 <div className="mb-4">
                   <CategorySearchBox 
@@ -83,14 +103,14 @@ const CategoriesAndSections: React.FC = () => {
                   />
                 </div>
                 
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg font-medium">
-                      <Tags className="h-4 w-4 inline-block ml-2" />
+                <Card className="border-gray-200 bg-white">
+                  <CardHeader className="pb-3 border-b">
+                    <CardTitle className="text-lg font-medium flex items-center gap-2">
+                      <Tags className="h-4 w-4 text-primary" />
                       قائمة الفئات
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-4 pt-6">
                     <CategoryList
                       categories={categories}
                       loading={categoriesLoading}
@@ -106,47 +126,47 @@ const CategoriesAndSections: React.FC = () => {
               </div>
               
               <div>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg font-medium">إضافة فئة جديدة</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CategoryForm
-                      newCategory={newCategory}
-                      setNewCategory={setNewCategory}
-                      handleAddCategory={handleAddCategory}
-                    />
-                  </CardContent>
-                </Card>
+                <CategoryForm
+                  newCategory={newCategory}
+                  setNewCategory={setNewCategory}
+                  handleAddCategory={handleAddCategory}
+                />
               </div>
-            </div>
+            </motion.div>
           </TabsContent>
           
-          <TabsContent value="sections">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <TabsContent value="sections" className="outline-none">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="grid grid-cols-1 md:grid-cols-3 gap-6"
+            >
               <div className="md:col-span-3">
-                <div className="flex justify-between items-center mb-4">
-                  <CategorySearchBox 
-                    searchQuery={searchQuery}
-                    setSearchQuery={setSearchQuery}
-                  />
+                <div className="flex flex-col md:flex-row gap-4 justify-between mb-4">
+                  <div className="w-full md:w-1/2">
+                    <CategorySearchBox 
+                      searchQuery={searchQuery}
+                      setSearchQuery={setSearchQuery}
+                    />
+                  </div>
                   <Button
                     onClick={openAddSectionDialog}
-                    className="gap-2"
+                    className="md:w-auto w-full gap-2 bg-primary hover:bg-primary/90"
                   >
                     <Plus className="h-4 w-4" />
                     <span>إضافة قسم جديد</span>
                   </Button>
                 </div>
                 
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg font-medium">
-                      <Tags className="h-4 w-4 inline-block ml-2" />
+                <Card className="border-gray-200 bg-white">
+                  <CardHeader className="pb-3 border-b">
+                    <CardTitle className="text-lg font-medium flex items-center gap-2">
+                      <LayoutGrid className="h-4 w-4 text-primary" />
                       قائمة الأقسام
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-4 pt-6">
                     <SectionList
                       sections={sections}
                       loading={sectionsLoading}
@@ -162,7 +182,7 @@ const CategoriesAndSections: React.FC = () => {
                   </CardContent>
                 </Card>
               </div>
-            </div>
+            </motion.div>
             
             <SectionForm
               isOpen={isAddSectionDialogOpen}
