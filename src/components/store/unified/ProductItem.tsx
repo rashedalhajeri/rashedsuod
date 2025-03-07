@@ -41,12 +41,12 @@ const ProductItem: React.FC<ProductItemProps> = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: index * 0.05 }}
-        className="flex bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 card-float"
+        className="flex bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-all"
       >
         <Link 
           to={`/store/${storeDomain}/product/${product.id}`}
           className="relative block"
-          style={{ width: '120px' }}
+          style={{ width: '120px', minHeight: '120px' }}
         >
           <div className="relative overflow-hidden bg-gray-100 h-full">
             <img 
@@ -75,63 +75,78 @@ const ProductItem: React.FC<ProductItemProps> = ({
               {formatCurrency(product.price)}
             </p>
             
-            <button className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 transition-all hover:bg-gray-200">
-              <Heart className="h-4 w-4" />
-            </button>
+            <div className="flex gap-2">
+              <button className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 transition-all hover:bg-gray-200">
+                <Heart className="h-4 w-4" />
+              </button>
+              <button className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white transition-all hover:bg-primary/90">
+                <ShoppingCart className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </div>
       </motion.div>
     );
   }
   
-  // Default grid layout
+  // Default grid layout with enhanced design
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.05 }}
-      className="flex flex-col card-float"
+      className="flex flex-col rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-all"
     >
       <Link 
         to={`/store/${storeDomain}/product/${product.id}`}
-        className="relative block mb-2"
+        className="relative block"
       >
-        <div className="relative rounded-xl overflow-hidden shadow-sm bg-gray-100">
+        <div className="relative overflow-hidden bg-gray-100">
           <img 
             src={displayImageUrl} 
             alt={product.name} 
-            className="w-full aspect-square object-cover"
+            className="w-full aspect-square object-cover transition duration-300 hover:scale-105"
             onError={handleImageError}
-            key={product.id} // Add key to force re-render when product changes
+            key={product.id}
           />
           
           {/* Heart button with improved styling */}
-          <button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-gray-700 transition-all hover:bg-white">
+          <button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-gray-700 transition-all hover:bg-white hover:text-rose-500">
             <Heart className="h-4 w-4" />
           </button>
           
           {/* Quick add to cart button */}
-          <button className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white transition-all hover:bg-blue-600">
+          <button className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white transition-all hover:bg-primary/90 shadow-sm">
             <ShoppingCart className="h-4 w-4" />
           </button>
           
-          {/* Price overlay with enhanced design */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent p-3 pt-10">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-white text-lg font-bold">
-                  {formatCurrency(product.price)}
-                </p>
-              </div>
+          {/* If there's a discount, show discount badge */}
+          {product.discount_price && (
+            <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md">
+              خصم {Math.round(((product.price - product.discount_price) / product.price) * 100)}%
             </div>
-          </div>
+          )}
         </div>
       </Link>
       
-      {/* Product name with improved typography */}
-      <h3 className="text-center font-bold text-md text-gray-800 line-clamp-2 px-1">
-        {product.name}
-      </h3>
+      <div className="p-3 bg-white">
+        {/* Product name with improved typography */}
+        <h3 className="font-bold text-sm text-gray-800 line-clamp-2 mb-1 leading-tight">
+          {product.name}
+        </h3>
+        
+        {/* Price with discount display */}
+        <div className="flex items-center mt-1">
+          {product.discount_price ? (
+            <>
+              <span className="font-bold text-red-600">{formatCurrency(product.discount_price)}</span>
+              <span className="text-gray-400 text-xs line-through mr-2">{formatCurrency(product.price)}</span>
+            </>
+          ) : (
+            <span className="font-bold text-gray-900">{formatCurrency(product.price)}</span>
+          )}
+        </div>
+      </div>
     </motion.div>
   );
 };

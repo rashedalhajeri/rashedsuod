@@ -80,7 +80,7 @@ const Products = () => {
     enabled: !!storeData?.id
   });
 
-  const products: Product[] = rawProducts ? rawProducts.map((item: ProductQueryResult) => mapRawProductToProduct({
+  const products: Product[] = rawProducts ? rawProducts.map((item: any) => mapRawProductToProduct({
     ...item,
     is_featured: item.is_featured || false,
     sales_count: item.sales_count || 0,
@@ -199,20 +199,20 @@ const Products = () => {
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto py-4 sm:py-6 px-3 sm:px-4" dir="rtl">
+      <div className="container dashboard-container mx-auto py-5 sm:py-6 px-3 sm:px-4" dir="rtl">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 sm:mb-6 space-y-4 md:space-y-0"
+          className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 sm:mb-6 space-y-4 md:space-y-0"
         >
           <div>
             <div className="flex items-center">
-              <h1 className="text-xl sm:text-2xl font-bold">المنتجات</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">المنتجات</h1>
               {archivedCount > 0 && (
                 <Badge variant="outline" className="mr-2 font-normal">
                   <ArchiveIcon className="h-3 w-3 ml-1" />
-                  {archivedCount} م��رشف
+                  {archivedCount} مؤرشف
                 </Badge>
               )}
               {inactiveCount > 0 && (
@@ -221,18 +221,18 @@ const Products = () => {
                 </Badge>
               )}
             </div>
-            <p className="text-muted-foreground text-sm sm:text-base">
+            <p className="text-muted-foreground text-sm sm:text-base mt-1">
               إدارة منتجات متجرك ({products.length} منتج)
             </p>
           </div>
-          <div className="flex gap-2 w-full md:w-auto">
+          <div className="flex gap-2 w-full md:w-auto action-buttons-container">
             {!isMobile && (
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={handleProductUpdate}
                 disabled={isRefreshing}
-                className="whitespace-nowrap flex items-center gap-1"
+                className="whitespace-nowrap flex items-center gap-1 h-10"
               >
                 <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} /> 
                 تحديث
@@ -240,7 +240,8 @@ const Products = () => {
             )}
             <Button 
               onClick={() => setIsAddProductOpen(true)}
-              className="w-full md:w-auto"
+              className="w-full md:w-auto h-10"
+              size={isMobile ? "default" : "default"}
             >
               <Plus className="h-4 w-4 ml-2" /> إضافة منتج
             </Button>
@@ -252,7 +253,7 @@ const Products = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.1 }}
         >
-          <Card className="overflow-hidden shadow-sm border rounded-xl">
+          <Card className="overflow-hidden shadow-md border rounded-xl">
             {selectedItems.length > 0 && (
               <motion.div 
                 initial={{ opacity: 0, height: 0 }}

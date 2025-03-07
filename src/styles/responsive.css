@@ -85,6 +85,34 @@
   .product-details-mobile .product-image {
     @apply mb-3 mx-auto;
   }
+  
+  /* تحسينات جديدة لقائمة المنتجات */
+  .product-list-item {
+    @apply rounded-md mb-2;
+  }
+  
+  .product-list-item h3 {
+    @apply text-sm font-semibold mb-0.5;
+  }
+  
+  /* تعديل المسافات في صفحة المنتجات */
+  .container.dashboard-container {
+    @apply px-2 py-3;
+  }
+  
+  /* جعل الأزرار أكبر لتحسين تجربة المستخدم */
+  .action-buttons-container button {
+    @apply py-2 min-w-[80px];
+  }
+  
+  /* تنسيق الفلاتر في الموبايل */
+  .product-filter-section {
+    @apply fixed bottom-0 left-0 right-0 border-t bg-white shadow-lg p-3 z-50;
+  }
+  
+  .product-search-container {
+    @apply sticky top-0 z-10 bg-white py-2 border-b;
+  }
 }
 
 /* تحسينات مخصصة للأجهزة اللوحية */
@@ -101,6 +129,11 @@
   /* تعديل عدد العناصر في الصف */
   .product-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  
+  /* تحسينات جديدة لقائمة المنتجات */
+  .product-list-item {
+    @apply rounded-lg mb-3;
   }
 }
 
@@ -124,6 +157,15 @@
   /* تحسين تباعد عناصر قائمة المنتجات */
   .products-list-item {
     @apply py-4;
+  }
+  
+  /* تحسينات جديدة لقائمة المنتجات */
+  .product-list-item {
+    @apply rounded-lg mb-3 hover:shadow-md;
+  }
+  
+  .product-list-item:hover {
+    @apply border-gray-200;
   }
 }
 
@@ -209,4 +251,25 @@
 [dir="rtl"] .product-action-buttons {
   left: 1rem;
   right: auto;
+}
+
+/* تحسينات جديدة للتصميم */
+.product-list-item {
+  @apply border border-gray-100 overflow-hidden transition-all duration-200;
+}
+
+.product-list-actions {
+  @apply transition-opacity;
+}
+
+.badge-container {
+  @apply flex flex-wrap gap-1 mt-1;
+}
+
+.product-image-container {
+  @apply flex items-center justify-center bg-gray-50;
+}
+
+.product-grid-container {
+  @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4;
 }
