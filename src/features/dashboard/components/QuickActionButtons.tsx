@@ -35,31 +35,6 @@ const QuickActionButtons: React.FC = () => {
 
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Button
-          variant="outline"
-          className="flex flex-col items-center gap-2 h-auto py-4"
-          onClick={() => setIsAddProductOpen(true)}
-        >
-          <Package className="h-4 w-4" />
-          <span className="text-xs">إضافة منتج</span>
-        </Button>
-        
-        {actions.map((action, index) => (
-          <Button
-            key={index}
-            variant="outline"
-            asChild
-            className="flex flex-col items-center gap-2 h-auto py-4"
-          >
-            <Link to={action.path}>
-              {action.icon}
-              <span className="text-xs">{action.label}</span>
-            </Link>
-          </Button>
-        ))}
-      </div>
-      
       <ProductFormDialog
         isOpen={isAddProductOpen}
         onOpenChange={setIsAddProductOpen}
