@@ -194,7 +194,7 @@ const OrdersPage: React.FC = () => {
 
   const totalPages = Math.ceil((ordersData?.totalCount || 0) / pageSize);
 
-  // تنظيف لتصنيفات الطلبات
+  // تنظيم لتصنيفات الطلبات
   const statusItems = [
     {
       id: "all",
@@ -276,7 +276,7 @@ const OrdersPage: React.FC = () => {
 
         <OrderStats stats={statsData || { total: 0, processing: 0, delivered: 0, cancelled: 0 }} isLoading={isStatsLoading} />
         
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row items-center gap-4">
           <div className="relative flex-1">
             <Search className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
