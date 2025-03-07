@@ -213,10 +213,9 @@ export const fetchProductsWithFilters = async (
       return [];
     }
     
-    // Process data with explicit type casting to avoid circular references
-    const processedData: Product[] = [];
+    // Process data with explicit product creation to avoid circular references
+    const processedProducts: Product[] = [];
     
-    // Use a for loop instead of map to avoid excessive type instantiation depth
     for (const item of data) {
       const product: Product = {
         id: item.id,
@@ -229,23 +228,139 @@ export const fetchProductsWithFilters = async (
         stock_quantity: item.stock_quantity,
         created_at: item.created_at,
         updated_at: item.updated_at,
-        additional_images: convertToStringArray(item.additional_images),
-        discount_price: item.discount_price || null,
+        discount_price: item.discount_price,
         track_inventory: Boolean(item.track_inventory),
         has_colors: Boolean(item.has_colors),
         has_sizes: Boolean(item.has_sizes),
         require_customer_name: Boolean(item.require_customer_name),
         require_customer_image: Boolean(item.require_customer_image),
+        // Safely process JSON arrays
+        additional_images: convertToStringArray(item.additional_images),
         available_colors: convertToStringArray(item.available_colors),
         available_sizes: convertToStringArray(item.available_sizes)
       };
       
-      processedData.push(product);
+      processedProducts.push(product);
     }
     
-    return processedData;
+    return processedProducts;
   } catch (err) {
     console.error("Error in fetchProductsWithFilters:", err);
     return [];
+  }
+};
+
+/**
+ * Get a product by its ID 
+ */
+export const getProductById = async (productId: string): Promise<{ data: Product | null, error: Error | null }> => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', productId)
+      .single();
+      
+    if (error) {
+      return { data: null, error };
+    }
+    
+    if (!data) {
+      return { data: null, error: new Error('Product not found') };
+    }
+    
+    // Create a properly typed product object
+    const product: Product = {
+      id: data.id,
+      name: data.name,
+      description: data.description,
+      price: data.price,
+      category_id: data.category_id,
+      store_id: data.store_id,
+      image_url: data.image_url,
+      stock_quantity: data.stock_quantity,
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+      discount_price: data.discount_price,
+      track_inventory: Boolean(data.track_inventory),
+      has_colors: Boolean(data.has_colors),
+      has_sizes: Boolean(data.has_sizes),
+      require_customer_name: Boolean(data.require_customer_name),
+      require_customer_image: Boolean(data.require_customer_image),
+      // Safely process JSON arrays
+      additional_images: convertToStringArray(data.additional_images),
+      available_colors: convertToStringArray(data.available_colors),
+      available_sizes: convertToStringArray(data.available_sizes)
+    };
+    
+    return { data: product, error: null };
+  } catch (err) {
+    return { data: null, error: err instanceof Error ? err : new Error('Unknown error') };
+  }
+};
+
+/**
+ * Update a product
+ */
+export const updateProduct = async (productId: string, updates: any) => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .update(updates)
+      .eq('id', productId)
+      .select();
+      
+    if (error) throw error;
+    
+    // Process the returned data to match our Product interface
+    if (data && data.length > 0) {
+      const rawData = data[0];
+      
+      const processedData: Product = {
+        id: rawData.id,
+        name: rawData.name,
+        description: rawData.description,
+        price: rawData.price,
+        category_id: rawData.category_id,
+        store_id: rawData.store_id,
+        image_url: rawData.image_url,
+        stock_quantity: rawData.stock_quantity,
+        created_at: rawData.created_at,
+        updated_at: rawData.updated_at,
+        discount_price: rawData.discount_price,
+        track_inventory: Boolean(rawData.track_inventory),
+        has_colors: Boolean(rawData.has_colors),
+        has_sizes: Boolean(rawData.has_sizes),
+        require_customer_name: Boolean(rawData.require_customer_name),
+        require_customer_image: Boolean(rawData.require_customer_image),
+        additional_images: convertToStringArray(rawData.additional_images),
+        available_colors: convertToStringArray(rawData.available_colors),
+        available_sizes: convertToStringArray(rawData.available_sizes)
+      };
+      
+      return { data: [processedData], error: null };
+    }
+    
+    return { data, error: null };
+  } catch (error) {
+    console.error("Error updating product:", error);
+    return { data: null, error };
+  }
+};
+
+/**
+ * Delete a product
+ */
+export const deleteProduct = async (productId: string) => {
+  try {
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', productId);
+      
+    return { success: !error, error };
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    return { success: false, error };
   }
 };

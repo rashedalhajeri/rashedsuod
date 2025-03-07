@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -19,70 +18,7 @@ import SaveButton from "@/components/ui/save-button";
 import ImageUploadGrid from "@/components/ui/image-upload-grid";
 import { fetchCategories } from "@/services/category-service";
 import { Percent, Box, Tag, User, Image as ImageIcon } from "lucide-react";
-import { Product, convertToStringArray } from "@/utils/product-helpers";
-
-// Define getProductById function since it was referenced but not implemented
-const getProductById = async (productId: string) => {
-  const { data, error } = await supabase
-    .from('products')
-    .select('*')
-    .eq('id', productId)
-    .single();
-    
-  if (error) {
-    return { data: null, error };
-  }
-  
-  if (!data) {
-    return { data: null, error: new Error('Product not found') };
-  }
-  
-  // Process the data to match our Product interface
-  const product: Product = {
-    id: data.id,
-    name: data.name,
-    description: data.description,
-    price: data.price,
-    category_id: data.category_id,
-    store_id: data.store_id,
-    image_url: data.image_url,
-    stock_quantity: data.stock_quantity,
-    created_at: data.created_at,
-    updated_at: data.updated_at,
-    additional_images: convertToStringArray(data.additional_images),
-    discount_price: data.discount_price || null,
-    track_inventory: Boolean(data.track_inventory),
-    has_colors: Boolean(data.has_colors),
-    has_sizes: Boolean(data.has_sizes),
-    require_customer_name: Boolean(data.require_customer_name),
-    require_customer_image: Boolean(data.require_customer_image),
-    available_colors: convertToStringArray(data.available_colors),
-    available_sizes: convertToStringArray(data.available_sizes)
-  };
-  
-  return { data: product, error: null };
-};
-
-// Define updateProduct function
-const updateProduct = async (productId: string, updates: any) => {
-  const { data, error } = await supabase
-    .from('products')
-    .update(updates)
-    .eq('id', productId)
-    .select();
-    
-  return { data, error };
-};
-
-// Define deleteProduct function
-const deleteProduct = async (productId: string) => {
-  const { error } = await supabase
-    .from('products')
-    .delete()
-    .eq('id', productId);
-    
-  return { success: !error, error };
-};
+import { Product, getProductById, updateProduct, deleteProduct } from "@/utils/product-helpers";
 
 const ProductDetail: React.FC = () => {
   const { productId } = useParams<{ productId: string }>();
@@ -202,7 +138,7 @@ const ProductDetail: React.FC = () => {
       setSaving(true);
       
       if (formData.images.length === 0) {
-        toast.error("يرجى إضافة صورة واحدة على الأقل");
+        toast.error("يرجى إضافة صورة واح��ة على الأقل");
         setSaving(false);
         return;
       }
@@ -219,8 +155,10 @@ const ProductDetail: React.FC = () => {
       
       if (error) throw error;
       
-      setProduct(data[0]);
-      toast.success("تم حفظ التغييرات بنجاح");
+      if (data && data.length > 0) {
+        setProduct(data[0]);
+        toast.success("تم حفظ التغييرات بنجاح");
+      }
     } catch (err) {
       console.error("Error updating product:", err);
       toast.error("حدث خطأ أثناء حفظ التغييرات");

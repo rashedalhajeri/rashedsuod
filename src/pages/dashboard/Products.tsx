@@ -88,10 +88,10 @@ const Products: React.FC = () => {
         return [];
       }
       
-      const processedData: Product[] = [];
+      const processedProducts: Product[] = [];
       
       for (const item of data) {
-        processedData.push({
+        const product: Product = {
           id: item.id,
           name: item.name,
           description: item.description,
@@ -102,19 +102,21 @@ const Products: React.FC = () => {
           stock_quantity: item.stock_quantity,
           created_at: item.created_at,
           updated_at: item.updated_at,
-          additional_images: convertToStringArray(item.additional_images),
-          discount_price: item.discount_price || null,
+          discount_price: item.discount_price,
           track_inventory: Boolean(item.track_inventory),
           has_colors: Boolean(item.has_colors),
           has_sizes: Boolean(item.has_sizes),
           require_customer_name: Boolean(item.require_customer_name),
           require_customer_image: Boolean(item.require_customer_image),
+          additional_images: convertToStringArray(item.additional_images),
           available_colors: convertToStringArray(item.available_colors),
           available_sizes: convertToStringArray(item.available_sizes)
-        });
+        };
+        
+        processedProducts.push(product);
       }
       
-      return processedData;
+      return processedProducts;
     },
     enabled: !!storeData?.id,
   });
