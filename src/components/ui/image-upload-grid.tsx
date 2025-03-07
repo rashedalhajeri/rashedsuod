@@ -1,8 +1,8 @@
 
 import React from "react";
-import { ImageUploadGrid } from "@/components/ui/image-upload";
+import { ImageUploadGrid as ModernImageUploadGrid } from "@/components/ui/image-upload";
 
-interface ImageUploadGridProps {
+interface LegacyImageUploadGridProps {
   images: string[];
   onImagesChange: (images: string[]) => void;
   maxImages?: number;
@@ -13,8 +13,8 @@ interface ImageUploadGridProps {
  * @deprecated Use the ImageUploadGrid component from "@/components/ui/image-upload" instead.
  * This component is maintained for backward compatibility.
  */
-const ImageUploadGrid: React.FC<ImageUploadGridProps> = (props) => {
-  return <ImageUploadGrid {...props} />;
+const LegacyImageUploadGrid: React.FC<LegacyImageUploadGridProps> = (props) => {
+  return <ModernImageUploadGrid {...props} />;
 };
 
-export default ImageUploadGrid;
+export default LegacyImageUploadGrid;
