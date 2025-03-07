@@ -401,10 +401,14 @@ export type Database = {
           has_sizes: boolean | null
           id: string
           image_url: string | null
+          is_archived: boolean | null
+          is_featured: boolean | null
           name: string
           price: number
           require_customer_image: boolean | null
           require_customer_name: boolean | null
+          sales_count: number | null
+          section_id: string | null
           stock_quantity: number | null
           store_id: string
           track_inventory: boolean | null
@@ -422,10 +426,14 @@ export type Database = {
           has_sizes?: boolean | null
           id?: string
           image_url?: string | null
+          is_archived?: boolean | null
+          is_featured?: boolean | null
           name: string
           price: number
           require_customer_image?: boolean | null
           require_customer_name?: boolean | null
+          sales_count?: number | null
+          section_id?: string | null
           stock_quantity?: number | null
           store_id: string
           track_inventory?: boolean | null
@@ -443,10 +451,14 @@ export type Database = {
           has_sizes?: boolean | null
           id?: string
           image_url?: string | null
+          is_archived?: boolean | null
+          is_featured?: boolean | null
           name?: string
           price?: number
           require_customer_image?: boolean | null
           require_customer_name?: boolean | null
+          sales_count?: number | null
+          section_id?: string | null
           stock_quantity?: number | null
           store_id?: string
           track_inventory?: boolean | null
@@ -458,6 +470,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "sections"
             referencedColumns: ["id"]
           },
           {
