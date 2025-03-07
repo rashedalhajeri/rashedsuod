@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from "react";
-import { Package, SlidersHorizontal, Search, Check, Archive, RefreshCw, ArrowUpDown, ChevronDown } from "lucide-react";
+import { Package, SlidersHorizontal, Search, Check, Archive, ArrowUpDown, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Product } from "@/utils/products/types";
 import ProductListItem from "./ProductListItem";
@@ -231,15 +230,6 @@ const ProductsList: React.FC<ProductsListProps> = ({
               )}
             </Button>
             
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              className="flex items-center gap-1 text-xs"
-            >
-              <RefreshCw className="h-3.5 w-3.5" />
-              تحديث
-            </Button>
             
             {selectedItems.length > 0 && (
               <span className="mr-2 text-sm text-primary font-medium">

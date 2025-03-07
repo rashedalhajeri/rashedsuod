@@ -243,20 +243,6 @@ const Products = () => {
           </Card>
         </motion.div>
 
-        {isMobile && (
-          <div className="fixed bottom-20 right-4">
-            <Button 
-              size="icon"
-              onClick={handleProductUpdate}
-              disabled={isRefreshing}
-              variant="default"
-              className="rounded-full h-12 w-12 shadow-lg"
-            >
-              <RefreshCw className={`h-5 w-5 ${isRefreshing ? 'animate-spin' : ''}`} />
-            </Button>
-          </div>
-        )}
-
         <ProductFormDialog
           isOpen={isAddProductOpen}
           onOpenChange={setIsAddProductOpen}

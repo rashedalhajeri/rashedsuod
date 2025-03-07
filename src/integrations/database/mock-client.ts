@@ -1,40 +1,27 @@
 
-import { DatabaseClient } from './client';
-import { Product } from '@/utils/products/types';
+// Importing any necessary modules and types
+import { ProductQueryResult } from "@/utils/products/types";
 
-/**
- * Create a mock database client for testing
- * 
- * Example usage:
- * 
- * import { createMockDatabaseClient } from '@/integrations/database/mock-client';
- * 
- * // In your test file:
- * const mockClient = createMockDatabaseClient({
- *   products: {
- *     fetchProductsWithFilters: jest.fn().mockResolvedValue([{ id: '1', name: 'Test Product' }]),
- *     // ... other mocked methods
- *   }
- * });
- */
-export const createMockDatabaseClient = (overrides: Partial<DatabaseClient>): DatabaseClient => {
-  // Default mock implementations
-  const defaultMock: DatabaseClient = {
-    products: {
-      fetchProductsWithFilters: async () => [],
-      getProductById: async () => ({ data: null, error: null }),
-      updateProduct: async () => ({ data: null, error: null }),
-      deleteProduct: async () => ({ success: false, error: null }),
+// Mock implementation of the database client for testing
+export const mockDatabaseClient = {
+  products: {
+    fetchProductsWithFilters: async () => {
+      return [];
     },
-  };
-
-  // Merge default with provided overrides
-  return {
-    ...defaultMock,
-    ...overrides,
-    products: {
-      ...defaultMock.products,
-      ...(overrides.products || {}),
+    getProductById: async () => {
+      return { data: null, error: null };
     },
-  };
+    updateProduct: async () => {
+      return { data: null, error: null };
+    },
+    deleteProduct: async () => {
+      return { success: true, error: null };
+    },
+    archiveProduct: async (productId: string, isArchived: boolean) => {
+      return { data: null, error: null };
+    },
+    bulkArchiveProducts: async (productIds: string[], isArchived: boolean) => {
+      return { success: true, error: null };
+    }
+  }
 };
