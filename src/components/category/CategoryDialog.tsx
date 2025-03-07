@@ -49,7 +49,7 @@ const CategoryDialog: React.FC<CategoryDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 sm:max-w-[425px] p-6 rounded-xl bg-background">
+      <DialogContent className="sm:max-w-[425px] p-6 rounded-xl bg-background">
         <DialogHeader className="pb-4 border-b">
           <motion.div 
             initial={{ opacity: 0, y: -5 }}

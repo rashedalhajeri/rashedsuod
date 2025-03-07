@@ -49,7 +49,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent 
         className={cn(
-          "fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 max-w-[450px] bg-background",
+          "max-w-[450px] bg-background",
           className
         )}
       >

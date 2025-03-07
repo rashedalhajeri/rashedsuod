@@ -135,7 +135,7 @@ const SectionForm: React.FC<SectionFormProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] bg-background">
         <DialogHeader>
           <DialogTitle>إضافة قسم جديد</DialogTitle>
         </DialogHeader>
