@@ -24,13 +24,10 @@ const ProductImagesSection: React.FC<ProductImagesSectionProps> = ({
       </p>
       
       <ImageUploadGrid
-        existingImages={images}
-        onChange={onChange}
-        bucketName="product-images"
-        folderPath={storeId ? `store-${storeId}` : 'products'}
-        maxFiles={maxImages}
-        uploadText="اسحب الصور هنا أو انقر للتحميل"
-        emptyText="لم يتم إضافة صور بعد"
+        images={images}
+        onImagesChange={onChange}
+        maxImages={maxImages}
+        storeId={storeId}
       />
       
       {images.length === 0 && (

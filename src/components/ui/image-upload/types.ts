@@ -4,6 +4,11 @@ export interface ImageUploadProps {
   onImagesChange: (images: string[]) => void;
   maxImages?: number;
   storeId?: string;
+  bucketName?: string;
+  folderPath?: string;
+  maxFiles?: number;
+  uploadText?: string;
+  emptyText?: string;
 }
 
 export interface ImagePreviewProps {

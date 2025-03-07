@@ -27,14 +27,14 @@ const ConditionalSections: React.FC<ConditionalSectionsProps> = ({
         {formData.has_colors && (
           <ColorManagementSection 
             colors={formData.available_colors || []}
-            onChange={handleColorsChange}
+            onColorsChange={handleColorsChange}
           />
         )}
         
         {formData.has_sizes && (
           <SizeManagementSection 
             sizes={formData.available_sizes || []}
-            onChange={handleSizesChange}
+            onSizesChange={handleSizesChange}
           />
         )}
       </div>
