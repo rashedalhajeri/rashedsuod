@@ -19,6 +19,7 @@ interface CategoryListProps {
   handleUpdateCategory: () => void;
   handleDeleteCategory: (id: string) => void;
   setNewCategory: (name: string) => void;
+  openAddDialog: () => void;
 }
 
 const CategoryList: React.FC<CategoryListProps> = ({
@@ -29,7 +30,8 @@ const CategoryList: React.FC<CategoryListProps> = ({
   setEditingCategory,
   handleUpdateCategory,
   handleDeleteCategory,
-  setNewCategory
+  setNewCategory,
+  openAddDialog
 }) => {
   // Filter categories by search query
   const filteredCategories = categories.filter(
@@ -50,7 +52,10 @@ const CategoryList: React.FC<CategoryListProps> = ({
         </p>
         <Button 
           className="mt-4 gap-2"
-          onClick={() => setNewCategory("تصنيف جديد")}
+          onClick={() => {
+            setNewCategory("تصنيف جديد");
+            openAddDialog();
+          }}
         >
           <Plus className="h-4 w-4" />
           <span>إضافة أول تصنيف</span>
