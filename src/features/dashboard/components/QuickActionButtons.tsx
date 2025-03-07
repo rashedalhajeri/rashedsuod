@@ -1,16 +1,21 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Package, Tags, ShoppingBag, Settings } from "lucide-react";
+import { useStoreData } from "@/hooks/use-store-data";
+import ProductFormDialog from "@/components/product/ProductFormDialog";
 
 const QuickActionButtons: React.FC = () => {
+  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
+  const { data: storeData } = useStoreData();
+
+  const handleAddProductSuccess = () => {
+    // Could add a toast notification here
+    setIsAddProductOpen(false);
+  };
+
   const actions = [
-    {
-      icon: <Package className="h-4 w-4" />,
-      label: "إضافة منتج",
-      path: "/dashboard/products/new"
-    },
     {
       icon: <Tags className="h-4 w-4" />,
       label: "التصنيفات",
@@ -29,21 +34,39 @@ const QuickActionButtons: React.FC = () => {
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-      {actions.map((action, index) => (
+    <>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Button
-          key={index}
           variant="outline"
-          asChild
           className="flex flex-col items-center gap-2 h-auto py-4"
+          onClick={() => setIsAddProductOpen(true)}
         >
-          <Link to={action.path}>
-            {action.icon}
-            <span className="text-xs">{action.label}</span>
-          </Link>
+          <Package className="h-4 w-4" />
+          <span className="text-xs">إضافة منتج</span>
         </Button>
-      ))}
-    </div>
+        
+        {actions.map((action, index) => (
+          <Button
+            key={index}
+            variant="outline"
+            asChild
+            className="flex flex-col items-center gap-2 h-auto py-4"
+          >
+            <Link to={action.path}>
+              {action.icon}
+              <span className="text-xs">{action.label}</span>
+            </Link>
+          </Button>
+        ))}
+      </div>
+      
+      <ProductFormDialog
+        isOpen={isAddProductOpen}
+        onOpenChange={setIsAddProductOpen}
+        storeId={storeData?.id}
+        onAddSuccess={handleAddProductSuccess}
+      />
+    </>
   );
 };
 
