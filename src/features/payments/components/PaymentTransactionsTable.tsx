@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -304,11 +303,10 @@ const PaymentTransactionsTable: React.FC<PaymentTransactionsTableProps> = ({ fil
       {totalPages > 1 && (
         <div className="py-4 px-6 border-t border-gray-200">
           <Pagination
-            page={page}
-            totalPages={totalPages}
+            pageCount={totalPages}
+            currentPage={page + 1}
             onPageChange={handlePageChange}
-            totalItems={totalCount}
-            pageSize={pageSize}
+            siblingCount={1}
           />
         </div>
       )}
