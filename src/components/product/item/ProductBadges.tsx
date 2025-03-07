@@ -9,7 +9,7 @@ interface ProductBadgesProps {
 }
 
 export const ProductBadges: React.FC<ProductBadgesProps> = ({ product }) => {
-  const { is_featured, discount_price, track_inventory } = product;
+  const { is_featured, discount_price, track_inventory, price } = product;
 
   return (
     <>
