@@ -26,7 +26,7 @@ const StatsCard: React.FC<StatsCardProps> = ({
   sparklineData,
   isCurrency = false
 }) => {
-  // Handle currency display with smaller currency symbol
+  // Handle currency display with currency symbol at the end
   const renderValue = () => {
     if (isCurrency && typeof value === 'string') {
       // Find the currency symbol and separate it from the number
@@ -35,9 +35,9 @@ const StatsCard: React.FC<StatsCardProps> = ({
       if (match) {
         const [_, currencySymbol, amount] = match;
         return (
-          <div className="flex justify-center relative">
+          <div className="flex justify-center items-center relative">
             <span className="text-xl md:text-2xl">{amount}</span>
-            <span className="text-3xs opacity-40 absolute" style={{ top: '-2px', right: '-14px' }}>{currencySymbol}</span>
+            <span className="text-xs opacity-60 mr-1 ml-1">{currencySymbol}</span>
           </div>
         );
       }
