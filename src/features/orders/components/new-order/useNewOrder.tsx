@@ -1,24 +1,15 @@
+
 import { useState, useEffect } from "react";
-import { v4 as uuidv4 } from "uuid";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-
-interface OrderItem {
-  id: string;
-  productId: string;
-  productName: string;
-  quantity: number;
-  price: number;
-}
-
-interface OrderData {
-  customer_name: string;
-  customer_email: string;
-  customer_phone: string;
-  shipping_address: string;
-  notes: string;
-  payment_method: string;
-}
+import { OrderItem, OrderData, Product } from "../../types/order-types";
+import { fetchProductsBySearch } from "../../services/product-service";
+import { createOrder } from "../../services/order-service";
+import { 
+  addProductToOrder, 
+  updateItemQuantity, 
+  removeItemFromOrder,
+  validateOrderData
+} from "../../utils/order-utils";
 
 export const useNewOrder = (
   storeId: string,
@@ -39,7 +30,7 @@ export const useNewOrder = (
   });
 
   // Fetch products
-  const [productsData, setProductsData] = useState<any[]>([]);
+  const [productsData, setProductsData] = useState<Product[]>([]);
 
   // Reset form when modal is closed
   if (!isOpen) {
@@ -47,29 +38,11 @@ export const useNewOrder = (
     if (searchQuery) setSearchQuery("");
   }
 
-  // Search for products
+  // Fetch and search for products
   const fetchProducts = async () => {
     if (!storeId || !isOpen) return;
-
-    try {
-      let query = supabase
-        .from("products")
-        .select("id, name, price")
-        .eq("store_id", storeId)
-        .eq("is_active", true);
-
-      if (searchQuery) {
-        query = query.ilike("name", `%${searchQuery}%`);
-      }
-
-      const { data, error } = await query.limit(10);
-
-      if (error) throw error;
-      setProductsData(data || []);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      setProductsData([]);
-    }
+    const data = await fetchProductsBySearch(storeId, searchQuery);
+    setProductsData(data);
   };
 
   // Debounced search
@@ -91,113 +64,38 @@ export const useNewOrder = (
   };
 
   const handleAddProduct = (productId: string, productName: string, price: number) => {
-    // Check if product already exists in the order
-    const existingItemIndex = selectedItems.findIndex(item => item.productId === productId);
-
-    if (existingItemIndex >= 0) {
-      // Increment quantity if product already exists
-      const updatedItems = [...selectedItems];
-      updatedItems[existingItemIndex] = {
-        ...updatedItems[existingItemIndex],
-        quantity: updatedItems[existingItemIndex].quantity + 1
-      };
-      setSelectedItems(updatedItems);
-    } else {
-      // Add new product to order
-      setSelectedItems(prev => [
-        ...prev,
-        {
-          id: uuidv4(),
-          productId,
-          productName,
-          quantity: 1,
-          price
-        }
-      ]);
-    }
-
+    setSelectedItems(prevItems => 
+      addProductToOrder(prevItems, productId, productName, price)
+    );
     // Clear search after adding
     setSearchQuery("");
   };
 
   const handleQuantityChange = (id: string, quantity: number) => {
-    if (quantity < 1) return;
-
-    setSelectedItems(prev =>
-      prev.map(item => (item.id === id ? { ...item, quantity } : item))
-    );
+    setSelectedItems(prevItems => updateItemQuantity(prevItems, id, quantity));
   };
 
   const handleRemoveItem = (id: string) => {
-    setSelectedItems(prev => prev.filter(item => item.id !== id));
+    setSelectedItems(prevItems => removeItemFromOrder(prevItems, id));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (selectedItems.length === 0) {
-      toast.error("يرجى إضافة منتج واحد على الأقل");
-      return;
-    }
-
-    if (!orderData.customer_name || !orderData.shipping_address) {
-      toast.error("يرجى ملء الحقول المطلوبة");
+    const validation = validateOrderData(orderData, selectedItems);
+    if (!validation.valid) {
+      toast.error(validation.message);
       return;
     }
 
     setSaving(true);
 
     try {
-      // Calculate total
-      const total = selectedItems.reduce(
-        (sum, item) => sum + item.price * item.quantity,
-        0
-      );
-
-      // Generate order number
-      const orderNumber = `ORD-${Date.now().toString().slice(-6)}`;
-
-      // Create order
-      const { data: order, error: orderError } = await supabase
-        .from("orders")
-        .insert({
-          store_id: storeId,
-          order_number: orderNumber,
-          customer_name: orderData.customer_name,
-          customer_email: orderData.customer_email || null,
-          customer_phone: orderData.customer_phone || null,
-          shipping_address: orderData.shipping_address,
-          payment_method: orderData.payment_method,
-          total,
-          status: "pending",
-          notes: orderData.notes || null
-        })
-        .select()
-        .single();
-
-      if (orderError) throw orderError;
-
-      // Create order items
-      const orderItems = selectedItems.map(item => ({
-        order_id: order.id,
-        product_id: item.productId,
-        quantity: item.quantity,
-        unit_price: item.price,
-        total_price: item.price * item.quantity
-      }));
-
-      const { error: itemsError } = await supabase
-        .from("order_items")
-        .insert(orderItems);
-
-      if (itemsError) throw itemsError;
-
-      toast.success("تم إنشاء الطلب بنجاح");
-      onSuccess();
-      onClose();
-    } catch (error) {
-      console.error("Error creating order:", error);
-      toast.error("حدث خطأ أثناء إنشاء الطلب");
+      const success = await createOrder(storeId, orderData, selectedItems);
+      if (success) {
+        onSuccess();
+        onClose();
+      }
     } finally {
       setSaving(false);
     }
