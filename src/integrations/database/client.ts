@@ -1,4 +1,6 @@
+
 import { productClient } from './clients/product-client';
+import type { ProductDatabaseClient } from './clients/product/types';
 
 export interface DatabaseClient {
   products: ProductDatabaseClient;

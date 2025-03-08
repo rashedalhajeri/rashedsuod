@@ -1,79 +1,30 @@
-import React, { useEffect, useState } from "react";
+
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/use-cart";
 import { ErrorState } from "@/components/ui/error-state";
 import { toast } from "sonner";
 import StoreHeader from "@/components/store/unified/StoreHeader";
 import { motion } from "framer-motion";
-
-import ProductImage from "@/components/product/ProductImage";
-import ProductInfo from "@/components/product/ProductInfo";
-import ProductActions from "@/components/product/ProductActions";
-import ProductImageSkeleton from "@/components/product/ProductImageSkeleton";
-import ProductInfoSkeleton from "@/components/product/ProductInfoSkeleton";
+import { useProductDetails } from "@/hooks/use-product-details";
+import ProductContainer from "@/components/product/ProductContainer";
+import ProductOverview from "@/components/product/ProductOverview";
+import ProductPriceBar from "@/components/product/ProductPriceBar";
 
 const ProductPage = () => {
   const { productId, storeDomain } = useParams<{ productId: string; storeDomain: string }>();
-  const [product, setProduct] = useState<any>(null);
-  const [storeData, setStoreData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
-  const [showContent, setShowContent] = useState(false);
   
-  useEffect(() => {
-    const fetchProductData = async () => {
-      try {
-        setLoading(true);
-        
-        const { data: store, error: storeError } = await supabase
-          .from('stores')
-          .select('*')
-          .eq('domain_name', storeDomain)
-          .single();
-        
-        if (storeError) throw storeError;
-        if (!store) {
-          setError("لم يتم العثور على المتجر");
-          return;
-        }
-        
-        setStoreData(store);
-        
-        const { data: productData, error: productError } = await supabase
-          .from('products')
-          .select('*')
-          .eq('id', productId)
-          .eq('store_id', store.id)
-          .single();
-        
-        if (productError) throw productError;
-        if (!productData) {
-          setError("لم يتم العثور على المنتج");
-          return;
-        }
-        
-        setProduct(productData);
-        
-      } catch (err) {
-        console.error("Error fetching product data:", err);
-        setError("حدث خطأ أثناء تحميل بيانات المنتج");
-      } finally {
-        setTimeout(() => {
-          setLoading(false);
-          setTimeout(() => {
-            setShowContent(true);
-          }, 100);
-        }, 300);
-      }
-    };
-    
-    if (productId && storeDomain) {
-      fetchProductData();
-    }
-  }, [productId, storeDomain]);
+  const {
+    product,
+    storeData,
+    loading,
+    error,
+    showContent,
+    formatCurrency,
+    isOutOfStock
+  } = useProductDetails(productId, storeDomain);
   
   const handleQuantityChange = (type: 'increase' | 'decrease') => {
     if (type === 'decrease' && quantity > 1) {
@@ -107,21 +58,6 @@ const ProductPage = () => {
     }
   };
   
-  const formatCurrency = (price: number) => {
-    const currencySymbol = storeData?.currency === 'KWD' ? 'د.ك' : 
-                         storeData?.currency === 'SAR' ? 'ر.س' : 
-                         storeData?.currency;
-    
-    return new Intl.NumberFormat('ar-SA', {
-      minimumFractionDigits: 3,
-      maximumFractionDigits: 3
-    }).format(price) + ' ' + (currencySymbol || '');
-  };
-  
-  const isOutOfStock = product?.track_inventory && 
-                      product?.stock_quantity !== null && 
-                      product?.stock_quantity <= 0;
-  
   if (error) {
     return (
       <motion.div
@@ -143,95 +79,34 @@ const ProductPage = () => {
       />
       
       <main className="flex-grow bg-gray-50">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: loading ? 0 : 1, y: loading ? 20 : 0 }}
-          transition={{ duration: 0.4 }}
-          className="bg-white rounded-3xl shadow-sm mx-4 -mt-4 overflow-hidden"
-        >
-          {loading ? (
-            <ProductImageSkeleton />
-          ) : (
-            <ProductImage 
-              imageUrl={product.image_url} 
-              name={product.name}
-              discount_percentage={product.discount_percentage}
-              is_new={product.is_new}
-              storeLogo={storeData?.logo_url}
-              storeName={storeData?.store_name}
-            />
-          )}
-          
-          <div className="p-4">
-            {loading ? (
-              <ProductInfoSkeleton />
-            ) : (
-              <ProductInfo 
-                product={{
-                  ...product,
-                  stock_quantity: product.track_inventory ? product.stock_quantity : null
-                }} 
-                formatCurrency={formatCurrency} 
-              />
-            )}
-          </div>
-        </motion.div>
+        {/* Product Container */}
+        <ProductContainer 
+          loading={loading} 
+          product={product} 
+          storeData={storeData} 
+          formatCurrency={formatCurrency}
+        />
         
-        {!loading && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: showContent ? 1 : 0, y: showContent ? 0 : 20 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-            className="mt-4 mx-4 bg-white rounded-xl shadow-sm overflow-hidden"
-          >
-            <div className="border-b border-gray-100">
-              <h2 className="text-xl font-bold p-4">نظرة عامة</h2>
-            </div>
-            <div className="p-4">
-              <h3 className="font-medium mb-2">وصف المنتج</h3>
-              <p className="text-gray-700">
-                {product.description || "لا يوجد وصف متاح لهذا المنتج"}
-              </p>
-              
-              {product.highlights && product.highlights.length > 0 && (
-                <div className="mt-4">
-                  <ul className="space-y-2">
-                    {product.highlights.map((highlight: string, index: number) => (
-                      <li key={index} className="text-gray-700">
-                        {highlight}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </motion.div>
+        {/* Product Overview */}
+        {!loading && product && (
+          <ProductOverview 
+            product={product} 
+            showContent={showContent} 
+          />
         )}
         
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: showContent ? 1 : 0, y: showContent ? 0 : 20 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-          className="fixed bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 flex justify-between items-center"
-        >
-          {!loading && (
-            <>
-              <div className="text-2xl font-bold text-gray-800">
-                {formatCurrency(product.price)}
-              </div>
-              <div className="flex items-center gap-2">
-                <ProductActions
-                  quantity={quantity}
-                  onQuantityChange={handleQuantityChange}
-                  onAddToCart={handleAddToCart}
-                  isOutOfStock={isOutOfStock}
-                  trackInventory={product?.track_inventory || false}
-                  stockQuantity={product?.stock_quantity || 0}
-                />
-              </div>
-            </>
-          )}
-        </motion.div>
+        {/* Price and Add to Cart Bar */}
+        {!loading && product && (
+          <ProductPriceBar
+            formatCurrency={formatCurrency}
+            product={product}
+            showContent={showContent}
+            quantity={quantity}
+            onQuantityChange={handleQuantityChange}
+            onAddToCart={handleAddToCart}
+            isOutOfStock={isOutOfStock}
+          />
+        )}
       </main>
     </div>
   );
