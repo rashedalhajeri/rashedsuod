@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { Product, RawProductData } from "@/utils/products/types";
 import { mapRawProductToProduct } from "@/utils/products/mappers";
 import { databaseClient } from "@/integrations/database/client";
@@ -82,29 +82,18 @@ export const useProducts = (storeId?: string) => {
 
   const handleDeleteProduct = async (productId: string) => {
     try {
-      const { success, error } = await databaseClient.products.deleteProduct(productId);
+      // Use hardDeleteProduct for permanent deletion
+      const { success, error } = await databaseClient.products.hardDeleteProduct(productId);
       
       if (!success) {
-        toast({
-          variant: "destructive",
-          title: "خطأ في حذف المنتج",
-          description: error.message,
-        });
+        toast.error("خطأ في حذف المنتج: " + (error?.message || "حدث خطأ غير متوقع"));
         return;
       }
       
-      toast({
-        title: "تم الحذف بنجاح",
-        description: "تم حذف المنتج بنجاح من المتجر",
-      });
-      
+      toast.success("تم حذف المنتج بنجاح");
       handleProductUpdate();
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "خطأ غير متوقع",
-        description: error.message,
-      });
+      toast.error("خطأ غير متوقع: " + error.message);
     }
   };
 
@@ -113,26 +102,14 @@ export const useProducts = (storeId?: string) => {
       const { data, error } = await databaseClient.products.activateProduct(productId, isActive);
       
       if (error) {
-        toast({
-          variant: "destructive",
-          title: isActive ? "خطأ في تفعيل المنتج" : "خطأ في تعطيل المنتج",
-          description: error.message,
-        });
+        toast.error(isActive ? "خطأ في تفعيل المنتج" : "خطأ في تعطيل المنتج");
         return;
       }
       
-      toast({
-        title: isActive ? "تم تفعيل المنتج بنجاح" : "تم تعطيل المنتج بنجاح",
-        description: isActive ? "تم تفعيل المنتج وأصبح ظاهر للعملاء" : "تم تعطيل المنتج وأصبح غير ظاهر للعملاء",
-      });
-      
+      toast.success(isActive ? "تم تفعيل المنتج بنجاح" : "تم تعطيل المنتج بنجاح");
       handleProductUpdate();
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "خطأ غير متوقع",
-        description: error.message,
-      });
+      toast.error("خطأ غير متوقع: " + error.message);
     }
   };
 

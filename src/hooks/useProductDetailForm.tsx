@@ -1,3 +1,4 @@
+
 import { useState, useEffect, ChangeEvent } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -99,7 +100,7 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
         if (error) {
           console.error("Error fetching product:", error);
           setError(error.message);
-          toast.error("خطأ", { description: "فشل في تحميل بيانات المنتج." });
+          toast.error("خطأ في تحميل بيانات المنتج");
           return;
         }
 
@@ -124,7 +125,7 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
       } catch (error: any) {
         console.error("Unexpected error fetching product:", error);
         setError(error.message);
-        toast.error("خطأ", { description: "فشل في تحميل بيانات المنتج." });
+        toast.error("خطأ في تحميل بيانات المنتج");
       } finally {
         setIsInitialLoading(false);
       }
@@ -179,11 +180,11 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
       if (error) {
         console.error("Error updating product:", error);
         setError(typeof error === 'object' ? JSON.stringify(error) : error.toString());
-        toast.error("خطأ", { description: "فشل في تحديث المنتج: " + (error.message || error) });
+        toast.error("فشل في تحديث المنتج: " + (error.message || error));
         return;
       }
 
-      toast.success("تم بنجاح", { description: "تم تحديث المنتج بنجاح." });
+      toast.success("تم تحديث المنتج بنجاح");
       
       if (onSuccess) {
         onSuccess();
@@ -195,7 +196,7 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     } catch (error: any) {
       console.error("Unexpected error updating product:", error);
       setError(error.message);
-      toast.error("خطأ", { description: "فشل في تحديث المنتج: " + error.message });
+      toast.error("فشل في تحديث المنتج: " + error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -206,16 +207,17 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     
     setIsSubmitting(true);
     try {
-      const { success, error } = await databaseClient.products.deleteProduct(productId);
+      // Use hardDeleteProduct to forcefully delete the product by first removing related order items
+      const { success, error } = await databaseClient.products.hardDeleteProduct(productId);
       
       if (!success) {
         console.error("Error deleting product:", error);
         setError(error.message);
-        toast.error("خطأ", { description: "فشل في حذف المنتج: " + error.message });
+        toast.error("فشل في حذف المنتج: " + error.message);
         return;
       }
 
-      toast.success("تم بنجاح", { description: "تم حذف المنتج بنجاح." });
+      toast.success("تم حذف المنتج بنجاح");
       
       if (onSuccess) {
         onSuccess();
@@ -227,7 +229,7 @@ export const useProductDetailForm = ({ productId, storeData, onOpenChange, onSuc
     } catch (error: any) {
       console.error("Unexpected error deleting product:", error);
       setError(error.message);
-      toast.error("خطأ", { description: "فشل في حذف المنتج: " + error.message });
+      toast.error("فشل في حذف المنتج: " + error.message);
     } finally {
       setIsSubmitting(false);
     }

@@ -10,7 +10,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import ProductsHeader from "@/components/product/ProductsHeader";
 import ProductsContent from "@/components/product/ProductsContent";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 const Products = () => {
   const { data: storeData, isLoading: loadingStore } = useStoreData();
@@ -46,16 +46,9 @@ const Products = () => {
     try {
       await Promise.all(productIds.map(id => action(id)));
       handleProductUpdate();
-      toast({
-        title: "تم تنفيذ العملية بنجاح",
-        description: `تم تحديث ${productIds.length} منتج`,
-      });
+      toast.success(`تم تحديث ${productIds.length} منتج`);
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "خطأ في تنفيذ العملية",
-        description: (error as Error).message,
-      });
+      toast.error("خطأ في تنفيذ العملية: " + (error as Error).message);
     }
   };
 

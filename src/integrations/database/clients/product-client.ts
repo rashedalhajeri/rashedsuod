@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Product, RawProductData } from "@/utils/products/types";
 import { mapRawProductToProduct } from "@/utils/products/mappers";
@@ -153,10 +154,13 @@ export class SupabaseProductClient implements ProductDatabaseClient {
       if (orderItems && orderItems.length > 0) {
         console.log(`Found ${orderItems.length} order items related to this product`);
         
-        // Option 1: Instead of deleting, just set the product as inactive
+        // For products with orders, just set is_active to false and is_archived to true
         const { error: updateError } = await supabase
           .from('products')
-          .update({ is_active: false })
+          .update({ 
+            is_active: false,
+            is_archived: true 
+          })
           .eq('id', productId);
           
         if (updateError) {
@@ -164,15 +168,16 @@ export class SupabaseProductClient implements ProductDatabaseClient {
           return { success: false, error: updateError };
         }
         
-        console.log("Product successfully deactivated instead of deleted due to order references");
+        console.log("Product successfully archived instead of deleted due to order references");
         return { 
           success: true, 
           error: null,
-          deactivated: true 
+          archived: true
         };
       }
       
       // If no order items, we can safely delete the product
+      console.log("No order items found, proceeding to delete the product");
       const { error: deleteProductError } = await supabase
         .from('products')
         .delete()
@@ -195,7 +200,8 @@ export class SupabaseProductClient implements ProductDatabaseClient {
     try {
       console.log(`Attempting to permanently delete product with ID: ${productId}`);
       
-      // First, we need to delete all order_items referencing this product
+      // First, delete all order_items referencing this product
+      console.log("Deleting order items related to the product");
       const { error: deleteItemsError } = await supabase
         .from('order_items')
         .delete()
@@ -207,6 +213,7 @@ export class SupabaseProductClient implements ProductDatabaseClient {
       }
       
       // Now delete the product
+      console.log("Proceeding to delete the product");
       const { error: deleteProductError } = await supabase
         .from('products')
         .delete()
