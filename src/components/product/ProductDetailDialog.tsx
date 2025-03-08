@@ -7,10 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash, Power, PowerOff, X, Loader2, Info, Package, Calendar, Tag } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { formatCurrency } from "@/utils/currency";
+import { Edit, Trash, Power, PowerOff, Loader2, Package } from "lucide-react";
 import { Product, RawProductData } from "@/utils/products/types";
 import { toast } from "sonner";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
@@ -124,10 +121,10 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   if (isLoading) {
     return (
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md" dir="rtl">
-          <div className="flex justify-center items-center p-10">
+        <DialogContent className="sm:max-w-xs" dir="rtl">
+          <div className="flex justify-center items-center p-6">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <span className="mr-2">جاري تحميل بيانات المنتج...</span>
+            <span className="mr-2">جاري التحميل...</span>
           </div>
         </DialogContent>
       </Dialog>
@@ -137,12 +134,12 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   if (error || !product) {
     return (
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md" dir="rtl">
+        <DialogContent className="sm:max-w-xs" dir="rtl">
           <DialogHeader>
-            <DialogTitle className="text-center text-red-500">خطأ في تحميل المنتج</DialogTitle>
+            <DialogTitle className="text-center text-red-500">حدث خطأ</DialogTitle>
           </DialogHeader>
           <div className="text-center py-4">
-            <p>حدث خطأ أثناء تحميل بيانات المنتج. الرجاء المحاولة مرة أخرى.</p>
+            <p>حدث خطأ أثناء تحميل بيانات المنتج.</p>
           </div>
         </DialogContent>
       </Dialog>
@@ -152,140 +149,74 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md md:max-w-lg" dir="rtl">
-          <DialogHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <DialogTitle className="text-xl">تفاصيل المنتج</DialogTitle>
-              {product.is_active ? (
-                <Badge className="bg-green-100 text-green-800 border-green-200 py-1 px-3">نشط</Badge>
-              ) : (
-                <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-200 py-1 px-3">غير نشط</Badge>
-              )}
-            </div>
+        <DialogContent className="sm:max-w-xs" dir="rtl">
+          <DialogHeader className="text-center">
+            <DialogTitle className="text-xl font-bold mb-4">تفاصيل المنتج</DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-4 py-2">
-            {/* صورة المنتج والمعلومات الأساسية */}
-            <div className="flex gap-5">
-              <div className="h-28 w-28 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 flex-shrink-0">
-                {product.image_url ? (
-                  <img 
-                    src={product.image_url} 
-                    alt={product.name}
-                    className="h-full w-full object-cover" 
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = "/placeholder.svg";
-                    }}
-                  />
-                ) : (
-                  <div className="h-full w-full flex items-center justify-center bg-gray-50">
-                    <Package className="h-10 w-10 text-gray-300" />
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex-1">
-                <h3 className="text-xl font-bold mb-1">{product.name}</h3>
-                <div className="flex items-center gap-2 mt-1">
-                  {product.discount_price ? (
-                    <>
-                      <span className="text-red-600 text-lg font-bold">{formatCurrency(product.discount_price)}</span>
-                      <span className="text-gray-400 text-sm line-through">{formatCurrency(product.price)}</span>
-                    </>
-                  ) : (
-                    <span className="text-lg font-bold">{formatCurrency(product.price)}</span>
-                  )}
+          <div className="flex flex-col items-center space-y-4">
+            {/* صورة المنتج */}
+            <div className="h-40 w-40 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+              {product.image_url ? (
+                <img 
+                  src={product.image_url} 
+                  alt={product.name}
+                  className="h-full w-full object-cover" 
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/placeholder.svg";
+                  }}
+                />
+              ) : (
+                <div className="h-full w-full flex items-center justify-center bg-gray-50">
+                  <Package className="h-16 w-16 text-gray-300" />
                 </div>
-                
-                {product.category && (
-                  <div className="mt-2 flex items-center">
-                    <Tag className="h-4 w-4 text-gray-500 ml-1" />
-                    <span className="text-sm text-gray-600">{product.category.name}</span>
-                  </div>
-                )}
-              </div>
+              )}
             </div>
             
-            <Separator />
-            
-            {/* المعلومات الإضافية */}
-            {product.description && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-1 text-gray-700 mb-1">
-                  <Info className="h-4 w-4" />
-                  <h4 className="font-medium">الوصف</h4>
-                </div>
-                <p className="text-gray-600 text-sm pr-5">{product.description}</p>
-              </div>
-            )}
-            
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <div className="flex items-center gap-1 text-gray-700 mb-1">
-                  <Package className="h-4 w-4" />
-                  <span className="font-medium">المخزون</span>
-                </div>
-                <span className="text-gray-700">
-                  {product.track_inventory 
-                    ? `${product.stock_quantity || 0} قطعة` 
-                    : "غير محدود"}
-                </span>
-              </div>
-              
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <div className="flex items-center gap-1 text-gray-700 mb-1">
-                  <Calendar className="h-4 w-4" />
-                  <span className="font-medium">تاريخ الإضافة</span>
-                </div>
-                <span className="text-gray-700">
-                  {new Date(product.created_at).toLocaleDateString("ar-SA")}
-                </span>
-              </div>
-            </div>
-            
-            <Separator className="my-1" />
+            {/* اسم المنتج */}
+            <h2 className="text-xl font-bold text-center">{product.name}</h2>
             
             {/* أزرار الإجراءات */}
-            <div className="grid grid-cols-1 gap-3 pt-1">
+            <div className="w-full space-y-3 pt-2">
               <Button
                 onClick={handleEditProduct}
-                className="w-full"
+                className="w-full flex justify-center items-center"
                 variant="outline"
               >
-                <Edit className="h-4 w-4 ml-2" />
-                تعديل المنتج
+                <Edit className="h-5 w-5 ml-2" />
+                <span>تعديل المنتج</span>
               </Button>
               
               <Button
                 onClick={handleToggleActive}
-                className={`w-full ${product.is_active 
+                className={`w-full flex justify-center items-center ${product.is_active 
                   ? "text-amber-600 border-amber-200 bg-amber-50 hover:text-amber-700 hover:bg-amber-100" 
                   : "text-green-600 border-green-200 bg-green-50 hover:text-green-700 hover:bg-green-100"}`}
                 variant="outline"
                 disabled={toggleActiveMutation.isPending}
               >
                 {toggleActiveMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+                  <Loader2 className="h-5 w-5 ml-2 animate-spin" />
                 ) : product.is_active ? (
-                  <PowerOff className="h-4 w-4 ml-2" />
+                  <PowerOff className="h-5 w-5 ml-2" />
                 ) : (
-                  <Power className="h-4 w-4 ml-2" />
+                  <Power className="h-5 w-5 ml-2" />
                 )}
-                {product.is_active ? "تعطيل المنتج" : "تفعيل المنتج"}
+                <span>{product.is_active ? "تعطيل المنتج" : "تفعيل المنتج"}</span>
               </Button>
               
               <Button
                 onClick={handleDeleteProduct}
-                className="bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 border border-red-200"
+                className="w-full flex justify-center items-center bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 border border-red-200"
                 variant="outline"
                 disabled={deleteMutation.isPending}
               >
                 {deleteMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+                  <Loader2 className="h-5 w-5 ml-2 animate-spin" />
                 ) : (
-                  <Trash className="h-4 w-4 ml-2" />
+                  <Trash className="h-5 w-5 ml-2" />
                 )}
-                حذف المنتج
+                <span>حذف المنتج</span>
               </Button>
             </div>
           </div>
