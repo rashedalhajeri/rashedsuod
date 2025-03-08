@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { Suspense } from "react";
 import useStoreData, { getCurrencyFormatter } from "@/hooks/use-store-data";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import LoadingState from "@/components/ui/loading-state";
@@ -11,11 +11,13 @@ import DashboardStatsSection from "@/features/dashboard/components/DashboardStat
 import SubscriptionAlert from "@/features/dashboard/components/SubscriptionAlert";
 import ActivitySummarySection from "@/features/dashboard/components/ActivitySummarySection";
 import DashboardErrorHandler from "@/features/dashboard/components/DashboardErrorHandler";
+import SalesChartSkeleton from "@/features/dashboard/components/SalesChartSkeleton";
 
 // Import data fetching hook
 import useDashboardData from "@/features/dashboard/hooks/useDashboardData";
 import { Button } from "@/components/ui/button";
 import { ArrowDownToLine } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Dashboard Home Page
 const DashboardHome: React.FC = () => {
@@ -55,19 +57,12 @@ const DashboardHome: React.FC = () => {
     );
   }
   
-  if (isLoading && (!storeData || !statsData)) {
-    return <LoadingState message="جاري تحميل البيانات..." />;
-  }
-  
   // Format currency based on store settings
   const formatCurrency = getCurrencyFormatter(storeData?.currency || 'KWD');
   
   // Subscription plan status
   const subscriptionStatus = storeData?.subscription_plan || "free";
   const isBasicPlan = subscriptionStatus === "basic";
-
-  // Check for low stock products
-  const lowStockCount = productsData?.filter(p => p.stock < 10).length || 0;
 
   // Transform salesData to match the expected format if needed
   const formattedSalesData = salesData?.map(item => ({
@@ -98,20 +93,45 @@ const DashboardHome: React.FC = () => {
           }} 
           formatCurrency={formatCurrency}
           onPeriodChange={handlePeriodChange}
+          isLoading={isLoading && !statsData}
         />
         
-        {/* Sales Chart */}
-        <SalesChart 
-          data={formattedSalesData}
-          currency={storeData?.currency || "د.ك"}
-        />
+        {/* Sales Chart with Skeleton */}
+        {isLoading && !salesData ? (
+          <SalesChartSkeleton />
+        ) : (
+          <SalesChart 
+            data={formattedSalesData}
+            currency={storeData?.currency || "د.ك"}
+          />
+        )}
         
-        {/* Activity Summary Section */}
-        <ActivitySummarySection
-          orders={ordersData?.orders || []}
-          products={productsData || []}
-          currency={storeData?.currency || "KWD"}
-        />
+        {/* Activity Summary Section with Skeleton */}
+        {isLoading && (!ordersData || !productsData) ? (
+          <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+            <Skeleton className="h-8 w-48 mb-4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Skeleton className="h-6 w-32 mb-3" />
+                {[1, 2, 3].map(i => (
+                  <Skeleton key={`order-${i}`} className="h-16 w-full mb-2" />
+                ))}
+              </div>
+              <div>
+                <Skeleton className="h-6 w-32 mb-3" />
+                {[1, 2, 3].map(i => (
+                  <Skeleton key={`product-${i}`} className="h-16 w-full mb-2" />
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <ActivitySummarySection
+            orders={ordersData?.orders || []}
+            products={productsData || []}
+            currency={storeData?.currency || "KWD"}
+          />
+        )}
         
         {/* Report Section */}
         <div className="bg-white p-4 rounded-xl border border-gray-100 mt-6 shadow-sm hover:shadow-md transition-all duration-200">

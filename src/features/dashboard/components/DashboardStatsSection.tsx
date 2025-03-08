@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface DashboardStatsSectionProps {
   stats: {
@@ -20,12 +21,14 @@ interface DashboardStatsSectionProps {
   };
   formatCurrency: (value: number) => string;
   onPeriodChange?: (period: string) => void;
+  isLoading?: boolean;
 }
 
 const DashboardStatsSection: React.FC<DashboardStatsSectionProps> = ({
   stats,
   formatCurrency,
-  onPeriodChange
+  onPeriodChange,
+  isLoading = false
 }) => {
   const [selectedPeriod, setSelectedPeriod] = useState<string>("day");
   
@@ -103,39 +106,62 @@ const DashboardStatsSection: React.FC<DashboardStatsSectionProps> = ({
       </div>
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatsCard 
-          title="المنتجات"
-          value={stats.products.toString()}
-          icon={<Package className="h-5 w-5" />}
-          iconClassName="bg-blue-100 text-blue-600"
-          trend={trends.products}
-          sparklineData={sparklines.products}
-        />
-        <StatsCard 
-          title="الطلبات"
-          value={stats.orders.toString()}
-          icon={<ShoppingBag className="h-5 w-5" />}
-          iconClassName="bg-orange-100 text-orange-600"
-          trend={trends.orders}
-          sparklineData={sparklines.orders}
-        />
-        <StatsCard 
-          title="العملاء"
-          value={stats.customers.toString()}
-          icon={<Users className="h-5 w-5" />}
-          iconClassName="bg-green-100 text-green-600"
-          trend={trends.customers}
-          sparklineData={sparklines.customers}
-        />
-        <StatsCard 
-          title="الإيرادات"
-          value={formatCurrency(stats.revenue)}
-          icon={<DollarSign className="h-5 w-5" />}
-          iconClassName="bg-purple-100 text-purple-600"
-          trend={trends.revenue}
-          sparklineData={sparklines.revenue}
-          isCurrency={true}
-        />
+        {isLoading ? (
+          // Show skeleton loading cards while data is loading
+          <>
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="w-full">
+                <div className="border border-gray-100 bg-white rounded-lg p-4 md:p-6 h-full">
+                  <div className="flex justify-between items-center">
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-6 w-16" />
+                      <Skeleton className="h-3 w-24 mt-1" />
+                    </div>
+                    <Skeleton className="h-10 w-10 rounded-xl" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </>
+        ) : (
+          // Show actual stats when loaded
+          <>
+            <StatsCard 
+              title="المنتجات"
+              value={stats.products.toString()}
+              icon={<Package className="h-5 w-5" />}
+              iconClassName="bg-blue-100 text-blue-600"
+              trend={trends.products}
+              sparklineData={sparklines.products}
+            />
+            <StatsCard 
+              title="الطلبات"
+              value={stats.orders.toString()}
+              icon={<ShoppingBag className="h-5 w-5" />}
+              iconClassName="bg-orange-100 text-orange-600"
+              trend={trends.orders}
+              sparklineData={sparklines.orders}
+            />
+            <StatsCard 
+              title="العملاء"
+              value={stats.customers.toString()}
+              icon={<Users className="h-5 w-5" />}
+              iconClassName="bg-green-100 text-green-600"
+              trend={trends.customers}
+              sparklineData={sparklines.customers}
+            />
+            <StatsCard 
+              title="الإيرادات"
+              value={formatCurrency(stats.revenue)}
+              icon={<DollarSign className="h-5 w-5" />}
+              iconClassName="bg-purple-100 text-purple-600"
+              trend={trends.revenue}
+              sparklineData={sparklines.revenue}
+              isCurrency={true}
+            />
+          </>
+        )}
       </div>
     </div>
   );
