@@ -82,8 +82,8 @@ export const useProducts = (storeId?: string) => {
 
   const handleDeleteProduct = async (productId: string) => {
     try {
-      // Use hardDeleteProduct for permanent deletion
-      const { success, error } = await databaseClient.products.hardDeleteProduct(productId);
+      // Use direct deleteProduct for permanent deletion regardless of orders
+      const { success, error } = await databaseClient.products.deleteProduct(productId);
       
       if (!success) {
         toast.error("خطأ في حذف المنتج: " + (error?.message || "حدث خطأ غير متوقع"));

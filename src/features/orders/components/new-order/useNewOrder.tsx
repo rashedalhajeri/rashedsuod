@@ -1,29 +1,24 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { createOrder } from "@/services/order-service";
-import { OrderStatus } from "@/types/orders";
-import { useQuery } from "@tanstack/react-query";
-import { getProductsWithPagination } from "@/integrations/supabase/client";
 
 interface OrderItem {
-  product_id: string;
-  product_name: string;
+  id: string;
+  productId: string;
+  productName: string;
   quantity: number;
-  unit_price: number;
-  total_price: number;
+  price: number;
 }
 
 interface OrderData {
-  order_number: string;
   customer_name: string;
   customer_email: string;
   customer_phone: string;
   shipping_address: string;
-  payment_method: string;
-  status: OrderStatus;
-  total: number;
   notes: string;
+  payment_method: string;
 }
 
 export const useNewOrder = (
@@ -32,167 +27,178 @@ export const useNewOrder = (
   onClose: () => void,
   onSuccess: () => void
 ) => {
-  const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedItems, setSelectedItems] = useState<OrderItem[]>([]);
-  
-  const generateOrderNumber = () => {
-    const randomNumber = Math.floor(Math.random() * 9999) + 1;
-    return `ORD-${randomNumber.toString().padStart(4, '0')}`;
-  };
-  
+  const [saving, setSaving] = useState(false);
   const [orderData, setOrderData] = useState<OrderData>({
-    order_number: generateOrderNumber(),
     customer_name: "",
     customer_email: "",
     customer_phone: "",
     shipping_address: "",
-    payment_method: "cash",
-    status: "processing",
-    total: 0,
-    notes: ""
+    notes: "",
+    payment_method: "cash_on_delivery"
   });
 
-  const { data: productsData } = useQuery({
-    queryKey: ["products", storeId, searchQuery],
-    queryFn: () => getProductsWithPagination(storeId, 0, 100, searchQuery),
-    enabled: !!storeId && isOpen
-  });
+  // Fetch products
+  const [productsData, setProductsData] = useState<any[]>([]);
 
-  useEffect(() => {
-    if (isOpen) {
-      setOrderData(prev => ({
-        ...prev,
-        order_number: generateOrderNumber(),
-        total: 0
-      }));
-      setSelectedItems([]);
-      setSearchQuery("");
+  // Reset form when modal is closed
+  if (!isOpen) {
+    if (selectedItems.length > 0) setSelectedItems([]);
+    if (searchQuery) setSearchQuery("");
+  }
+
+  // Search for products
+  const fetchProducts = async () => {
+    if (!storeId || !isOpen) return;
+
+    try {
+      let query = supabase
+        .from("products")
+        .select("id, name, price")
+        .eq("store_id", storeId)
+        .eq("is_active", true);
+
+      if (searchQuery) {
+        query = query.ilike("name", `%${searchQuery}%`);
+      }
+
+      const { data, error } = await query.limit(10);
+
+      if (error) throw error;
+      setProductsData(data || []);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      setProductsData([]);
     }
-  }, [isOpen, storeId]);
+  };
 
-  useEffect(() => {
-    const newTotal = selectedItems.reduce((sum, item) => sum + item.total_price, 0);
-    setOrderData(prev => ({
-      ...prev,
-      total: newTotal
-    }));
-  }, [selectedItems]);
+  // Debounced search
+  useState(() => {
+    const timer = setTimeout(() => {
+      fetchProducts();
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, storeId, isOpen]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setOrderData(prev => ({
-      ...prev,
-      [name]: name === "total" ? parseFloat(value) || 0 : value
-    }));
+    setOrderData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    if (name === "status") {
-      setOrderData(prev => ({
-        ...prev,
-        [name]: value as OrderStatus
-      }));
-    } else {
-      setOrderData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
+    setOrderData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleAddProduct = (productId: string, productName: string, price: number) => {
-    const existingItemIndex = selectedItems.findIndex(item => item.product_id === productId);
-    
+    // Check if product already exists in the order
+    const existingItemIndex = selectedItems.findIndex(item => item.productId === productId);
+
     if (existingItemIndex >= 0) {
+      // Increment quantity if product already exists
       const updatedItems = [...selectedItems];
-      updatedItems[existingItemIndex].quantity += 1;
-      updatedItems[existingItemIndex].total_price = updatedItems[existingItemIndex].quantity * updatedItems[existingItemIndex].unit_price;
+      updatedItems[existingItemIndex] = {
+        ...updatedItems[existingItemIndex],
+        quantity: updatedItems[existingItemIndex].quantity + 1
+      };
       setSelectedItems(updatedItems);
     } else {
+      // Add new product to order
       setSelectedItems(prev => [
         ...prev,
         {
-          product_id: productId,
-          product_name: productName,
+          id: uuidv4(),
+          productId,
+          productName,
           quantity: 1,
-          unit_price: price,
-          total_price: price
+          price
         }
       ]);
     }
+
+    // Clear search after adding
+    setSearchQuery("");
   };
 
-  const handleQuantityChange = (index: number, newQuantity: number) => {
-    if (newQuantity < 1) return;
-    
-    const updatedItems = [...selectedItems];
-    updatedItems[index].quantity = newQuantity;
-    updatedItems[index].total_price = newQuantity * updatedItems[index].unit_price;
-    setSelectedItems(updatedItems);
+  const handleQuantityChange = (id: string, quantity: number) => {
+    if (quantity < 1) return;
+
+    setSelectedItems(prev =>
+      prev.map(item => (item.id === id ? { ...item, quantity } : item))
+    );
   };
 
-  const handleRemoveItem = (index: number) => {
-    setSelectedItems(prev => prev.filter((_, i) => i !== index));
+  const handleRemoveItem = (id: string) => {
+    setSelectedItems(prev => prev.filter(item => item.id !== id));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!storeId) {
-      toast("خطأ", {
-        description: "لم يتم العثور على بيانات المتجر",
-        style: { backgroundColor: 'red', color: 'white' }
-      });
-      return;
-    }
-    
-    if (!orderData.customer_name || !orderData.shipping_address) {
-      toast("حقول مطلوبة", {
-        description: "يرجى إدخال اسم العميل وعنوان الشحن",
-        style: { backgroundColor: 'red', color: 'white' }
-      });
+
+    if (selectedItems.length === 0) {
+      toast.error("يرجى إضافة منتج واحد على الأقل");
       return;
     }
 
-    if (selectedItems.length === 0) {
-      toast("لا توجد منتجات", {
-        description: "يرجى إضافة منتج واحد على الأقل للطلب",
-        style: { backgroundColor: 'red', color: 'white' }
-      });
+    if (!orderData.customer_name || !orderData.shipping_address) {
+      toast.error("يرجى ملء الحقول المطلوبة");
       return;
     }
-    
+
+    setSaving(true);
+
     try {
-      setSaving(true);
-      
-      const completeOrderData: any = {
-        ...orderData,
-        store_id: storeId
-      };
-      
+      // Calculate total
+      const total = selectedItems.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+      );
+
+      // Generate order number
+      const orderNumber = `ORD-${Date.now().toString().slice(-6)}`;
+
+      // Create order
+      const { data: order, error: orderError } = await supabase
+        .from("orders")
+        .insert({
+          store_id: storeId,
+          order_number: orderNumber,
+          customer_name: orderData.customer_name,
+          customer_email: orderData.customer_email || null,
+          customer_phone: orderData.customer_phone || null,
+          shipping_address: orderData.shipping_address,
+          payment_method: orderData.payment_method,
+          total,
+          status: "pending",
+          notes: orderData.notes || null
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Create order items
       const orderItems = selectedItems.map(item => ({
-        product_id: item.product_id,
+        order_id: order.id,
+        product_id: item.productId,
         quantity: item.quantity,
-        unit_price: item.unit_price,
-        total_price: item.total_price
+        unit_price: item.price,
+        total_price: item.price * item.quantity
       }));
-      
-      const result = await createOrder(storeId, completeOrderData, orderItems);
-      
-      if (result) {
-        toast("تم بنجاح", {
-          description: "تم إنشاء الطلب بنجاح"
-        });
-        onSuccess();
-        onClose();
-      }
+
+      const { error: itemsError } = await supabase
+        .from("order_items")
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+
+      toast.success("تم إنشاء الطلب بنجاح");
+      onSuccess();
+      onClose();
     } catch (error) {
       console.error("Error creating order:", error);
-      toast("خطأ", {
-        description: "حدث خطأ أثناء إنشاء الطلب",
-        style: { backgroundColor: 'red', color: 'white' }
-      });
+      toast.error("حدث خطأ أثناء إنشاء الطلب");
     } finally {
       setSaving(false);
     }
