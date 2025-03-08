@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash, Power, PowerOff, X, Loader2 } from "lucide-react";
+import { Edit, Trash, Power, PowerOff, X, Loader2, Info, Package, Calendar, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "@/utils/currency";
@@ -152,22 +152,22 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md" dir="rtl">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-md md:max-w-lg" dir="rtl">
+          <DialogHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <DialogTitle>تفاصيل المنتج</DialogTitle>
+              <DialogTitle className="text-xl">تفاصيل المنتج</DialogTitle>
               {product.is_active ? (
-                <Badge className="bg-green-100 text-green-800 border-green-200">نشط</Badge>
+                <Badge className="bg-green-100 text-green-800 border-green-200 py-1 px-3">نشط</Badge>
               ) : (
-                <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-200">غير نشط</Badge>
+                <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-200 py-1 px-3">غير نشط</Badge>
               )}
             </div>
           </DialogHeader>
           
-          <div className="space-y-4">
+          <div className="space-y-4 py-2">
             {/* صورة المنتج والمعلومات الأساسية */}
-            <div className="flex items-center space-x-4 space-x-reverse">
-              <div className="h-20 w-20 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
+            <div className="flex gap-5">
+              <div className="h-28 w-28 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 flex-shrink-0">
                 {product.image_url ? (
                   <img 
                     src={product.image_url} 
@@ -179,55 +179,74 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
                   />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center bg-gray-50">
-                    <span className="text-gray-400 text-xs">لا توجد صورة</span>
+                    <Package className="h-10 w-10 text-gray-300" />
                   </div>
                 )}
               </div>
               
               <div className="flex-1">
-                <h3 className="text-lg font-bold">{product.name}</h3>
-                <div className="flex items-center mt-1">
+                <h3 className="text-xl font-bold mb-1">{product.name}</h3>
+                <div className="flex items-center gap-2 mt-1">
                   {product.discount_price ? (
                     <>
-                      <span className="text-red-600 font-bold">{formatCurrency(product.discount_price)}</span>
-                      <span className="text-gray-400 text-sm line-through mr-2">{formatCurrency(product.price)}</span>
+                      <span className="text-red-600 text-lg font-bold">{formatCurrency(product.discount_price)}</span>
+                      <span className="text-gray-400 text-sm line-through">{formatCurrency(product.price)}</span>
                     </>
                   ) : (
-                    <span className="font-bold">{formatCurrency(product.price)}</span>
+                    <span className="text-lg font-bold">{formatCurrency(product.price)}</span>
                   )}
                 </div>
+                
+                {product.category && (
+                  <div className="mt-2 flex items-center">
+                    <Tag className="h-4 w-4 text-gray-500 ml-1" />
+                    <span className="text-sm text-gray-600">{product.category.name}</span>
+                  </div>
+                )}
               </div>
             </div>
             
             <Separator />
             
             {/* المعلومات الإضافية */}
-            <div className="text-sm space-y-2">
-              {product.description && (
-                <p className="text-gray-600 line-clamp-2">{product.description}</p>
-              )}
+            {product.description && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-1 text-gray-700 mb-1">
+                  <Info className="h-4 w-4" />
+                  <h4 className="font-medium">الوصف</h4>
+                </div>
+                <p className="text-gray-600 text-sm pr-5">{product.description}</p>
+              </div>
+            )}
+            
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="flex items-center gap-1 text-gray-700 mb-1">
+                  <Package className="h-4 w-4" />
+                  <span className="font-medium">المخزون</span>
+                </div>
+                <span className="text-gray-700">
+                  {product.track_inventory 
+                    ? `${product.stock_quantity || 0} قطعة` 
+                    : "غير محدود"}
+                </span>
+              </div>
               
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <span className="text-gray-500">التصنيف:</span>
-                  <span className="font-medium mr-1">{product.category?.name || "غير مصنف"}</span>
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="flex items-center gap-1 text-gray-700 mb-1">
+                  <Calendar className="h-4 w-4" />
+                  <span className="font-medium">تاريخ الإضافة</span>
                 </div>
-                
-                <div>
-                  <span className="text-gray-500">المخزون:</span>
-                  <span className="font-medium mr-1">
-                    {product.track_inventory 
-                      ? `${product.stock_quantity || 0} قطعة` 
-                      : "غير محدود"}
-                  </span>
-                </div>
+                <span className="text-gray-700">
+                  {new Date(product.created_at).toLocaleDateString("ar-SA")}
+                </span>
               </div>
             </div>
             
-            <Separator />
+            <Separator className="my-1" />
             
             {/* أزرار الإجراءات */}
-            <div className="space-y-2">
+            <div className="grid grid-cols-1 gap-3 pt-1">
               <Button
                 onClick={handleEditProduct}
                 className="w-full"
@@ -239,7 +258,9 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
               
               <Button
                 onClick={handleToggleActive}
-                className="w-full"
+                className={`w-full ${product.is_active 
+                  ? "text-amber-600 border-amber-200 bg-amber-50 hover:text-amber-700 hover:bg-amber-100" 
+                  : "text-green-600 border-green-200 bg-green-50 hover:text-green-700 hover:bg-green-100"}`}
                 variant="outline"
                 disabled={toggleActiveMutation.isPending}
               >
@@ -255,7 +276,7 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
               
               <Button
                 onClick={handleDeleteProduct}
-                className="w-full bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 border border-red-200"
+                className="bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 border border-red-200"
                 variant="outline"
                 disabled={deleteMutation.isPending}
               >
