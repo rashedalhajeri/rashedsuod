@@ -56,12 +56,10 @@ const StatsCard: React.FC<StatsCardProps> = ({
     >
       <Card className="overflow-hidden border border-gray-100 hover:border-primary-200 transition-all duration-200 hover:shadow-md group h-full">
         <CardContent className="p-4 md:p-6 relative">
-          <div className="absolute top-0 right-0 w-20 h-20 opacity-5 -mr-6 -mt-6">
-            {icon}
-          </div>
+          {/* Background icon removed from here */}
           
           <div className="flex flex-col">
-            <div className="flex items-center gap-2 mb-1.5">
+            <div className="flex items-center gap-2 mb-2">
               <div className={cn(
                 "p-1.5 rounded-md shadow-sm group-hover:shadow-md transition-all duration-300 transform group-hover:scale-110",
                 iconClassName || "bg-primary-100 text-primary-600"
