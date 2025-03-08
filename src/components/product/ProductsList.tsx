@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { Product } from "@/utils/products/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -66,17 +65,19 @@ const ProductsList: React.FC<ProductsListProps> = ({
   const handleDrawerClose = (open: boolean) => {
     setIsDrawerOpen(open);
     if (!open) {
-      // إعادة تعيين المنتج المحدد عند إغلاق النافذة
       setTimeout(() => {
         setSelectedProduct(null);
-      }, 300); // تأخير بسيط لضمان إغلاق الانيميشن أولاً
+      }, 300);
     }
   };
 
-  const handleDeleteClick = (id: string) => {
-    setProductToDelete(id);
-    setShowDeleteConfirm(true);
-    setIsDrawerOpen(false);
+  const handleDeleteClick = (id: string): Promise<void> => {
+    return new Promise<void>((resolve) => {
+      setProductToDelete(id);
+      setShowDeleteConfirm(true);
+      setIsDrawerOpen(false);
+      resolve();
+    });
   };
 
   const confirmDelete = async () => {
@@ -105,7 +106,6 @@ const ProductsList: React.FC<ProductsListProps> = ({
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
-      // Filter by active status
       if (filterActive === "active" && !product.is_active) {
         return false;
       }
@@ -114,12 +114,10 @@ const ProductsList: React.FC<ProductsListProps> = ({
         return false;
       }
       
-      // Filter by category
       if (categoryFilter && product.category_id !== categoryFilter) {
         return false;
       }
       
-      // Filter by search term
       if (searchTerm.trim()) {
         const searchLower = searchTerm.toLowerCase();
         return (
@@ -136,7 +134,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
     const active = products.filter(p => p.is_active).length;
     const inactive = products.filter(p => !p.is_active).length;
     
-    return { active, inactive, archived: 0 }; // Add archived: 0 to match the expected type
+    return { active, inactive, archived: 0 };
   };
   
   const filterCounts = getFilterCounts();
@@ -144,7 +142,6 @@ const ProductsList: React.FC<ProductsListProps> = ({
   return (
     <div className="flex flex-col gap-3">
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        {/* Filters Bar */}
         <ProductFilterBar
           searchTerm={searchTerm}
           onSearch={onSearch}
@@ -158,7 +155,6 @@ const ProductsList: React.FC<ProductsListProps> = ({
           filterCounts={filterCounts}
         />
         
-        {/* Products List */}
         <ScrollArea className="h-full">
           <ProductItems
             filteredProducts={filteredProducts}
@@ -177,7 +173,6 @@ const ProductsList: React.FC<ProductsListProps> = ({
         </ScrollArea>
       </div>
 
-      {/* Product Action Drawer */}
       {selectedProduct && (
         <ProductActionDrawer
           product={selectedProduct}
@@ -208,7 +203,6 @@ const ProductsList: React.FC<ProductsListProps> = ({
         />
       )}
 
-      {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         open={showDeleteConfirm}
         onOpenChange={setShowDeleteConfirm}
