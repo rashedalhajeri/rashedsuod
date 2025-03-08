@@ -6,6 +6,7 @@ import ProductActionDrawer from "./ProductActionDrawer";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import ProductFilterBar from "./list/ProductFilterBar";
 import ProductItems from "./list/ProductItems";
+import { toast } from "sonner";
 
 interface ProductsListProps {
   products: Product[];
@@ -35,6 +36,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleToggleSelection = (id: string, isSelected: boolean) => {
     const newSelectedItems = isSelected
@@ -77,11 +79,22 @@ const ProductsList: React.FC<ProductsListProps> = ({
     setIsDrawerOpen(false);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (productToDelete && onDelete) {
-      onDelete(productToDelete);
-      setShowDeleteConfirm(false);
-      setProductToDelete(null);
+      setIsDeleting(true);
+      try {
+        await onDelete(productToDelete);
+        toast.success("تم حذف المنتج بنجاح");
+        if (onRefresh) {
+          onRefresh();
+        }
+      } catch (error) {
+        toast.error(`حدث خطأ أثناء حذف المنتج: ${(error as Error).message}`);
+      } finally {
+        setIsDeleting(false);
+        setShowDeleteConfirm(false);
+        setProductToDelete(null);
+      }
     }
   };
 
@@ -153,7 +166,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
             handleToggleSelection={handleToggleSelection}
             handleProductClick={handleProductClick}
             onEdit={onEdit}
-            onDelete={onDelete}
+            onDelete={onDelete ? handleDeleteClick : undefined}
             onActivate={onActivate}
             onRefresh={onRefresh}
             searchTerm={searchTerm}
@@ -165,35 +178,49 @@ const ProductsList: React.FC<ProductsListProps> = ({
       </div>
 
       {/* Product Action Drawer */}
-      <ProductActionDrawer
-        product={selectedProduct}
-        isOpen={isDrawerOpen}
-        onOpenChange={handleDrawerClose}
-        onEdit={(id) => {
-          onEdit(id);
-          setIsDrawerOpen(false);
-        }}
-        onActivate={onActivate ? 
-          (id, isActive) => {
-            onActivate(id, isActive);
+      {selectedProduct && (
+        <ProductActionDrawer
+          product={selectedProduct}
+          isOpen={isDrawerOpen}
+          onOpenChange={handleDrawerClose}
+          onEdit={(id) => {
+            onEdit(id);
             setIsDrawerOpen(false);
-          } : undefined
-        }
-        onDelete={handleDeleteClick}
-      />
+          }}
+          onActivate={onActivate ? 
+            async (id, isActive) => {
+              if (onActivate) {
+                try {
+                  await onActivate(id, isActive);
+                  toast.success(`تم ${isActive ? 'تفعيل' : 'تعطيل'} المنتج بنجاح`);
+                  if (onRefresh) {
+                    onRefresh();
+                  }
+                } catch (error) {
+                  toast.error(`حدث خطأ: ${(error as Error).message}`);
+                } finally {
+                  setIsDrawerOpen(false);
+                }
+              }
+            } : undefined
+          }
+          onDelete={handleDeleteClick}
+        />
+      )}
 
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         open={showDeleteConfirm}
-        onOpenChange={handleDeleteCancel}
+        onOpenChange={setShowDeleteConfirm}
         title="تأكيد حذف المنتج"
         description="هل أنت متأكد من رغبتك في حذف هذا المنتج؟ لا يمكن التراجع عن هذه العملية."
-        confirmText="حذف المنتج"
+        confirmText={isDeleting ? "جاري الحذف..." : "حذف المنتج"}
         cancelText="إلغاء"
         onConfirm={confirmDelete}
         confirmButtonProps={{ 
           variant: "destructive",
-          className: "bg-red-500 hover:bg-red-600"
+          className: "bg-red-500 hover:bg-red-600",
+          disabled: isDeleting
         }}
       />
     </div>

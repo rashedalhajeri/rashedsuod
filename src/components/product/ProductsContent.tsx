@@ -6,6 +6,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import BulkActionsBar from "./bulk-actions/BulkActionsBar";
 import ProductsPagination from "./pagination/ProductsPagination";
 import ChangeCategoryDialog from "./bulk-actions/ChangeCategoryDialog";
+import { toast } from "sonner";
 
 interface ProductsContentProps {
   products: Product[];
@@ -60,20 +61,43 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
   const confirmBulkActivate = async () => {
     if (!onActivate) return;
     
-    // Apply activation status to each selected product
-    await Promise.all(
-      selectedItems.map(id => onActivate(id, bulkActivateStatus))
-    );
-    
-    // Reset selection
-    onSelectionChange([]);
-    setShowBulkActivateConfirm(false);
+    try {
+      // Apply activation status to each selected product
+      await Promise.all(
+        selectedItems.map(id => onActivate(id, bulkActivateStatus))
+      );
+      
+      // Show success toast
+      toast.success(
+        bulkActivateStatus 
+          ? `تم تفعيل ${selectedItems.length} منتج بنجاح`
+          : `تم تعطيل ${selectedItems.length} منتج بنجاح`
+      );
+      
+      // Reset selection
+      onSelectionChange([]);
+      
+      // Refresh product list
+      if (onRefresh) {
+        onRefresh();
+      }
+    } catch (error) {
+      toast.error(`حدث خطأ: ${(error as Error).message}`);
+    } finally {
+      // Ensure dialog is closed
+      setShowBulkActivateConfirm(false);
+    }
   };
 
   // Handle bulk category change
   const handleChangeCategoryClick = () => {
     if (selectedItems.length === 0) return;
     setShowChangeCategoryDialog(true);
+  };
+  
+  // Handle category dialog close
+  const handleCategoryDialogClose = (open: boolean) => {
+    setShowChangeCategoryDialog(open);
   };
   
   return (
@@ -132,10 +156,13 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
       {/* Change Category Dialog */}
       <ChangeCategoryDialog
         open={showChangeCategoryDialog}
-        onOpenChange={setShowChangeCategoryDialog}
+        onOpenChange={handleCategoryDialogClose}
         selectedProducts={selectedItems}
         storeId={products[0]?.store_id}
-        onSuccess={onRefresh || (() => {})}
+        onSuccess={() => {
+          if (onRefresh) onRefresh();
+          onSelectionChange([]);
+        }}
       />
     </div>
   );

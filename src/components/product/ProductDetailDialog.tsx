@@ -10,10 +10,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
-import SaveButton from "@/components/ui/save-button";
 import { useProductDetailForm } from "@/hooks/useProductDetailForm";
-import { AlertTriangle, X, Save, Trash, Eye } from "lucide-react";
+import { AlertTriangle, X, Save, Trash } from "lucide-react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 // Import form sections
 import BasicInfoSection from "./form/BasicInfoSection";
@@ -24,7 +24,6 @@ import ConditionalSections from "./form/ConditionalSections";
 import FormSection from "./form/FormSection";
 import CategorySelector from "./form/CategorySelector";
 import SectionSelector from "./form/SectionSelector";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface ProductDetailDialogProps {
   isOpen: boolean;
@@ -42,13 +41,13 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   onSuccess,
 }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const {
     isLoading,
     isSubmitting,
     error,
     formData,
-    categories,
     handleChange,
     handleSwitchChange,
     handleImagesChange,
@@ -77,17 +76,37 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   };
 
   const executeDelete = async () => {
-    await handleDelete();
-    setShowDeleteConfirm(false);
+    setIsDeleting(true);
+    try {
+      await handleDelete();
+      toast.success("تم حذف المنتج بنجاح");
+    } catch (error) {
+      toast.error(`فشل حذف المنتج: ${(error as Error).message}`);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+      onOpenChange(false);
+    }
   };
 
-  const handleConfirmDialogChange = (open: boolean, setStateFn: React.Dispatch<React.SetStateAction<boolean>>) => {
-    setStateFn(open);
+  const handleConfirmDialogChange = (open: boolean) => {
+    setShowDeleteConfirm(open);
+    if (!open && isDeleting) {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleMainDialogClose = (open: boolean) => {
+    // إذا كان هناك حوار تأكيد مفتوح، لا نغلق الحوار الرئيسي
+    if (showDeleteConfirm) return;
+    
+    // وإلا، نسمح بالإغلاق
+    onOpenChange(open);
   };
 
   if (isLoading) {
     return (
-      <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <Dialog open={isOpen} onOpenChange={handleMainDialogClose}>
         <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
           <LoadingState message="جاري تحميل بيانات المنتج..." />
         </DialogContent>
@@ -97,7 +116,7 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
 
   if (error) {
     return (
-      <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <Dialog open={isOpen} onOpenChange={handleMainDialogClose}>
         <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
           <ErrorState 
             title="خطأ في تحميل المنتج"
@@ -113,7 +132,7 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <Dialog open={isOpen} onOpenChange={handleMainDialogClose}>
         <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 shadow-xl rounded-lg border-0">
           <div className="absolute right-4 top-4">
             <Button 
@@ -203,7 +222,7 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
                 <Button
                   variant="outline"
                   onClick={confirmDelete}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isDeleting}
                   className="gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/50"
                 >
                   <Trash className="h-4 w-4" />
@@ -219,6 +238,7 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
                 variant="outline" 
                 onClick={() => onOpenChange(false)}
                 className="hover:bg-gray-50 dark:hover:bg-gray-800"
+                disabled={isSubmitting}
               >
                 إلغاء
               </Button>
@@ -237,7 +257,7 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
 
       <ConfirmDialog
         open={showDeleteConfirm}
-        onOpenChange={(open) => handleConfirmDialogChange(open, setShowDeleteConfirm)}
+        onOpenChange={handleConfirmDialogChange}
         title="تأكيد حذف المنتج"
         description={
           <>
@@ -251,12 +271,13 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
             </div>
           </>
         }
-        confirmText="حذف المنتج"
+        confirmText={isDeleting ? "جاري الحذف..." : "حذف المنتج"}
         cancelText="إلغاء"
         onConfirm={executeDelete}
         confirmButtonProps={{ 
           variant: "destructive",
-          className: "bg-red-500 hover:bg-red-600"
+          className: "bg-red-500 hover:bg-red-600",
+          disabled: isDeleting
         }}
       />
     </>

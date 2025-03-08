@@ -42,7 +42,13 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   const handleConfirm = (e: React.MouseEvent) => {
     e.preventDefault();
     onConfirm();
-    // Let the parent component handle dialog closing
+    // Close the dialog after confirmation
+    onOpenChange(false);
+  };
+
+  // Handle cancel button click
+  const handleCancel = () => {
+    onOpenChange(false);
   };
 
   return (
@@ -60,7 +66,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex gap-2 pt-2">
-          <AlertDialogCancel asChild>
+          <AlertDialogCancel asChild onClick={handleCancel}>
             <Button
               variant="outline"
               className="border border-gray-200 bg-white hover:bg-gray-50 text-gray-800"
