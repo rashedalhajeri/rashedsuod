@@ -38,7 +38,7 @@ const StatsCard: React.FC<StatsCardProps> = ({
         return (
           <div className="relative flex justify-center">
             <span className="text-base md:text-lg">{amount}</span>
-            <span className="absolute -top-2 text-2xs opacity-50" style={{ right: '-12px' }}>{currencySymbol}</span>
+            <span className="absolute -top-1 text-3xs opacity-40" style={{ right: '-8px' }}>{currencySymbol}</span>
           </div>
         );
       }
@@ -72,18 +72,6 @@ const StatsCard: React.FC<StatsCardProps> = ({
                 {renderValue()}
               </h4>
             </div>
-            
-            {trend && (
-              <p className={`text-xs flex items-center mt-1 justify-center ${trend.isPositive ? 'text-green-600' : 'text-red-600'} gap-1`}>
-                {trend.isPositive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
-                <span>
-                  {trend.value}%
-                </span>
-                <span className="text-gray-500">
-                  {trend.isPositive ? 'زيادة' : 'انخفاض'}
-                </span>
-              </p>
-            )}
           </div>
         </CardContent>
       </Card>
