@@ -1,6 +1,5 @@
 
-import { Product, RawProductData } from "./types";
-import { mapRawProductToProduct } from "./mappers";
+import { Product } from "./types";
 import { databaseClient } from "@/integrations/database/client";
 
 /**
