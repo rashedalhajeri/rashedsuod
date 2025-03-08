@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Product, RawProductData } from "@/utils/products/types";
 import { mapRawProductToProduct } from "@/utils/products/mappers";
@@ -144,54 +143,19 @@ class SupabaseDatabaseClient implements DatabaseClient {
       try {
         console.log(`Attempting to delete product with ID: ${productId}`);
         
-        // First, get all order items that reference this product
-        const { data: orderItems, error: checkError } = await supabase
+        // First, delete all order_items referencing this product
+        console.log("Deleting order items related to the product");
+        const { error: deleteItemsError } = await supabase
           .from('order_items')
-          .select('id')
+          .delete()
           .eq('product_id', productId);
           
-        if (checkError) {
-          console.error("Error checking related order items:", checkError);
-          return { success: false, error: checkError };
+        if (deleteItemsError) {
+          console.error("Error deleting related order items:", deleteItemsError);
+          return { success: false, error: deleteItemsError };
         }
         
-        console.log(`Found ${orderItems?.length || 0} related order items`);
-        
-        // If there are order items, first disconnect them from the product
-        if (orderItems && orderItems.length > 0) {
-          try {
-            // First try to update order_items to set product_id to null
-            console.log(`Attempting to disconnect ${orderItems.length} order items`);
-            const { error: updateError } = await supabase
-              .from('order_items')
-              .update({ product_id: null })
-              .eq('product_id', productId);
-              
-            if (updateError) {
-              // If update fails (maybe due to constraints), delete the order items
-              console.warn("Failed to update order items, deleting them:", updateError);
-              
-              // Delete the order items that reference this product
-              console.log(`Deleting ${orderItems.length} related order items`);
-              const { error: deleteOrderItemsError } = await supabase
-                .from('order_items')
-                .delete()
-                .eq('product_id', productId);
-                
-              if (deleteOrderItemsError) {
-                console.error("Error deleting related order items:", deleteOrderItemsError);
-                return { success: false, error: deleteOrderItemsError };
-              }
-            }
-            
-            console.log("Successfully handled related order items");
-          } catch (err) {
-            console.error("Exception handling order items:", err);
-            return { success: false, error: err };
-          }
-        }
-        
-        // Now try to delete the product
+        // Now delete the product
         console.log("Proceeding to delete the product");
         const { error: deleteProductError } = await supabase
           .from('products')
@@ -228,70 +192,21 @@ class SupabaseDatabaseClient implements DatabaseClient {
         
         console.log(`Attempting to bulk delete ${productIds.length} products`);
         
-        // Get all order items that reference these products
-        const { data: orderItems, error: checkError } = await supabase
+        // First delete all order_items referencing these products
+        console.log("Deleting all order items related to the products");
+        const { error: deleteItemsError } = await supabase
           .from('order_items')
-          .select('id, product_id')
+          .delete()
           .in('product_id', productIds);
           
-        if (checkError) {
-          console.error("Error checking related order items for bulk delete:", checkError);
+        if (deleteItemsError) {
+          console.error("Error deleting related order items for bulk delete:", deleteItemsError);
           return { 
             success: false, 
-            error: checkError, 
+            error: deleteItemsError, 
             deletedCount: 0,
             archivedCount: 0 
           };
-        }
-        
-        const productsWithOrders = orderItems 
-          ? [...new Set(orderItems.map(item => item.product_id))]
-          : [];
-          
-        console.log(`Found ${productsWithOrders.length} products with orders`);
-        
-        // If there are order items, handle them first
-        if (orderItems && orderItems.length > 0) {
-          try {
-            // First try to update order_items to set product_id to null
-            console.log(`Attempting to disconnect ${orderItems.length} related order items`);
-            const { error: updateError } = await supabase
-              .from('order_items')
-              .update({ product_id: null })
-              .in('product_id', productIds);
-              
-            if (updateError) {
-              // If update fails (maybe due to constraints), delete the order items
-              console.warn("Failed to update order items, deleting them:", updateError);
-              
-              // Delete the order items that reference these products
-              console.log(`Deleting ${orderItems.length} related order items`);
-              const { error: deleteOrderItemsError } = await supabase
-                .from('order_items')
-                .delete()
-                .in('product_id', productIds);
-                
-              if (deleteOrderItemsError) {
-                console.error("Error deleting related order items for bulk delete:", deleteOrderItemsError);
-                return { 
-                  success: false, 
-                  error: deleteOrderItemsError, 
-                  deletedCount: 0,
-                  archivedCount: 0 
-                };
-              }
-            }
-            
-            console.log("Successfully handled related order items for bulk delete");
-          } catch (err) {
-            console.error("Exception handling order items in bulk delete:", err);
-            return { 
-              success: false, 
-              error: err, 
-              deletedCount: 0,
-              archivedCount: 0 
-            };
-          }
         }
         
         // Now delete all the selected products
