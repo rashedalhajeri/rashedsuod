@@ -121,7 +121,7 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   if (isLoading) {
     return (
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-xs" dir="rtl">
+        <DialogContent className="sm:max-w-md" dir="rtl">
           <div className="flex justify-center items-center p-6">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <span className="mr-2">جاري التحميل...</span>
@@ -134,7 +134,7 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   if (error || !product) {
     return (
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-xs" dir="rtl">
+        <DialogContent className="sm:max-w-md" dir="rtl">
           <DialogHeader>
             <DialogTitle className="text-center text-red-500">حدث خطأ</DialogTitle>
           </DialogHeader>
@@ -149,12 +149,8 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-xs" dir="rtl">
-          <DialogHeader className="text-center">
-            <DialogTitle className="text-xl font-bold mb-4">تفاصيل المنتج</DialogTitle>
-          </DialogHeader>
-          
-          <div className="flex flex-col items-center space-y-4">
+        <DialogContent className="sm:max-w-md p-6" dir="rtl">
+          <div className="flex flex-col items-center space-y-6">
             {/* صورة المنتج */}
             <div className="h-40 w-40 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
               {product.image_url ? (
@@ -177,7 +173,7 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
             <h2 className="text-xl font-bold text-center">{product.name}</h2>
             
             {/* أزرار الإجراءات */}
-            <div className="w-full space-y-3 pt-2">
+            <div className="w-full grid gap-4 grid-cols-1">
               <Button
                 onClick={handleEditProduct}
                 className="w-full flex justify-center items-center"
