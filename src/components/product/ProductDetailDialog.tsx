@@ -11,11 +11,12 @@ import { Edit, Trash, Power, PowerOff, X, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "@/utils/currency";
-import { Product } from "@/utils/products/types";
+import { Product, RawProductData } from "@/utils/products/types";
 import { toast } from "sonner";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { mapRawProductToProduct } from "@/utils/products/mappers";
 
 interface ProductDetailDialogProps {
   isOpen: boolean;
@@ -47,7 +48,9 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
         .single();
       
       if (error) throw error;
-      return data as Product;
+      
+      // Map the raw data to the Product type using the existing mapper function
+      return mapRawProductToProduct(data as RawProductData);
     },
     enabled: isOpen && !!productId,
   });
