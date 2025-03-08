@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface ProductFormData {
@@ -37,19 +36,15 @@ export const useProductFormSubmit = ({
   
   const handleSubmit = async (formData: ProductFormData) => {
     if (!storeId) {
-      toast({
-        title: "خطأ",
-        description: "معرف المتجر غير متوفر",
-        variant: "destructive"
+      toast("خطأ", {
+        description: "معرف المتجر غير متوفر"
       });
       return;
     }
     
     if (!formData.name || formData.price <= 0 || !formData.images.length) {
-      toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
-        variant: "destructive"
+      toast("خطأ", {
+        description: "يرجى ملء جميع الحقول المطلوبة"
       });
       return;
     }
@@ -101,8 +96,7 @@ export const useProductFormSubmit = ({
       console.log("Product added successfully:", data);
       
       // Show success message
-      toast({
-        title: "تمت الإضافة بنجاح",
+      toast("تمت الإضافة بنجاح", {
         description: "تم إضافة المنتج بنجاح"
       });
       
@@ -118,10 +112,8 @@ export const useProductFormSubmit = ({
       
     } catch (error: any) {
       console.error("Error in handleSubmit:", error);
-      toast({
-        title: "خطأ",
-        description: error.message || "حدث خطأ أثناء إضافة المنتج",
-        variant: "destructive"
+      toast("خطأ", {
+        description: error.message || "حدث خطأ أثناء إضافة المنتج"
       });
     } finally {
       setIsSubmitting(false);

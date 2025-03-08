@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Loader2 } from "lucide-react";
 import { 
@@ -52,9 +52,7 @@ const ChangeCategoryDialog: React.FC<ChangeCategoryDialogProps> = ({
       setCategories(data || []);
     } catch (error) {
       console.error("Error fetching categories:", error);
-      toast({
-        variant: "destructive",
-        title: "خطأ في تحميل الفئات",
+      toast("خطأ في تحميل الفئات", {
         description: "حدث خطأ أثناء تحميل الفئات، يرجى المحاولة مرة أخرى."
       });
     } finally {
@@ -64,18 +62,14 @@ const ChangeCategoryDialog: React.FC<ChangeCategoryDialogProps> = ({
 
   const handleConfirm = async () => {
     if (!selectedCategory) {
-      toast({
-        variant: "destructive",
-        title: "الرجاء اختيار فئة",
+      toast("الرجاء اختيار فئة", {
         description: "يجب اختيار فئة لتغيير المنتجات المحددة."
       });
       return;
     }
 
     if (selectedProducts.length === 0) {
-      toast({
-        variant: "destructive",
-        title: "لا توجد منتجات محددة",
+      toast("لا توجد منتجات محددة", {
         description: "الرجاء تحديد منتجات لتغيير فئتها."
       });
       return;
@@ -93,8 +87,7 @@ const ChangeCategoryDialog: React.FC<ChangeCategoryDialogProps> = ({
 
       if (error) throw error;
 
-      toast({
-        title: "تم تغيير الفئة بنجاح",
+      toast("تم تغيير الفئة بنجاح", {
         description: `تم تحديث فئة ${selectedProducts.length} منتج.`
       });
 
@@ -102,9 +95,7 @@ const ChangeCategoryDialog: React.FC<ChangeCategoryDialogProps> = ({
       onOpenChange(false);
     } catch (error) {
       console.error("Error updating category:", error);
-      toast({
-        variant: "destructive",
-        title: "خطأ في تحديث الفئة",
+      toast("خطأ في تحديث الفئة", {
         description: "حدث خطأ أثناء تحديث فئة المنتجات، يرجى المحاولة مرة أخرى."
       });
     } finally {

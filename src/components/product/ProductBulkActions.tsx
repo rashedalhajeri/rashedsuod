@@ -4,7 +4,7 @@ import { CheckCircle, CircleSlash, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { databaseClient } from "@/integrations/database/client";
 
 interface ProductBulkActionsProps {
@@ -35,27 +35,22 @@ const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
       const { success, error, deletedCount } = await databaseClient.products.bulkDeleteProducts(selectedProducts);
       
       if (!success) {
-        toast({
-          variant: "destructive",
-          title: "فشل في حذف المنتجات",
-          description: error?.message || "حدث خطأ أثناء محاولة حذف المنتجات",
+        toast("فشل في حذف المنتجات", {
+          description: error?.message || "حدث خطأ أثناء محاولة حذف المنتجات"
         });
         return;
       }
       
-      toast({
-        title: "تم تنفيذ العملية بنجاح",
-        description: `تم حذف ${deletedCount} منتج بنجاح`,
+      toast("تم تنفيذ العملية بنجاح", {
+        description: `تم حذف ${deletedCount} منتج بنجاح`
       });
       
       onClearSelection();
       onRefresh();
       setIsDeleteDialogOpen(false);
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "خطأ غير متوقع",
-        description: error?.message || "حدث خطأ غير متوقع أثناء تنفيذ العملية",
+      toast("خطأ غير متوقع", {
+        description: error?.message || "حدث خطأ غير متوقع أثناء تنفيذ العملية"
       });
     } finally {
       setIsProcessing(false);
@@ -70,19 +65,16 @@ const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
       const { success, error } = await databaseClient.products.bulkActivateProducts(selectedProducts, activate);
       
       if (!success) {
-        toast({
-          variant: "destructive",
-          title: activate ? "فشل في تفعيل المنتجات" : "فشل في إلغاء تفعيل المنتجات",
-          description: error?.message || "حدث خطأ أثناء تنفيذ العملية",
+        toast(activate ? "فشل في تفعيل المنتجات" : "فشل في إلغاء تفعيل المنتجات", {
+          description: error?.message || "حدث خطأ أثناء تنفيذ العملية"
         });
         return;
       }
       
-      toast({
-        title: "تم تنفيذ العملية بنجاح",
+      toast("تم تنفيذ العملية بنجاح", {
         description: activate 
           ? `تم تفعيل ${selectedProducts.length} منتج بنجاح` 
-          : `تم إلغاء تفعيل ${selectedProducts.length} منتج بنجاح`,
+          : `تم إلغاء تفعيل ${selectedProducts.length} منتج بنجاح`
       });
       
       onClearSelection();
@@ -94,10 +86,8 @@ const ProductBulkActions: React.FC<ProductBulkActionsProps> = ({
         setIsDeactivateDialogOpen(false);
       }
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "خطأ غير متوقع",
-        description: error?.message || "حدث خطأ غير متوقع أثناء تنفيذ العملية",
+      toast("خطأ غير متوقع", {
+        description: error?.message || "حدث خطأ غير متوقع أثناء تنفيذ العملية"
       });
     } finally {
       setIsProcessing(false);
