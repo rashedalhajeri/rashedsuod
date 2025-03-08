@@ -46,7 +46,7 @@ export const useDashboardData = () => {
         queryFn: () => fetchDashboardStats(storeData?.id),
         enabled: !!storeData?.id,
         staleTime: 5 * 60 * 1000, // 5 minutes
-        cacheTime: 10 * 60 * 1000, // 10 minutes
+        gcTime: 10 * 60 * 1000, // 10 minutes (renamed from cacheTime)
       },
       // Sales data query
       {
@@ -54,7 +54,7 @@ export const useDashboardData = () => {
         queryFn: () => fetchSalesData(storeData?.id, period),
         enabled: !!storeData?.id,
         staleTime: 5 * 60 * 1000,
-        cacheTime: 10 * 60 * 1000,
+        gcTime: 10 * 60 * 1000, // Renamed from cacheTime
       },
       // Recent orders query
       {
@@ -70,7 +70,7 @@ export const useDashboardData = () => {
         },
         enabled: !!storeData?.id,
         staleTime: 2 * 60 * 1000, // 2 minutes
-        cacheTime: 5 * 60 * 1000, // 5 minutes 
+        gcTime: 5 * 60 * 1000, // 5 minutes (renamed from cacheTime)
       },
       // Recent products query
       {
@@ -101,7 +101,7 @@ export const useDashboardData = () => {
         },
         enabled: !!storeData?.id,
         staleTime: 5 * 60 * 1000,
-        cacheTime: 10 * 60 * 1000,
+        gcTime: 10 * 60 * 1000, // Renamed from cacheTime
       }
     ]
   });
