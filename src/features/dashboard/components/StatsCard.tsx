@@ -35,9 +35,9 @@ const StatsCard: React.FC<StatsCardProps> = ({
       if (match) {
         const [_, currencySymbol, amount] = match;
         return (
-          <div className="flex items-center justify-center relative">
+          <div className="flex justify-center relative">
             <span className="text-xl md:text-2xl">{amount}</span>
-            <span className="text-2xs opacity-40 absolute" style={{ top: '0', right: '-12px' }}>{currencySymbol}</span>
+            <span className="text-3xs opacity-40 absolute" style={{ top: '-2px', right: '-14px' }}>{currencySymbol}</span>
           </div>
         );
       }
@@ -67,7 +67,7 @@ const StatsCard: React.FC<StatsCardProps> = ({
             </div>
             
             <div className="text-center">
-              <h4 className={`font-bold text-gray-900 group-hover:text-primary-600 transition-colors duration-200 ${isCurrency ? 'inline-flex justify-center items-center' : 'text-xl md:text-2xl'}`}>
+              <h4 className={`font-bold text-gray-900 group-hover:text-primary-600 transition-colors duration-200 ${isCurrency ? 'inline-flex justify-center' : 'text-xl md:text-2xl'}`}>
                 {renderValue()}
               </h4>
             </div>
