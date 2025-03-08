@@ -1,4 +1,4 @@
-import { ProductDatabaseClient, productClient } from "./clients/product-client";
+import { productClient } from './clients/product-client';
 
 export interface DatabaseClient {
   products: ProductDatabaseClient;
