@@ -39,6 +39,7 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
   const [showBulkActivateConfirm, setShowBulkActivateConfirm] = useState(false);
   const [bulkActivateStatus, setBulkActivateStatus] = useState(false);
   const [showChangeCategoryDialog, setShowChangeCategoryDialog] = useState(false);
+  const [isBulkProcessing, setIsBulkProcessing] = useState(false);
   
   // Calculate pagination
   const totalPages = Math.ceil(products.length / itemsPerPage);
@@ -61,6 +62,7 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
   const confirmBulkActivate = async () => {
     if (!onActivate) return;
     
+    setIsBulkProcessing(true);
     try {
       // Apply activation status to each selected product
       await Promise.all(
@@ -85,6 +87,7 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
       toast.error(`حدث خطأ: ${(error as Error).message}`);
     } finally {
       // Ensure dialog is closed
+      setIsBulkProcessing(false);
       setShowBulkActivateConfirm(false);
     }
   };
@@ -135,21 +138,26 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
       {/* Bulk Activate/Deactivate Confirmation Dialog */}
       <ConfirmDialog
         open={showBulkActivateConfirm}
-        onOpenChange={setShowBulkActivateConfirm}
+        onOpenChange={(open) => {
+          if (!isBulkProcessing) {
+            setShowBulkActivateConfirm(open);
+          }
+        }}
         title={bulkActivateStatus ? "تأكيد تفعيل المنتجات" : "تأكيد تعطيل المنتجات"}
         description={
           bulkActivateStatus
             ? `هل أنت متأكد من رغبتك في تفعيل ${selectedItems.length} منتج؟`
             : `هل أنت متأكد من رغبتك في تعطيل ${selectedItems.length} منتج؟`
         }
-        confirmText={bulkActivateStatus ? "تفعيل" : "تعطيل"}
+        confirmText={isBulkProcessing ? (bulkActivateStatus ? "جاري التفعيل..." : "جاري التعطيل...") : (bulkActivateStatus ? "تفعيل" : "تعطيل")}
         cancelText="إلغاء"
         onConfirm={confirmBulkActivate}
         confirmButtonProps={{ 
           variant: bulkActivateStatus ? "default" : "outline",
           className: bulkActivateStatus 
             ? "bg-green-500 hover:bg-green-600" 
-            : "text-gray-600 border-gray-200 hover:bg-gray-50"
+            : "text-gray-600 border-gray-200 hover:bg-gray-50",
+          disabled: isBulkProcessing
         }}
       />
 

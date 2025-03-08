@@ -41,13 +41,16 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   // Create a dedicated handler for confirmation to avoid duplicate calls
   const handleConfirm = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     onConfirm();
-    // Close the dialog after confirmation
-    onOpenChange(false);
+    // Do not close the dialog here, let the onConfirm handler control when to close
+    // The dialog will be closed by the parent component when appropriate
   };
 
   // Handle cancel button click
-  const handleCancel = () => {
+  const handleCancel = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     onOpenChange(false);
   };
 

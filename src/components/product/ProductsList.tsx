@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from "react";
 import { Product } from "@/utils/products/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -205,7 +206,14 @@ const ProductsList: React.FC<ProductsListProps> = ({
 
       <ConfirmDialog
         open={showDeleteConfirm}
-        onOpenChange={setShowDeleteConfirm}
+        onOpenChange={(open) => {
+          if (!isDeleting) {
+            setShowDeleteConfirm(open);
+            if (!open) {
+              setProductToDelete(null);
+            }
+          }
+        }}
         title="تأكيد حذف المنتج"
         description="هل أنت متأكد من رغبتك في حذف هذا المنتج؟ لا يمكن التراجع عن هذه العملية."
         confirmText={isDeleting ? "جاري الحذف..." : "حذف المنتج"}
