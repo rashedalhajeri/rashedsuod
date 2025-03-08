@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Product, RawProductData } from "@/utils/products/types";
 import { mapRawProductToProduct } from "@/utils/products/mappers";
@@ -143,6 +144,7 @@ class SupabaseDatabaseClient implements DatabaseClient {
       try {
         console.log(`Attempting to delete product with ID: ${productId}`);
         
+        // First, get all order items that reference this product
         const { data: orderItems, error: checkError } = await supabase
           .from('order_items')
           .select('id')
@@ -155,8 +157,10 @@ class SupabaseDatabaseClient implements DatabaseClient {
         
         console.log(`Found ${orderItems?.length || 0} related order items`);
         
+        // If there are order items, first disconnect them from the product
         if (orderItems && orderItems.length > 0) {
           try {
+            // First try to update order_items to set product_id to null
             console.log(`Attempting to disconnect ${orderItems.length} order items`);
             const { error: updateError } = await supabase
               .from('order_items')
@@ -164,8 +168,10 @@ class SupabaseDatabaseClient implements DatabaseClient {
               .eq('product_id', productId);
               
             if (updateError) {
-              console.warn("Failed to update order items, falling back to deletion:", updateError);
+              // If update fails (maybe due to constraints), delete the order items
+              console.warn("Failed to update order items, deleting them:", updateError);
               
+              // Delete the order items that reference this product
               console.log(`Deleting ${orderItems.length} related order items`);
               const { error: deleteOrderItemsError } = await supabase
                 .from('order_items')
@@ -185,6 +191,7 @@ class SupabaseDatabaseClient implements DatabaseClient {
           }
         }
         
+        // Now try to delete the product
         console.log("Proceeding to delete the product");
         const { error: deleteProductError } = await supabase
           .from('products')
@@ -221,6 +228,7 @@ class SupabaseDatabaseClient implements DatabaseClient {
         
         console.log(`Attempting to bulk delete ${productIds.length} products`);
         
+        // Get all order items that reference these products
         const { data: orderItems, error: checkError } = await supabase
           .from('order_items')
           .select('id, product_id')
@@ -242,8 +250,10 @@ class SupabaseDatabaseClient implements DatabaseClient {
           
         console.log(`Found ${productsWithOrders.length} products with orders`);
         
+        // If there are order items, handle them first
         if (orderItems && orderItems.length > 0) {
           try {
+            // First try to update order_items to set product_id to null
             console.log(`Attempting to disconnect ${orderItems.length} related order items`);
             const { error: updateError } = await supabase
               .from('order_items')
@@ -251,8 +261,10 @@ class SupabaseDatabaseClient implements DatabaseClient {
               .in('product_id', productIds);
               
             if (updateError) {
-              console.warn("Failed to update order items, falling back to deletion:", updateError);
+              // If update fails (maybe due to constraints), delete the order items
+              console.warn("Failed to update order items, deleting them:", updateError);
               
+              // Delete the order items that reference these products
               console.log(`Deleting ${orderItems.length} related order items`);
               const { error: deleteOrderItemsError } = await supabase
                 .from('order_items')
@@ -282,6 +294,7 @@ class SupabaseDatabaseClient implements DatabaseClient {
           }
         }
         
+        // Now delete all the selected products
         console.log("Proceeding to delete all products");
         const { error: deleteProductsError } = await supabase
           .from('products')
@@ -379,4 +392,3 @@ export const databaseClient: DatabaseClient = new SupabaseDatabaseClient();
 export const setDatabaseClient = (mockClient: DatabaseClient) => {
   return mockClient;
 };
-
