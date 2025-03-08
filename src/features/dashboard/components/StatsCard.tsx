@@ -37,8 +37,8 @@ const StatsCard: React.FC<StatsCardProps> = ({
         const [_, currencySymbol, amount] = match;
         return (
           <>
-            <span className="text-xs align-super mr-0.5 opacity-65">{currencySymbol}</span>
-            <span className="text-lg md:text-xl">{amount}</span>
+            <span className="text-xs align-super mr-0.5 opacity-50">{currencySymbol}</span>
+            <span className="text-base md:text-lg">{amount}</span>
           </>
         );
       }
