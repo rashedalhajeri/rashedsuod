@@ -36,9 +36,9 @@ const StatsCard: React.FC<StatsCardProps> = ({
       if (match) {
         const [_, currencySymbol, amount] = match;
         return (
-          <div className="relative">
+          <div className="relative flex justify-center">
             <span className="text-base md:text-lg">{amount}</span>
-            <span className="absolute -top-2 right-0 text-2xs opacity-50">{currencySymbol}</span>
+            <span className="absolute -top-2 text-2xs opacity-50" style={{ right: '-12px' }}>{currencySymbol}</span>
           </div>
         );
       }
@@ -67,12 +67,14 @@ const StatsCard: React.FC<StatsCardProps> = ({
               <p className="text-sm font-medium text-muted-foreground">{title}</p>
             </div>
             
-            <h4 className={`font-bold text-gray-900 group-hover:text-primary-600 transition-colors duration-200 ${isCurrency ? 'flex items-baseline' : 'text-xl md:text-2xl'}`}>
-              {renderValue()}
-            </h4>
+            <div className="text-center">
+              <h4 className={`font-bold text-gray-900 group-hover:text-primary-600 transition-colors duration-200 ${isCurrency ? 'inline-flex justify-center' : 'text-xl md:text-2xl'}`}>
+                {renderValue()}
+              </h4>
+            </div>
             
             {trend && (
-              <p className={`text-xs flex items-center mt-1 ${trend.isPositive ? 'text-green-600' : 'text-red-600'} gap-1`}>
+              <p className={`text-xs flex items-center mt-1 justify-center ${trend.isPositive ? 'text-green-600' : 'text-red-600'} gap-1`}>
                 {trend.isPositive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
                 <span>
                   {trend.value}%
