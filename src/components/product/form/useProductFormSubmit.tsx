@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface ProductFormData {

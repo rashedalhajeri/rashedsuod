@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import useStoreData, { getCurrencyFormatter } from "@/hooks/use-store-data";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
@@ -223,7 +223,6 @@ const Customers: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const { toast } = useToast();
   
   const { data: customersData, isLoading, error, refetch } = useQuery({
     queryKey: ['customers', storeData?.id],
@@ -281,8 +280,7 @@ const Customers: React.FC = () => {
   };
   
   const handleExportCustomers = () => {
-    toast({
-      title: "تم تصدير بيانات العملاء",
+    toast("تم تصدير بيانات العملاء", {
       description: "تم تصدير بيانات العملاء بنجاح إلى ملف CSV",
     });
   };

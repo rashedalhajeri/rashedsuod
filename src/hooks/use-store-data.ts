@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -82,8 +83,7 @@ export const fetchStoreData = async (): Promise<StoreData | null> => {
  */
 const handleMultipleStores = (count: number, firstStore: any): void => {
   if (count > 1) {
-    toast({
-      title: "تم العثور على أكثر من متجر",
+    toast("تم العثور على أكثر من متجر", {
       description: "تم تحديد المتجر الأول تلقائيًا. يمكنك إضافة ميزة تبديل المتاجر لاحقًا.",
       duration: 5000,
     });
