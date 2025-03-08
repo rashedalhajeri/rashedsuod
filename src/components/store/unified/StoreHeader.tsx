@@ -50,15 +50,15 @@ const StoreHeader: React.FC<StoreHeaderProps> = ({
 
   return (
     <header className="relative w-full" dir="rtl">
-      <div className="bg-gradient-to-br from-[#161a23] to-[#2b2e3b] pt-6 pb-10 px-3 sm:px-4 relative">
+      <div className="bg-gradient-to-br from-[#1E3A8A] to-[#3B82F6] pt-6 pb-10 px-3 sm:px-4 relative">
         {/* Gradient overlay with animated pattern */}
         <div className="absolute inset-0 bg-[url('/public/lovable-uploads/9bdce759-607e-417a-b056-f23d54b1d8f3.png')] bg-cover bg-center opacity-5 mix-blend-overlay"></div>
         
         {/* Modern geometric patterns */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-full opacity-10">
-            <div className="absolute top-0 right-0 w-72 h-72 bg-blue-400 rounded-full filter blur-3xl opacity-20 animate-pulse"></div>
-            <div className="absolute bottom-0 left-0 w-72 h-72 bg-purple-400 rounded-full filter blur-3xl opacity-20 animate-pulse" style={{animationDelay: '2s'}}></div>
+            <div className="absolute top-0 right-0 w-72 h-72 bg-blue-300 rounded-full filter blur-3xl opacity-20 animate-pulse"></div>
+            <div className="absolute bottom-0 left-0 w-72 h-72 bg-blue-200 rounded-full filter blur-3xl opacity-20 animate-pulse" style={{animationDelay: '2s'}}></div>
           </div>
         </div>
 
@@ -127,7 +127,7 @@ const StoreHeader: React.FC<StoreHeaderProps> = ({
                 >
                   <ShoppingCart className="h-5 w-5" />
                   {totalItems > 0 && (
-                    <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] h-5 min-w-5 flex items-center justify-center rounded-full px-1 border border-white/20 shadow-md">
+                    <Badge className="absolute -top-1 -right-1 bg-blue-500 text-white text-[10px] h-5 min-w-5 flex items-center justify-center rounded-full px-1 border border-white/20 shadow-md">
                       {totalItems}
                     </Badge>
                   )}
@@ -140,7 +140,7 @@ const StoreHeader: React.FC<StoreHeaderProps> = ({
         {/* Background decoration */}
         <div className="absolute bottom-0 left-0 w-full overflow-hidden">
           <div className="absolute bottom-0 left-0 w-16 sm:w-24 h-16 sm:h-24 bg-white/5 rounded-full blur-xl -mb-8 -ml-8"></div>
-          <div className="absolute bottom-0 right-0 w-20 sm:w-32 h-20 sm:h-32 bg-blue-400/10 rounded-full blur-xl -mb-10 -mr-10"></div>
+          <div className="absolute bottom-0 right-0 w-20 sm:w-32 h-20 sm:h-32 bg-blue-300/10 rounded-full blur-xl -mb-10 -mr-10"></div>
         </div>
       </div>
     </header>

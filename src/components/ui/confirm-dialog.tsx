@@ -79,7 +79,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             </Button>
           </AlertDialogCancel>
           <AlertDialogAction asChild>
-            <Button onClick={handleConfirm} {...confirmButtonProps}>
+            <Button onClick={handleConfirm} variant="default" className="bg-primary hover:bg-primary-600" {...confirmButtonProps}>
               {confirmText}
             </Button>
           </AlertDialogAction>
