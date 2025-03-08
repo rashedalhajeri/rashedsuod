@@ -56,17 +56,15 @@ const StatsCard: React.FC<StatsCardProps> = ({
     >
       <Card className="overflow-hidden border border-gray-100 hover:border-primary-200 transition-all duration-200 hover:shadow-md group h-full">
         <CardContent className="p-4 md:p-6 relative">
-          {/* Background icon removed from here */}
-          
           <div className="flex flex-col">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center mb-2">
+              <p className="text-sm font-medium text-muted-foreground">{title}</p>
               <div className={cn(
-                "p-1.5 rounded-md shadow-sm group-hover:shadow-md transition-all duration-300 transform group-hover:scale-110",
+                "p-1.5 rounded-md shadow-sm group-hover:shadow-md transition-all duration-300 transform group-hover:scale-110 mr-2",
                 iconClassName || "bg-primary-100 text-primary-600"
               )}>
                 {React.cloneElement(icon as React.ReactElement, { className: 'h-3.5 w-3.5' })}
               </div>
-              <p className="text-sm font-medium text-muted-foreground">{title}</p>
             </div>
             
             <h4 className={`font-bold text-gray-900 group-hover:text-primary-600 transition-colors duration-200 ${isCurrency ? 'flex items-baseline' : 'text-xl md:text-2xl'}`}>
