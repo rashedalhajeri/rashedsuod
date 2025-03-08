@@ -134,6 +134,7 @@ const DashboardStatsSection: React.FC<DashboardStatsSectionProps> = ({
           iconClassName="bg-purple-100 text-purple-600"
           trend={trends.revenue}
           sparklineData={sparklines.revenue}
+          isCurrency={true}
         />
       </div>
     </div>

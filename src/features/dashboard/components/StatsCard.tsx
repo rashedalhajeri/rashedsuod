@@ -1,8 +1,10 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { TrendingUp, TrendingDown } from "lucide-react";
+
 interface StatsCardProps {
   title: string;
   value: string | number;
@@ -13,15 +15,38 @@ interface StatsCardProps {
     isPositive: boolean;
   };
   sparklineData?: number[];
+  isCurrency?: boolean;
 }
+
 const StatsCard: React.FC<StatsCardProps> = ({
   title,
   value,
   icon,
   iconClassName,
   trend,
-  sparklineData
+  sparklineData,
+  isCurrency = false
 }) => {
+  // Handle currency display with smaller currency symbol
+  const renderValue = () => {
+    if (isCurrency && typeof value === 'string') {
+      // Find the currency symbol and separate it from the number
+      const match = value.match(/^([^\d]+)(.+)$/);
+      
+      if (match) {
+        const [_, currencySymbol, amount] = match;
+        return (
+          <>
+            <span className="text-xs align-super mr-0.5 opacity-75">{currencySymbol}</span>
+            <span className="text-lg md:text-xl">{amount}</span>
+          </>
+        );
+      }
+    }
+    
+    return value;
+  };
+
   return <motion.div initial={{
     opacity: 0,
     y: 10
@@ -40,7 +65,9 @@ const StatsCard: React.FC<StatsCardProps> = ({
           <div className="flex justify-between items-center">
             <div>
               <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
-              <h4 className="text-xl md:text-2xl font-bold text-gray-900 group-hover:text-primary-600 transition-colors duration-200">{value}</h4>
+              <h4 className={`font-bold text-gray-900 group-hover:text-primary-600 transition-colors duration-200 ${isCurrency ? 'flex items-baseline' : 'text-xl md:text-2xl'}`}>
+                {renderValue()}
+              </h4>
               
               {trend && <p className={`text-xs flex items-center mt-1 ${trend.isPositive ? 'text-green-600' : 'text-red-600'} gap-1`}>
                   {trend.isPositive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
@@ -63,4 +90,5 @@ const StatsCard: React.FC<StatsCardProps> = ({
       </Card>
     </motion.div>;
 };
+
 export default StatsCard;
