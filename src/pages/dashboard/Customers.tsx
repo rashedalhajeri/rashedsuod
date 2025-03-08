@@ -262,8 +262,7 @@ const Customers: React.FC = () => {
         
         refetch();
         
-        toast({
-          title: "تم تحديث حالة العميل",
+        toast("تم تحديث حالة العميل", {
           description: `تم تغيير حالة العميل إلى ${status === "active" ? "نشط" : "غير نشط"}`,
         });
       } else {
@@ -271,8 +270,7 @@ const Customers: React.FC = () => {
       }
     } catch (error) {
       console.error("Error updating customer status:", error);
-      toast({
-        title: "خطأ",
+      toast("خطأ", {
         description: "حدث خطأ أثناء تحديث حالة العميل",
         variant: "destructive",
       });

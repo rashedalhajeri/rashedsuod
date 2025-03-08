@@ -37,7 +37,6 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
   onClose,
   onSuccess
 }) => {
-  const { toast } = useToast();
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedItems, setSelectedItems] = useState<OrderItem[]>([]);
@@ -146,8 +145,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     e.preventDefault();
     
     if (!storeId) {
-      toast({
-        title: "خطأ",
+      toast("خطأ", {
         description: "لم يتم العثور على بيانات المتجر",
         variant: "destructive"
       });
@@ -155,8 +153,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     }
     
     if (!orderData.customer_name || !orderData.shipping_address) {
-      toast({
-        title: "حقول مطلوبة",
+      toast("حقول مطلوبة", {
         description: "يرجى إدخال اسم العميل وعنوان الشحن",
         variant: "destructive"
       });
@@ -164,8 +161,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     }
 
     if (selectedItems.length === 0) {
-      toast({
-        title: "لا توجد منتجات",
+      toast("لا توجد منتجات", {
         description: "يرجى إضافة منتج واحد على الأقل للطلب",
         variant: "destructive"
       });
@@ -190,8 +186,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
       const result = await createOrder(storeId, completeOrderData, orderItems);
       
       if (result) {
-        toast({
-          title: "تم بنجاح",
+        toast("تم بنجاح", {
           description: "تم إنشاء الطلب بنجاح",
         });
         onSuccess();
@@ -199,8 +194,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
       }
     } catch (error) {
       console.error("Error creating order:", error);
-      toast({
-        title: "خطأ",
+      toast("خطأ", {
         description: "حدث خطأ أثناء إنشاء الطلب",
         variant: "destructive"
       });

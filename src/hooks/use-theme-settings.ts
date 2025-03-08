@@ -1,62 +1,132 @@
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getThemeSettings, saveThemeSettings, ThemeSettings } from '@/utils/theme-utils';
-import { useToast } from '@/components/ui/use-toast';
-import { useEffect } from 'react';
-import { applyThemeSettings } from '@/utils/theme-utils';
-
+/**
+ * هوك لإدارة إعدادات سمة المتجر
+ * @param storeId - معرف المتجر
+ */
 export const useThemeSettings = (storeId?: string) => {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-  
-  const {
-    data: themeSettings,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ['themeSettings', storeId],
-    queryFn: () => getThemeSettings(storeId || ''),
-    enabled: !!storeId,
-  });
-  
-  const { mutate: updateThemeSettings, isPending: isSaving } = useMutation({
-    mutationFn: (settings: ThemeSettings) => saveThemeSettings(settings),
-    onSuccess: (data) => {
-      if (data) {
-        queryClient.setQueryData(['themeSettings', storeId], data);
-        toast({
-          title: "نجاح",
-          description: "تم حفظ إعدادات التصميم بنجاح",
-        });
-        
-        // Apply the theme settings
-        applyThemeSettings(data);
-      }
-    },
-    onError: (error) => {
-      console.error('Error saving theme settings:', error);
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء حفظ إعدادات التصميم",
-        variant: "destructive",
-      });
-    },
-  });
-  
-  // Apply theme settings when they're loaded
+  const [themeSettings, setThemeSettings] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
   useEffect(() => {
-    if (themeSettings) {
-      applyThemeSettings(themeSettings);
+    if (storeId) {
+      fetchThemeSettings(storeId);
     }
-  }, [themeSettings]);
-  
+  }, [storeId]);
+
+  const fetchThemeSettings = async (storeId: string) => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('store_theme_settings')
+        .select('*')
+        .eq('store_id', storeId)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error fetching theme settings:", error);
+        toast("خطأ في جلب الإعدادات", {
+          description: "لم نتمكن من جلب إعدادات سمة المتجر الخاصة بك."
+        });
+        return;
+      }
+
+      setThemeSettings(data || {});
+    } catch (err) {
+      console.error("Error in fetchThemeSettings:", err);
+      toast("حدث خطأ", {
+        description: "حدث خطأ غير متوقع أثناء جلب إعدادات السمة."
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const saveThemeSettings = async (settings: any) => {
+    if (!storeId) {
+      toast("خطأ", {
+        description: "لم يتم العثور على معرف المتجر."
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { data, error } = await supabase
+        .from('store_theme_settings')
+        .upsert({
+          store_id: storeId,
+          ...settings,
+        }, { onConflict: 'store_id' })
+        .select();
+
+      if (error) {
+        console.error("Error saving theme settings:", error);
+        toast("خطأ في حفظ الإعدادات", {
+          description: "حدث خطأ أثناء حفظ إعدادات السمة."
+        });
+        return;
+      }
+
+      setThemeSettings(data?.[0] || {});
+      toast("تم الحفظ", {
+        description: "تم حفظ إعدادات السمة بنجاح."
+      });
+    } catch (err) {
+      console.error("Error in saveThemeSettings:", err);
+      toast("حدث خطأ", {
+        description: "حدث خطأ غير متوقع أثناء حفظ إعدادات السمة."
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return {
     themeSettings,
     isLoading,
-    error,
-    updateThemeSettings,
     isSaving,
+    saveThemeSettings: async (settings: any) => {
+      if (!storeId) {
+        toast("خطأ", {
+          description: "لم يتم العثور على معرف المتجر."
+        });
+        return;
+      }
+
+      setIsSaving(true);
+      try {
+        const { data, error } = await supabase
+          .from('store_theme_settings')
+          .upsert({
+            store_id: storeId,
+            ...settings,
+          }, { onConflict: 'store_id' })
+          .select();
+
+        if (error) {
+          console.error("Error saving theme settings:", error);
+          toast("خطأ في حفظ الإعدادات", {
+            description: "حدث خطأ أثناء حفظ إعدادات السمة."
+          });
+          return;
+        }
+
+        setThemeSettings(data?.[0] || {});
+        toast("تم الحفظ", {
+          description: "تم حفظ إعدادات السمة بنجاح."
+        });
+      } catch (err) {
+        console.error("Error in saveThemeSettings:", err);
+        toast("حدث خطأ", {
+          description: "حدث خطأ غير متوقع أثناء حفظ إعدادات السمة."
+        });
+      } finally {
+        setIsSaving(false);
+      }
+    }
   };
 };
-
-export default useThemeSettings;
