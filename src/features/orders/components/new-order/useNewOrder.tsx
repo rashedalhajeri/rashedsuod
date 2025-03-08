@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -74,7 +73,7 @@ export const useNewOrder = (
   };
 
   // Debounced search
-  useState(() => {
+  useEffect(() => {
     const timer = setTimeout(() => {
       fetchProducts();
     }, 300);
