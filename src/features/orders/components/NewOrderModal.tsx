@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -147,7 +148,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     if (!storeId) {
       toast("خطأ", {
         description: "لم يتم العثور على بيانات المتجر",
-        variant: "destructive"
+        style: { backgroundColor: 'red', color: 'white' }
       });
       return;
     }
@@ -155,7 +156,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     if (!orderData.customer_name || !orderData.shipping_address) {
       toast("حقول مطلوبة", {
         description: "يرجى إدخال اسم العميل وعنوان الشحن",
-        variant: "destructive"
+        style: { backgroundColor: 'red', color: 'white' }
       });
       return;
     }
@@ -163,7 +164,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     if (selectedItems.length === 0) {
       toast("لا توجد منتجات", {
         description: "يرجى إضافة منتج واحد على الأقل للطلب",
-        variant: "destructive"
+        style: { backgroundColor: 'red', color: 'white' }
       });
       return;
     }
@@ -187,7 +188,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
       
       if (result) {
         toast("تم بنجاح", {
-          description: "تم إنشاء الطلب بنجاح",
+          description: "تم إنشاء الطلب بنجاح"
         });
         onSuccess();
         onClose();
@@ -196,7 +197,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
       console.error("Error creating order:", error);
       toast("خطأ", {
         description: "حدث خطأ أثناء إنشاء الطلب",
-        variant: "destructive"
+        style: { backgroundColor: 'red', color: 'white' }
       });
     } finally {
       setSaving(false);

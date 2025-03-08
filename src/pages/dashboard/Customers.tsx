@@ -272,7 +272,7 @@ const Customers: React.FC = () => {
       console.error("Error updating customer status:", error);
       toast("خطأ", {
         description: "حدث خطأ أثناء تحديث حالة العميل",
-        variant: "destructive",
+        style: { backgroundColor: 'red', color: 'white' }
       });
     }
   };
