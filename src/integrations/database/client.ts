@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Product, RawProductData } from "@/utils/products/types";
 import { mapRawProductToProduct } from "@/utils/products/mappers";
@@ -22,6 +21,7 @@ export interface DatabaseClient {
     bulkDeleteProducts: (productIds: string[]) => Promise<{ success: boolean, error: any, deletedCount: number, archivedCount: number }>;
     activateProduct: (productId: string, isActive: boolean) => Promise<{ data: Product | null, error: any }>;
     bulkActivateProducts: (productIds: string[], isActive: boolean) => Promise<{ success: boolean, error: any }>;
+    bulkUpdateCategory: (productIds: string[], categoryId: string | null) => Promise<{ success: boolean, error: any }>;
   };
 }
 
@@ -36,7 +36,6 @@ class SupabaseDatabaseClient implements DatabaseClient {
       includeArchived: boolean = false
     ): Promise<Product[]> => {
       try {
-        // استخدام buildProductQuery لبناء استعلام موحد
         let query = buildProductQuery(
           supabase,
           sectionType,
@@ -46,7 +45,6 @@ class SupabaseDatabaseClient implements DatabaseClient {
           limit
         );
         
-        // تنفيذ الاستعلام
         const { data, error } = await query;
         
         if (error) {
@@ -99,7 +97,6 @@ class SupabaseDatabaseClient implements DatabaseClient {
       try {
         const validUpdates = { ...updates };
         
-        // تحويل القيم النصية من JSON إلى سلاسل نصية
         if (validUpdates.additional_images && Array.isArray(validUpdates.additional_images)) {
           validUpdates.additional_images = JSON.stringify(validUpdates.additional_images);
         }
@@ -112,7 +109,6 @@ class SupabaseDatabaseClient implements DatabaseClient {
           validUpdates.available_sizes = JSON.stringify(validUpdates.available_sizes);
         }
         
-        // حذف حقول غير ضرورية للتحديث
         delete validUpdates.category;
         
         console.log("Updating product with data:", validUpdates);
@@ -147,7 +143,6 @@ class SupabaseDatabaseClient implements DatabaseClient {
       try {
         console.log(`Attempting to delete product with ID: ${productId}`);
         
-        // First, check if there are any related order items
         const { data: orderItems, error: checkError } = await supabase
           .from('order_items')
           .select('id')
@@ -160,23 +155,36 @@ class SupabaseDatabaseClient implements DatabaseClient {
         
         console.log(`Found ${orderItems?.length || 0} related order items`);
         
-        // Delete related order items if they exist
         if (orderItems && orderItems.length > 0) {
-          console.log(`Deleting ${orderItems.length} related order items`);
-          const { error: deleteOrderItemsError } = await supabase
-            .from('order_items')
-            .delete()
-            .eq('product_id', productId);
+          try {
+            console.log(`Attempting to disconnect ${orderItems.length} order items`);
+            const { error: updateError } = await supabase
+              .from('order_items')
+              .update({ product_id: null })
+              .eq('product_id', productId);
+              
+            if (updateError) {
+              console.warn("Failed to update order items, falling back to deletion:", updateError);
+              
+              console.log(`Deleting ${orderItems.length} related order items`);
+              const { error: deleteOrderItemsError } = await supabase
+                .from('order_items')
+                .delete()
+                .eq('product_id', productId);
+                
+              if (deleteOrderItemsError) {
+                console.error("Error deleting related order items:", deleteOrderItemsError);
+                return { success: false, error: deleteOrderItemsError };
+              }
+            }
             
-          if (deleteOrderItemsError) {
-            console.error("Error deleting related order items:", deleteOrderItemsError);
-            return { success: false, error: deleteOrderItemsError };
+            console.log("Successfully handled related order items");
+          } catch (err) {
+            console.error("Exception handling order items:", err);
+            return { success: false, error: err };
           }
-          
-          console.log("Successfully deleted related order items");
         }
         
-        // Now delete the product itself
         console.log("Proceeding to delete the product");
         const { error: deleteProductError } = await supabase
           .from('products')
@@ -197,14 +205,7 @@ class SupabaseDatabaseClient implements DatabaseClient {
     },
 
     hardDeleteProduct: async (productId: string) => {
-      try {
-        // This function now just calls the regular deleteProduct function
-        // since both perform the same permanent deletion
-        return this.products.deleteProduct(productId);
-      } catch (error) {
-        console.error("Error in hardDeleteProduct:", error);
-        return { success: false, error };
-      }
+      return this.products.deleteProduct(productId);
     },
 
     bulkDeleteProducts: async (productIds: string[]) => {
@@ -220,7 +221,6 @@ class SupabaseDatabaseClient implements DatabaseClient {
         
         console.log(`Attempting to bulk delete ${productIds.length} products`);
         
-        // First, check if there are any related order items
         const { data: orderItems, error: checkError } = await supabase
           .from('order_items')
           .select('id, product_id')
@@ -236,35 +236,52 @@ class SupabaseDatabaseClient implements DatabaseClient {
           };
         }
         
-        // Get product IDs that have related order items
         const productsWithOrders = orderItems 
           ? [...new Set(orderItems.map(item => item.product_id))]
           : [];
           
         console.log(`Found ${productsWithOrders.length} products with orders`);
         
-        // Delete related order items if they exist
         if (orderItems && orderItems.length > 0) {
-          console.log(`Deleting ${orderItems.length} related order items`);
-          const { error: deleteOrderItemsError } = await supabase
-            .from('order_items')
-            .delete()
-            .in('product_id', productIds);
+          try {
+            console.log(`Attempting to disconnect ${orderItems.length} related order items`);
+            const { error: updateError } = await supabase
+              .from('order_items')
+              .update({ product_id: null })
+              .in('product_id', productIds);
+              
+            if (updateError) {
+              console.warn("Failed to update order items, falling back to deletion:", updateError);
+              
+              console.log(`Deleting ${orderItems.length} related order items`);
+              const { error: deleteOrderItemsError } = await supabase
+                .from('order_items')
+                .delete()
+                .in('product_id', productIds);
+                
+              if (deleteOrderItemsError) {
+                console.error("Error deleting related order items for bulk delete:", deleteOrderItemsError);
+                return { 
+                  success: false, 
+                  error: deleteOrderItemsError, 
+                  deletedCount: 0,
+                  archivedCount: 0 
+                };
+              }
+            }
             
-          if (deleteOrderItemsError) {
-            console.error("Error deleting related order items for bulk delete:", deleteOrderItemsError);
+            console.log("Successfully handled related order items for bulk delete");
+          } catch (err) {
+            console.error("Exception handling order items in bulk delete:", err);
             return { 
               success: false, 
-              error: deleteOrderItemsError, 
+              error: err, 
               deletedCount: 0,
               archivedCount: 0 
             };
           }
-          
-          console.log("Successfully deleted related order items for bulk delete");
         }
         
-        // Now delete all products
         console.log("Proceeding to delete all products");
         const { error: deleteProductsError } = await supabase
           .from('products')
@@ -328,6 +345,31 @@ class SupabaseDatabaseClient implements DatabaseClient {
         console.error("Error bulk updating products active status:", error);
         return { success: false, error };
       }
+    },
+
+    bulkUpdateCategory: async (productIds: string[], categoryId: string | null) => {
+      try {
+        if (productIds.length === 0) {
+          return { success: true, error: null };
+        }
+
+        console.log(`Updating category to ${categoryId} for ${productIds.length} products`);
+        
+        const { error } = await supabase
+          .from('products')
+          .update({ category_id: categoryId })
+          .in('id', productIds);
+          
+        if (error) {
+          console.error("Error updating products category:", error);
+          return { success: false, error };
+        }
+        
+        return { success: true, error: null };
+      } catch (error) {
+        console.error("Exception in bulkUpdateCategory:", error);
+        return { success: false, error };
+      }
     }
   };
 }
@@ -337,3 +379,4 @@ export const databaseClient: DatabaseClient = new SupabaseDatabaseClient();
 export const setDatabaseClient = (mockClient: DatabaseClient) => {
   return mockClient;
 };
+

@@ -11,14 +11,19 @@ export const buildProductQuery = (
   storeId?: string,
   categoryId?: string,
   sectionId?: string,
-  limit?: number
+  limit?: number,
+  includeArchived: boolean = false
 ) => {
   // Start with a base query
   let query = supabase
     .from('products')
     .select('*, category:categories(name)')
-    .eq('is_archived', false)
     .eq('is_active', true); // Make sure only active products are shown
+    
+  // Only include non-archived products unless specifically requested
+  if (!includeArchived) {
+    query = query.eq('is_archived', false);
+  }
 
   console.log(`Building query for sectionType: ${sectionType}`);
 

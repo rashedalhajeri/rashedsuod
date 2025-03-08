@@ -5,6 +5,7 @@ import ProductsList from "./ProductsList";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import BulkActionsBar from "./bulk-actions/BulkActionsBar";
 import ProductsPagination from "./pagination/ProductsPagination";
+import ChangeCategoryDialog from "./bulk-actions/ChangeCategoryDialog";
 
 interface ProductsContentProps {
   products: Product[];
@@ -36,6 +37,7 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
   // Bulk action states
   const [showBulkActivateConfirm, setShowBulkActivateConfirm] = useState(false);
   const [bulkActivateStatus, setBulkActivateStatus] = useState(false);
+  const [showChangeCategoryDialog, setShowChangeCategoryDialog] = useState(false);
   
   // Calculate pagination
   const totalPages = Math.ceil(products.length / itemsPerPage);
@@ -67,6 +69,12 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
     onSelectionChange([]);
     setShowBulkActivateConfirm(false);
   };
+
+  // Handle bulk category change
+  const handleChangeCategoryClick = () => {
+    if (selectedItems.length === 0) return;
+    setShowChangeCategoryDialog(true);
+  };
   
   return (
     <div className="bg-gray-50 rounded-lg p-2">
@@ -76,6 +84,7 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
           selectedItemsCount={selectedItems.length}
           onActivate={() => handleBulkActivateClick(true)}
           onDeactivate={() => handleBulkActivateClick(false)}
+          onChangeCategory={handleChangeCategoryClick}
         />
       )}
       
@@ -118,6 +127,15 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
             ? "bg-green-500 hover:bg-green-600" 
             : "text-gray-600 border-gray-200 hover:bg-gray-50"
         }}
+      />
+
+      {/* Change Category Dialog */}
+      <ChangeCategoryDialog
+        open={showChangeCategoryDialog}
+        onOpenChange={setShowChangeCategoryDialog}
+        selectedProducts={selectedItems}
+        storeId={products[0]?.store_id}
+        onSuccess={onRefresh || (() => {})}
       />
     </div>
   );
