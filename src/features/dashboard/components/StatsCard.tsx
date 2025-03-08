@@ -37,7 +37,7 @@ const StatsCard: React.FC<StatsCardProps> = ({
         const [_, currencySymbol, amount] = match;
         return (
           <>
-            <span className="text-xs align-super mr-0.5 opacity-75">{currencySymbol}</span>
+            <span className="text-xs align-super mr-0.5 opacity-65">{currencySymbol}</span>
             <span className="text-lg md:text-xl">{amount}</span>
           </>
         );
@@ -60,32 +60,32 @@ const StatsCard: React.FC<StatsCardProps> = ({
             {icon}
           </div>
           
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
-              <h4 className={`font-bold text-gray-900 group-hover:text-primary-600 transition-colors duration-200 ${isCurrency ? 'flex items-baseline' : 'text-xl md:text-2xl'}`}>
-                {renderValue()}
-              </h4>
-              
-              {trend && (
-                <p className={`text-xs flex items-center mt-1 ${trend.isPositive ? 'text-green-600' : 'text-red-600'} gap-1`}>
-                  {trend.isPositive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
-                  <span>
-                    {trend.value}%
-                  </span>
-                  <span className="text-gray-500">
-                    {trend.isPositive ? 'زيادة' : 'انخفاض'}
-                  </span>
-                </p>
-              )}
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2 mb-1.5">
+              <div className={cn(
+                "p-1.5 rounded-md shadow-sm group-hover:shadow-md transition-all duration-300 transform group-hover:scale-110",
+                iconClassName || "bg-primary-100 text-primary-600"
+              )}>
+                {React.cloneElement(icon as React.ReactElement, { className: 'h-3.5 w-3.5' })}
+              </div>
+              <p className="text-sm font-medium text-muted-foreground">{title}</p>
             </div>
             
-            <div className={cn(
-              "p-3 rounded-xl shadow-sm group-hover:shadow-md transition-all duration-300 transform group-hover:scale-110",
-              iconClassName || "bg-primary-100 text-primary-600"
-            )}>
-              {icon}
-            </div>
+            <h4 className={`font-bold text-gray-900 group-hover:text-primary-600 transition-colors duration-200 ${isCurrency ? 'flex items-baseline' : 'text-xl md:text-2xl'}`}>
+              {renderValue()}
+            </h4>
+            
+            {trend && (
+              <p className={`text-xs flex items-center mt-1 ${trend.isPositive ? 'text-green-600' : 'text-red-600'} gap-1`}>
+                {trend.isPositive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
+                <span>
+                  {trend.value}%
+                </span>
+                <span className="text-gray-500">
+                  {trend.isPositive ? 'زيادة' : 'انخفاض'}
+                </span>
+              </p>
+            )}
           </div>
           
           {sparklineData && sparklineData.length > 0 && (

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { ShoppingBag, Package, Users, DollarSign, Calendar, ArrowRight, ChevronDown } from "lucide-react";
 import StatsCard from "@/features/dashboard/components/StatsCard";
@@ -32,7 +31,6 @@ const DashboardStatsSection: React.FC<DashboardStatsSectionProps> = ({
 }) => {
   const [selectedPeriod, setSelectedPeriod] = useState<string>("day");
   
-  // Dummy data for trends and sparklines
   const trends = {
     products: { value: 12, isPositive: true },
     orders: { value: 8, isPositive: true },
@@ -107,7 +105,6 @@ const DashboardStatsSection: React.FC<DashboardStatsSectionProps> = ({
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {isLoading ? (
-          // Show skeleton loading cards while data is loading
           <>
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="w-full">
@@ -125,12 +122,11 @@ const DashboardStatsSection: React.FC<DashboardStatsSectionProps> = ({
             ))}
           </>
         ) : (
-          // Show actual stats when loaded
           <>
             <StatsCard 
               title="المنتجات"
               value={stats.products.toString()}
-              icon={<Package className="h-5 w-5" />}
+              icon={<Package />}
               iconClassName="bg-blue-100 text-blue-600"
               trend={trends.products}
               sparklineData={sparklines.products}
@@ -138,7 +134,7 @@ const DashboardStatsSection: React.FC<DashboardStatsSectionProps> = ({
             <StatsCard 
               title="الطلبات"
               value={stats.orders.toString()}
-              icon={<ShoppingBag className="h-5 w-5" />}
+              icon={<ShoppingBag />}
               iconClassName="bg-orange-100 text-orange-600"
               trend={trends.orders}
               sparklineData={sparklines.orders}
@@ -146,7 +142,7 @@ const DashboardStatsSection: React.FC<DashboardStatsSectionProps> = ({
             <StatsCard 
               title="العملاء"
               value={stats.customers.toString()}
-              icon={<Users className="h-5 w-5" />}
+              icon={<Users />}
               iconClassName="bg-green-100 text-green-600"
               trend={trends.customers}
               sparklineData={sparklines.customers}
@@ -154,7 +150,7 @@ const DashboardStatsSection: React.FC<DashboardStatsSectionProps> = ({
             <StatsCard 
               title="الإيرادات"
               value={formatCurrency(stats.revenue)}
-              icon={<DollarSign className="h-5 w-5" />}
+              icon={<DollarSign />}
               iconClassName="bg-purple-100 text-purple-600"
               trend={trends.revenue}
               sparklineData={sparklines.revenue}
