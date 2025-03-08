@@ -5,25 +5,17 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { LoadingState } from "@/components/ui/loading-state";
-import { ErrorState } from "@/components/ui/error-state";
-import { useProductDetailForm } from "@/hooks/useProductDetailForm";
-import { AlertTriangle, X, Save, Trash } from "lucide-react";
+import { Edit, Trash, Power, PowerOff, X, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { formatCurrency } from "@/utils/currency";
+import { Product } from "@/utils/products/types";
 import { toast } from "sonner";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-
-// Import form sections
-import BasicInfoSection from "./form/BasicInfoSection";
-import InventorySection from "./form/InventorySection";
-import AdvancedFeaturesSection from "./form/AdvancedFeaturesSection";
-import ProductImagesSection from "./form/ProductImagesSection";
-import ConditionalSections from "./form/ConditionalSections";
-import FormSection from "./form/FormSection";
-import CategorySelector from "./form/CategorySelector";
-import SectionSelector from "./form/SectionSelector";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProductDetailDialogProps {
   isOpen: boolean;
@@ -40,246 +32,262 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   storeData,
   onSuccess,
 }) => {
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   
-  const {
-    isLoading,
-    isSubmitting,
-    error,
-    formData,
-    handleChange,
-    handleSwitchChange,
-    handleImagesChange,
-    handleCategoryChange,
-    handleSectionChange,
-    handleSave,
-    handleDelete,
-    toggleDiscount
-  } = useProductDetailForm({ 
-    productId, 
-    storeData,
-    onOpenChange,
-    onSuccess
+  // Fetch product details
+  const { data: product, isLoading, error } = useQuery({
+    queryKey: ["product", productId],
+    queryFn: async () => {
+      if (!productId) return null;
+      
+      const { data, error } = await supabase
+        .from("products")
+        .select("*, category:categories(*)")
+        .eq("id", productId)
+        .single();
+      
+      if (error) throw error;
+      return data as Product;
+    },
+    enabled: isOpen && !!productId,
   });
-
-  const handleColorsChange = (colors: string[]) => {
-    handleSwitchChange('available_colors', colors as any);
-  };
-
-  const handleSizesChange = (sizes: string[]) => {
-    handleSwitchChange('available_sizes', sizes as any);
-  };
-
-  const confirmDelete = () => {
-    setShowDeleteConfirm(true);
-  };
-
-  const executeDelete = async () => {
-    setIsDeleting(true);
-    try {
-      await handleDelete();
+  
+  // Toggle product active status
+  const toggleActiveMutation = useMutation({
+    mutationFn: async (isActive: boolean) => {
+      if (!productId) return;
+      
+      const { data, error } = await supabase
+        .from("products")
+        .update({ is_active: isActive })
+        .eq("id", productId);
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      toast.success(product?.is_active ? "تم تعطيل المنتج" : "تم تفعيل المنتج");
+      if (onSuccess) onSuccess();
+    },
+    onError: (error: any) => {
+      toast.error("حدث خطأ: " + error.message);
+    },
+  });
+  
+  // Delete product
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      if (!productId) return;
+      
+      const { data, error } = await supabase
+        .from("products")
+        .delete()
+        .eq("id", productId);
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
       toast.success("تم حذف المنتج بنجاح");
-    } catch (error) {
-      toast.error(`فشل حذف المنتج: ${(error as Error).message}`);
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteConfirm(false);
+      setShowDeleteAlert(false);
       onOpenChange(false);
+      if (onSuccess) onSuccess();
+    },
+    onError: (error: any) => {
+      toast.error("حدث خطأ أثناء حذف المنتج: " + error.message);
+    },
+  });
+  
+  const handleEditProduct = () => {
+    // يمكن إضافة تنقل إلى صفحة التعديل هنا
+    onOpenChange(false);
+    // router.push(`/dashboard/products/edit/${productId}`);
+  };
+  
+  const handleToggleActive = () => {
+    if (product) {
+      toggleActiveMutation.mutate(!product.is_active);
     }
   };
-
-  const handleConfirmDialogChange = (open: boolean) => {
-    setShowDeleteConfirm(open);
-    if (!open && isDeleting) {
-      setIsDeleting(false);
-    }
+  
+  const handleDeleteProduct = () => {
+    setShowDeleteAlert(true);
   };
-
-  const handleMainDialogClose = (open: boolean) => {
-    // إذا كان هناك حوار تأكيد مفتوح، لا نغلق الحوار الرئيسي
-    if (showDeleteConfirm) return;
-    
-    // وإلا، نسمح بالإغلاق
-    onOpenChange(open);
+  
+  const confirmDelete = () => {
+    deleteMutation.mutate();
   };
-
+  
   if (isLoading) {
     return (
-      <Dialog open={isOpen} onOpenChange={handleMainDialogClose}>
-        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
-          <LoadingState message="جاري تحميل بيانات المنتج..." />
+      <Dialog open={isOpen} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-md" dir="rtl">
+          <div className="flex justify-center items-center p-10">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="mr-2">جاري تحميل بيانات المنتج...</span>
+          </div>
         </DialogContent>
       </Dialog>
     );
   }
-
-  if (error) {
+  
+  if (error || !product) {
     return (
-      <Dialog open={isOpen} onOpenChange={handleMainDialogClose}>
-        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
-          <ErrorState 
-            title="خطأ في تحميل المنتج"
-            message={error}
-            onRetry={() => window.location.reload()}
-          />
+      <Dialog open={isOpen} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-md" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-center text-red-500">خطأ في تحميل المنتج</DialogTitle>
+          </DialogHeader>
+          <div className="text-center py-4">
+            <p>حدث خطأ أثناء تحميل بيانات المنتج. الرجاء المحاولة مرة أخرى.</p>
+          </div>
         </DialogContent>
       </Dialog>
     );
   }
-
-  const isUpdating = !!productId;
-
+  
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={handleMainDialogClose}>
-        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 shadow-xl rounded-lg border-0">
-          <div className="absolute right-4 top-4">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => onOpenChange(false)}
-              className="h-6 w-6 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">إغلاق</span>
-            </Button>
-          </div>
-          
-          <DialogHeader className="space-y-1 pb-4 mb-4 border-b border-gray-100 dark:border-gray-800">
-            <DialogTitle className="text-xl font-semibold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">
-              {isUpdating ? "تعديل المنتج" : "إضافة منتج جديد"}
-            </DialogTitle>
-            <DialogDescription className="text-gray-500 dark:text-gray-400">
-              قم بتعديل معلومات المنتج حسب احتياجك
-            </DialogDescription>
+      <Dialog open={isOpen} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-md" dir="rtl">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <DialogTitle>تفاصيل المنتج</DialogTitle>
+              {product.is_active ? (
+                <Badge className="bg-green-100 text-green-800 border-green-200">نشط</Badge>
+              ) : (
+                <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-200">غير نشط</Badge>
+              )}
+            </div>
           </DialogHeader>
           
-          <div className="space-y-6 p-1">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-              <div className="md:col-span-7 space-y-6">
-                <BasicInfoSection 
-                  name={formData.name}
-                  description={formData.description}
-                  price={formData.price}
-                  discountPrice={formData.discount_price}
-                  handleInputChange={handleChange}
-                  toggleDiscount={toggleDiscount}
-                />
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <CategorySelector
-                    categoryId={formData.category_id}
-                    storeId={storeData?.id}
-                    onCategoryChange={handleCategoryChange}
+          <div className="space-y-4">
+            {/* صورة المنتج والمعلومات الأساسية */}
+            <div className="flex items-center space-x-4 space-x-reverse">
+              <div className="h-20 w-20 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
+                {product.image_url ? (
+                  <img 
+                    src={product.image_url} 
+                    alt={product.name}
+                    className="h-full w-full object-cover" 
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "/placeholder.svg";
+                    }}
                   />
-
-                  <SectionSelector
-                    sectionId={formData.section_id}
-                    storeId={storeData?.id}
-                    onSectionChange={handleSectionChange}
-                  />
-                </div>
-                
-                <InventorySection 
-                  trackInventory={formData.track_inventory}
-                  stockQuantity={formData.stock_quantity}
-                  handleInputChange={handleChange}
-                  handleSwitchChange={handleSwitchChange}
-                />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center bg-gray-50">
+                    <span className="text-gray-400 text-xs">لا توجد صورة</span>
+                  </div>
+                )}
               </div>
               
-              <div className="md:col-span-5">
-                <ProductImagesSection 
-                  images={formData.images}
-                  storeId={storeData?.id}
-                  onChange={handleImagesChange}
-                  maxImages={5}
-                />
+              <div className="flex-1">
+                <h3 className="text-lg font-bold">{product.name}</h3>
+                <div className="flex items-center mt-1">
+                  {product.discount_price ? (
+                    <>
+                      <span className="text-red-600 font-bold">{formatCurrency(product.discount_price)}</span>
+                      <span className="text-gray-400 text-sm line-through mr-2">{formatCurrency(product.price)}</span>
+                    </>
+                  ) : (
+                    <span className="font-bold">{formatCurrency(product.price)}</span>
+                  )}
+                </div>
               </div>
             </div>
             
-            <FormSection>
-              <AdvancedFeaturesSection 
-                hasColors={formData.has_colors}
-                hasSizes={formData.has_sizes}
-                requireCustomerName={formData.require_customer_name}
-                requireCustomerImage={formData.require_customer_image}
-                handleSwitchChange={handleSwitchChange}
-              />
-            </FormSection>
+            <Separator />
             
-            <ConditionalSections 
-              formData={formData}
-              handleColorsChange={handleColorsChange}
-              handleSizesChange={handleSizesChange}
-            />
-          </div>
-          
-          <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
-            {isUpdating && (
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={confirmDelete}
-                  disabled={isSubmitting || isDeleting}
-                  className="gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/50"
-                >
-                  <Trash className="h-4 w-4" />
-                  حذف المنتج
-                </Button>
+            {/* المعلومات الإضافية */}
+            <div className="text-sm space-y-2">
+              {product.description && (
+                <p className="text-gray-600 line-clamp-2">{product.description}</p>
+              )}
+              
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <span className="text-gray-500">التصنيف:</span>
+                  <span className="font-medium mr-1">{product.category?.name || "غير مصنف"}</span>
+                </div>
+                
+                <div>
+                  <span className="text-gray-500">المخزون:</span>
+                  <span className="font-medium mr-1">
+                    {product.track_inventory 
+                      ? `${product.stock_quantity || 0} قطعة` 
+                      : "غير محدود"}
+                  </span>
+                </div>
               </div>
-            )}
+            </div>
             
-            {!isUpdating && <div></div>}
+            <Separator />
             
-            <div className="flex gap-3">
-              <Button 
-                variant="outline" 
-                onClick={() => onOpenChange(false)}
-                className="hover:bg-gray-50 dark:hover:bg-gray-800"
-                disabled={isSubmitting}
-              >
-                إلغاء
-              </Button>
+            {/* أزرار الإجراءات */}
+            <div className="space-y-2">
               <Button
-                onClick={handleSave}
-                disabled={isSubmitting}
-                className="gap-2 bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
+                onClick={handleEditProduct}
+                className="w-full"
+                variant="outline"
               >
-                <Save className="h-4 w-4" />
-                {isSubmitting ? "جاري الحفظ..." : "حفظ المنتج"}
+                <Edit className="h-4 w-4 ml-2" />
+                تعديل المنتج
+              </Button>
+              
+              <Button
+                onClick={handleToggleActive}
+                className="w-full"
+                variant="outline"
+                disabled={toggleActiveMutation.isPending}
+              >
+                {toggleActiveMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+                ) : product.is_active ? (
+                  <PowerOff className="h-4 w-4 ml-2" />
+                ) : (
+                  <Power className="h-4 w-4 ml-2" />
+                )}
+                {product.is_active ? "تعطيل المنتج" : "تفعيل المنتج"}
+              </Button>
+              
+              <Button
+                onClick={handleDeleteProduct}
+                className="w-full bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 border border-red-200"
+                variant="outline"
+                disabled={deleteMutation.isPending}
+              >
+                {deleteMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+                ) : (
+                  <Trash className="h-4 w-4 ml-2" />
+                )}
+                حذف المنتج
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
-
-      <ConfirmDialog
-        open={showDeleteConfirm}
-        onOpenChange={handleConfirmDialogChange}
-        title="تأكيد حذف المنتج"
-        description={
-          <>
-            <p>هل أنت متأكد من رغبتك في حذف هذا المنتج نهائياً؟</p>
-            <div className="mt-3 p-3 bg-amber-50 text-amber-800 rounded-md text-sm flex gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0" />
-              <div>
-                <p className="font-medium mb-1">ملاحظة هامة</p>
-                <p>حذف المنتج يعني إزالته تماماً من المتجر وقاعدة البيانات. سيتم الاحتفاظ بسجل الطلبات السابقة.</p>
-              </div>
-            </div>
-          </>
-        }
-        confirmText={isDeleting ? "جاري الحذف..." : "حذف المنتج"}
-        cancelText="إلغاء"
-        onConfirm={executeDelete}
-        confirmButtonProps={{ 
-          variant: "destructive",
-          className: "bg-red-500 hover:bg-red-600",
-          disabled: isDeleting
-        }}
-      />
+      
+      {/* حوار تأكيد الحذف */}
+      <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>تأكيد حذف المنتج</AlertDialogTitle>
+            <AlertDialogDescription>
+              هل أنت متأكد من رغبتك في حذف هذا المنتج؟ لا يمكن التراجع عن هذه العملية.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex flex-row-reverse sm:justify-start">
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              {deleteMutation.isPending ? "جاري الحذف..." : "حذف المنتج"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
