@@ -139,20 +139,40 @@ export class SupabaseProductClient implements ProductDatabaseClient {
     try {
       console.log(`Attempting to delete product with ID: ${productId}`);
       
-      // First, delete all order_items referencing this product
-      console.log("Deleting order items related to the product");
-      const { error: deleteItemsError } = await supabase
+      // First, check if there are order_items referencing this product
+      const { data: orderItems, error: checkError } = await supabase
         .from('order_items')
-        .delete()
+        .select('id')
         .eq('product_id', productId);
         
-      if (deleteItemsError) {
-        console.error("Error deleting related order items:", deleteItemsError);
-        return { success: false, error: deleteItemsError };
+      if (checkError) {
+        console.error("Error checking related order items:", checkError);
+        return { success: false, error: checkError };
       }
       
-      // Now delete the product
-      console.log("Proceeding to delete the product");
+      if (orderItems && orderItems.length > 0) {
+        console.log(`Found ${orderItems.length} order items related to this product`);
+        
+        // Option 1: Instead of deleting, just set the product as inactive
+        const { error: updateError } = await supabase
+          .from('products')
+          .update({ is_active: false })
+          .eq('id', productId);
+          
+        if (updateError) {
+          console.error("Error deactivating product:", updateError);
+          return { success: false, error: updateError };
+        }
+        
+        console.log("Product successfully deactivated instead of deleted due to order references");
+        return { 
+          success: true, 
+          error: null,
+          deactivated: true 
+        };
+      }
+      
+      // If no order items, we can safely delete the product
       const { error: deleteProductError } = await supabase
         .from('products')
         .delete()
@@ -172,7 +192,37 @@ export class SupabaseProductClient implements ProductDatabaseClient {
   };
 
   hardDeleteProduct = async (productId: string) => {
-    return this.deleteProduct(productId);
+    try {
+      console.log(`Attempting to permanently delete product with ID: ${productId}`);
+      
+      // First, we need to delete all order_items referencing this product
+      const { error: deleteItemsError } = await supabase
+        .from('order_items')
+        .delete()
+        .eq('product_id', productId);
+        
+      if (deleteItemsError) {
+        console.error("Error deleting related order items:", deleteItemsError);
+        return { success: false, error: deleteItemsError };
+      }
+      
+      // Now delete the product
+      const { error: deleteProductError } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId);
+        
+      if (deleteProductError) {
+        console.error("Error deleting product:", deleteProductError);
+        return { success: false, error: deleteProductError };
+      }
+      
+      console.log("Product successfully hard deleted");
+      return { success: true, error: null };
+    } catch (error) {
+      console.error("Exception in hardDeleteProduct:", error);
+      return { success: false, error };
+    }
   };
 
   bulkDeleteProducts = async (productIds: string[]) => {
@@ -186,48 +236,78 @@ export class SupabaseProductClient implements ProductDatabaseClient {
         };
       }
       
-      console.log(`Attempting to bulk delete ${productIds.length} products`);
+      console.log(`Attempting to bulk delete/deactivate ${productIds.length} products`);
       
-      // First delete all order_items referencing these products
-      console.log("Deleting all order items related to the products");
-      const { error: deleteItemsError } = await supabase
+      // First, check which products have order items
+      const { data: productsWithOrders, error: checkError } = await supabase
         .from('order_items')
-        .delete()
+        .select('product_id')
         .in('product_id', productIds);
         
-      if (deleteItemsError) {
-        console.error("Error deleting related order items for bulk delete:", deleteItemsError);
+      if (checkError) {
+        console.error("Error checking related order items for bulk delete:", checkError);
         return { 
           success: false, 
-          error: deleteItemsError, 
+          error: checkError, 
           deletedCount: 0,
           archivedCount: 0 
         };
       }
       
-      // Now delete all the selected products
-      console.log("Proceeding to delete all products");
-      const { error: deleteProductsError } = await supabase
-        .from('products')
-        .delete()
-        .in('id', productIds);
+      // Get unique product IDs with orders
+      const productsWithOrdersIds = [...new Set(productsWithOrders?.map(item => item.product_id) || [])];
+      console.log(`Found ${productsWithOrdersIds.length} products with orders that will be deactivated instead`);
+      
+      // Get products without orders that can be safely deleted
+      const productsToDelete = productIds.filter(id => !productsWithOrdersIds.includes(id));
+      console.log(`Found ${productsToDelete.length} products that can be safely deleted`);
+      
+      let deleteError = null;
+      let deactivateError = null;
+      
+      // Deactivate products with orders
+      if (productsWithOrdersIds.length > 0) {
+        const { error } = await supabase
+          .from('products')
+          .update({ is_active: false })
+          .in('id', productsWithOrdersIds);
+          
+        deactivateError = error;
         
-      if (deleteProductsError) {
-        console.error("Error in bulk delete products:", deleteProductsError);
-        return { 
-          success: false, 
-          error: deleteProductsError, 
-          deletedCount: 0,
-          archivedCount: 0 
-        };
+        if (error) {
+          console.error("Error deactivating products with orders:", error);
+        } else {
+          console.log(`Successfully deactivated ${productsWithOrdersIds.length} products`);
+        }
       }
       
-      console.log("All products successfully deleted");
+      // Delete products without orders
+      if (productsToDelete.length > 0) {
+        const { error } = await supabase
+          .from('products')
+          .delete()
+          .in('id', productsToDelete);
+          
+        deleteError = error;
+        
+        if (error) {
+          console.error("Error in bulk delete products:", error);
+        } else {
+          console.log(`Successfully deleted ${productsToDelete.length} products`);
+        }
+      }
+      
+      // Determine overall success based on operations that were actually performed
+      const success = (
+        (productsWithOrdersIds.length === 0 || !deactivateError) && 
+        (productsToDelete.length === 0 || !deleteError)
+      );
+      
       return { 
-        success: true, 
-        error: null, 
-        deletedCount: productIds.length,
-        archivedCount: 0
+        success, 
+        error: deleteError || deactivateError, 
+        deletedCount: deleteError ? 0 : productsToDelete.length,
+        archivedCount: deactivateError ? 0 : productsWithOrdersIds.length
       };
     } catch (error) {
       console.error("Exception in bulkDeleteProducts:", error);
