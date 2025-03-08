@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Product, RawProductData } from "@/utils/products/types";
 import { mapRawProductToProduct } from "@/utils/products/mappers";
