@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useStoreData } from "@/hooks/use-store-data";
 import { useProducts } from "@/hooks/use-products";
-import ProductDetailDialog from "@/components/product/ProductDetailDialog";
+import ProductActionDrawer from "@/components/product/ProductActionDrawer";
 import ProductFormDialog from "@/components/product/ProductFormDialog";
 import { ProductEmptyState } from "@/components/product/ProductEmptyState";
 import { LoadingState } from "@/components/ui/loading-state";
@@ -11,12 +11,14 @@ import DashboardLayout from "@/layouts/DashboardLayout";
 import ProductsHeader from "@/components/product/ProductsHeader";
 import ProductsContent from "@/components/product/ProductsContent";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const Products = () => {
+  const navigate = useNavigate();
   const { data: storeData, isLoading: loadingStore } = useStoreData();
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [isActionDialogOpen, setIsActionDialogOpen] = useState(false);
   
   const {
     products,
@@ -36,8 +38,15 @@ const Products = () => {
   } = useProducts(storeData?.id);
 
   const handleEditProduct = (productId: string) => {
-    setSelectedProductId(productId);
-    setIsEditDialogOpen(true);
+    // Close the action dialog if open
+    setIsActionDialogOpen(false);
+    // Navigate to the product edit page
+    navigate(`/dashboard/products/edit/${productId}`);
+  };
+
+  const handleOpenActionDrawer = (product: any) => {
+    setSelectedProduct(product);
+    setIsActionDialogOpen(true);
   };
 
   const handleBulkAction = async (productIds: string[], action: (id: string) => Promise<void>) => {
@@ -105,6 +114,7 @@ const Products = () => {
           onDelete={handleDeleteProduct}
           onActivate={handleActivateProduct}
           onRefresh={handleProductUpdate}
+          onActionClick={handleOpenActionDrawer}
         />
 
         <ProductFormDialog
@@ -114,13 +124,14 @@ const Products = () => {
           onAddSuccess={handleProductUpdate}
         />
 
-        {isEditDialogOpen && (
-          <ProductDetailDialog
-            isOpen={isEditDialogOpen}
-            onOpenChange={setIsEditDialogOpen}
-            productId={selectedProductId}
-            storeData={storeData}
-            onSuccess={handleProductUpdate}
+        {selectedProduct && (
+          <ProductActionDrawer
+            isOpen={isActionDialogOpen}
+            onOpenChange={setIsActionDialogOpen}
+            product={selectedProduct}
+            onEdit={handleEditProduct}
+            onDelete={handleDeleteProduct}
+            onActivate={handleActivateProduct}
           />
         )}
       </div>

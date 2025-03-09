@@ -33,6 +33,7 @@ const ProductActionDrawer: React.FC<ProductActionDrawerProps> = ({
     setIsActionLoading(true);
     try {
       await onDelete(product.id);
+      onOpenChange(false);
     } finally {
       setIsActionLoading(false);
     }
@@ -43,6 +44,7 @@ const ProductActionDrawer: React.FC<ProductActionDrawerProps> = ({
     setIsActionLoading(true);
     try {
       await onActivate(product.id, !product.is_active);
+      onOpenChange(false);
     } finally {
       setIsActionLoading(false);
     }
@@ -50,10 +52,10 @@ const ProductActionDrawer: React.FC<ProductActionDrawerProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[300px] p-0 overflow-hidden" dir="rtl">
+      <DialogContent className="sm:max-w-[280px] p-0 overflow-hidden rounded-md" dir="rtl">
         {/* اسم المنتج */}
-        <div className="p-3 text-center border-b border-gray-100 bg-gray-50">
-          <h3 className="text-base font-medium">{product.name}</h3>
+        <div className="p-3 text-center border-b border-gray-100 bg-gray-50/80">
+          <h3 className="text-base font-medium text-gray-800">{product.name}</h3>
         </div>
         
         <div className="p-4">
@@ -71,7 +73,7 @@ const ProductActionDrawer: React.FC<ProductActionDrawerProps> = ({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="w-full"
+            className="w-full text-gray-600 hover:bg-gray-50"
           >
             إغلاق
           </Button>
