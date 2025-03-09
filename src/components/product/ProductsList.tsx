@@ -1,11 +1,6 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { Product } from "@/utils/products/types";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import ProductActionDrawer from "./ProductActionDrawer";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import ProductFilterBar from "./list/ProductFilterBar";
-import ProductItems from "./list/ProductItems";
-import { toast } from "sonner";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface ProductsListProps {
   products: Product[];
@@ -31,200 +26,140 @@ const ProductsList: React.FC<ProductsListProps> = ({
   onActionClick
 }) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [filterActive, setFilterActive] = useState<string>("active");
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [productToDelete, setProductToDelete] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleToggleSelection = (id: string, isSelected: boolean) => {
-    const newSelectedItems = isSelected
-      ? [...selectedItems, id]
-      : selectedItems.filter(itemId => itemId !== id);
-    
-    setSelectedItems(newSelectedItems);
-    onSelectionChange(newSelectedItems);
-  };
-
-  const handleSelectAll = () => {
-    if (selectedItems.length === filteredProducts.length) {
-      setSelectedItems([]);
-      onSelectionChange([]);
+  const handleItemSelection = (id: string, checked: boolean) => {
+    if (checked) {
+      setSelectedItems((prev) => [...prev, id]);
+      onSelectionChange([...selectedItems, id]);
     } else {
-      const allIds = filteredProducts.map((product) => product.id);
-      setSelectedItems(allIds);
-      onSelectionChange(allIds);
+      setSelectedItems((prev) => prev.filter((item) => item !== id));
+      onSelectionChange(selectedItems.filter((item) => item !== id));
     }
   };
-
-  const handleProductClick = (product: Product) => {
-    onActionClick(product);
-  };
-
-  const handleDrawerClose = (open: boolean) => {
-    setIsDrawerOpen(open);
-    if (!open) {
-      setTimeout(() => {
-        setSelectedProduct(null);
-      }, 300);
-    }
-  };
-
-  const handleDeleteClick = (id: string): Promise<void> => {
-    return new Promise<void>((resolve) => {
-      setProductToDelete(id);
-      setShowDeleteConfirm(true);
-      setIsDrawerOpen(false);
-      resolve();
-    });
-  };
-
-  const confirmDelete = async () => {
-    if (productToDelete && onDelete) {
-      setIsDeleting(true);
-      try {
-        await onDelete(productToDelete);
-        toast.success("تم حذف المنتج بنجاح");
-        if (onRefresh) {
-          onRefresh();
-        }
-      } catch (error) {
-        toast.error(`حدث خطأ أثناء حذف المنتج: ${(error as Error).message}`);
-      } finally {
-        setIsDeleting(false);
-        setShowDeleteConfirm(false);
-        setProductToDelete(null);
-      }
-    }
-  };
-
-  const handleDeleteCancel = () => {
-    setShowDeleteConfirm(false);
-    setProductToDelete(null);
-  };
-
-  const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
-      if (filterActive === "active" && !product.is_active) {
-        return false;
-      }
-      
-      if (filterActive === "inactive" && product.is_active) {
-        return false;
-      }
-      
-      if (categoryFilter && product.category_id !== categoryFilter) {
-        return false;
-      }
-      
-      if (searchTerm.trim()) {
-        const searchLower = searchTerm.toLowerCase();
-        return (
-          product.name.toLowerCase().includes(searchLower) ||
-          (product.description && product.description.toLowerCase().includes(searchLower))
-        );
-      }
-      
-      return true;
-    });
-  }, [products, searchTerm, filterActive, categoryFilter]);
-
-  const getFilterCounts = () => {
-    const active = products.filter(p => p.is_active).length;
-    const inactive = products.filter(p => !p.is_active).length;
-    
-    return { active, inactive, archived: 0 };
-  };
-  
-  const filterCounts = getFilterCounts();
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <ProductFilterBar
-          searchTerm={searchTerm}
-          onSearch={onSearch}
-          categoryFilter={categoryFilter}
-          setCategoryFilter={setCategoryFilter}
-          filterActive={filterActive}
-          setFilterActive={setFilterActive}
-          handleSelectAll={handleSelectAll}
-          selectedItemsCount={selectedItems.length}
-          filteredProductsCount={filteredProducts.length}
-          filterCounts={filterCounts}
-        />
-        
-        <ScrollArea className="h-full">
-          <ProductItems
-            filteredProducts={filteredProducts}
-            selectedItems={selectedItems}
-            handleToggleSelection={handleToggleSelection}
-            handleProductClick={handleProductClick}
-            onEdit={onEdit}
-            onDelete={onDelete ? handleDeleteClick : undefined}
-            onActivate={onActivate}
-            onRefresh={onRefresh}
-            searchTerm={searchTerm}
-            onSearch={onSearch}
-            setCategoryFilter={setCategoryFilter}
-            categoryFilter={categoryFilter}
-          />
-        </ScrollArea>
+    <div className="overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm text-right">
+          <thead className="text-xs text-gray-700 bg-gray-100">
+            <tr>
+              <th className="p-3">
+                <Checkbox
+                  checked={selectedItems.length === products.length && products.length > 0}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      const allIds = products.map((product) => product.id);
+                      setSelectedItems(allIds);
+                      onSelectionChange(allIds);
+                    } else {
+                      setSelectedItems([]);
+                      onSelectionChange([]);
+                    }
+                  }}
+                />
+              </th>
+              <th className="p-3">المنتج</th>
+              <th className="p-3">السعر</th>
+              <th className="p-3">الفئة</th>
+              <th className="p-3">الحالة</th>
+              <th className="p-3">تاريخ الإضافة</th>
+              <th className="p-3">الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="text-center p-4">
+                  {searchTerm ? (
+                    <div className="text-gray-500">لا توجد منتجات تطابق بحثك</div>
+                  ) : (
+                    <div className="text-gray-500">لا توجد منتجات متاحة</div>
+                  )}
+                </td>
+              </tr>
+            ) : (
+              products.map((product) => (
+                <tr 
+                  key={product.id} 
+                  className="border-b border-gray-100 hover:bg-gray-50"
+                >
+                  <td className="px-3 py-2">
+                    <Checkbox
+                      checked={selectedItems.includes(product.id)}
+                      onCheckedChange={(checked) => {
+                        handleItemSelection(product.id, Boolean(checked));
+                      }}
+                    />
+                  </td>
+                  <td className="px-3 py-2">
+                    <div 
+                      className="flex items-center cursor-pointer"
+                      onClick={() => onActionClick(product)}
+                    >
+                      {product.image_url ? (
+                        <img 
+                          src={product.image_url} 
+                          alt={product.name}
+                          className="w-10 h-10 object-cover rounded-md ml-2"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 bg-gray-200 rounded-md ml-2 flex items-center justify-center">
+                          <span className="text-xs text-gray-500">لا توجد صورة</span>
+                        </div>
+                      )}
+                      <div>
+                        <div className="font-medium">{product.name}</div>
+                        {product.description && (
+                          <div className="text-xs text-gray-500 max-w-xs truncate">
+                            {product.description}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-3 py-2">
+                    {product.discount_price ? (
+                      <div>
+                        <span className="text-green-600">{product.discount_price} د.ك</span>
+                        <span className="text-xs text-gray-500 line-through mr-1">
+                          {product.price} د.ك
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-gray-800">{product.price} د.ك</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2">
+                    {product.category?.name || "بدون فئة"}
+                  </td>
+                  <td className="px-3 py-2">
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        product.is_active
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {product.is_active ? "نشط" : "غير نشط"}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 text-xs text-gray-500">
+                    {new Date(product.created_at).toLocaleDateString("ar-EG")}
+                  </td>
+                  <td className="px-3 py-2">
+                    <button
+                      onClick={() => onActionClick(product)}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      <span>⋮</span>
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
-
-      {selectedProduct && (
-        <ProductActionDrawer
-          product={selectedProduct}
-          isOpen={isDrawerOpen}
-          onOpenChange={handleDrawerClose}
-          onEdit={(id) => {
-            onEdit(id);
-            setIsDrawerOpen(false);
-          }}
-          onActivate={onActivate ? 
-            async (id, isActive) => {
-              if (onActivate) {
-                try {
-                  await onActivate(id, isActive);
-                  toast.success(`تم ${isActive ? 'تفعيل' : 'تعطيل'} المنتج بنجاح`);
-                  if (onRefresh) {
-                    onRefresh();
-                  }
-                } catch (error) {
-                  toast.error(`حدث خطأ: ${(error as Error).message}`);
-                } finally {
-                  setIsDrawerOpen(false);
-                }
-              }
-            } : undefined
-          }
-          onDelete={handleDeleteClick}
-        />
-      )}
-
-      <ConfirmDialog
-        open={showDeleteConfirm}
-        onOpenChange={(open) => {
-          if (!isDeleting) {
-            setShowDeleteConfirm(open);
-            if (!open) {
-              setProductToDelete(null);
-            }
-          }
-        }}
-        title="تأكيد حذف المنتج"
-        description="هل أنت متأكد من رغبتك في حذف هذا المنتج؟ لا يمكن التراجع عن هذه العملية."
-        confirmText={isDeleting ? "جاري الحذف..." : "حذف المنتج"}
-        cancelText="إلغاء"
-        onConfirm={confirmDelete}
-        confirmButtonProps={{ 
-          variant: "destructive",
-          className: "bg-red-500 hover:bg-red-600",
-          disabled: isDeleting
-        }}
-      />
     </div>
   );
 };

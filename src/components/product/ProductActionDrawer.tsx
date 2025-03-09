@@ -52,6 +52,7 @@ const ProductActionDrawer: React.FC<ProductActionDrawerProps> = ({
 
   const handleEdit = () => {
     onEdit(product.id);
+    onOpenChange(false); // Close the drawer when editing
   };
 
   return (

@@ -5,7 +5,7 @@ export async function deleteProduct(productId: string) {
   try {
     console.log(`Attempting to delete product with ID: ${productId}`);
     
-    // Delete the product directly without checking for order_items
+    // Delete the product directly
     // This works because we've added ON DELETE SET NULL to the foreign key
     const { error } = await supabase
       .from('products')
@@ -29,7 +29,8 @@ export async function hardDeleteProduct(productId: string) {
   try {
     console.log(`Attempting to permanently delete product with ID: ${productId}`);
     
-    // Delete the product directly without checking for order_items
+    // Delete the product directly
+    // The ON DELETE SET NULL constraint will handle order_items
     const { error } = await supabase
       .from('products')
       .delete()
@@ -61,7 +62,8 @@ export async function bulkDeleteProducts(productIds: string[]) {
     
     console.log(`Attempting to delete ${productIds.length} products`);
     
-    // Delete all products regardless of orders
+    // Delete all products
+    // The ON DELETE SET NULL constraint will handle related order_items
     const { error } = await supabase
       .from('products')
       .delete()
