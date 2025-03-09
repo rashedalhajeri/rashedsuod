@@ -3,9 +3,10 @@ import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash, Power, PowerOff, Loader2, Package } from "lucide-react";
+import { Edit, Trash, Power, PowerOff, Loader2 } from "lucide-react";
 import { Product, RawProductData } from "@/utils/products/types";
 import { toast } from "sonner";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
@@ -66,6 +67,7 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
     onSuccess: () => {
       toast.success(product?.is_active ? "تم تعطيل المنتج" : "تم تفعيل المنتج");
       if (onSuccess) onSuccess();
+      onOpenChange(false);
     },
     onError: (error: any) => {
       toast.error("حدث خطأ: " + error.message);
@@ -118,10 +120,9 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   if (isLoading) {
     return (
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-xs" dir="rtl">
-          <div className="flex justify-center items-center p-6">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <span className="mr-2">جاري التحميل...</span>
+        <DialogContent className="sm:max-w-[280px]" dir="rtl">
+          <div className="flex justify-center items-center p-4">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         </DialogContent>
       </Dialog>
@@ -131,9 +132,9 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   if (error || !product) {
     return (
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-xs" dir="rtl">
-          <div className="text-center py-4">
-            <p className="text-red-500">حدث خطأ أثناء تحميل بيانات المنتج.</p>
+        <DialogContent className="sm:max-w-[280px]" dir="rtl">
+          <div className="text-center p-4">
+            <p className="text-red-500 text-sm">حدث خطأ أثناء تحميل بيانات المنتج.</p>
           </div>
         </DialogContent>
       </Dialog>
@@ -143,44 +144,40 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[300px] p-4" dir="rtl">
-          <div className="flex flex-col items-center">
+        <DialogContent className="sm:max-w-[280px] p-0 overflow-hidden" dir="rtl">
+          <div className="flex flex-col">
             {/* صورة المنتج */}
-            <div className="h-24 w-24 rounded-full overflow-hidden bg-gray-100 mb-3">
-              {product.image_url ? (
-                <img 
-                  src={product.image_url} 
-                  alt={product.name}
-                  className="h-full w-full object-cover" 
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = "/placeholder.svg";
-                  }}
-                />
-              ) : (
-                <div className="h-full w-full flex items-center justify-center bg-gray-50">
-                  <Package className="h-10 w-10 text-gray-300" />
-                </div>
-              )}
+            <div className="bg-gray-50 p-6 flex items-center justify-center">
+              <div className="h-20 w-20 rounded-full overflow-hidden border border-gray-200 bg-white">
+                {product.image_url ? (
+                  <img 
+                    src={product.image_url} 
+                    alt={product.name}
+                    className="h-full w-full object-cover" 
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "/placeholder.svg";
+                    }}
+                  />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center bg-gray-50">
+                    <Loader2 className="h-8 w-8 text-gray-300" />
+                  </div>
+                )}
+              </div>
             </div>
             
-            {/* اسم المنتج */}
-            <h3 className="text-lg font-medium text-center mb-1">{product.name}</h3>
-            
-            {/* سعر المنتج */}
-            <ProductPrice 
-              price={product.price} 
-              discountPrice={product.discount_price} 
-              size="md"
-              className="mb-4"
-            />
+            {/* تفاصيل المنتج */}
+            <div className="p-4 text-center border-t border-gray-100">
+              <h3 className="text-base font-medium mb-1">{product.name}</h3>
+              <ProductPrice price={product.price} discountPrice={product.discount_price} size="sm" className="mb-4 justify-center" />
+            </div>
             
             {/* أزرار الإجراءات */}
-            <div className="w-full grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 border-t border-gray-100">
               <Button
                 onClick={handleEditProduct}
-                className="flex items-center justify-center"
-                variant="outline"
-                size="sm"
+                variant="ghost"
+                className="h-12 rounded-none border-r border-gray-100 flex flex-col items-center justify-center"
               >
                 <Edit className="h-4 w-4 mb-1" />
                 <span className="text-xs">تعديل</span>
@@ -188,11 +185,12 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
               
               <Button
                 onClick={handleToggleActive}
-                className={`flex flex-col items-center justify-center ${product.is_active 
-                  ? "text-amber-600 border-amber-200 bg-amber-50 hover:text-amber-700 hover:bg-amber-100" 
-                  : "text-green-600 border-green-200 bg-green-50 hover:text-green-700 hover:bg-green-100"}`}
-                variant="outline"
-                size="sm"
+                variant="ghost"
+                className={`h-12 rounded-none border-r border-gray-100 flex flex-col items-center justify-center ${
+                  product.is_active 
+                    ? "text-amber-600" 
+                    : "text-green-600"
+                }`}
                 disabled={toggleActiveMutation.isPending}
               >
                 {toggleActiveMutation.isPending ? (
@@ -207,9 +205,8 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
               
               <Button
                 onClick={handleDeleteProduct}
-                className="flex flex-col items-center justify-center bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 border border-red-200"
-                variant="outline"
-                size="sm"
+                variant="ghost"
+                className="h-12 rounded-none text-red-600 flex flex-col items-center justify-center"
                 disabled={deleteMutation.isPending}
               >
                 {deleteMutation.isPending ? (
@@ -226,20 +223,20 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
       
       {/* حوار تأكيد الحذف */}
       <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
-        <AlertDialogContent dir="rtl" className="max-w-xs">
+        <AlertDialogContent dir="rtl" className="max-w-[250px]">
           <AlertDialogHeader>
-            <AlertDialogTitle>تأكيد حذف المنتج</AlertDialogTitle>
-            <AlertDialogDescription>
-              هل أنت متأكد من رغبتك في حذف هذا المنتج؟
+            <AlertDialogTitle className="text-base">تأكيد الحذف</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm">
+              هل أنت متأكد من حذف هذا المنتج؟
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex flex-row-reverse sm:justify-start gap-2">
-            <AlertDialogCancel className="mt-0">إلغاء</AlertDialogCancel>
+            <AlertDialogCancel className="mt-0 text-sm h-8">إلغاء</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
-              className="bg-red-500 hover:bg-red-600"
+              className="bg-red-500 hover:bg-red-600 text-sm h-8"
             >
-              {deleteMutation.isPending ? "جاري الحذف..." : "حذف"}
+              {deleteMutation.isPending ? "جاري..." : "حذف"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
