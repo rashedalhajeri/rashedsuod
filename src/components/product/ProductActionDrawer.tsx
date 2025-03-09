@@ -1,12 +1,10 @@
 
 import React, { useState } from "react";
 import {
-  Drawer,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+  Dialog,
+  DialogContent,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Product } from "@/utils/products/types";
 import ProductDrawerActions from "./drawer/ProductDrawerActions";
@@ -51,38 +49,35 @@ const ProductActionDrawer: React.FC<ProductActionDrawerProps> = ({
   };
 
   return (
-    <Drawer open={isOpen} onOpenChange={onOpenChange} direction="left">
-      <DrawerContent className="h-full max-h-[95vh]" dir="rtl">
-        <div className="mx-auto w-full max-w-sm">
-          <DrawerHeader>
-            <DrawerTitle className="text-lg font-semibold text-center">
-              {product.name}
-            </DrawerTitle>
-          </DrawerHeader>
-
-          <div className="p-4 pb-0">
-            <ProductDrawerActions 
-              productId={product.id}
-              isActive={product.is_active}
-              isActionLoading={isActionLoading}
-              onEdit={onEdit}
-              onDelete={handleDelete}
-              onActivate={handleActivateToggle}
-            />
-          </div>
-
-          <DrawerFooter>
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="w-full"
-            >
-              إغلاق
-            </Button>
-          </DrawerFooter>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[300px] p-0 overflow-hidden" dir="rtl">
+        {/* اسم المنتج */}
+        <div className="p-3 text-center border-b border-gray-100 bg-gray-50">
+          <h3 className="text-base font-medium">{product.name}</h3>
         </div>
-      </DrawerContent>
-    </Drawer>
+        
+        <div className="p-4">
+          <ProductDrawerActions 
+            productId={product.id}
+            isActive={product.is_active}
+            isActionLoading={isActionLoading}
+            onEdit={onEdit}
+            onDelete={handleDelete}
+            onActivate={handleActivateToggle}
+          />
+        </div>
+
+        <DialogFooter className="px-4 pb-4 pt-0">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="w-full"
+          >
+            إغلاق
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
