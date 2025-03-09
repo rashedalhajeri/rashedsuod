@@ -10,7 +10,6 @@ import { Product } from "@/utils/products/types";
 
 import ProductDrawerHeader from "./drawer/ProductDrawerHeader";
 import ProductDrawerImage from "./drawer/ProductDrawerImage";
-import ProductDrawerDetails from "./drawer/ProductDrawerDetails";
 import ProductDrawerActions from "./drawer/ProductDrawerActions";
 
 interface ProductActionDrawerProps {
@@ -65,8 +64,6 @@ const ProductActionDrawer: React.FC<ProductActionDrawerProps> = ({
           <div className="p-4 pb-0">
             <ProductDrawerImage imageUrl={imageUrl} productName={product.name} />
             
-            <ProductDrawerDetails product={product} />
-
             <ProductDrawerActions 
               productId={product.id}
               isActive={product.is_active}
