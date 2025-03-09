@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { Product } from "@/utils/products/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -17,6 +16,7 @@ interface ProductsListProps {
   onDelete?: (id: string) => Promise<void>;
   onActivate?: (id: string, isActive: boolean) => Promise<void>;
   onRefresh?: () => void;
+  onActionClick: (product: Product) => void;
 }
 
 const ProductsList: React.FC<ProductsListProps> = ({
@@ -27,7 +27,8 @@ const ProductsList: React.FC<ProductsListProps> = ({
   onSearch,
   onDelete,
   onActivate,
-  onRefresh
+  onRefresh,
+  onActionClick
 }) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [filterActive, setFilterActive] = useState<string>("active");
@@ -59,8 +60,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
   };
 
   const handleProductClick = (product: Product) => {
-    setSelectedProduct(product);
-    setIsDrawerOpen(true);
+    onActionClick(product);
   };
 
   const handleDrawerClose = (open: boolean) => {
