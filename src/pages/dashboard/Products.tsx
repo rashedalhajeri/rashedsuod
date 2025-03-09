@@ -19,6 +19,8 @@ const Products = () => {
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isActionDialogOpen, setIsActionDialogOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
   const {
     products,
@@ -40,8 +42,15 @@ const Products = () => {
   const handleEditProduct = (productId: string) => {
     // Close the action dialog if open
     setIsActionDialogOpen(false);
-    // Navigate to the product edit page
-    navigate(`/dashboard/products/edit/${productId}`);
+    
+    // Find the product to edit
+    const productToEdit = products.find(p => p.id === productId);
+    if (productToEdit) {
+      setEditingProduct(productToEdit);
+      setIsEditDialogOpen(true);
+    } else {
+      toast.error("لم يتم العثور على المنتج");
+    }
   };
 
   const handleOpenActionDrawer = (product: any) => {
@@ -117,11 +126,22 @@ const Products = () => {
           onActionClick={handleOpenActionDrawer}
         />
 
+        {/* Add Product Dialog */}
         <ProductFormDialog
           isOpen={isAddProductOpen}
           onOpenChange={setIsAddProductOpen}
           storeId={storeData?.id}
           onAddSuccess={handleProductUpdate}
+        />
+
+        {/* Edit Product Dialog */}
+        <ProductFormDialog
+          isOpen={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          storeId={storeData?.id}
+          onAddSuccess={handleProductUpdate}
+          editProduct={editingProduct}
+          isEditMode={true}
         />
 
         {selectedProduct && (

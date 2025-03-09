@@ -50,6 +50,10 @@ const ProductActionDrawer: React.FC<ProductActionDrawerProps> = ({
     }
   };
 
+  const handleEdit = () => {
+    onEdit(product.id);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[280px] p-0 overflow-hidden rounded-md" dir="rtl">
@@ -63,7 +67,7 @@ const ProductActionDrawer: React.FC<ProductActionDrawerProps> = ({
             productId={product.id}
             isActive={product.is_active}
             isActionLoading={isActionLoading}
-            onEdit={onEdit}
+            onEdit={handleEdit}
             onDelete={handleDelete}
             onActivate={handleActivateToggle}
           />

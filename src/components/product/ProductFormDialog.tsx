@@ -16,19 +16,24 @@ import CategorySelector from "./form/CategorySelector";
 import SectionSelector from "./form/SectionSelector";
 import { useProductForm } from "./form/useProductForm";
 import { useProductFormSubmit } from "./form/useProductFormSubmit";
+import { Product } from "@/utils/products/types";
 
 interface ProductFormDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   storeId?: string;
   onAddSuccess: () => void;
+  editProduct?: Product | null; // Add this to support editing
+  isEditMode?: boolean;
 }
 
 const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
   isOpen,
   onOpenChange,
   storeId,
-  onAddSuccess
+  onAddSuccess,
+  editProduct = null,
+  isEditMode = false
 }) => {
   const {
     formData,
@@ -41,21 +46,40 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
     handleSectionChange,
     toggleDiscount,
     isFormValid
-  } = useProductForm();
+  } = useProductForm(editProduct ? {
+    name: editProduct.name,
+    description: editProduct.description,
+    price: editProduct.price,
+    discount_price: editProduct.discount_price,
+    stock_quantity: editProduct.stock_quantity,
+    images: editProduct.images || [],
+    track_inventory: editProduct.track_inventory,
+    has_colors: editProduct.has_colors,
+    has_sizes: editProduct.has_sizes,
+    require_customer_name: editProduct.require_customer_name,
+    require_customer_image: editProduct.require_customer_image,
+    available_colors: editProduct.available_colors,
+    available_sizes: editProduct.available_sizes,
+    category_id: editProduct.category_id,
+    section_id: editProduct.section_id
+  } : undefined);
   
-  const { isSubmitting, handleSubmit } = useProductFormSubmit({
+  const { isSubmitting, handleSubmit, handleUpdateProduct } = useProductFormSubmit({
     storeId,
     onSuccess: onAddSuccess,
-    onClose: () => onOpenChange(false)
+    onClose: () => onOpenChange(false),
+    productId: editProduct?.id
   });
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">إضافة منتج جديد</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">{isEditMode ? 'تعديل المنتج' : 'إضافة منتج جديد'}</DialogTitle>
           <DialogDescription className="text-gray-500">
-            أدخل معلومات المنتج الذي تريد إضافته إلى متجرك.
+            {isEditMode 
+              ? 'قم بتعديل معلومات المنتج أدناه ثم اضغط على حفظ التغييرات'
+              : 'أدخل معلومات المنتج الذي تريد إضافته إلى متجرك.'}
           </DialogDescription>
         </DialogHeader>
         
@@ -127,9 +151,13 @@ const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
         
         <ProductFormActions 
           onCancel={() => onOpenChange(false)}
-          onSubmit={() => handleSubmit(formData)}
+          onSubmit={() => isEditMode && editProduct 
+            ? handleUpdateProduct(editProduct.id, formData) 
+            : handleSubmit(formData)
+          }
           isDisabled={!isFormValid || isSubmitting}
           isSubmitting={isSubmitting}
+          isEditMode={isEditMode}
         />
       </DialogContent>
     </Dialog>
