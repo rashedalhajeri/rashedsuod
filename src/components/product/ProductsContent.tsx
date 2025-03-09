@@ -18,6 +18,7 @@ interface ProductsContentProps {
   onDelete: (id: string) => Promise<void>;
   onActivate?: (id: string, isActive: boolean) => Promise<void>;
   onRefresh?: () => void;
+  onActionClick: (product: Product) => void;
 }
 
 const ProductsContent: React.FC<ProductsContentProps> = ({
@@ -29,7 +30,8 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
   onSearch,
   onDelete,
   onActivate,
-  onRefresh
+  onRefresh,
+  onActionClick
 }) => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -124,6 +126,7 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
         onDelete={onDelete}
         onActivate={onActivate}
         onRefresh={onRefresh}
+        onActionClick={onActionClick}
       />
       
       {/* Pagination control */}
