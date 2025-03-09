@@ -11,16 +11,18 @@ import DashboardLayout from "@/layouts/DashboardLayout";
 import ProductsHeader from "@/components/product/ProductsHeader";
 import ProductsContent from "@/components/product/ProductsContent";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useIsMobile, useIsTablet } from "@/hooks/use-media-query";
 
 const Products = () => {
-  const navigate = useNavigate();
   const { data: storeData, isLoading: loadingStore } = useStoreData();
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isActionDialogOpen, setIsActionDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  
+  const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
   
   const {
     products,
@@ -70,39 +72,48 @@ const Products = () => {
     }
   };
 
+  // رسالة التحميل المتجاوبة
   if (loadingStore || isLoading) {
     return (
       <DashboardLayout>
-        <LoadingState message="جاري تحميل المنتجات..." />
+        <div className="h-[calc(100vh-200px)] flex items-center justify-center">
+          <LoadingState message="جاري تحميل المنتجات..." />
+        </div>
       </DashboardLayout>
     );
   }
 
+  // رسالة الخطأ المتجاوبة
   if (error) {
     return (
       <DashboardLayout>
-        <ErrorState 
-          title="خطأ في تحميل المنتجات"
-          message={(error as Error).message}
-          onRetry={refetch}
-        />
+        <div className="h-[calc(100vh-200px)] flex items-center justify-center p-4">
+          <ErrorState 
+            title="خطأ في تحميل المنتجات"
+            message={(error as Error).message}
+            onRetry={refetch}
+          />
+        </div>
       </DashboardLayout>
     );
   }
 
+  // حالة عدم وجود منتجات
   if (products?.length === 0) {
     return (
       <DashboardLayout>
-        <ProductEmptyState 
-          onAddProduct={() => setIsAddProductOpen(true)} 
-        />
+        <div className={`h-[calc(100vh-200px)] flex items-center justify-center ${isMobile ? 'p-4' : 'p-6'}`}>
+          <ProductEmptyState 
+            onAddProduct={() => setIsAddProductOpen(true)} 
+          />
+        </div>
       </DashboardLayout>
     );
   }
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto py-3 sm:py-6 px-2 sm:px-4 max-w-6xl" dir="rtl">
+      <div className={`container mx-auto ${isMobile ? 'py-3 px-2' : isTablet ? 'py-4 px-3' : 'py-6 px-4'} max-w-6xl`} dir="rtl">
         <ProductsHeader 
           inactiveCount={inactiveCount}
           totalProducts={products.length}
@@ -113,18 +124,20 @@ const Products = () => {
           onSearch={handleSearch}
         />
 
-        <ProductsContent 
-          products={filteredProducts}
-          selectedItems={selectedItems}
-          searchTerm={searchTerm}
-          onEdit={handleEditProduct}
-          onSelectionChange={handleSelectionChange}
-          onSearch={handleSearch}
-          onDelete={handleDeleteProduct}
-          onActivate={handleActivateProduct}
-          onRefresh={handleProductUpdate}
-          onActionClick={handleOpenActionDrawer}
-        />
+        <div className={`${isMobile ? 'mt-3' : 'mt-5'}`}>
+          <ProductsContent 
+            products={filteredProducts}
+            selectedItems={selectedItems}
+            searchTerm={searchTerm}
+            onEdit={handleEditProduct}
+            onSelectionChange={handleSelectionChange}
+            onSearch={handleSearch}
+            onDelete={handleDeleteProduct}
+            onActivate={handleActivateProduct}
+            onRefresh={handleProductUpdate}
+            onActionClick={handleOpenActionDrawer}
+          />
+        </div>
 
         {/* Add Product Dialog */}
         <ProductFormDialog

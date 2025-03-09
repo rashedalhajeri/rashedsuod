@@ -7,6 +7,7 @@ import BulkActionsBar from "./bulk-actions/BulkActionsBar";
 import ProductsPagination from "./pagination/ProductsPagination";
 import ChangeCategoryDialog from "./bulk-actions/ChangeCategoryDialog";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-media-query";
 
 interface ProductsContentProps {
   products: Product[];
@@ -35,7 +36,13 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
 }) => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 30; // Display 30 products per page
+  const isMobile = useIsMobile();
+  // Products per page based on screen size
+  const getItemsPerPage = () => {
+    if (isMobile) return 10;
+    return 20;
+  };
+  const itemsPerPage = getItemsPerPage();
   
   // Bulk action states
   const [showBulkActivateConfirm, setShowBulkActivateConfirm] = useState(false);
@@ -52,6 +59,8 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
     setCurrentPage(page);
     // Reset selected items when changing page
     onSelectionChange([]);
+    // Scroll to top of the table
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   
   // Handle bulk activate/deactivate confirmation
@@ -106,7 +115,7 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
   };
   
   return (
-    <div className="bg-gray-50 rounded-lg p-2">
+    <div className="space-y-4">
       {/* Show bulk actions if items are selected */}
       {selectedItems.length > 0 && (
         <BulkActionsBar 
@@ -131,11 +140,13 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
       
       {/* Pagination control */}
       {totalPages > 1 && (
-        <ProductsPagination 
-          totalPages={totalPages}
-          currentPage={currentPage}
-          onPageChange={handlePageChange}
-        />
+        <div className={isMobile ? "mt-4" : "mt-6"}>
+          <ProductsPagination 
+            totalPages={totalPages}
+            currentPage={currentPage}
+            onPageChange={handlePageChange}
+          />
+        </div>
       )}
       
       {/* Bulk Activate/Deactivate Confirmation Dialog */}
