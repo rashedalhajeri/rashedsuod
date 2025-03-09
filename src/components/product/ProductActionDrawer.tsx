@@ -4,12 +4,11 @@ import {
   Drawer,
   DrawerContent,
   DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Product } from "@/utils/products/types";
-
-import ProductDrawerHeader from "./drawer/ProductDrawerHeader";
-import ProductDrawerImage from "./drawer/ProductDrawerImage";
 import ProductDrawerActions from "./drawer/ProductDrawerActions";
 
 interface ProductActionDrawerProps {
@@ -51,19 +50,17 @@ const ProductActionDrawer: React.FC<ProductActionDrawerProps> = ({
     }
   };
 
-  const imageUrl = product.images && product.images.length > 0
-    ? product.images[0]
-    : "/placeholder.svg";
-
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange} direction="left">
       <DrawerContent className="h-full max-h-[95vh]" dir="rtl">
         <div className="mx-auto w-full max-w-sm">
-          <ProductDrawerHeader product={product} />
+          <DrawerHeader>
+            <DrawerTitle className="text-lg font-semibold text-center">
+              {product.name}
+            </DrawerTitle>
+          </DrawerHeader>
 
           <div className="p-4 pb-0">
-            <ProductDrawerImage imageUrl={imageUrl} productName={product.name} />
-            
             <ProductDrawerActions 
               productId={product.id}
               isActive={product.is_active}
