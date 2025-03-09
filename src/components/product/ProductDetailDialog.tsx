@@ -14,6 +14,7 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { mapRawProductToProduct } from "@/utils/products/mappers";
+import { ProductPrice } from "./item/ProductPrice";
 
 interface ProductDetailDialogProps {
   isOpen: boolean;
@@ -121,7 +122,7 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   if (isLoading) {
     return (
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md" dir="rtl">
+        <DialogContent className="sm:max-w-xs" dir="rtl">
           <div className="flex justify-center items-center p-6">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <span className="mr-2">جاري التحميل...</span>
@@ -134,7 +135,7 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   if (error || !product) {
     return (
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md" dir="rtl">
+        <DialogContent className="sm:max-w-xs" dir="rtl">
           <DialogHeader>
             <DialogTitle className="text-center text-red-500">حدث خطأ</DialogTitle>
           </DialogHeader>
@@ -149,10 +150,10 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md p-6" dir="rtl">
-          <div className="flex flex-col items-center space-y-6">
+        <DialogContent className="sm:max-w-xs p-4" dir="rtl">
+          <div className="flex flex-col items-center space-y-3">
             {/* صورة المنتج */}
-            <div className="h-40 w-40 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+            <div className="h-32 w-32 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
               {product.image_url ? (
                 <img 
                   src={product.image_url} 
@@ -164,23 +165,32 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
                 />
               ) : (
                 <div className="h-full w-full flex items-center justify-center bg-gray-50">
-                  <Package className="h-16 w-16 text-gray-300" />
+                  <Package className="h-12 w-12 text-gray-300" />
                 </div>
               )}
             </div>
             
             {/* اسم المنتج */}
-            <h2 className="text-xl font-bold text-center">{product.name}</h2>
+            <h2 className="text-lg font-bold text-center">{product.name}</h2>
+            
+            {/* سعر المنتج */}
+            <ProductPrice 
+              price={product.price} 
+              discountPrice={product.discount_price} 
+              size="md"
+              className="mb-1"
+            />
             
             {/* أزرار الإجراءات */}
-            <div className="w-full grid gap-4 grid-cols-1">
+            <div className="w-full grid gap-2 grid-cols-1 mt-2">
               <Button
                 onClick={handleEditProduct}
                 className="w-full flex justify-center items-center"
                 variant="outline"
+                size="sm"
               >
-                <Edit className="h-5 w-5 ml-2" />
-                <span>تعديل المنتج</span>
+                <Edit className="h-4 w-4 ml-2" />
+                <span>تعديل</span>
               </Button>
               
               <Button
@@ -189,30 +199,32 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
                   ? "text-amber-600 border-amber-200 bg-amber-50 hover:text-amber-700 hover:bg-amber-100" 
                   : "text-green-600 border-green-200 bg-green-50 hover:text-green-700 hover:bg-green-100"}`}
                 variant="outline"
+                size="sm"
                 disabled={toggleActiveMutation.isPending}
               >
                 {toggleActiveMutation.isPending ? (
-                  <Loader2 className="h-5 w-5 ml-2 animate-spin" />
+                  <Loader2 className="h-4 w-4 ml-2 animate-spin" />
                 ) : product.is_active ? (
-                  <PowerOff className="h-5 w-5 ml-2" />
+                  <PowerOff className="h-4 w-4 ml-2" />
                 ) : (
-                  <Power className="h-5 w-5 ml-2" />
+                  <Power className="h-4 w-4 ml-2" />
                 )}
-                <span>{product.is_active ? "تعطيل المنتج" : "تفعيل المنتج"}</span>
+                <span>{product.is_active ? "تعطيل" : "تفعيل"}</span>
               </Button>
               
               <Button
                 onClick={handleDeleteProduct}
                 className="w-full flex justify-center items-center bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 border border-red-200"
                 variant="outline"
+                size="sm"
                 disabled={deleteMutation.isPending}
               >
                 {deleteMutation.isPending ? (
-                  <Loader2 className="h-5 w-5 ml-2 animate-spin" />
+                  <Loader2 className="h-4 w-4 ml-2 animate-spin" />
                 ) : (
-                  <Trash className="h-5 w-5 ml-2" />
+                  <Trash className="h-4 w-4 ml-2" />
                 )}
-                <span>حذف المنتج</span>
+                <span>حذف</span>
               </Button>
             </div>
           </div>
