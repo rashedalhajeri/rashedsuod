@@ -3,8 +3,6 @@ import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash, Power, PowerOff, Loader2, Package } from "lucide-react";
@@ -47,7 +45,6 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
       
       if (error) throw error;
       
-      // Map the raw data to the Product type using the existing mapper function
       return mapRawProductToProduct(data as RawProductData);
     },
     enabled: isOpen && !!productId,
@@ -100,7 +97,6 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   });
   
   const handleEditProduct = () => {
-    // يمكن إضافة تنقل إلى صفحة التعديل هنا
     onOpenChange(false);
     // router.push(`/dashboard/products/edit/${productId}`);
   };
@@ -136,11 +132,8 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
     return (
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-xs" dir="rtl">
-          <DialogHeader>
-            <DialogTitle className="text-center text-red-500">حدث خطأ</DialogTitle>
-          </DialogHeader>
           <div className="text-center py-4">
-            <p>حدث خطأ أثناء تحميل بيانات المنتج.</p>
+            <p className="text-red-500">حدث خطأ أثناء تحميل بيانات المنتج.</p>
           </div>
         </DialogContent>
       </Dialog>
@@ -150,10 +143,10 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-xs p-4" dir="rtl">
-          <div className="flex flex-col items-center space-y-3">
+        <DialogContent className="sm:max-w-[300px] p-4" dir="rtl">
+          <div className="flex flex-col items-center">
             {/* صورة المنتج */}
-            <div className="h-32 w-32 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+            <div className="h-24 w-24 rounded-full overflow-hidden bg-gray-100 mb-3">
               {product.image_url ? (
                 <img 
                   src={product.image_url} 
@@ -165,37 +158,37 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
                 />
               ) : (
                 <div className="h-full w-full flex items-center justify-center bg-gray-50">
-                  <Package className="h-12 w-12 text-gray-300" />
+                  <Package className="h-10 w-10 text-gray-300" />
                 </div>
               )}
             </div>
             
             {/* اسم المنتج */}
-            <h2 className="text-lg font-bold text-center">{product.name}</h2>
+            <h3 className="text-lg font-medium text-center mb-1">{product.name}</h3>
             
             {/* سعر المنتج */}
             <ProductPrice 
               price={product.price} 
               discountPrice={product.discount_price} 
               size="md"
-              className="mb-1"
+              className="mb-4"
             />
             
             {/* أزرار الإجراءات */}
-            <div className="w-full grid gap-2 grid-cols-1 mt-2">
+            <div className="w-full grid grid-cols-3 gap-2">
               <Button
                 onClick={handleEditProduct}
-                className="w-full flex justify-center items-center"
+                className="flex items-center justify-center"
                 variant="outline"
                 size="sm"
               >
-                <Edit className="h-4 w-4 ml-2" />
-                <span>تعديل</span>
+                <Edit className="h-4 w-4 mb-1" />
+                <span className="text-xs">تعديل</span>
               </Button>
               
               <Button
                 onClick={handleToggleActive}
-                className={`w-full flex justify-center items-center ${product.is_active 
+                className={`flex flex-col items-center justify-center ${product.is_active 
                   ? "text-amber-600 border-amber-200 bg-amber-50 hover:text-amber-700 hover:bg-amber-100" 
                   : "text-green-600 border-green-200 bg-green-50 hover:text-green-700 hover:bg-green-100"}`}
                 variant="outline"
@@ -203,28 +196,28 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
                 disabled={toggleActiveMutation.isPending}
               >
                 {toggleActiveMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin mb-1" />
                 ) : product.is_active ? (
-                  <PowerOff className="h-4 w-4 ml-2" />
+                  <PowerOff className="h-4 w-4 mb-1" />
                 ) : (
-                  <Power className="h-4 w-4 ml-2" />
+                  <Power className="h-4 w-4 mb-1" />
                 )}
-                <span>{product.is_active ? "تعطيل" : "تفعيل"}</span>
+                <span className="text-xs">{product.is_active ? "تعطيل" : "تفعيل"}</span>
               </Button>
               
               <Button
                 onClick={handleDeleteProduct}
-                className="w-full flex justify-center items-center bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 border border-red-200"
+                className="flex flex-col items-center justify-center bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 border border-red-200"
                 variant="outline"
                 size="sm"
                 disabled={deleteMutation.isPending}
               >
                 {deleteMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin mb-1" />
                 ) : (
-                  <Trash className="h-4 w-4 ml-2" />
+                  <Trash className="h-4 w-4 mb-1" />
                 )}
-                <span>حذف</span>
+                <span className="text-xs">حذف</span>
               </Button>
             </div>
           </div>
@@ -233,20 +226,20 @@ const ProductDetailDialog: React.FC<ProductDetailDialogProps> = ({
       
       {/* حوار تأكيد الحذف */}
       <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
-        <AlertDialogContent dir="rtl">
+        <AlertDialogContent dir="rtl" className="max-w-xs">
           <AlertDialogHeader>
             <AlertDialogTitle>تأكيد حذف المنتج</AlertDialogTitle>
             <AlertDialogDescription>
-              هل أنت متأكد من رغبتك في حذف هذا المنتج؟ لا يمكن التراجع عن هذه العملية.
+              هل أنت متأكد من رغبتك في حذف هذا المنتج؟
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex flex-row-reverse sm:justify-start">
-            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+          <AlertDialogFooter className="flex flex-row-reverse sm:justify-start gap-2">
+            <AlertDialogCancel className="mt-0">إلغاء</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               className="bg-red-500 hover:bg-red-600"
             >
-              {deleteMutation.isPending ? "جاري الحذف..." : "حذف المنتج"}
+              {deleteMutation.isPending ? "جاري الحذف..." : "حذف"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
