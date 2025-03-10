@@ -1,4 +1,3 @@
-
 /**
  * URL and domain handling utilities with simplified, consistent behavior
  */
@@ -57,11 +56,11 @@ export const getStoreUrl = (domain: string): string => {
     return cleanDomain.startsWith('http') ? cleanDomain : `https://${cleanDomain}`;
   }
   
-  // For our subdomain format, we use the main domain with the store name
-  // E.g., mystore.linok.me
+  // Get base domain and main domain part
   const baseDomain = getBaseDomain().replace(/^https?:\/\//, '').replace(/^www\./, '');
   const mainDomain = baseDomain.split('/')[0]; // Remove any paths
   
+  // Create subdomain URL format (storename.mydomain.com)
   if (cleanDomain) {
     return `https://${cleanDomain}.${mainDomain}`;
   }
@@ -92,6 +91,7 @@ export const getFullStoreUrl = (path: string): string => {
     const baseDomain = getBaseDomain().replace(/^https?:\/\//, '').replace(/^www\./, '');
     const mainDomain = baseDomain.split('/')[0]; // Remove any paths
     
+    // This creates the subdomain format: storename.yourdomain.com
     return `https://${storeName}.${mainDomain}`;
   }
   
