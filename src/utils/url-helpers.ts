@@ -43,6 +43,9 @@ export const getFullStoreUrl = (storeUrl: string): string => {
   // If empty after normalization, return empty string
   if (!normalizedDomain) return '';
   
+  // Use environment variable for domain if available (for production/staging environments)
+  const baseDomain = import.meta.env.VITE_APP_DOMAIN || 'https://linok.me';
+  
   // Return URL in the format linok.me/store/name (no subdomain or custom domain support)
-  return `https://linok.me/store/${normalizedDomain}`;
+  return `${baseDomain}/store/${normalizedDomain}`;
 };
