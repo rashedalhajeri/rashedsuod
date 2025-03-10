@@ -155,7 +155,7 @@ export const getStoreByDomain = async (domainName: string): Promise<any> => {
     const cleanDomain = domainName.trim().toLowerCase();
     console.log("البحث عن متجر بالدومين (getStoreByDomain):", cleanDomain);
     
-    // Fix: Only search by domain_name column which is the correct column name
+    // Search by domain_name column with case-insensitive match
     const { data, error } = await supabase
       .from("stores")
       .select("*")
