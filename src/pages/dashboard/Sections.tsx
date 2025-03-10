@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { SectionsContent } from '@/components/section/SectionsContent';
-import { SectionsHeader } from '@/components/section/SectionsHeader';
+import SectionsContent from '@/components/section/SectionsContent';
+import SectionsHeader from '@/components/section/SectionsHeader';
 
 const Sections = () => {
   return (
