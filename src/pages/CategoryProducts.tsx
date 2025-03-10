@@ -4,10 +4,15 @@ import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import ProductItem from '@/components/store/unified/ProductItem';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Product, RawProductData } from '@/utils/products/types';
+
+interface CategoryData {
+  id: string;
+}
 
 const CategoryProducts = () => {
   const { categoryName, storeDomain } = useParams();
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -22,7 +27,7 @@ const CategoryProducts = () => {
           .select('id')
           .eq('name', categoryName)
           .eq('store_domain', storeDomain)
-          .single();
+          .maybeSingle<CategoryData>();
         
         if (categoryError) throw categoryError;
         
