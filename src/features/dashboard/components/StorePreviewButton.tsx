@@ -5,9 +5,10 @@ import { Eye } from "lucide-react";
 
 interface StorePreviewButtonProps {
   storeUrl?: string;
+  className?: string;
 }
 
-const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({ storeUrl }) => {
+const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({ storeUrl, className }) => {
   const handleClick = () => {
     if (storeUrl) {
       window.open(storeUrl, '_blank');
@@ -17,8 +18,8 @@ const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({ storeUrl }) => 
   return (
     <Button 
       size="sm" 
-      className="flex items-center gap-1 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
-      variant="outline"
+      className={`flex items-center gap-1.5 ${className}`}
+      variant="default"
       onClick={handleClick}
     >
       <Eye className="h-4 w-4" />
