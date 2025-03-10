@@ -68,11 +68,10 @@ const CategoryList: React.FC<CategoryListProps> = ({
       {filteredCategories.map(category => (
         <CategoryItem 
           key={category.id} 
-          category={category} 
-          editingCategory={editingCategory} 
-          setEditingCategory={setEditingCategory} 
-          handleUpdateCategory={handleUpdateCategory} 
-          handleDeleteCategory={handleDeleteCategory} 
+          category={category}
+          onEdit={() => setEditingCategory(category)} 
+          onDelete={() => handleDeleteCategory(category.id)}
+          showImage={true}
         />
       ))}
     </div>
