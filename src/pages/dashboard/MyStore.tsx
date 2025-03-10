@@ -4,7 +4,6 @@ import { useStoreData } from "@/hooks/use-store-data";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Layout } from "lucide-react";
 import { normalizeStoreDomain } from "@/utils/url-helpers";
 import {
   LoadingState,

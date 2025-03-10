@@ -1,8 +1,8 @@
 
 import React from "react";
-import { Store, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import StorePreviewButton from "@/features/dashboard/components/StorePreviewButton";
+import { ExternalLink, Settings } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface StoreHeaderProps {
   storePreviewUrl: string;
@@ -10,31 +10,29 @@ interface StoreHeaderProps {
 
 const StoreHeader: React.FC<StoreHeaderProps> = ({ storePreviewUrl }) => {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-          <Store className="w-7 h-7 text-primary" />
-          متجري
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          قم بإدارة مظهر متجرك وتخصيص العناصر المرئية لتحسين تجربة عملائك
+        <h1 className="text-2xl font-bold tracking-tight">متجري</h1>
+        <p className="text-muted-foreground">
+          إدارة متجرك الإلكتروني وتخصيصه
         </p>
       </div>
-      <div className="flex items-center gap-2">
-        <Button
-          className="text-sm gap-1.5"
-          variant="outline"
-          asChild
-        >
-          <a href={`/dashboard/settings`}>
-            <Settings className="h-4 w-4" />
+      <div className="flex gap-2 self-stretch sm:self-auto">
+        <Button asChild variant="outline" className="gap-2">
+          <Link to="/dashboard/settings">
+            <Settings size={16} />
             إعدادات المتجر
-          </a>
+          </Link>
         </Button>
-        <StorePreviewButton 
-          storeUrl={storePreviewUrl} 
-          className="shadow-sm bg-gradient-to-r from-primary/90 to-primary hover:from-primary hover:to-primary/90 transition-all text-white"
-        />
+        
+        {storePreviewUrl && (
+          <Button asChild className="gap-2">
+            <Link to={storePreviewUrl} target="_blank">
+              <ExternalLink size={16} />
+              عرض المتجر
+            </Link>
+          </Button>
+        )}
       </div>
     </div>
   );

@@ -1,56 +1,61 @@
 
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Palette } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertCircle, CheckCircle, ShoppingCart, Upload } from "lucide-react";
 
 const StoreTips: React.FC = () => {
   return (
-    <Card className="overflow-hidden shadow-sm border-none">
-      <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent pb-3">
-        <CardTitle className="flex items-center gap-2">
-          <Palette className="h-5 w-5 text-primary" />
-          نصائح لتحسين المتجر
-        </CardTitle>
-        <CardDescription>
-          إليك بعض النصائح التي تساعدك على تحسين مظهر وأداء متجرك
-        </CardDescription>
+    <Card className="shadow-md border-none overflow-hidden">
+      <CardHeader className="pb-3 bg-gradient-to-r from-yellow-100/80 to-transparent">
+        <CardTitle className="text-lg">نصائح لتحسين متجرك</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="flex items-start gap-3 p-3 border rounded-md bg-amber-50/50">
-            <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 shrink-0 mt-0.5">
-              1
-            </div>
-            <div>
-              <h3 className="font-medium text-amber-900">قم بإضافة شعار متجرك</h3>
-              <p className="text-sm text-amber-700 mt-1">
-                يساعد شعار المتجر المميز على تعزيز هوية علامتك التجارية وجعلها أكثر احترافية وسهلة التذكر للعملاء.
-              </p>
-            </div>
+      
+      <CardContent className="p-4 space-y-3">
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <CheckCircle className="h-4 w-4 text-green-600" />
           </div>
-          
-          <div className="flex items-start gap-3 p-3 border rounded-md bg-emerald-50/50">
-            <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0 mt-0.5">
-              2
-            </div>
-            <div>
-              <h3 className="font-medium text-emerald-900">أضف بنرات ترويجية جذابة</h3>
-              <p className="text-sm text-emerald-700 mt-1">
-                البنرات الترويجية تساعد في عرض العروض والمنتجات الجديدة وجذب انتباه العملاء لزيادة المبيعات.
-              </p>
-            </div>
+          <div>
+            <p className="font-medium text-sm">إضافة منتجات للمتجر</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              أضف منتجاتك مع صور عالية الجودة ووصف دقيق لزيادة فرص البيع.
+            </p>
           </div>
-          
-          <div className="flex items-start gap-3 p-3 border rounded-md bg-blue-50/50">
-            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0 mt-0.5">
-              3
-            </div>
-            <div>
-              <h3 className="font-medium text-blue-900">أبرز مميزات متجرك</h3>
-              <p className="text-sm text-blue-700 mt-1">
-                عرض مميزات متجرك مثل الشحن السريع أو الدفع الآمن يزيد من ثقة العملاء ويحسن تجربة الشراء.
-              </p>
-            </div>
+        </div>
+        
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <AlertCircle className="h-4 w-4 text-amber-600" />
+          </div>
+          <div>
+            <p className="font-medium text-sm">إعداد وسائل الدفع</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              لم تقم بإعداد وسائل الدفع بعد. قم بذلك من إعدادات المتجر لاستقبال الطلبات.
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <Upload className="h-4 w-4 text-blue-600" />
+          </div>
+          <div>
+            <p className="font-medium text-sm">رفع شعار للمتجر</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              رفع شعار للمتجر يساعد في بناء هوية تجارية قوية ويزيد من ثقة العملاء.
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <ShoppingCart className="h-4 w-4 text-purple-600" />
+          </div>
+          <div>
+            <p className="font-medium text-sm">اختبار عملية الشراء</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              قم بتجربة عملية الشراء بنفسك للتأكد من سهولتها وخلوها من المشاكل.
+            </p>
           </div>
         </div>
       </CardContent>
