@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -53,15 +54,7 @@ export const addSection = async (
       section_type: sectionType,
       store_id: storeId,
       sort_order: sortOrder,
-      is_active: isActive
-    };
-
-    // We'll add the extra fields to this object, so they'll be stored in the client state
-    // even if they don't get saved to the database yet
-    const clientSectionData = {
-      ...sectionData,
-      category_id: categoryId || null,
-      product_ids: productIds || null,
+      is_active: isActive,
       display_style: displayStyle || 'grid'
     };
 
@@ -76,16 +69,8 @@ export const addSection = async (
     }
     
     if (data && data.length > 0) {
-      // Combine the returned data with our client-side enhancements
-      const enhancedData = {
-        ...data[0],
-        category_id: categoryId || null,
-        product_ids: productIds || null,
-        display_style: displayStyle || 'grid'
-      };
-      
-      console.log("Section added successfully:", enhancedData);
-      return { data: enhancedData, error: null };
+      // Return the created section
+      return { data: data[0], error: null };
     }
     
     return { data: data?.[0], error: null };
@@ -111,6 +96,7 @@ export const updateSection = async (section: Section, storeId: string) => {
       name: section.name,
       section_type: section.section_type,
       is_active: section.is_active,
+      display_style: section.display_style || 'grid',
       updated_at: new Date().toISOString()
     };
 
@@ -123,17 +109,7 @@ export const updateSection = async (section: Section, storeId: string) => {
       
     if (error) throw error;
     
-    // Return the updated section with client-side enhancements
-    const enhancedData = data && data.length > 0
-      ? {
-          ...data[0],
-          category_id: section.category_id || null,
-          product_ids: section.product_ids || null,
-          display_style: section.display_style || 'grid'
-        }
-      : null;
-    
-    return { data: enhancedData, error: null };
+    return { data: data?.[0] || null, error: null };
   } catch (err) {
     console.error("Error updating section:", err);
     return { data: null, error: err };
@@ -210,9 +186,7 @@ export const getActiveSections = async (storeId: string) => {
 export const getSectionProducts = async (
   storeId: string, 
   sectionType: string, 
-  categoryId?: string | null,
-  productIds?: string[] | null,
-  limit: number = 25
+  limit: number = 50
 ) => {
   try {
     let query;
@@ -275,34 +249,14 @@ export const getSectionProducts = async (
           .limit(limit);
         break;
         
-      case 'category':
-        // Get products from a specific category
-        if (!categoryId) {
-          return { data: [], error: new Error('Category ID is required') };
-        }
-        
+      case 'trending':
+        // Get trending products (most viewed)
         query = supabase
           .from('products')
           .select('*')
           .eq('store_id', storeId)
           .eq('is_active', true)
-          .eq('category_id', categoryId)
-          .order('created_at', { ascending: false })
-          .limit(limit);
-        break;
-        
-      case 'custom':
-        // Get specific products
-        if (!productIds || productIds.length === 0) {
-          return { data: [], error: new Error('Product IDs are required') };
-        }
-        
-        query = supabase
-          .from('products')
-          .select('*')
-          .eq('store_id', storeId)
-          .eq('is_active', true)
-          .in('id', productIds)
+          .order('view_count', { ascending: false })
           .limit(limit);
         break;
         

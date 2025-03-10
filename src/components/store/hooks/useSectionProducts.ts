@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -12,9 +11,6 @@ interface ExtendedSection {
   is_active: boolean;
   created_at: string;
   updated_at: string;
-  // Add the missing properties as optional
-  category_id?: string | null;
-  product_ids?: string[] | null;
   display_style?: 'grid' | 'list';
 }
 
@@ -28,7 +24,7 @@ export const useSectionProducts = (storeId?: string) => {
       
       setIsLoading(true);
       try {
-        // Cast the returned data to the extended section type
+        // Fetch all active sections
         const { data: activeSections } = await supabase
           .from('sections')
           .select('*')
@@ -40,7 +36,9 @@ export const useSectionProducts = (storeId?: string) => {
           setSectionProducts({});
           return;
         }
-        
+
+        // To avoid repeating same products in different sections, keep track of products already added
+        const addedProductIds = new Set<string>();
         const sectionProductsObj: {[key: string]: any[]} = {};
         
         // Cast each section to our extended type
@@ -55,44 +53,59 @@ export const useSectionProducts = (storeId?: string) => {
             case 'best_selling':
               productsQuery = productsQuery
                 .order('sales_count', { ascending: false })
-                .limit(8);
+                .limit(50);
               break;
             case 'new_arrivals':
               productsQuery = productsQuery
                 .order('created_at', { ascending: false })
-                .limit(8);
+                .limit(50);
               break;
             case 'featured':
               productsQuery = productsQuery
                 .eq('is_featured', true)
-                .limit(8);
+                .limit(50);
               break;
             case 'on_sale':
               productsQuery = productsQuery
                 .not('discount_price', 'is', null)
-                .limit(8);
+                .limit(50);
               break;
             case 'all_products':
               productsQuery = productsQuery
                 .order('created_at', { ascending: false })
-                .limit(12);
+                .limit(50);
               break;
             case 'trending':
-              // For trending, we'll use a combination of sales and views (using sales_count for now)
+              // For trending, use view_count if available, otherwise sales_count
               productsQuery = productsQuery
-                .order('sales_count', { ascending: false })
-                .limit(8);
+                .order('view_count', { ascending: false })
+                .limit(50);
               break;
             default:
-              productsQuery = productsQuery.limit(8);
+              productsQuery = productsQuery.limit(50);
               break;
           }
           
           const { data: sectionProductsData } = await productsQuery;
           
+          // Filter out products that already appear in other sections to avoid duplication
+          // But only do this for specific section types (not for all_products)
+          let filteredProducts = sectionProductsData || [];
+          
+          if (section.section_type !== 'all_products') {
+            filteredProducts = filteredProducts.filter(product => {
+              // Keep this product if it hasn't been shown in another section
+              if (!addedProductIds.has(product.id)) {
+                addedProductIds.add(product.id);
+                return true;
+              }
+              return false;
+            });
+          }
+          
           // Only add sections that have products
-          if (sectionProductsData && sectionProductsData.length > 0) {
-            sectionProductsObj[section.name] = sectionProductsData;
+          if (filteredProducts.length > 0) {
+            sectionProductsObj[section.name] = filteredProducts;
           }
         }
         

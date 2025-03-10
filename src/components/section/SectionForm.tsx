@@ -14,7 +14,6 @@ import {
 import { sectionTypes } from "./form/section-config";
 import SectionTypeSelector from "./form/SectionTypeSelector";
 import SectionNameField from "./form/SectionNameField";
-import DisplayStyleSelector from "./form/DisplayStyleSelector";
 import { motion } from "framer-motion";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
@@ -125,19 +124,6 @@ const SectionForm: React.FC<SectionFormProps> = ({
                 name={newSection}
                 onNameChange={setNewSection}
                 sectionType={newSectionType}
-              />
-            </motion.div>
-          )}
-          
-          {newSectionType && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.2 }}
-            >
-              <DisplayStyleSelector
-                displayStyle={newDisplayStyle}
-                setDisplayStyle={setNewDisplayStyle}
               />
             </motion.div>
           )}

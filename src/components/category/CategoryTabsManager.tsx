@@ -146,10 +146,10 @@ const CategoryTabsManager: React.FC<CategoryTabsManagerProps> = ({
   const handleAddSectionAndClose = async () => {
     try {
       await handleAddSection();
-      // Dialog will be closed from SectionForm component
+      handleCloseSectionDialog(); // Close the dialog after successful submission
     } catch (error) {
       console.error("Error in handleAddSection:", error);
-      // Dialog remains open on error
+      // Dialog remains open on error, handled by the SectionForm component
     }
   };
 
