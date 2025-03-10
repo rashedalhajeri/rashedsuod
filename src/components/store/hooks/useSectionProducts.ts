@@ -2,6 +2,22 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+// Define extended Section type to include the properties we need
+interface ExtendedSection {
+  id: string;
+  name: string;
+  section_type: string;
+  store_id: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  // Add the missing properties as optional
+  category_id?: string | null;
+  product_ids?: string[] | null;
+  display_style?: 'grid' | 'list';
+}
+
 export const useSectionProducts = (storeId?: string) => {
   const [sectionProducts, setSectionProducts] = useState<{[key: string]: any[]}>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -12,6 +28,7 @@ export const useSectionProducts = (storeId?: string) => {
       
       setIsLoading(true);
       try {
+        // Cast the returned data to the extended section type
         const { data: activeSections } = await supabase
           .from('sections')
           .select('*')
@@ -26,7 +43,8 @@ export const useSectionProducts = (storeId?: string) => {
         
         const sectionProductsObj: {[key: string]: any[]} = {};
         
-        for (const section of activeSections) {
+        // Cast each section to our extended type
+        for (const section of activeSections as ExtendedSection[]) {
           let productsQuery = supabase
             .from('products')
             .select('*')
