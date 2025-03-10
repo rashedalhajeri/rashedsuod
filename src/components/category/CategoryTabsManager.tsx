@@ -47,8 +47,8 @@ interface CategoryTabsManagerProps {
   setNewCategoryId: (id: string | null) => void;
   newProductIds: string[] | null;
   setNewProductIds: (ids: string[] | null) => void;
-  newDisplayStyle: string | undefined;
-  setNewDisplayStyle: (style: string | undefined) => void;
+  newDisplayStyle: 'grid' | 'list' | undefined;
+  setNewDisplayStyle: (style: 'grid' | 'list') => void;
   editingSection: Section | null;
   setEditingSection: (section: Section | null) => void;
   handleAddSection: () => Promise<void>;
@@ -126,6 +126,7 @@ const CategoryTabsManager: React.FC<CategoryTabsManagerProps> = ({
     setNewSectionType("best_selling");
     setNewCategoryId(null);
     setNewProductIds(null);
+    setNewDisplayStyle('grid');
   };
 
   // Type-safe wrapper for setEditingSection
@@ -231,7 +232,6 @@ const CategoryTabsManager: React.FC<CategoryTabsManagerProps> = ({
         setNewProductIds={setNewProductIds}
         newDisplayStyle={newDisplayStyle}
         setNewDisplayStyle={setNewDisplayStyle}
-        handleAddSection={handleAddSection}
       />
 
       {/* Confirm dialog for toggling images */}

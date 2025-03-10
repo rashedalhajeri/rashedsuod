@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, X } from "lucide-react";
@@ -31,8 +30,8 @@ interface SectionFormProps {
   newProductIds: string[] | null;
   setNewProductIds: (ids: string[] | null) => void;
   newDisplayStyle?: 'grid' | 'list';
-  setNewDisplayStyle?: (style: 'grid' | 'list') => void;
-  handleAddSection: () => void;
+  setNewDisplayStyle: (style: 'grid' | 'list') => void;
+  handleAddSection?: () => Promise<void>;
 }
 
 const SectionForm: React.FC<SectionFormProps> = ({
@@ -47,7 +46,7 @@ const SectionForm: React.FC<SectionFormProps> = ({
   newProductIds,
   setNewProductIds,
   newDisplayStyle = 'grid',
-  setNewDisplayStyle = () => {},
+  setNewDisplayStyle,
   handleAddSection
 }) => {
   const {
@@ -70,7 +69,6 @@ const SectionForm: React.FC<SectionFormProps> = ({
     setNewProductIds
   );
 
-  // Apply section type and name when selection changes
   useEffect(() => {
     if (selectedSectionType) {
       setNewSectionType(selectedSectionType);
@@ -81,7 +79,6 @@ const SectionForm: React.FC<SectionFormProps> = ({
     }
   }, [selectedSectionType, setNewSectionType, setNewSection]);
 
-  // Function to render custom content based on selected section type
   const renderCustomContent = () => {
     if (selectedSectionType === 'custom') {
       return (
@@ -147,7 +144,7 @@ const SectionForm: React.FC<SectionFormProps> = ({
   };
 
   const handleSubmit = () => {
-    handleAddSection();
+    handleAddSection?.();
     onClose();
   };
 
