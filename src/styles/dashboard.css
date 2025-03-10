@@ -1,0 +1,61 @@
+
+/* Horizontal Scrollable List - optimized for performance */
+.scroll-container {
+  @apply flex w-full overflow-x-auto pb-2 gap-3 snap-x snap-mandatory;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-item {
+  @apply flex-shrink-0 snap-center;
+}
+
+/* Product list items */
+.product-list-item {
+  @apply rounded-xl overflow-hidden transition-all duration-300;
+}
+
+.product-list-item:hover {
+  @apply shadow-md;
+}
+
+.product-list-item-selected {
+  @apply bg-blue-50/70 border-blue-200;
+}
+
+.product-list-actions {
+  @apply flex gap-1 opacity-80;
+}
+
+.product-list-item:hover .product-list-actions {
+  @apply opacity-100;
+}
+
+.product-image-container {
+  @apply rounded-xl overflow-hidden border border-gray-100 bg-white flex items-center justify-center;
+}
+
+.product-list-badge {
+  @apply px-2 py-0.5 text-xs font-medium rounded-md inline-flex items-center gap-1;
+}
+
+.product-list-details {
+  @apply text-sm text-gray-700 mt-1 space-y-0.5;
+}
+
+.product-list-price {
+  @apply font-bold text-gray-900;
+}
+
+.product-list-discount {
+  @apply text-red-600 flex items-center gap-1;
+}
+
+.product-list-original-price {
+  @apply line-through text-gray-400 text-xs;
+}

@@ -1,0 +1,27 @@
+
+/* Card Hover Effects */
+.card-hover {
+  transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Dashboard elements */
+.dashboard-stat {
+  @apply relative overflow-hidden rounded-lg border border-gray-100 p-4 bg-white hover:shadow-md transition-shadow;
+}
+
+.dashboard-stat-icon {
+  @apply absolute -right-3 -top-3 h-16 w-16 opacity-10 text-primary-300;
+}
+
+.dashboard-stat-title {
+  @apply text-sm font-medium text-gray-500 mb-1;
+}
+
+.dashboard-stat-value {
+  @apply text-2xl font-bold text-gray-800;
+}

@@ -1,0 +1,31 @@
+
+/* Hide scrollbar utility classes */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* تحسينات أزرار المنتج */
+.product-action-button {
+  @apply bg-primary hover:bg-primary/90 text-white rounded-xl shadow-sm transition-all;
+}
+
+.product-action-button:hover {
+  @apply shadow-md transform -translate-y-0.5;
+}
+
+.quantity-button {
+  @apply rounded-lg border border-gray-200 flex items-center justify-center;
+}
+
+.quantity-input {
+  @apply text-center font-medium text-gray-800 w-12;
+}
+
+.cart-float-button {
+  @apply fixed bottom-20 right-5 bg-primary text-white rounded-full shadow-lg p-3 z-10;
+}

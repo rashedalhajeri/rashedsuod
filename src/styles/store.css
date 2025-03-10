@@ -1,0 +1,106 @@
+
+/* Store UI enhancements - التحسينات الجديدة */
+.store-card {
+  @apply rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-300 overflow-hidden hover:shadow-md;
+  will-change: transform, box-shadow; /* تحسين الأداء */
+}
+
+.store-card-image {
+  @apply aspect-square bg-gray-50 overflow-hidden relative;
+}
+
+.store-card-image img {
+  @apply w-full h-full object-cover transition duration-500;
+  transform: scale(1);
+  will-change: transform; /* تحسين الأداء */
+}
+
+.store-card-image:hover img {
+  transform: scale(1.05);
+}
+
+.store-card-content {
+  @apply p-3 space-y-1;
+}
+
+.store-card-title {
+  @apply font-bold text-sm line-clamp-2 transition-colors hover:text-primary;
+}
+
+.store-card-price {
+  @apply font-bold text-lg;
+}
+
+.store-card-original-price {
+  @apply text-sm text-gray-500 line-through;
+}
+
+.product-badge {
+  @apply absolute top-2 left-2 px-2 py-1 text-xs font-medium rounded-md;
+}
+
+.badge-discount {
+  @apply bg-red-100 text-red-600;
+}
+
+.badge-new {
+  @apply bg-blue-100 text-blue-600;
+}
+
+.badge-out-of-stock {
+  @apply bg-gray-100 text-gray-600;
+}
+
+.store-section-title {
+  @apply text-xl font-bold mb-4 relative pb-2 inline-block;
+}
+
+.store-section-title::after {
+  content: '';
+  @apply absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-full w-3/4 mx-auto;
+}
+
+/* تحسين مظهر المنتجات في عرض المنتجات */
+.product-grid-modern {
+  @apply grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4;
+}
+
+.product-card-modern {
+  @apply bg-white rounded-2xl overflow-hidden shadow-sm h-full pb-3;
+}
+
+.product-image-container {
+  @apply relative;
+}
+
+.product-image {
+  @apply w-full aspect-square object-cover;
+}
+
+.favorite-button {
+  @apply absolute top-2 right-2 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-gray-600 hover:text-rose-500 transition-colors;
+}
+
+.product-info {
+  @apply p-3;
+}
+
+.product-price-container {
+  @apply flex items-center justify-between mb-2;
+}
+
+.product-price {
+  @apply font-bold text-lg text-left;
+}
+
+.store-logo {
+  @apply w-7 h-7 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center;
+}
+
+.product-name {
+  @apply text-right font-semibold text-gray-800 mb-1 text-sm leading-tight line-clamp-2;
+}
+
+.store-name {
+  @apply text-right text-gray-500 text-xs;
+}

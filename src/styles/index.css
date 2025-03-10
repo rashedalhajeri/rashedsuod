@@ -3,7 +3,12 @@
 @import './base.css';
 @import './rtl.css';
 @import './loading.css';
-@import './components.css';
+@import './effects.css';
+@import './cards.css';
+@import './navigation.css';
+@import './dashboard.css';
+@import './store.css';
+@import './utilities.css';
 @import './responsive.css';
 @import './animations.css';
 @import './scrollbar.css';
