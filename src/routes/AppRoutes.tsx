@@ -29,6 +29,7 @@ import Customers from "@/pages/dashboard/Customers";
 import Payments from "@/pages/dashboard/Payments";
 import Coupons from "@/pages/dashboard/Coupons";
 import Settings from "@/pages/dashboard/Settings";
+import MyStore from "@/pages/dashboard/MyStore";
 import { useStoreData } from "@/hooks/use-store-data";
 
 const AppRoutes = () => {
@@ -126,6 +127,15 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Coupons />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/dashboard/my-store"
+        element={
+          <ProtectedRoute>
+            <MyStore />
           </ProtectedRoute>
         }
       />
