@@ -1,3 +1,4 @@
+
 /**
  * URL and domain handling utilities
  */
@@ -26,12 +27,16 @@ export const normalizeStoreDomain = (domain: string): string => {
   
   // إزالة أي بادئة /store/ إذا وجدت
   normalizedDomain = normalizedDomain.replace(/^\/store\//, '');
+  normalizedDomain = normalizedDomain.replace(/^store\//, '');
   
   // إزالة أي لاحقة / إذا وجدت
   normalizedDomain = normalizedDomain.replace(/\/$/, '');
   
-  // طبا��ة للتصحيح
-  console.log(`تنسيق الدومين: "${domain}" -> "${normalizedDomain}"`);
+  // طباعة للتصحيح
+  console.log(`تنسيق الدومين:`, {
+    original: domain,
+    normalized: normalizedDomain
+  });
   
   return normalizedDomain;
 };

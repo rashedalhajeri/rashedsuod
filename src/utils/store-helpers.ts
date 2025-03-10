@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { normalizeStoreDomain } from "./url-helpers";
 
@@ -18,41 +19,44 @@ export const fetchStoreByDomain = async (domainName: string) => {
   });
 
   try {
-    // البحث المباشر عن المتجر
-    const { data, error } = await supabase
+    // محاولة البحث المباشر
+    const { data: exactMatch, error: exactError } = await supabase
       .from("stores")
       .select("*")
       .eq("domain_name", cleanDomain)
-      .single();
-      
-    if (error) {
-      if (error.code === 'PGRST116') {
-        console.log("لم يتم العثور على متجر:", cleanDomain);
-      } else {
-        console.error("خطأ في البحث عن المتجر:", error);
-      }
+      .maybeSingle();
+
+    if (exactMatch) {
+      console.log("تم العثور على المتجر (مطابقة دقيقة):", exactMatch);
+      return exactMatch;
     }
 
-    if (data) {
-      console.log("تم العثور على المتجر:", {
-        storeName: data.store_name,
-        domainName: data.domain_name,
-        status: data.status
-      });
-      return data;
+    // محاولة البحث بدون حساسية لحالة الأحرف
+    const { data: caseInsensitiveMatch, error: caseError } = await supabase
+      .from("stores")
+      .select("*")
+      .ilike("domain_name", cleanDomain)
+      .maybeSingle();
+
+    if (caseInsensitiveMatch) {
+      console.log("تم العثور على المتجر (مطابقة غير حساسة للأحرف):", caseInsensitiveMatch);
+      return caseInsensitiveMatch;
     }
 
-    // طباعة جميع المتاجر للتصحيح
-    console.log("محاولة جلب جميع المتاجر للتصحيح");
+    // طباعة جميع المتاجر للمساعدة في التصحيح
     const { data: allStores } = await supabase
       .from("stores")
       .select("domain_name, store_name, status")
       .order("created_at", { ascending: false });
-      
-    if (allStores && allStores.length > 0) {
-      console.log("المتاجر المتوفرة:", allStores);
-    } else {
-      console.log("لا توجد متاجر في قاعدة البيانات");
+
+    console.log("لم يتم العثور على متجر. المتاجر المتوفرة:", allStores || []);
+
+    // تحقق من الأخطاء
+    if (exactError && exactError.code !== 'PGRST116') {
+      console.error("خطأ في البحث الدقيق:", exactError);
+    }
+    if (caseError) {
+      console.error("خطأ في البحث غير الحساس للأحرف:", caseError);
     }
 
     return null;
