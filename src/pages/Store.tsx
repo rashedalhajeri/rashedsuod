@@ -29,14 +29,17 @@ const Store = () => {
   useEffect(() => {
     console.log("Store component - Domain:", storeDomain);
     console.log("Store component - Is valid domain:", isValidDomain);
+    console.log("Store component - Window location:", window.location.href);
   }, [storeDomain, isValidDomain]);
 
   const handleStoreLoaded = (data: any) => {
+    console.log("Store loaded:", data);
     setCurrentStoreData(data);
     setStoreNotFound(false);
   };
 
   const handleStoreDataLoaded = (data: any) => {
+    console.log("Store data loaded:", data);
     setLoadedStoreData(data);
   };
 
@@ -48,14 +51,17 @@ const Store = () => {
   };
 
   const handleStoreNotFound = () => {
+    console.log("Store not found for domain:", storeDomain);
     setStoreNotFound(true);
   };
 
   if (!isValidDomain || storeNotFound) {
+    console.log("Showing StoreNotFound component. Valid domain:", isValidDomain, "Store not found:", storeNotFound);
     return <StoreNotFound storeDomain={storeDomain} />;
   }
 
   if (error) {
+    console.error("Store error:", error);
     return <ErrorState title="خطأ" message={error.message || "حدث خطأ أثناء تحميل المتجر"} />;
   }
 
@@ -69,7 +75,7 @@ const Store = () => {
       >
         <StoreDataLoader
           storeDomain={storeDomain}
-          onStoreLoaded={handleStoreDataLoaded}
+          onStoreLoaded={handleStoreLoaded}
           onStoreNotFound={handleStoreNotFound}
           onLoadingComplete={handleLoadingComplete}
           storeData={storeToShow}

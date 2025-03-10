@@ -16,7 +16,7 @@ export function useStoreDomain() {
   console.log("useStoreDomain - Normalized domain:", normalizedDomain);
   
   // Check if we have a valid domain
-  const isValidDomain = Boolean(normalizedDomain);
+  const isValidDomain = Boolean(normalizedDomain && normalizedDomain.length > 0);
   
   return {
     rawDomain: storeDomain,

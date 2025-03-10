@@ -23,6 +23,9 @@ const StoreNotFound: React.FC<StoreNotFoundProps> = ({ storeDomain }) => {
           عذراً، لا يمكن العثور على متجر بالدومين: 
           <span className="font-bold text-gray-800 mx-1 dir-ltr inline-block">{storeDomain || 'غير محدد'}</span>
         </p>
+        <div className="text-sm text-gray-500 mb-4 p-2 bg-gray-100 rounded">
+          تأكد من أن الدومين صحيح وأن المتجر نشط.
+        </div>
         <button 
           onClick={() => navigate('/')}
           className="inline-block bg-primary-500 text-white px-6 py-2 rounded-md hover:bg-primary-600 transition-colors"

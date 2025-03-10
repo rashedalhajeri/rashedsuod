@@ -23,7 +23,12 @@ export const normalizeStoreDomain = (domain: string): string => {
   if (!domain) return '';
   
   // Simply convert to lowercase and trim spaces
-  return domain.trim().toLowerCase();
+  const normalizedDomain = domain.trim().toLowerCase();
+  
+  // Log for debugging
+  console.log(`Normalizing domain "${domain}" to "${normalizedDomain}"`);
+  
+  return normalizedDomain;
 };
 
 /**
@@ -87,6 +92,9 @@ export const openStoreInNewTab = (storeUrl?: string): void => {
   // Remove leading/trailing slashes
   const cleanUrl = trimmedUrl.replace(/^\/+|\/+$/g, '');
   
+  // Debug the URL transformation
+  console.log(`Opening store URL: Original=${storeUrl}, Cleaned=${cleanUrl}`);
+  
   // Check if it's a full URL with protocol
   if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
     window.open(cleanUrl, '_blank');
@@ -98,5 +106,6 @@ export const openStoreInNewTab = (storeUrl?: string): void => {
   
   // Create the correct URL with base domain
   const fullUrl = getFullStoreUrl(`/store/${domainName}`);
+  console.log(`Final store URL to open: ${fullUrl}`);
   window.open(fullUrl, '_blank');
 };
