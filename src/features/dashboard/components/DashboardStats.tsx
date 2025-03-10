@@ -1,86 +1,111 @@
 
 import React from "react";
-import { ShoppingBag, Package, Users, DollarSign, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 export interface DashboardStatsProps {
-  products: number;
-  orders: number;
-  customers: number;
-  revenue: number;
+  stats: {
+    products: number;
+    orders: number;
+    customers: number;
+    revenue: number;
+  };
   formatCurrency: (value: number) => string;
+  onPeriodChange?: (period: string) => void;
+  isLoading?: boolean;
 }
 
 const DashboardStats: React.FC<DashboardStatsProps> = ({
-  products,
-  orders,
-  customers,
-  revenue,
-  formatCurrency
+  stats,
+  formatCurrency,
+  onPeriodChange,
+  isLoading = false
 }) => {
+  const handlePeriodChange = (period: string) => {
+    if (onPeriodChange) {
+      onPeriodChange(period);
+    }
+  };
+
+  const statCards = [
+    {
+      title: "المنتجات",
+      value: stats.products,
+      valueFormatted: stats.products.toString(),
+      color: "bg-blue-50 text-blue-500"
+    },
+    {
+      title: "الطلبات",
+      value: stats.orders,
+      valueFormatted: stats.orders.toString(),
+      color: "bg-purple-50 text-purple-500"
+    },
+    {
+      title: "العملاء",
+      value: stats.customers,
+      valueFormatted: stats.customers.toString(),
+      color: "bg-green-50 text-green-500"
+    },
+    {
+      title: "المبيعات",
+      value: stats.revenue,
+      valueFormatted: formatCurrency(stats.revenue),
+      color: "bg-orange-50 text-orange-500"
+    }
+  ];
+
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-        <div className="flex justify-between items-center">
-          <div>
-            <h3 className="text-sm font-medium text-gray-500">المنتجات</h3>
-            <p className="text-2xl font-bold mt-1">{products}</p>
-            <div className="flex items-center text-xs mt-1 text-green-600">
-              <ArrowUpRight className="h-3 w-3 mr-1" />
-              <span>12% أعلى</span>
-            </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">إحصائيات المتجر</h2>
+        
+        {onPeriodChange && (
+          <div className="flex items-center space-x-2 rtl:space-x-reverse">
+            <button
+              onClick={() => handlePeriodChange("daily")}
+              className="text-sm font-medium text-gray-500 hover:text-primary-600 px-2 py-1 rounded"
+            >
+              يومي
+            </button>
+            <button
+              onClick={() => handlePeriodChange("weekly")}
+              className="text-sm font-medium text-gray-500 hover:text-primary-600 px-2 py-1 rounded"
+            >
+              أسبوعي
+            </button>
+            <button
+              onClick={() => handlePeriodChange("monthly")}
+              className="text-sm font-medium text-primary-600 px-2 py-1 rounded bg-primary-50"
+            >
+              شهري
+            </button>
           </div>
-          <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
-            <Package size={20} />
-          </div>
-        </div>
+        )}
       </div>
-      
-      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-        <div className="flex justify-between items-center">
-          <div>
-            <h3 className="text-sm font-medium text-gray-500">الطلبات</h3>
-            <p className="text-2xl font-bold mt-1">{orders}</p>
-            <div className="flex items-center text-xs mt-1 text-green-600">
-              <ArrowUpRight className="h-3 w-3 mr-1" />
-              <span>8% أعلى</span>
-            </div>
-          </div>
-          <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center text-orange-600">
-            <ShoppingBag size={20} />
-          </div>
-        </div>
-      </div>
-      
-      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-        <div className="flex justify-between items-center">
-          <div>
-            <h3 className="text-sm font-medium text-gray-500">العملاء</h3>
-            <p className="text-2xl font-bold mt-1">{customers}</p>
-            <div className="flex items-center text-xs mt-1 text-red-600">
-              <ArrowDownRight className="h-3 w-3 mr-1" />
-              <span>3% أقل</span>
-            </div>
-          </div>
-          <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center text-green-600">
-            <Users size={20} />
-          </div>
-        </div>
-      </div>
-      
-      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-        <div className="flex justify-between items-center">
-          <div>
-            <h3 className="text-sm font-medium text-gray-500">الإيرادات</h3>
-            <p className="text-2xl font-bold mt-1">{formatCurrency(revenue)}</p>
-            <div className="flex items-center text-xs mt-1 text-green-600">
-              <ArrowUpRight className="h-3 w-3 mr-1" />
-              <span>15% أعلى</span>
-            </div>
-          </div>
-          <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600">
-            <DollarSign size={20} />
-          </div>
-        </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {statCards.map((stat, index) => (
+          <Card key={index} className="border border-gray-100">
+            <CardContent className="p-4">
+              {isLoading ? (
+                <div className="space-y-2">
+                  <div className="h-5 w-16 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-7 w-20 bg-gray-200 rounded animate-pulse"></div>
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm text-gray-500">{stat.title}</p>
+                  <div className="mt-1 flex items-center justify-between">
+                    <p className="text-xl font-bold">{stat.valueFormatted}</p>
+                    <div className={cn("w-8 h-8 rounded-full flex items-center justify-center", stat.color)}>
+                      {/* Icon could be added here */}
+                    </div>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );

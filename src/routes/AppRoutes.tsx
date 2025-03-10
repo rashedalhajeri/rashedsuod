@@ -7,7 +7,6 @@ import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
 import CreateStore from "@/pages/CreateStore";
 import NotFound from "@/pages/NotFound";
-import ProductDetail from "@/pages/ProductDetail";
 import Store from "@/pages/Store";
 import ProductPage from "@/pages/ProductPage";
 import CartPage from "@/pages/CartPage";
@@ -128,15 +127,6 @@ const AppRoutes = () => {
             <MyStore />
           </ProtectedRoute>
         }
-      />
-      
-      <Route 
-        path="/products/:productId" 
-        element={
-          <ProtectedRoute>
-            <ProductDetail storeId={null} />
-          </ProtectedRoute>
-        } 
       />
       
       <Route path="*" element={<NotFound />} />
