@@ -10,8 +10,7 @@ export type CurrencyFormatterOptions = {
 
 export const useCurrencyFormatter = (options: CurrencyFormatterOptions = {}) => {
   const { data: storeData } = useStoreData();
-  // دائمًا استخدم الدينار الكويتي كعملة افتراضية، بغض النظر عن قيمة storeData
-  const currency = "KWD";
+  const currency = storeData?.currency || "KWD";
   
   const {
     style = "currency",
@@ -36,9 +35,6 @@ export const createCurrencyFormatter = (
   currency: string = "KWD",
   options: CurrencyFormatterOptions = {}
 ) => {
-  // تجاهل المعلمة المدخلة واستخدام KWD دائمًا
-  const actualCurrency = "KWD";
-  
   const {
     style = "currency",
     minimumFractionDigits = 3,
@@ -48,7 +44,7 @@ export const createCurrencyFormatter = (
   
   const formatter = new Intl.NumberFormat("en-US", {
     style: style === "currency" ? "currency" : "decimal",
-    currency: style === "currency" ? actualCurrency : undefined,
+    currency: style === "currency" ? currency : undefined,
     minimumFractionDigits,
     maximumFractionDigits,
     useGrouping

@@ -10,7 +10,7 @@ export function formatPrice(price: number): string {
   // Ensure numbers are displayed in English format regardless of locale
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'KWD', // دائما الدينار الكويتي
+    currency: 'KWD', // الدينار الكويتي
     minimumFractionDigits: 0,
     maximumFractionDigits: 3,
   });

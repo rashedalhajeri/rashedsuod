@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,7 +19,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ storeData }) => {
     email: "",
     phone: "",
     address: "",
-    currency: "KWD",
+    currency: "",
     language: "العربية"
   });
   
@@ -32,7 +33,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ storeData }) => {
         email: "",
         phone: storeData.phone_number || "",
         address: "",
-        currency: "KWD",
+        currency: storeData.currency || "SAR",
         language: "العربية"
       });
       
@@ -60,8 +61,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ storeData }) => {
         .update({
           store_name: storeValues.storeName,
           phone_number: storeValues.phone,
-          logo_url: logoUrl,
-          currency: "KWD"
+          logo_url: logoUrl
         })
         .eq('id', storeData.id);
       
@@ -159,7 +159,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ storeData }) => {
       <Card>
         <CardHeader>
           <CardTitle>العملة واللغة</CardTitle>
-          <CardDescription>العملة الافتراضية للمتجر هي الدينار الكويتي</CardDescription>
+          <CardDescription>تعديل العملة واللغة الافتراضية للمتجر</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
@@ -167,7 +167,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ storeData }) => {
               <Label htmlFor="store-currency">العملة</Label>
               <Input 
                 id="store-currency" 
-                value="الدينار الكويتي (KWD)" 
+                value={storeValues.currency} 
                 className="mt-1" 
                 disabled 
               />
