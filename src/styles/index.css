@@ -2,8 +2,6 @@
 /* Main entry point for CSS */
 @import './base.css';
 @import './rtl.css';
-@import './animations.css';
 @import './loading.css';
 @import './components.css';
-@import './scrollbar.css';
 @import './responsive.css';
