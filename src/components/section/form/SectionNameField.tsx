@@ -33,7 +33,7 @@ const SectionNameField: React.FC<SectionNameFieldProps> = ({
         </p>
       ) : (
         <p className="text-xs text-gray-500">
-          هذا القسم سيظهر كصفحة خاصة في متجرك. اختر اسماً واضحاً.
+          هذا القسم سيظهر كصفحة خاصة في متجرك. اختر اسماً واضحاً ومعبراً.
         </p>
       )}
     </div>

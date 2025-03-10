@@ -54,6 +54,10 @@ interface CategoryTabsManagerProps {
   handleUpdateSection: () => void;
   handleDeleteSection: (id: string) => void;
   handleReorderSections: (reorderedSections: Section[]) => void;
+
+  // New props
+  isSubmitting?: boolean;
+  error?: string | null;
 }
 
 const CategoryTabsManager: React.FC<CategoryTabsManagerProps> = ({
@@ -91,7 +95,11 @@ const CategoryTabsManager: React.FC<CategoryTabsManagerProps> = ({
   handleAddSection,
   handleUpdateSection,
   handleDeleteSection,
-  handleReorderSections
+  handleReorderSections,
+
+  // New props
+  isSubmitting = false,
+  error = null
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("categories");
@@ -231,6 +239,8 @@ const CategoryTabsManager: React.FC<CategoryTabsManagerProps> = ({
         setNewProductIds={setNewProductIds}
         newDisplayStyle={newDisplayStyle}
         setNewDisplayStyle={setNewDisplayStyle}
+        isSubmitting={isSubmitting}
+        error={error}
         handleAddSection={handleAddSection}
       />
 

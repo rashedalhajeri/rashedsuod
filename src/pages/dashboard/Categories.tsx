@@ -42,6 +42,8 @@ const CategoriesAndSections: React.FC = () => {
     setNewDisplayStyle,
     editingSection,
     setEditingSection,
+    isSubmitting,
+    error,
     handleAddSection,
     handleUpdateSection,
     handleDeleteSection,
@@ -102,6 +104,8 @@ const CategoriesAndSections: React.FC = () => {
           handleUpdateSection={handleUpdateSection}
           handleDeleteSection={handleDeleteSection}
           handleReorderSections={handleReorderSections}
+          isSubmitting={isSubmitting}
+          error={error}
         />
       </div>
     </DashboardLayout>

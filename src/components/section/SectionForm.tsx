@@ -1,14 +1,15 @@
 
 import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogClose
+  DialogClose,
+  DialogDescription
 } from "@/components/ui/dialog";
 import { sectionTypes } from "./form/section-config";
 import { useSectionForm } from "./form/useSectionForm";
@@ -19,6 +20,7 @@ import CategorySelector from "./form/CategorySelector";
 import ProductSelector from "./form/ProductSelector";
 import { motion } from "framer-motion";
 import DisplayStyleSelector from "./form/DisplayStyleSelector";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 interface SectionFormProps {
   isOpen: boolean;
@@ -33,6 +35,8 @@ interface SectionFormProps {
   setNewProductIds: (ids: string[] | null) => void;
   newDisplayStyle?: 'grid' | 'list';
   setNewDisplayStyle: (style: 'grid' | 'list') => void;
+  isSubmitting?: boolean;
+  error?: string | null;
   handleAddSection?: () => Promise<void>;
 }
 
@@ -49,6 +53,8 @@ const SectionForm: React.FC<SectionFormProps> = ({
   setNewProductIds,
   newDisplayStyle = 'grid',
   setNewDisplayStyle,
+  isSubmitting = false,
+  error = null,
   handleAddSection
 }) => {
   const {
@@ -216,10 +222,10 @@ const SectionForm: React.FC<SectionFormProps> = ({
 
   const handleSubmit = () => {
     handleAddSection?.();
-    onClose();
   };
 
   const isSubmitDisabled = 
+    isSubmitting ||
     !newSection.trim() || 
     !selectedSectionType ||
     (selectedSectionType === 'category' && !newCategoryId) || 
@@ -234,9 +240,19 @@ const SectionForm: React.FC<SectionFormProps> = ({
       >
         <DialogHeader className="p-4 md:p-6 border-b sticky top-0 bg-background z-10">
           <DialogTitle className="text-xl font-bold">إضافة قسم جديد</DialogTitle>
+          <DialogDescription className="text-sm text-gray-500">
+            القسم الجديد سيظهر في المتجر كمجموعة من المنتجات
+          </DialogDescription>
         </DialogHeader>
         
         <div className="flex flex-col space-y-5 overflow-y-auto py-4 px-4 md:px-6 custom-scrollbar">
+          {error && (
+            <Alert variant="destructive" className="mb-2">
+              <AlertTitle>حدث خطأ</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -278,8 +294,17 @@ const SectionForm: React.FC<SectionFormProps> = ({
             disabled={isSubmitDisabled}
             className="flex items-center gap-2"
           >
-            <Plus className="h-4 w-4" />
-            <span>إضافة القسم</span>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>جاري الإضافة...</span>
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4" />
+                <span>إضافة القسم</span>
+              </>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

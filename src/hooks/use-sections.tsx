@@ -21,11 +21,14 @@ export const useSections = () => {
   const [newProductIds, setNewProductIds] = useState<string[] | null>(null);
   const [newDisplayStyle, setNewDisplayStyle] = useState<'grid' | 'list'>('grid');
   const [editingSection, setEditingSection] = useState<Section | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const initializeSections = async () => {
       try {
         setLoading(true);
+        setError(null);
         
         // Get current user's store
         const userStoreId = await fetchUserStoreId();
@@ -43,6 +46,7 @@ export const useSections = () => {
         setSections(data as Section[]);
       } catch (err: any) {
         console.error("Error fetching store and sections:", err);
+        setError("حدث خطأ أثناء تحميل الأقسام");
         toast.error("حدث خطأ أثناء تحميل الأقسام");
       } finally {
         setLoading(false);
@@ -53,9 +57,15 @@ export const useSections = () => {
   }, []);
 
   const handleAddSection = async () => {
-    if (!newSection.trim() || !storeId) return;
+    if (!newSection.trim() || !storeId) {
+      toast.error("يرجى إدخال اسم القسم");
+      return;
+    }
     
     try {
+      setIsSubmitting(true);
+      setError(null);
+      
       const nextOrder = sections.length > 0 
         ? Math.max(...sections.map(c => c.sort_order)) + 1 
         : 0;
@@ -71,7 +81,11 @@ export const useSections = () => {
         newDisplayStyle
       );
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error adding section:", error);
+        throw error;
+      }
+      
       if (data) {
         setSections([...sections, data as Section]);
         setNewSection("");
@@ -83,7 +97,10 @@ export const useSections = () => {
       }
     } catch (err: any) {
       console.error("Error adding section:", err);
-      toast.error("حدث خطأ أثناء إضافة القسم");
+      setError(err.message || "حدث خطأ أثناء إضافة القسم");
+      toast.error("حدث خطأ أثناء إضافة القسم. يرجى المحاولة مرة أخرى.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
@@ -91,6 +108,9 @@ export const useSections = () => {
     if (!editingSection || !storeId) return;
     
     try {
+      setIsSubmitting(true);
+      setError(null);
+      
       const { error } = await updateSection(editingSection, storeId);
       
       if (error) throw error;
@@ -103,7 +123,10 @@ export const useSections = () => {
       toast.success("تم تعديل القسم بنجاح");
     } catch (err: any) {
       console.error("Error updating section:", err);
+      setError(err.message || "حدث خطأ أثناء تعديل القسم");
       toast.error("حدث خطأ أثناء تعديل القسم");
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
@@ -111,6 +134,9 @@ export const useSections = () => {
     if (!storeId) return;
     
     try {
+      setIsSubmitting(true);
+      setError(null);
+      
       const { error } = await deleteSection(sectionId, storeId);
       
       if (error) throw error;
@@ -119,7 +145,10 @@ export const useSections = () => {
       toast.success("تم حذف القسم بنجاح");
     } catch (err: any) {
       console.error("Error deleting section:", err);
+      setError(err.message || "حدث خطأ أثناء حذف القسم");
       toast.error("حدث خطأ أثناء حذف القسم");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -127,6 +156,9 @@ export const useSections = () => {
     if (!storeId) return;
     
     try {
+      setIsSubmitting(true);
+      setError(null);
+      
       // First update the UI immediately for better UX
       setSections(reorderedSections);
       
@@ -138,6 +170,7 @@ export const useSections = () => {
       toast.success("تم تغيير ترتيب الأقسام بنجاح");
     } catch (err: any) {
       console.error("Error reordering sections:", err);
+      setError(err.message || "حدث خطأ أثناء تغيير ترتيب الأقسام");
       toast.error("حدث خطأ أثناء تغيير ترتيب الأقسام");
       
       // Refresh the sections from the server on error
@@ -145,6 +178,8 @@ export const useSections = () => {
       if (data) {
         setSections(data as Section[]);
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -164,6 +199,8 @@ export const useSections = () => {
     setNewDisplayStyle,
     editingSection,
     setEditingSection,
+    isSubmitting,
+    error,
     handleAddSection,
     handleUpdateSection,
     handleDeleteSection,
