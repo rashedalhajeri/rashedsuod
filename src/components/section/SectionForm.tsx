@@ -26,6 +26,8 @@ interface SectionFormProps {
   setNewCategoryId: (id: string | null) => void;
   newProductIds: string[] | null;
   setNewProductIds: (ids: string[] | null) => void;
+  newDisplayStyle?: 'grid' | 'list';
+  setNewDisplayStyle?: (style: 'grid' | 'list') => void;
   handleAddSection: () => void;
 }
 
@@ -53,6 +55,8 @@ const SectionForm: React.FC<SectionFormProps> = ({
   setNewCategoryId,
   newProductIds,
   setNewProductIds,
+  newDisplayStyle = 'grid',
+  setNewDisplayStyle = () => {},
   handleAddSection
 }) => {
   const [categories, setCategories] = useState<Category[]>([]);

@@ -79,8 +79,8 @@ const CategoriesAndSections: React.FC = () => {
     }
   };
 
-  // Custom wrapper function for type compatibility
-  const safeSetEditingSection = (section: Section | null) => {
+  // Type-safe wrapper for setEditingSection
+  const handleSetEditingSection = (section: Section | null) => {
     setEditingSection(section);
   };
 
@@ -204,7 +204,7 @@ const CategoriesAndSections: React.FC = () => {
                     loading={sectionsLoading}
                     searchQuery={searchQuery}
                     editingSection={editingSection}
-                    setEditingSection={safeSetEditingSection}
+                    setEditingSection={handleSetEditingSection}
                     handleUpdateSection={handleUpdateSection}
                     handleDeleteSection={handleDeleteSection}
                     setNewSection={setNewSection}

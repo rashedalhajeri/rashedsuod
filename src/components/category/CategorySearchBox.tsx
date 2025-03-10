@@ -13,18 +13,20 @@ import {
 interface CategorySearchBoxProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  placeholder?: string;
 }
 
 const CategorySearchBox: React.FC<CategorySearchBoxProps> = ({
   searchQuery,
   setSearchQuery,
+  placeholder = "بحث حسب الاسم..."
 }) => {
   return (
     <div className="relative">
       <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
       <Input
         type="text"
-        placeholder="بحث حسب الاسم..."
+        placeholder={placeholder}
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         className="pl-10 pr-9"
