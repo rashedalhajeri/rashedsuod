@@ -1,8 +1,7 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Eye, ExternalLink } from "lucide-react";
-import { openStoreInNewTab } from "@/utils/url-helpers";
+import { openStoreInNewTab, getBaseDomain } from "@/utils/url-helpers";
 import {
   Tooltip,
   TooltipContent,
@@ -28,17 +27,13 @@ const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({
   const [showLink, setShowLink] = useState(false);
   
   const handleClick = () => {
-    // Show the link text for 3 seconds after click
     setShowLink(true);
     setTimeout(() => setShowLink(false), 3000);
-    
-    // Open the store in a new tab
     openStoreInNewTab(storeUrl);
   };
 
-  // Format the URL for display
   const displayUrl = storeUrl ? 
-    window.location.origin + (storeUrl.startsWith('/') ? '' : '/') + storeUrl : 
+    `${getBaseDomain()}${storeUrl.startsWith('/') ? '' : '/'}${storeUrl}` : 
     'رابط المتجر غير متوفر';
 
   return (
@@ -67,7 +62,6 @@ const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({
         </Tooltip>
       </TooltipProvider>
       
-      {/* Small text that appears below the button showing the URL */}
       {showLink && (
         <div className="mt-1.5 bg-muted/40 text-muted-foreground text-[10px] py-1 px-2 rounded-sm overflow-hidden text-ellipsis dir-ltr max-w-[180px] whitespace-nowrap">
           {displayUrl}

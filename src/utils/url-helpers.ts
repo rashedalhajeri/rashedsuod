@@ -4,6 +4,13 @@
  */
 
 /**
+ * Get the base domain for the application
+ */
+export const getBaseDomain = (): string => {
+  return import.meta.env.VITE_APP_DOMAIN || 'https://lovable.app';
+};
+
+/**
  * Normalizes store domain by removing special characters, spaces, and converting to lowercase
  */
 export const normalizeStoreDomain = (domain: string): string => {
@@ -63,7 +70,7 @@ export const openStoreInNewTab = (storeUrl?: string): void => {
   // Remove store/ prefix if it exists
   const domainName = cleanUrl.replace(/^store\/?/, '');
   
-  // Create the correct URL with leading slash
-  const storeRoute = `/store/${domainName}`;
-  window.open(storeRoute, '_blank');
+  // Create the correct URL with base domain
+  const fullUrl = `${getBaseDomain()}/store/${domainName}`;
+  window.open(fullUrl, '_blank');
 };
