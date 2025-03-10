@@ -32,16 +32,15 @@ const SectionActions: React.FC<SectionActionsProps> = ({
   showReorderButtons
 }) => {
   return (
-    <div className="flex gap-2">
+    <div className="flex items-center gap-2">
       {showReorderButtons && (
         <>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  className="h-9 w-9 rounded-lg"
+                <Button
+                  size="sm"
+                  variant="ghost"
                   onClick={handleMoveUp}
                   disabled={index === 0}
                 >
@@ -49,17 +48,17 @@ const SectionActions: React.FC<SectionActionsProps> = ({
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>نقل لأعلى</p>
+                <p>تحريك لأعلى</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
+          
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  className="h-9 w-9 rounded-lg"
+                <Button
+                  size="sm"
+                  variant="ghost"
                   onClick={handleMoveDown}
                   disabled={index === totalSections - 1}
                 >
@@ -67,43 +66,43 @@ const SectionActions: React.FC<SectionActionsProps> = ({
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>نقل لأسفل</p>
+                <p>تحريك لأسفل</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </>
       )}
+      
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button 
-              size="sm" 
-              variant="outline"
-              className="h-9 w-9 rounded-lg"
+            <Button
+              size="sm"
+              variant="ghost"
               onClick={() => setEditingSection(section)}
             >
               <Edit className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>تعديل</p>
+            <p>تعديل القسم</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
+      
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button 
-              size="sm" 
-              variant="outline"
-              className="h-9 w-9 rounded-lg text-destructive hover:text-white hover:bg-destructive border-destructive/20"
+            <Button
+              size="sm"
+              variant="ghost"
               onClick={() => setIsDeleteDialogOpen(true)}
             >
-              <Trash className="h-4 w-4" />
+              <Trash className="h-4 w-4 text-red-500" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>حذف</p>
+            <p>حذف القسم</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
