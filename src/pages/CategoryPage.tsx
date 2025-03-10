@@ -1,15 +1,14 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useStoreData } from "@/hooks/use-store-data";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { useCategoryData } from "@/hooks/use-category-data";
-import CategoryHeader from "@/components/store/category/CategoryHeader";
 import CategoryContent from "@/components/store/category/CategoryContent";
+import StorePageLayout from "@/components/store/layout/StorePageLayout";
 
 const CategoryPage = () => {
-  const { storeDomain, categoryName } = useParams<{ storeDomain: string; categoryName: string }>();
+  const { storeDomain, categoryName } = useParams();
   const { storeData, isLoading: isLoadingStore, error } = useStoreData();
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
@@ -22,8 +21,6 @@ const CategoryPage = () => {
     sections,
     filteredProducts
   } = useCategoryData(categoryName, searchQuery);
-
-  // Remove the success toast effect that was here
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,35 +45,30 @@ const CategoryPage = () => {
   }
 
   if (error) {
-    return <ErrorState title="خطأ" message={error.message || "حدث خطأ أثناء تحميل المتجر"} />;
+    return <ErrorState title="خطأ" message={error.message} />;
   }
-  
-  const headerTitle = categoryDetails?.name || "جميع المنتجات";
 
   return (
-    <div className="min-h-screen bg-gray-50" dir="rtl">
-      <CategoryHeader 
-        headerTitle={headerTitle} 
+    <StorePageLayout 
+      storeName={storeData?.store_name || ''}
+      logoUrl={storeData?.logo_url}
+      showBackButton={true}
+    >
+      <CategoryContent
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        handleSearchSubmit={handleSearchSubmit}
+        productNames={productNames}
+        categories={categories}
+        sections={sections}
+        categoryName={categoryName}
+        handleCategoryChange={handleCategoryChange}
+        handleSectionChange={handleSectionChange}
+        isLoadingProducts={isLoadingProducts}
+        filteredProducts={filteredProducts}
         storeDomain={storeDomain}
       />
-      
-      <div>
-        <CategoryContent
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          handleSearchSubmit={handleSearchSubmit}
-          productNames={productNames}
-          categories={categories}
-          sections={sections}
-          categoryName={categoryName}
-          handleCategoryChange={handleCategoryChange}
-          handleSectionChange={handleSectionChange}
-          isLoadingProducts={isLoadingProducts}
-          filteredProducts={filteredProducts}
-          storeDomain={storeDomain}
-        />
-      </div>
-    </div>
+    </StorePageLayout>
   );
 };
 
