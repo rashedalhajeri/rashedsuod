@@ -71,10 +71,12 @@ const MyStore = () => {
     );
   }
   
-  const storeDomain = storeData.domain_name || storeData.domain;
+  // Make sure domain is always lowercase for consistency
+  const storeDomain = storeData.domain_name?.toLowerCase() || storeData.domain?.toLowerCase();
   const storeName = storeData.store_name || storeData.name;
   
-  const storePreviewUrl = storeDomain ? `store/${storeDomain.toLowerCase()}` : '';
+  // Create a proper URL for the StorePreviewButton
+  const storePreviewUrl = storeDomain ? `store/${storeDomain}` : '';
   
   return (
     <div className="container max-w-7xl mx-auto py-8 space-y-8">
@@ -228,7 +230,7 @@ const MyStore = () => {
                     2
                   </div>
                   <div>
-                    <h3 className="font-medium text-emerald-900">أضف بنرات ت��ويجية جذابة</h3>
+                    <h3 className="font-medium text-emerald-900">أضف بنرات ترويجية جذابة</h3>
                     <p className="text-sm text-emerald-700 mt-1">
                       البنرات الترويجية تساعد في عرض العروض والمنتجات الجديدة وجذب انتباه العملاء لزيادة المبيعات.
                     </p>

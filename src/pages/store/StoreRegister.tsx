@@ -97,7 +97,7 @@ const StoreRegister = () => {
             
             <CardContent>
               <RegisterForm 
-                storeDomain={storeData.domain_name || storeDomain?.toLowerCase()} 
+                storeDomain={storeData.domain_name?.toLowerCase() || storeDomain?.toLowerCase()} 
                 storeData={storeData} 
               />
             </CardContent>
