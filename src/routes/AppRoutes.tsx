@@ -1,7 +1,6 @@
 
 import React from "react";
 import {
-  BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
@@ -30,43 +29,41 @@ const AppRoutes = () => {
   const isLoggedIn = !!session;
 
   return (
-    <Router>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            isLoggedIn ? <Navigate to="/dashboard" /> : <Navigate to="/login" />
-          }
-        />
-        <Route
-          path="/login"
-          element={isLoggedIn ? <Navigate to="/dashboard" /> : <Login />}
-        />
-        <Route
-          path="/register"
-          element={isLoggedIn ? <Navigate to="/dashboard" /> : <Register />}
-        />
-        
-        {/* Store routes */}
-        <Route path="/store/:storeDomain" element={<Store />} />
-        <Route path="/store/:storeDomain/product/:productId" element={<ProductDetails />} />
-        <Route path="/store/:storeDomain/category/:categoryName" element={<CategoryProducts />} />
+    <Routes>
+      <Route
+        path="/"
+        element={
+          isLoggedIn ? <Navigate to="/dashboard" /> : <Navigate to="/login" />
+        }
+      />
+      <Route
+        path="/login"
+        element={isLoggedIn ? <Navigate to="/dashboard" /> : <Login />}
+      />
+      <Route
+        path="/register"
+        element={isLoggedIn ? <Navigate to="/dashboard" /> : <Register />}
+      />
+      
+      {/* Store routes */}
+      <Route path="/store/:storeDomain" element={<Store />} />
+      <Route path="/store/:storeDomain/product/:productId" element={<ProductDetails />} />
+      <Route path="/store/:storeDomain/category/:categoryName" element={<CategoryProducts />} />
 
-        {/* Dashboard routes - accessible only when logged in */}
-        <Route path="/dashboard" element={<Dashboard />}>
-          <Route index element={<Home />} />
-          <Route path="products" element={<Products />} />
-          <Route path="categories" element={<Categories />} />
-          <Route path="orders" element={<Orders />} />
-          <Route path="customers" element={<Customers />} />
-          <Route path="payments" element={<Payments />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="coupons" element={<Coupons />} />
-          <Route path="sections" element={<Sections />} />
-          <Route path="store-preview/:storeId" element={<StorePreview />} />
-        </Route>
-      </Routes>
-    </Router>
+      {/* Dashboard routes - accessible only when logged in */}
+      <Route path="/dashboard" element={<Dashboard />}>
+        <Route index element={<Home />} />
+        <Route path="products" element={<Products />} />
+        <Route path="categories" element={<Categories />} />
+        <Route path="orders" element={<Orders />} />
+        <Route path="customers" element={<Customers />} />
+        <Route path="payments" element={<Payments />} />
+        <Route path="settings" element={<Settings />} />
+        <Route path="coupons" element={<Coupons />} />
+        <Route path="sections" element={<Sections />} />
+        <Route path="store-preview/:storeId" element={<StorePreview />} />
+      </Route>
+    </Routes>
   );
 };
 
