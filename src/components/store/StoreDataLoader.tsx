@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -36,6 +35,7 @@ const StoreDataLoader: React.FC<StoreDataLoaderProps> = ({
         const cleanDomain = normalizeStoreDomain(storeDomain);
         console.log("البحث عن متجر بالدومين:", cleanDomain);
         
+        // Always use lowercase normalized domain for lookup
         const { data, error } = await supabase
           .from("stores")
           .select("*")
@@ -51,13 +51,27 @@ const StoreDataLoader: React.FC<StoreDataLoaderProps> = ({
         
         if (!data) {
           console.log("لم يتم العثور على متجر بهذا الدومين:", cleanDomain);
-          onStoreNotFound();
-          return;
+          // Try one more time with direct case-insensitive search
+          const { data: altData, error: altError } = await supabase
+            .from("stores")
+            .select("*")
+            .ilike("domain_name", cleanDomain)
+            .eq("status", "active")
+            .maybeSingle();
+            
+          if (altError || !altData) {
+            onStoreNotFound();
+            return;
+          }
+          
+          console.log("تم العثور على المتجر بالبحث غير الحساس للأحرف:", altData);
+          setCurrentStoreData(altData);
+          onStoreLoaded(altData);
+        } else {
+          console.log("تم العثور على المتجر:", data);
+          setCurrentStoreData(data);
+          onStoreLoaded(data);
         }
-        
-        console.log("تم العثور على المتجر:", data);
-        setCurrentStoreData(data);
-        onStoreLoaded(data);
       } catch (err) {
         console.error("خطأ غير متوقع في تحميل المتجر:", err);
         onStoreNotFound();
