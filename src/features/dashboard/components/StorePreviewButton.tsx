@@ -31,8 +31,13 @@ const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({
       return;
     }
     
-    // If it's just a domain name, prefix it with /store/
-    const storeRoute = `/store/${trimmedUrl}`;
+    // Remove 'store/' prefix if it exists in the domain name to prevent double prefixing
+    const domainName = trimmedUrl.startsWith('store/') 
+      ? trimmedUrl.substring(6) // Remove 'store/' from the beginning
+      : trimmedUrl;
+    
+    // Now create the correct URL
+    const storeRoute = `/store/${domainName}`;
     window.open(storeRoute, '_blank');
     
     // Log the URL for debugging
