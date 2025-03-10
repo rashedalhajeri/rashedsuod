@@ -1,4 +1,3 @@
-
 /**
  * URL and domain handling utilities
  */
@@ -17,16 +16,22 @@ export const getBaseDomain = (): string => {
 };
 
 /**
- * Normalizes store domain by removing special characters, spaces, and converting to lowercase
+ * تنسيق اسم دومين المتجر
  */
 export const normalizeStoreDomain = (domain: string): string => {
   if (!domain) return '';
   
-  // Convert to lowercase and trim spaces - simplify to just this for reliable matching
-  const normalizedDomain = domain.trim().toLowerCase();
+  // تحويل إلى أحرف صغيرة وإزالة المسافات
+  let normalizedDomain = domain.trim().toLowerCase();
   
-  // Log for debugging
-  console.log(`Normalizing domain "${domain}" to "${normalizedDomain}"`);
+  // إزالة أي بادئة /store/ إذا وجدت
+  normalizedDomain = normalizedDomain.replace(/^\/store\//, '');
+  
+  // إزالة أي لاحقة / إذا وجدت
+  normalizedDomain = normalizedDomain.replace(/\/$/, '');
+  
+  // طبا��ة للتصحيح
+  console.log(`تنسيق الدومين: "${domain}" -> "${normalizedDomain}"`);
   
   return normalizedDomain;
 };

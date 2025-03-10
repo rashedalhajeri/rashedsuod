@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { normalizeStoreDomain } from "./url-helpers";
 
@@ -12,66 +11,53 @@ export const fetchStoreByDomain = async (domainName: string) => {
   }
 
   const cleanDomain = normalizeStoreDomain(domainName);
-  console.log("البحث عن متجر بواسطة fetchStoreByDomain:", cleanDomain);
+  console.log("البحث عن متجر بواسطة fetchStoreByDomain:", {
+    originalDomain: domainName,
+    cleanDomain,
+    timestamp: new Date().toISOString()
+  });
 
   try {
-    // البحث المباشر بالدومين المنسق (حالة متطابقة)
+    // البحث المباشر عن المتجر
     const { data, error } = await supabase
       .from("stores")
       .select("*")
       .eq("domain_name", cleanDomain)
-      .eq("status", "active")
-      .maybeSingle();
-
+      .single();
+      
     if (error) {
-      console.error("خطأ في البحث عن المتجر:", error);
-      return null;
+      if (error.code === 'PGRST116') {
+        console.log("لم يتم العثور على متجر:", cleanDomain);
+      } else {
+        console.error("خطأ في البحث عن المتجر:", error);
+      }
     }
 
     if (data) {
-      console.log("تم العثور على المتجر من الطلب الأول:", data.domain_name);
+      console.log("تم العثور على المتجر:", {
+        storeName: data.store_name,
+        domainName: data.domain_name,
+        status: data.status
+      });
       return data;
     }
 
     // طباعة جميع المتاجر للتصحيح
-    console.log("لم يتم العثور على المتجر، استعلام عن جميع المتاجر للتصحيح");
+    console.log("محاولة جلب جميع المتاجر للتصحيح");
     const { data: allStores } = await supabase
       .from("stores")
       .select("domain_name, store_name, status")
       .order("created_at", { ascending: false });
       
-    console.log("جميع المتاجر المتاحة:", allStores);
-
-    // محاولة ثانية بدون شرط الحالة
-    console.log("محاولة ثانية بدون شرط الحالة");
-    const { data: anyStatusData } = await supabase
-      .from("stores")
-      .select("*")
-      .eq("domain_name", cleanDomain)
-      .maybeSingle();
-      
-    if (anyStatusData) {
-      console.log("تم العثور على المتجر ولكن حالته:", anyStatusData.status);
-      return anyStatusData;
+    if (allStores && allStores.length > 0) {
+      console.log("المتاجر المتوفرة:", allStores);
+    } else {
+      console.log("لا توجد متاجر في قاعدة البيانات");
     }
 
-    // محاولة ثالثة باستخدام البحث غير الحساس لحالة الأحرف
-    console.log("محاولة البحث بطريقة ثالثة باستخدام ilike");
-    const { data: ilikeData } = await supabase
-      .from("stores")
-      .select("*")
-      .ilike("domain_name", cleanDomain)
-      .maybeSingle();
-
-    if (ilikeData) {
-      console.log("تم العثور على المتجر من البحث ilike:", ilikeData.domain_name);
-      return ilikeData;
-    }
-
-    console.log("لم يتم العثور على متجر بالدومين:", cleanDomain);
     return null;
   } catch (err) {
-    console.error("خطأ غير متوقع:", err);
+    console.error("خطأ غير متوقع في fetchStoreByDomain:", err);
     return null;
   }
 };
