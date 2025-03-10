@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import ProductItem from '@/components/store/unified/ProductItem';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Product, RawProductData } from '@/utils/products/types';
+import { mapRawProductToProduct } from '@/utils/products/mappers';
 
 interface CategoryData {
   id: string;
@@ -26,7 +27,7 @@ const CategoryProducts = () => {
           .from('categories')
           .select('id')
           .eq('name', categoryName)
-          .eq('store_domain', storeDomain)
+          .eq('store_id', storeDomain)
           .maybeSingle<CategoryData>();
         
         if (categoryError) throw categoryError;
@@ -40,11 +41,16 @@ const CategoryProducts = () => {
           .from('products')
           .select('*')
           .eq('category_id', categoryData.id)
-          .eq('store_domain', storeDomain);
+          .eq('store_id', storeDomain);
         
         if (productsError) throw productsError;
         
-        setProducts(productsData || []);
+        // Map the raw data to Product type
+        const mappedProducts = (productsData || []).map((product: RawProductData) => 
+          mapRawProductToProduct(product)
+        );
+        
+        setProducts(mappedProducts);
       } catch (err: any) {
         console.error('Error fetching category products:', err);
         setError(err.message || 'حدث خطأ في تحميل منتجات الفئة');
