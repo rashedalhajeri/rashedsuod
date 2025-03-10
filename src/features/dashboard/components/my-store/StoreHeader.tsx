@@ -1,42 +1,56 @@
 
 import React from "react";
+import StorePreviewButton from "@/features/dashboard/components/StorePreviewButton";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Settings } from "lucide-react";
-import { Link } from "react-router-dom";
-import { getFullStoreUrl } from "@/utils/url-helpers";
+import { 
+  Settings, 
+  ShoppingBag, 
+  Edit, 
+  Layers 
+} from "lucide-react";
 
 interface StoreHeaderProps {
-  storePreviewUrl: string;
+  storePreviewUrl?: string;
+  customDomain?: string | null;
 }
 
-const StoreHeader: React.FC<StoreHeaderProps> = ({ storePreviewUrl }) => {
-  // Generate full store URL for external link
-  const fullStoreUrl = storePreviewUrl ? getFullStoreUrl(storePreviewUrl) : '';
-  
+const StoreHeader: React.FC<StoreHeaderProps> = ({ storePreviewUrl, customDomain }) => {
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">متجري</h1>
+        <h1 className="text-2xl font-bold">متجري</h1>
         <p className="text-muted-foreground">
           إدارة متجرك الإلكتروني وتخصيصه
         </p>
       </div>
-      <div className="flex gap-2 self-stretch sm:self-auto">
-        <Button asChild variant="outline" className="gap-2">
-          <Link to="/dashboard/settings">
-            <Settings size={16} />
-            إعدادات المتجر
-          </Link>
+      
+      <div className="flex flex-wrap items-center gap-2">
+        <StorePreviewButton 
+          storeUrl={storePreviewUrl}
+          customDomain={customDomain || undefined}
+          variant="outline" 
+          showExternalIcon={true}
+        />
+        
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="gap-1.5"
+          onClick={() => window.location.href = '/dashboard/settings?tab=store'}
+        >
+          <Settings className="h-4 w-4" />
+          الإعدادات
         </Button>
         
-        {storePreviewUrl && (
-          <Button asChild className="gap-2">
-            <a href={fullStoreUrl} target="_blank" rel="noopener noreferrer">
-              <ExternalLink size={16} />
-              عرض المتجر
-            </a>
-          </Button>
-        )}
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="gap-1.5"
+          onClick={() => window.location.href = '/dashboard/products'}
+        >
+          <ShoppingBag className="h-4 w-4" />
+          المنتجات
+        </Button>
       </div>
     </div>
   );

@@ -28,7 +28,9 @@ const StorePreview: React.FC<StorePreviewProps> = ({
     customDomain : 
     (cleanDomain ? `/store/${cleanDomain}` : '');
     
-  const fullStoreUrl = getFullStoreUrl(storeUrl);
+  const fullStoreUrl = hasCustomDomain ? 
+    (customDomain?.startsWith('http') ? customDomain : `https://${customDomain}`) : 
+    getFullStoreUrl(`/store/${cleanDomain}`);
   
   // Format displayed URL for cleaner presentation
   const displayUrl = hasCustomDomain ? 
@@ -98,7 +100,7 @@ const StorePreview: React.FC<StorePreviewProps> = ({
             رابط المتجر الخاص بك:
           </p>
           <div className="flex items-center gap-2 bg-background rounded border p-2">
-            <div className="text-sm text-primary font-mono truncate flex-1 overflow-hidden">
+            <div className="text-sm text-primary font-mono truncate flex-1 overflow-hidden" dir="ltr">
               {fullStoreUrl}
             </div>
             <Button 
@@ -106,7 +108,7 @@ const StorePreview: React.FC<StorePreviewProps> = ({
               size="sm"
               onClick={() => {
                 navigator.clipboard.writeText(fullStoreUrl);
-                // يمكن إضافة إشعار بالنسخ هنا
+                toast.success("تم نسخ الرابط");
               }}
               className="h-7 text-xs"
             >

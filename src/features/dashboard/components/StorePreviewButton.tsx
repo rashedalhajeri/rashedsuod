@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Eye, ExternalLink } from "lucide-react";
-import { openStoreInNewTab, getFullStoreUrl, getStoreUrl } from "@/utils/url-helpers";
+import { openStoreInNewTab, getFullStoreUrl } from "@/utils/url-helpers";
 import {
   Tooltip,
   TooltipContent,
@@ -29,22 +29,18 @@ const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({
 }) => {
   const [showLink, setShowLink] = useState(false);
   
-  // Prefer custom domain if available
-  const effectiveUrl = customDomain || storeUrl;
+  // Determine which URL to use - custom domain takes precedence
+  const finalUrl = customDomain 
+    ? (customDomain.startsWith('http') ? customDomain : `https://${customDomain}`)
+    : getFullStoreUrl(storeUrl || '');
   
   const handleClick = () => {
-    if (!effectiveUrl) return;
+    if (!finalUrl) return;
     
     setShowLink(true);
     setTimeout(() => setShowLink(false), 3000);
-    openStoreInNewTab(effectiveUrl);
+    window.open(finalUrl, '_blank', 'noopener,noreferrer');
   };
-
-  const fullStoreUrl = effectiveUrl ? 
-    (customDomain ? 
-      (customDomain.startsWith('http') ? customDomain : `https://${customDomain}`) : 
-      getFullStoreUrl(getStoreUrl(storeUrl || ''))) : 
-    'رابط المتجر غير متوفر';
 
   return (
     <div className="inline-block">
@@ -56,7 +52,7 @@ const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({
               className={`flex items-center gap-1.5 ${className || ''}`}
               variant={variant}
               onClick={handleClick}
-              disabled={!effectiveUrl}
+              disabled={!finalUrl}
             >
               {showExternalIcon ? (
                 <ExternalLink className="h-4 w-4" />
@@ -67,14 +63,14 @@ const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({
             </Button>
           </TooltipTrigger>
           <TooltipContent className="bg-black/80 text-white px-3 py-2 border-none rounded-md text-xs">
-            <p dir="ltr" className="max-w-[200px] break-words">{fullStoreUrl}</p>
+            <p dir="ltr" className="max-w-[200px] break-words">{finalUrl}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
       
       {showLink && (
         <div className="mt-1.5 bg-muted/40 text-muted-foreground text-[10px] py-1 px-2 rounded-sm overflow-hidden text-ellipsis dir-ltr max-w-[180px] whitespace-nowrap">
-          {fullStoreUrl}
+          {finalUrl}
         </div>
       )}
     </div>

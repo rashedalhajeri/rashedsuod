@@ -60,13 +60,14 @@ const MyStore = () => {
   // Make sure domain is always lowercase for consistency
   const storeDomain = normalizeStoreDomain(storeData.domain_name || storeData.domain || '');
   const storeName = storeData.store_name || storeData.name;
+  const customDomain = storeData.custom_domain || null;
   
   // Create a proper URL for the StorePreviewButton
   const storePreviewUrl = storeDomain ? `store/${storeDomain}` : '';
   
   return (
     <div className="container max-w-7xl mx-auto py-8 space-y-8">
-      <StoreHeader storePreviewUrl={storePreviewUrl} />
+      <StoreHeader storePreviewUrl={storePreviewUrl} customDomain={customDomain} />
       
       <Separator className="my-6" />
       
@@ -75,7 +76,8 @@ const MyStore = () => {
           <StorePreview 
             storeName={storeName} 
             storeDomain={storeDomain} 
-            logoUrl={logoUrl} 
+            logoUrl={logoUrl}
+            customDomain={customDomain}
           />
           <StoreTips />
         </div>

@@ -1,3 +1,4 @@
+
 /**
  * URL and domain handling utilities with simplified, consistent behavior
  */
@@ -96,6 +97,19 @@ export const isCustomDomain = (domain: string): boolean => {
 export const openStoreInNewTab = (storeUrl?: string): void => {
   if (!storeUrl) return;
   
+  // If it's a custom domain with protocol, use it directly
+  if (storeUrl.startsWith('http')) {
+    window.open(storeUrl, '_blank', 'noopener,noreferrer');
+    return;
+  }
+  
+  // If it's a custom domain without protocol, add protocol
+  if (storeUrl.includes('.') && !storeUrl.startsWith('/')) {
+    window.open(`https://${storeUrl}`, '_blank', 'noopener,noreferrer');
+    return;
+  }
+  
+  // For regular store paths
   const fullUrl = getFullStoreUrl(getStoreUrl(storeUrl));
-  window.open(fullUrl, '_blank');
+  window.open(fullUrl, '_blank', 'noopener,noreferrer');
 };
