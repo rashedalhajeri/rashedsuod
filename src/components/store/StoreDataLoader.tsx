@@ -42,6 +42,22 @@ const StoreDataLoader: React.FC<StoreDataLoaderProps> = ({
         
         if (!storeData) {
           console.error("لم يتم العثور على المتجر بعد محاولات متعددة للبحث:", storeDomain);
+          
+          // طباعة جميع المتاجر للتصحيح
+          const { data: allStores } = await supabase
+            .from("stores")
+            .select("domain_name, store_name, status")
+            .order("created_at", { ascending: false });
+            
+          console.log("جميع المتاجر المتاحة في StoreDataLoader:", allStores);
+          
+          onStoreNotFound();
+          return;
+        }
+        
+        if (storeData.status !== 'active') {
+          console.log("تم العثور على المتجر ولكن حالته غير نشطة:", storeData.status);
+          toast.error("هذا المتجر غير نشط حالياً");
           onStoreNotFound();
           return;
         }

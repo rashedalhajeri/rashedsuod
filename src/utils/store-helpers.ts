@@ -33,42 +33,39 @@ export const fetchStoreByDomain = async (domainName: string) => {
       return data;
     }
 
-    // محاولة ثانية باستخدام البحث غير الحساس لحالة الأحرف
-    console.log("محاولة البحث بطريقة ثانية باستخدام ilike");
-    const { data: altData, error: altError } = await supabase
+    // طباعة جميع المتاجر للتصحيح
+    console.log("لم يتم العثور على المتجر، استعلام عن جميع المتاجر للتصحيح");
+    const { data: allStores } = await supabase
+      .from("stores")
+      .select("domain_name, store_name, status")
+      .order("created_at", { ascending: false });
+      
+    console.log("جميع المتاجر المتاحة:", allStores);
+
+    // محاولة ثانية بدون شرط الحالة
+    console.log("محاولة ثانية بدون شرط الحالة");
+    const { data: anyStatusData } = await supabase
+      .from("stores")
+      .select("*")
+      .eq("domain_name", cleanDomain)
+      .maybeSingle();
+      
+    if (anyStatusData) {
+      console.log("تم العثور على المتجر ولكن حالته:", anyStatusData.status);
+      return anyStatusData;
+    }
+
+    // محاولة ثالثة باستخدام البحث غير الحساس لحالة الأحرف
+    console.log("محاولة البحث بطريقة ثالثة باستخدام ilike");
+    const { data: ilikeData } = await supabase
       .from("stores")
       .select("*")
       .ilike("domain_name", cleanDomain)
-      .eq("status", "active")
       .maybeSingle();
 
-    if (altError) {
-      console.error("خطأ في المحاولة الثانية للبحث:", altError);
-      return null;
-    }
-
-    if (altData) {
-      console.log("تم العثور على المتجر من المحاولة الثانية:", altData.domain_name);
-      return altData;
-    }
-
-    // محاولة ثالثة باستخدام طريقة أكثر تساهلاً (يحتوي على)
-    console.log("محاولة البحث بطريقة ثالثة أكثر تساهلاً");
-    const { data: containsData, error: containsError } = await supabase
-      .from("stores")
-      .select("*")
-      .filter("domain_name", "ilike", `%${cleanDomain}%`)
-      .eq("status", "active")
-      .maybeSingle();
-
-    if (containsError) {
-      console.error("خطأ في المحاولة الثالثة للبحث:", containsError);
-      return null;
-    }
-
-    if (containsData) {
-      console.log("تم العثور على المتجر من المحاولة الثالثة:", containsData.domain_name);
-      return containsData;
+    if (ilikeData) {
+      console.log("تم العثور على المتجر من البحث ilike:", ilikeData.domain_name);
+      return ilikeData;
     }
 
     console.log("لم يتم العثور على متجر بالدومين:", cleanDomain);

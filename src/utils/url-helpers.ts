@@ -22,7 +22,7 @@ export const getBaseDomain = (): string => {
 export const normalizeStoreDomain = (domain: string): string => {
   if (!domain) return '';
   
-  // Simply convert to lowercase and trim spaces
+  // Convert to lowercase and trim spaces - simplify to just this for reliable matching
   const normalizedDomain = domain.trim().toLowerCase();
   
   // Log for debugging

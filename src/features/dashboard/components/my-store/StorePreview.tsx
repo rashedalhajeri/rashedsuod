@@ -17,17 +17,20 @@ const StorePreview: React.FC<StorePreviewProps> = ({
   logoUrl
 }) => {
   // Generate the store URL from the domain
-  const storeUrl = storeDomain ? `/store/${storeDomain}` : '';
+  const cleanDomain = normalizeStoreDomain(storeDomain);
+  const storeUrl = cleanDomain ? `/store/${cleanDomain}` : '';
   const fullStoreUrl = `${window.location.origin}${storeUrl}`;
   
   // Get app domain from environment variables
   const appDomain = import.meta.env.VITE_APP_DOMAIN || window.location.origin;
   
   // Format displayed URL for cleaner presentation
-  const displayUrl = storeDomain ? `${storeDomain}.linok.me` : 'متجرك';
+  const displayUrl = cleanDomain ? `${cleanDomain}.linok.me` : 'متجرك';
   
   const handleOpenStore = () => {
-    window.open(storeUrl, "_blank");
+    if (storeUrl) {
+      window.open(storeUrl, "_blank");
+    }
   };
   
   return (
@@ -67,7 +70,7 @@ const StorePreview: React.FC<StorePreviewProps> = ({
               onClick={handleOpenStore}
               variant="default"
               className="gap-2"
-              disabled={!storeDomain}
+              disabled={!cleanDomain}
             >
               <ExternalLink size={16} />
               زيارة المتجر
@@ -87,7 +90,10 @@ const StorePreview: React.FC<StorePreviewProps> = ({
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => navigator.clipboard.writeText(fullStoreUrl)}
+              onClick={() => {
+                navigator.clipboard.writeText(fullStoreUrl);
+                // يمكن إضافة إشعار بالنسخ هنا
+              }}
               className="h-7 text-xs"
             >
               نسخ

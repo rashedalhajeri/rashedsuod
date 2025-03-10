@@ -11,6 +11,7 @@ import ErrorBoundary from "@/components/ui/ErrorBoundary";
 import { ErrorState } from "@/components/ui/error-state";
 import { toast } from "sonner";
 import { checkStoreStatus } from "@/utils/store-helpers";
+import { supabase } from "@/integrations/supabase/client";
 
 const Store = () => {
   const { domain: storeDomain, isValidDomain, rawDomain } = useStoreDomain();
@@ -32,25 +33,71 @@ const Store = () => {
     const verifyStore = async () => {
       if (isValidDomain && storeDomain) {
         console.log("التحقق من حالة المتجر:", storeDomain);
-        const { exists, active, store } = await checkStoreStatus(storeDomain);
         
-        if (!exists) {
-          console.log("المتجر غير موجود:", storeDomain);
-          setStoreNotFound(true);
-        } else if (!active) {
-          console.log("المتجر موجود ولكنه غير نشط:", storeDomain);
-          toast.error("هذا المتجر غير نشط حالياً");
-          setStoreNotFound(true);
-        } else {
-          console.log("المتجر موجود ونشط:", store);
-          setStoreNotFound(false);
-          if (store) {
-            setCurrentStoreData(store);
+        try {
+          // تحقق أولاً من وجود المتجر بشكل مباشر عبر supabase
+          const { data: directData, error: directError } = await supabase
+            .from('stores')
+            .select('*')
+            .eq('domain_name', storeDomain.toLowerCase())
+            .maybeSingle();
+            
+          console.log("نتيجة البحث المباشر:", directData, directError);
+          
+          if (directData) {
+            // المتجر موجود
+            console.log("تم العثور على المتجر مباشرة:", directData);
+            
+            if (directData.status === 'active') {
+              setStoreNotFound(false);
+              setCurrentStoreData(directData);
+            } else {
+              console.log("المتجر موجود ولكنه غير نشط:", directData.status);
+              toast.error("هذا المتجر غير نشط حالياً");
+              setStoreNotFound(true);
+            }
+            return;
           }
+          
+          // إذا لم يتم العثور على المتجر، نستخدم الوظيفة المساعدة
+          const { exists, active, store } = await checkStoreStatus(storeDomain);
+          
+          if (!exists) {
+            console.log("المتجر غير موجود:", storeDomain);
+            setStoreNotFound(true);
+          } else if (!active) {
+            console.log("المتجر موجود ولكنه غير نشط:", storeDomain);
+            toast.error("هذا المتجر غير نشط حالياً");
+            setStoreNotFound(true);
+          } else {
+            console.log("المتجر موجود ونشط:", store);
+            setStoreNotFound(false);
+            if (store) {
+              setCurrentStoreData(store);
+            }
+          }
+        } catch (error) {
+          console.error("خطأ في التحقق من المتجر:", error);
+          setStoreNotFound(true);
         }
       }
     };
     
+    // طباعة جميع المتاجر للتصحيح
+    const logAllStores = async () => {
+      try {
+        const { data: allStores } = await supabase
+          .from("stores")
+          .select("domain_name, store_name, status, id")
+          .order("created_at", { ascending: false });
+          
+        console.log("جميع المتاجر المتاحة في Store.tsx:", allStores);
+      } catch (err) {
+        console.error("خطأ في جلب جميع المتاجر:", err);
+      }
+    };
+    
+    logAllStores();
     verifyStore();
   }, [storeDomain, isValidDomain]);
 
