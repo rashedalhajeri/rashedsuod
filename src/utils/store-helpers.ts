@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { normalizeStoreDomain } from "./url-helpers";
 
@@ -19,6 +18,18 @@ export const fetchStoreByDomain = async (domainName: string) => {
   });
 
   try {
+    // تجربة البحث الأولية بدون أي قيود
+    const { data: allStores, error: allError } = await supabase
+      .from("stores")
+      .select("domain_name, store_name, status")
+      .order("created_at", { ascending: false });
+      
+    console.log("جميع المتاجر في النظام:", allStores || []);
+    
+    if (allError) {
+      console.error("خطأ في جلب جميع المتاجر:", allError);
+    }
+
     // محاولة البحث المباشر
     const { data: exactMatch, error: exactError } = await supabase
       .from("stores")
@@ -26,42 +37,57 @@ export const fetchStoreByDomain = async (domainName: string) => {
       .eq("domain_name", cleanDomain)
       .maybeSingle();
 
+    if (exactError) {
+      console.error("خطأ في البحث المباشر:", {
+        error: exactError,
+        domain: cleanDomain,
+        query: "eq",
+        timestamp: new Date().toISOString()
+      });
+    }
+
     if (exactMatch) {
-      console.log("تم العثور على المتجر (مطابقة دقيقة):", exactMatch);
+      console.log("تم العثور على المتجر (مطابقة مباشرة):", exactMatch);
       return exactMatch;
     }
 
     // محاولة البحث بدون حساسية لحالة الأحرف
-    const { data: caseInsensitiveMatch, error: caseError } = await supabase
+    const { data: caseMatch, error: caseError } = await supabase
       .from("stores")
       .select("*")
       .ilike("domain_name", cleanDomain)
       .maybeSingle();
 
-    if (caseInsensitiveMatch) {
-      console.log("تم العثور على المتجر (مطابقة غير حساسة للأحرف):", caseInsensitiveMatch);
-      return caseInsensitiveMatch;
-    }
-
-    // طباعة جميع المتاجر للمساعدة في التصحيح
-    const { data: allStores } = await supabase
-      .from("stores")
-      .select("domain_name, store_name, status")
-      .order("created_at", { ascending: false });
-
-    console.log("لم يتم العثور على متجر. المتاجر المتوفرة:", allStores || []);
-
-    // تحقق من الأخطاء
-    if (exactError && exactError.code !== 'PGRST116') {
-      console.error("خطأ في البحث الدقيق:", exactError);
-    }
     if (caseError) {
-      console.error("خطأ في البحث غير الحساس للأحرف:", caseError);
+      console.error("خطأ في البحث غير الحساس للأحرف:", {
+        error: caseError,
+        domain: cleanDomain,
+        query: "ilike",
+        timestamp: new Date().toISOString()
+      });
     }
+
+    if (caseMatch) {
+      console.log("تم العثور على المتجر (مطابقة غير حساسة للأحرف):", caseMatch);
+      return caseMatch;
+    }
+
+    console.log("لم يتم العثور على متجر:", {
+      searchedDomain: cleanDomain,
+      availableStores: allStores?.map(s => ({ 
+        domain: s.domain_name, 
+        name: s.store_name,
+        status: s.status 
+      })) || []
+    });
 
     return null;
   } catch (err) {
-    console.error("خطأ غير متوقع في fetchStoreByDomain:", err);
+    console.error("خطأ غير متوقع في fetchStoreByDomain:", {
+      error: err,
+      domain: cleanDomain,
+      timestamp: new Date().toISOString()
+    });
     return null;
   }
 };
