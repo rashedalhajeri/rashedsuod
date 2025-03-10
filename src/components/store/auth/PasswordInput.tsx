@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, Lock } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 interface PasswordInputProps {
   label: string;
@@ -43,13 +43,13 @@ const PasswordInput: React.FC<PasswordInputProps> = ({
         <button
           type="button"
           onClick={() => setShowPassword(!showPassword)}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
           tabIndex={-1}
         >
           {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
         </button>
         {icon && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
             {icon}
           </div>
         )}
