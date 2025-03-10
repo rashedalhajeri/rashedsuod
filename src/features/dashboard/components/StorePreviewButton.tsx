@@ -21,17 +21,22 @@ const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({
   const handleClick = () => {
     if (!storeUrl) return;
     
-    // تحويل اسم النطاق إلى أحرف صغيرة لضمان التوافق
-    const lowerCaseUrl = storeUrl.toLowerCase();
+    // Clean and standardize the URL
+    const lowerCaseUrl = storeUrl.trim().toLowerCase();
     
-    // التحقق مما إذا كان الرابط يبدأ بـ http أو / لتحديد ما إذا كان مطلقًا أو نسبيًا
+    // Build the full URL, ensuring it starts with "/" for relative paths
     let fullUrl = lowerCaseUrl;
+    
+    // If it's a relative path not starting with "/"
     if (!lowerCaseUrl.startsWith('http') && !lowerCaseUrl.startsWith('/')) {
       fullUrl = `/${lowerCaseUrl}`;
     }
     
-    // فتح في علامة تبويب جديدة
+    // Open in a new tab
     window.open(fullUrl, '_blank');
+    
+    // Log the URL for debugging
+    console.log("فتح رابط المتجر:", fullUrl);
   };
 
   return (
@@ -40,6 +45,7 @@ const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({
       className={`flex items-center gap-1.5 ${className || ''}`}
       variant={variant}
       onClick={handleClick}
+      disabled={!storeUrl}
     >
       {showExternalIcon ? (
         <ExternalLink className="h-4 w-4" />

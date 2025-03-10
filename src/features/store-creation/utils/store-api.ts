@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { StoreFormData } from "../types";
 import { toast } from "sonner";
@@ -25,12 +24,10 @@ export const createStore = async (formData: StoreFormData): Promise<boolean> => 
       currency: formData.currency,
       description: formData.description,
       logo_url: formData.logoUrl,
-      // إزالة حقل banner_url إذا كان فارغاً لتجنب الأخطاء في قاعدة البيانات التي لا تحتوي على هذا العمود
     };
     
     // إضافة حقل banner_url فقط إذا كان موجوداً في formData وليس null
     if (formData.bannerUrl) {
-      // نضيف هذا للتحقق في وقت التشغيل - إذا فشل الاستدعاء سنجرب بدون هذا الحقل
       (storeData as any).banner_url = formData.bannerUrl;
     }
     
@@ -146,7 +143,7 @@ export const searchStoresByName = async (storeName: string): Promise<any[]> => {
 };
 
 /**
- * Get store by exact domain name
+ * Get store by exact domain name, with case-insensitive search
  */
 export const getStoreByDomain = async (domainName: string): Promise<any> => {
   try {
@@ -156,16 +153,34 @@ export const getStoreByDomain = async (domainName: string): Promise<any> => {
     
     const cleanDomain = domainName.trim().toLowerCase();
     
+    // Try first with case-insensitive search using ILIKE
     const { data, error } = await supabase
       .from("stores")
       .select("*")
-      .eq("domain_name", cleanDomain)
+      .ilike("domain_name", cleanDomain)
       .eq("status", "active")
       .maybeSingle();
     
     if (error) {
       console.error("خطأ في الحصول على بيانات المتجر:", error);
       return null;
+    }
+    
+    if (!data) {
+      // Try alternative search with case-insensitive OR condition
+      const { data: altData, error: altError } = await supabase
+        .from("stores")
+        .select("*")
+        .or(`domain_name.ilike.${cleanDomain},domain.ilike.${cleanDomain}`)
+        .eq("status", "active")
+        .maybeSingle();
+      
+      if (altError) {
+        console.error("خطأ في البحث البديل عن بيانات المتجر:", altError);
+        return null;
+      }
+      
+      return altData;
     }
     
     return data;

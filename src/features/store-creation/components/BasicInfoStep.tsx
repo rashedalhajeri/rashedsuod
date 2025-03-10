@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -6,7 +5,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { StoreFormData } from "../types";
-import { supabase } from "@/integrations/supabase/client";
 import { checkDomainAvailability } from "../utils/store-api";
 
 interface BasicInfoStepProps {
@@ -30,21 +28,21 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
 }) => {
   const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  // التحقق من توفر النطاق عند تغيير قيمة domainName
+  // Check domain availability when domainName changes
   useEffect(() => {
     if (!formData.domainName || formData.domainName.trim().length < 3) {
       setDomainAvailable(null);
       return;
     }
 
-    // التحقق من صحة تنسيق اسم النطاق (فقط الأحرف والأرقام والشرطات)
+    // Check domain format (letters, numbers, hyphens only)
     const domainRegex = /^[a-zA-Z0-9-]+$/;
     if (!domainRegex.test(formData.domainName)) {
       setDomainAvailable(false);
       return;
     }
 
-    // تأخير عملية التحقق لتجنب الكثير من الطلبات
+    // Debounce domain check
     if (debounceTimeout) {
       clearTimeout(debounceTimeout);
     }
@@ -53,7 +51,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
     
     const timeout = setTimeout(async () => {
       try {
-        // استخدام الدالة المحسنة للتحقق من توفر النطاق
+        // Check domain availability
         const isAvailable = await checkDomainAvailability(formData.domainName);
         setDomainAvailable(isAvailable);
       } catch (error) {
@@ -62,11 +60,11 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
       } finally {
         setCheckingDomain(false);
       }
-    }, 500); // تأخير 500 مللي ثانية
+    }, 500); // 500ms delay
 
     setDebounceTimeout(timeout);
 
-    // التنظيف عند إزالة المكون
+    // Cleanup
     return () => {
       if (debounceTimeout) {
         clearTimeout(debounceTimeout);
@@ -74,13 +72,13 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
     };
   }, [formData.domainName, setDomainAvailable, setCheckingDomain]);
 
-  // معالجة تغيير قيمة اسم النطاق
+  // Handle domain name change
   const handleDomainChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // تنظيف اسم النطاق قبل حفظه (إزالة المسافات وتحويل إلى أحرف صغيرة)
+    // Clean domain name (remove spaces, convert to lowercase)
     const rawValue = e.target.value;
     const cleanValue = rawValue.trim().toLowerCase().replace(/\s+/g, '');
     
-    // إذا تم تنظيف القيمة، نقوم بتحديث الحقل يدويًا
+    // Update field value if it was cleaned
     if (cleanValue !== rawValue) {
       e.target.value = cleanValue;
     }
@@ -132,6 +130,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
               <span className="px-3 text-gray-500 whitespace-nowrap">.linok.me</span>
             </div>
           </div>
+          
           {checkingDomain && (
             <p className="text-gray-500 text-sm flex items-center">
               <Loader2 className="h-3 w-3 mr-1 animate-spin" /> جاري التحقق...
@@ -147,6 +146,10 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
               <XCircle className="h-4 w-4 mr-1" /> اسم النطاق غير متاح، الرجاء اختيار اسم آخر
             </p>
           )}
+          
+          <p className="text-xs text-gray-500 mt-1">
+            ملاحظة: سيتم تحويل جميع أحرف اسم النطاق إلى أحرف صغيرة تلقائياً.
+          </p>
         </div>
         
         <div className="space-y-2">

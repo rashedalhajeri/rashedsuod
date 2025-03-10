@@ -30,7 +30,6 @@ import Payments from "@/pages/dashboard/Payments";
 import Coupons from "@/pages/dashboard/Coupons";
 import Settings from "@/pages/dashboard/Settings";
 import MyStore from "@/pages/dashboard/MyStore";
-import { useStoreData } from "@/hooks/use-store-data";
 
 const AppRoutes = () => {
   return (
@@ -39,6 +38,7 @@ const AppRoutes = () => {
       <Route path="/auth" element={<Auth />} />
       <Route path="/reset-password" element={<Auth />} />
       
+      {/* Store routes with case insensitive domain parameter */}
       <Route path="/store/:storeDomain" element={<Store />} />
       <Route path="/store/:storeDomain/category/:categoryName" element={<CategoryPage />} />
       <Route path="/store/:storeDomain/product/:productId" element={<ProductPage />} />
@@ -50,6 +50,7 @@ const AppRoutes = () => {
       <Route path="/store/:storeDomain/register" element={<StoreRegister />} />
       <Route path="/store/:storeDomain/forgot-password" element={<StoreForgotPassword />} />
       
+      {/* Dashboard routes */}
       <Route 
         path="/create-store" 
         element={
