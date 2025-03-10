@@ -75,6 +75,9 @@ const MyStore = () => {
   const storeDomain = storeData.domain_name || storeData.domain;
   const storeName = storeData.store_name || storeData.name;
   
+  // Construct the proper store URL to prevent issues with relative paths
+  const storePreviewUrl = storeDomain ? `/store/${storeDomain.toLowerCase()}` : '';
+  
   return (
     <div className="container max-w-7xl mx-auto py-8 space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -93,13 +96,13 @@ const MyStore = () => {
             variant="outline"
             asChild
           >
-            <a href={`/dashboard/settings`} target="_blank">
+            <a href={`/dashboard/settings`}>
               <Settings className="h-4 w-4" />
               إعدادات المتجر
             </a>
           </Button>
           <StorePreviewButton 
-            storeUrl={`/store/${storeDomain}`} 
+            storeUrl={storePreviewUrl} 
             className="shadow-sm bg-gradient-to-r from-primary/90 to-primary hover:from-primary hover:to-primary/90 transition-all text-white"
           />
         </div>
