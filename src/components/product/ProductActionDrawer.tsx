@@ -58,13 +58,11 @@ const ProductActionDrawer: React.FC<ProductActionDrawerProps> = ({
     onOpenChange(false); // Close the drawer when editing
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatDate = (date: Date) => {
     return date.toLocaleDateString("ar-EG");
   };
 
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatTime = (date: Date) => {
     return date.toLocaleTimeString("ar-EG", { hour: '2-digit', minute: '2-digit' });
   };
 

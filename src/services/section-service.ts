@@ -135,17 +135,16 @@ export const deleteSection = async (sectionId: string, storeId: string) => {
 // Update section order
 export const updateSectionOrder = async (sections: Section[], storeId: string) => {
   try {
-    const updates = sections.map(section => ({
-      id: section.id,
-      sort_order: section.sort_order
-    }));
-    
-    const { error } = await supabase.rpc('batch_update_section_order', { 
-      updates: updates,
-      store_id: storeId
-    });
-    
-    if (error) throw error;
+    // Instead of using a custom RPC, we'll update sections one by one
+    for (const section of sections) {
+      const { error } = await supabase
+        .from('sections')
+        .update({ sort_order: section.sort_order })
+        .eq('id', section.id)
+        .eq('store_id', storeId);
+        
+      if (error) throw error;
+    }
     
     return { error: null };
   } catch (err) {
