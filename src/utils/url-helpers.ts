@@ -1,24 +1,20 @@
 
 /**
- * URL and domain handling utilities
+ * URL and domain handling utilities with simplified, consistent behavior
  */
 
 /**
  * Get the base domain for the application
  */
 export const getBaseDomain = (): string => {
-  // Check if we're in the lovableproject.com development environment
   if (window.location.hostname.includes('lovableproject.com')) {
     return window.location.origin;
   }
-  
-  // Production environment
   return import.meta.env.VITE_APP_DOMAIN || 'https://lovable.app';
 };
 
 /**
- * Normalize a store domain name
- * Ensures consistent domain formatting across the application
+ * Normalize a store domain name with simplified rules
  */
 export const normalizeStoreDomain = (domain: string): string => {
   if (!domain) return '';
@@ -26,36 +22,14 @@ export const normalizeStoreDomain = (domain: string): string => {
   // Convert to lowercase and remove spaces
   let normalizedDomain = domain.trim().toLowerCase();
   
-  // Remove any '/store/' prefix if found
-  normalizedDomain = normalizedDomain.replace(/^\/store\//, '');
-  normalizedDomain = normalizedDomain.replace(/^store\//, '');
+  // Remove store/ prefix and trailing slash
+  normalizedDomain = normalizedDomain.replace(/^\/?(store\/)?/, '').replace(/\/$/, '');
   
-  // Remove any trailing slash if found
-  normalizedDomain = normalizedDomain.replace(/\/$/, '');
+  // Remove protocol and www
+  normalizedDomain = normalizedDomain.replace(/^https?:\/\/(www\.)?/, '');
   
-  // Remove http:// or https:// prefixes
-  normalizedDomain = normalizedDomain.replace(/^https?:\/\//, '');
-  
-  // Remove any part of the domain after the first '/'
-  normalizedDomain = normalizedDomain.split('/')[0];
-  
-  // Remove 'www.' prefix if found
-  normalizedDomain = normalizedDomain.replace(/^www\./, '');
-  
-  // If the domain contains a '.' (except for localhost), take only the first part
-  if (normalizedDomain.includes('.') && !normalizedDomain.startsWith('localhost')) {
-    const parts = normalizedDomain.split('.');
-    if (parts.length > 0 && parts[0] !== '') {
-      normalizedDomain = parts[0];
-    }
-  }
-  
-  // Debug logging
-  console.log(`Domain normalization:`, {
-    original: domain,
-    normalized: normalizedDomain,
-    timestamp: new Date().toISOString()
-  });
+  // Get first part before any dots or slashes
+  normalizedDomain = normalizedDomain.split(/[./]/)[0];
   
   return normalizedDomain;
 };
@@ -65,30 +39,7 @@ export const normalizeStoreDomain = (domain: string): string => {
  */
 export const getStoreUrl = (domain: string): string => {
   const cleanDomain = normalizeStoreDomain(domain);
-  if (!cleanDomain) return '';
-  
-  return `/store/${cleanDomain}`;
-};
-
-/**
- * Creates a category URL for a store
- */
-export const getStoreCategoryUrl = (domain: string, category: string): string => {
-  const cleanDomain = normalizeStoreDomain(domain);
-  if (!cleanDomain || !category) return '';
-  
-  const categorySlug = encodeURIComponent(category.toLowerCase());
-  return `/store/${cleanDomain}/category/${categorySlug}`;
-};
-
-/**
- * Creates a product URL for a store
- */
-export const getStoreProductUrl = (domain: string, productId: string): string => {
-  const cleanDomain = normalizeStoreDomain(domain);
-  if (!cleanDomain || !productId) return '';
-  
-  return `/store/${cleanDomain}/product/${productId}`;
+  return cleanDomain ? `/store/${cleanDomain}` : '';
 };
 
 /**
@@ -97,12 +48,6 @@ export const getStoreProductUrl = (domain: string, productId: string): string =>
 export const getFullStoreUrl = (path: string): string => {
   if (!path) return getBaseDomain();
   
-  // Check if we're in the Lovable project environment
-  if (window.location.hostname.includes('lovableproject.com')) {
-    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-    return `${window.location.origin}${normalizedPath}`;
-  }
-  
   const baseDomain = getBaseDomain();
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   
@@ -110,31 +55,11 @@ export const getFullStoreUrl = (path: string): string => {
 };
 
 /**
- * Handles opening a store URL in a new tab with proper domain normalization
+ * Handles opening a store URL in a new tab
  */
 export const openStoreInNewTab = (storeUrl?: string): void => {
   if (!storeUrl) return;
   
-  // Clean and standardize the URL - always convert to lowercase
-  const trimmedUrl = storeUrl.trim().toLowerCase();
-  
-  // Remove leading/trailing slashes
-  const cleanUrl = trimmedUrl.replace(/^\/+|\/+$/g, '');
-  
-  // Debug the URL transformation
-  console.log(`Opening store URL: Original=${storeUrl}, Cleaned=${cleanUrl}`);
-  
-  // Check if it's a full URL with protocol
-  if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
-    window.open(cleanUrl, '_blank');
-    return;
-  }
-  
-  // Remove store/ prefix if it exists
-  const domainName = cleanUrl.replace(/^store\/?/, '');
-  
-  // Create the correct URL with base domain
-  const fullUrl = getFullStoreUrl(`/store/${domainName}`);
-  console.log(`Final store URL to open: ${fullUrl}`);
+  const fullUrl = getFullStoreUrl(getStoreUrl(storeUrl));
   window.open(fullUrl, '_blank');
 };

@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Eye, ExternalLink } from "lucide-react";
-import { openStoreInNewTab, getFullStoreUrl } from "@/utils/url-helpers";
+import { openStoreInNewTab, getFullStoreUrl, getStoreUrl } from "@/utils/url-helpers";
 import {
   Tooltip,
   TooltipContent,
@@ -28,15 +28,14 @@ const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({
   const [showLink, setShowLink] = useState(false);
   
   const handleClick = () => {
+    if (!storeUrl) return;
+    
     setShowLink(true);
     setTimeout(() => setShowLink(false), 3000);
-    
-    // Use the openStoreInNewTab function for consistent behavior
     openStoreInNewTab(storeUrl);
   };
 
-  // Generate the full URL for display
-  const fullStoreUrl = storeUrl ? getFullStoreUrl(`/store/${storeUrl.replace(/^\/store\//, '')}`) : 'رابط المتجر غير متوفر';
+  const fullStoreUrl = storeUrl ? getFullStoreUrl(getStoreUrl(storeUrl)) : 'رابط المتجر غير متوفر';
 
   return (
     <div className="inline-block">
