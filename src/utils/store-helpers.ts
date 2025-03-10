@@ -79,10 +79,15 @@ export const fetchStoreByDomain = async (domainName: string) => {
  * Simplified store status check
  */
 export const checkStoreStatus = async (domainName: string) => {
-  const store = await fetchStoreByDomain(domainName);
-  return { 
-    exists: Boolean(store), 
-    active: store?.status === 'active',
-    store 
-  };
+  try {
+    const store = await fetchStoreByDomain(domainName);
+    return { 
+      exists: Boolean(store), 
+      active: store?.status === 'active',
+      store 
+    };
+  } catch (error) {
+    console.error("Error checking store status:", error);
+    return { exists: false, active: false, store: null };
+  }
 };

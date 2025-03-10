@@ -31,7 +31,7 @@ const StorePreview: React.FC<StorePreviewProps> = ({
     (customDomain?.startsWith('http') ? customDomain : `https://${customDomain}`) : 
     getFullStoreUrl(`/store/${cleanDomain}`);
   
-  // Format displayed URL for cleaner presentation
+  // Format displayed URL for cleaner presentation - always show as subdomain unless custom domain
   const displayUrl = hasCustomDomain ? 
     customDomain : 
     (cleanDomain ? `${cleanDomain}.linok.me` : 'متجرك');

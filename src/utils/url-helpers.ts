@@ -14,7 +14,7 @@ export const getBaseDomain = (): string => {
   }
   
   // Fallback to configured domain or default
-  return import.meta.env.VITE_APP_DOMAIN || 'https://lovable.app';
+  return import.meta.env.VITE_APP_DOMAIN || 'https://linok.me';
 };
 
 /**
@@ -32,9 +32,12 @@ export const normalizeStoreDomain = (domain: string): string => {
   // Remove protocol and www
   normalizedDomain = normalizedDomain.replace(/^https?:\/\/(www\.)?/, '');
   
-  // Handle custom domains - if it includes a dot, we treat it as a full domain
-  // Otherwise, we assume it's a subdomain of the default domain
-  if (normalizedDomain.includes('.')) {
+  // Check if this is a subdomain of our platform
+  if (normalizedDomain.includes('.linok.me')) {
+    // Extract just the subdomain part from something like "storename.linok.me"
+    normalizedDomain = normalizedDomain.split('.')[0];
+  } else if (normalizedDomain.includes('.')) {
+    // Handle custom domains - if it includes a dot, we treat it as a full domain
     // Extract just the domain part from something like "example.com/path"
     normalizedDomain = normalizedDomain.split('/')[0];
   } else {
@@ -107,7 +110,26 @@ export const getFullStoreUrl = (path: string): string => {
  */
 export const isCustomDomain = (domain: string): boolean => {
   const normalizedDomain = normalizeStoreDomain(domain);
-  return normalizedDomain.includes('.');
+  
+  // If it contains a dot and is not a subdomain of our platform
+  return normalizedDomain.includes('.') && !normalizedDomain.includes('linok.me');
+};
+
+/**
+ * Determines if a domain is a subdomain of our platform
+ */
+export const isSubdomain = (domain: string): boolean => {
+  const normalizedDomain = normalizeStoreDomain(domain);
+  
+  // Check if it's a hostname with our main domain
+  const hostname = window.location.hostname;
+  if (hostname.includes('.linok.me') && hostname !== 'linok.me') {
+    return true;
+  }
+  
+  // Otherwise check the normalized domain
+  return !normalizedDomain.includes('.') || 
+         (normalizedDomain.includes('.linok.me') && normalizedDomain !== 'linok.me');
 };
 
 /**
