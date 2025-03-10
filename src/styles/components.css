@@ -54,6 +54,16 @@
   @apply text-2xl font-bold text-gray-800;
 }
 
+/* Hide scrollbar utility classes */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
 /* Horizontal Scrollable List - optimized for performance */
 .scroll-container {
   @apply flex w-full overflow-x-auto pb-2 hide-scrollbar gap-3 snap-x snap-mandatory;
