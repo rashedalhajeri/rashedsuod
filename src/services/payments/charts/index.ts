@@ -1,65 +1,38 @@
 
-// يحتوي هذا الملف على البيانات والوظائف المساعدة لرسومات الإحصائيات
+// Basic chart data exports
 
 export interface ChartDataPoint {
   name: string;
   value: number;
 }
 
-export interface ChartSeries {
-  name: string;
-  data: ChartDataPoint[];
-}
+export type ChartData = ChartDataPoint[];
 
-export const generateMockData = (months: number = 12): ChartDataPoint[] => {
-  const mockData: ChartDataPoint[] = [];
-  const currentDate = new Date();
+// Sample chart data for payments
+export const generateSampleChartData = (days: number = 7): ChartData => {
+  const data: ChartData = [];
+  const now = new Date();
   
-  for (let i = months - 1; i >= 0; i--) {
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
-    const monthName = date.toLocaleDateString('ar-SA', { month: 'short' });
-    mockData.push({
-      name: monthName,
-      value: Math.floor(Math.random() * 10000) + 1000
+  for (let i = 0; i < days; i++) {
+    const date = new Date(now);
+    date.setDate(now.getDate() - (days - i - 1));
+    
+    data.push({
+      name: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      value: Math.floor(Math.random() * 100) + 50
     });
   }
   
-  return mockData;
+  return data;
 };
 
-export const generateMultiSeriesMockData = (
-  seriesCount: number = 2,
-  months: number = 12
-): ChartSeries[] => {
-  const series: ChartSeries[] = [];
-  const seriesNames = ["المبيعات", "المصروفات", "الأرباح"];
-  
-  for (let i = 0; i < seriesCount; i++) {
-    series.push({
-      name: seriesNames[i],
-      data: generateMockData(months)
-    });
-  }
-  
-  return series;
-};
-
-export const calculateYAxisDomain = (data: ChartDataPoint[]): [number, number] => {
-  const values = data.map(item => item.value);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  
-  // Round to nice numbers
-  const minNice = Math.floor(min / 100) * 100;
-  const maxNice = Math.ceil(max / 100) * 100 + 100;
-  
-  return [minNice, maxNice];
-};
-
-export const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('ar-SA', {
-    style: 'currency', 
-    currency: 'SAR',
-    maximumFractionDigits: 0
-  }).format(value);
-};
+// Export default chart data
+export const defaultChartData: ChartData = [
+  { name: 'Jan', value: 400 },
+  { name: 'Feb', value: 300 },
+  { name: 'Mar', value: 600 },
+  { name: 'Apr', value: 800 },
+  { name: 'May', value: 700 },
+  { name: 'Jun', value: 900 },
+  { name: 'Jul', value: 1000 }
+];

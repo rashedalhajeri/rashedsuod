@@ -111,7 +111,7 @@ const SidebarLinks: React.FC<SidebarLinksProps> = ({
                 >
                   <span className={cn(
                     "flex items-center justify-center rounded-md text-inherit",
-                    isCollapsed && !iMobile ? "w-9 h-9 bg-gray-100" : ""
+                    isCollapsed && !isMobile ? "w-9 h-9 bg-gray-100" : ""
                   )}>
                     {link.icon}
                   </span>
