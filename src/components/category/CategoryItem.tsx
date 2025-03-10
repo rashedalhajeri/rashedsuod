@@ -19,7 +19,7 @@ interface CategoryItemProps {
   editingCategory: Category | null;
   setEditingCategory: (category: Category | null) => void;
   handleUpdateCategory: () => void;
-  handleDeleteCategory: (id: string) => void;
+  handleDeleteCategory: (id: string) => Promise<void>;
 }
 
 const CategoryItem: React.FC<CategoryItemProps> = ({
@@ -35,15 +35,16 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
   const handleDeleteClick = async () => {
     try {
       await handleDeleteCategory(category.id);
-      toast("تم الحذف بنجاح", {
+      toast({
+        title: "تم الحذف بنجاح",
         description: `تم حذف الفئة "${category.name}" بنجاح`
       });
       setIsDeleteDialogOpen(false);
     } catch (error) {
       console.error("Error deleting category:", error);
-      toast("حدث خطأ", {
+      toast({
+        title: "حدث خطأ",
         description: "لم يتم حذف الفئة، يرجى المحاولة مرة أخرى",
-        style: { backgroundColor: 'red', color: 'white' }
       });
     }
   };

@@ -32,7 +32,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
     };
     
     updateGreeting();
-    // تحديث التحية كل ساعة
     const interval = setInterval(updateGreeting, 60 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
@@ -99,10 +98,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
           />
 
           {/* تذييل القائمة */}
-          <div className="p-4 border-t border-gray-200 mt-auto space-y-3">
+          <div className="p-3 border-t border-gray-200 mt-auto space-y-2">
             {/* بطاقة التحية */}
             {(!isCollapsed || isMobile) && (
-              <div className="flex flex-col px-3 py-3 rounded-lg bg-primary-50/80 text-sm">
+              <div className="flex flex-col px-3 py-2 rounded-lg bg-primary-50/80 text-sm">
                 <div className="flex items-center gap-2 text-primary-700">
                   <TimeIcon size={14} className="shrink-0" />
                   <span className="font-medium">{greeting}</span>
@@ -112,7 +111,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
             
             {/* عرض البريد الإلكتروني */}
             {(!isCollapsed || isMobile) && userEmail && (
-              <div className="flex items-center gap-2 px-3 py-2 text-gray-600 text-sm">
+              <div className="flex items-center gap-2 px-3 py-2 text-gray-600 text-xs">
                 <Mail size={14} className="shrink-0" />
                 <span className="truncate">{userEmail}</span>
               </div>

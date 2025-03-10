@@ -17,10 +17,7 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
   logoUrl
 }) => {
   const currentHour = new Date().getHours();
-  
-  // تحسين التحية لتكون أكثر اختصارًا
   let greeting = currentHour < 12 ? "صباح الخير" : "مساء الخير";
-  let subGreeting = currentHour < 12 ? "يوم موفق" : "يوم سعيد";
   
   return (
     <motion.div
@@ -35,7 +32,7 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
         <CardContent className="pt-6 relative z-10">
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
-              <div className="h-14 w-14 rounded-xl overflow-hidden bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center shadow-sm transition-all duration-200">
+              <div className="h-14 w-14 rounded-xl overflow-hidden bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center shadow-sm">
                 {logoUrl ? (
                   <img 
                     src={logoUrl} 
@@ -51,8 +48,8 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
                   {greeting}
                   <Sparkles className="h-5 w-5 text-amber-500 animate-pulse" />
                 </h2>
-                <p className="text-muted-foreground mt-1 flex items-center text-gray-700">
-                  {storeName} <span className="mx-1 text-xs">•</span> <span className="text-xs text-gray-500">{subGreeting}</span>
+                <p className="text-muted-foreground mt-1 text-gray-700">
+                  {storeName}
                 </p>
               </div>
             </div>

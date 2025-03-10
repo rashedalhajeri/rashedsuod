@@ -18,7 +18,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { data: storeData } = useStoreData();
   const location = useLocation();
   
-  // حالة عرض القائمة الجانبية في الهواتف
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // إغلاق القائمة الجانبية عند تغيير المسار في الأجهزة المحمولة
@@ -27,11 +26,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       setIsMobileMenuOpen(false);
     }
   }, [location.pathname, isMobile]);
-  
-  // فتح وإغلاق القائمة الجانبية في الأجهزة المحمولة
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
   
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 rtl">
@@ -48,7 +42,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             variant="outline"
             size="icon"
             className="rounded-full shadow-md bg-white"
-            onClick={toggleMobileMenu}
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             <Menu size={20} />
           </Button>

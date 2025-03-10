@@ -1,5 +1,5 @@
 
-import React, { Suspense } from "react";
+import React from "react";
 import useStoreData, { getCurrencyFormatter } from "@/hooks/use-store-data";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import LoadingState from "@/components/ui/loading-state";
@@ -134,14 +134,14 @@ const DashboardHome: React.FC = () => {
         )}
         
         {/* Report Section */}
-        <div className="bg-white p-4 rounded-xl border border-gray-100 mt-6 shadow-sm hover:shadow-md transition-all duration-200">
-          <div className="flex justify-between items-center">
+        <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
             <div>
               <h3 className="text-lg font-bold text-gray-900">تقارير المتجر</h3>
               <p className="text-sm text-gray-500">قم بتحميل تقارير مفصلة عن أداء متجرك</p>
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button variant="outline" className="text-sm h-9 gap-1 hover:bg-primary-50 hover:text-primary-600 hover:border-primary-200">
                 <ArrowDownToLine className="h-4 w-4" />
                 تقرير المبيعات
