@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
+import { Section } from "@/services/section-service";
 
 const CategoriesAndSections: React.FC = () => {
   // Categories state
@@ -53,7 +54,8 @@ const CategoriesAndSections: React.FC = () => {
     setEditingSection,
     handleAddSection,
     handleUpdateSection,
-    handleDeleteSection
+    handleDeleteSection,
+    handleReorderSections
   } = useSections();
   
   const [searchQuery, setSearchQuery] = useState("");
@@ -75,6 +77,11 @@ const CategoriesAndSections: React.FC = () => {
       toast.error("حدث خطأ أثناء تحديث إعدادات الفئات");
       setConfirmDialogOpen(false);
     }
+  };
+
+  // Custom wrapper function for type compatibility
+  const safeSetEditingSection = (section: Section | null) => {
+    setEditingSection(section);
   };
 
   return (
@@ -171,6 +178,7 @@ const CategoriesAndSections: React.FC = () => {
                   <CategorySearchBox 
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
+                    placeholder="ابحث عن قسم..."
                   />
                 </div>
                 <Button
@@ -187,6 +195,7 @@ const CategoriesAndSections: React.FC = () => {
                   <CardTitle className="text-lg font-medium flex items-center gap-2">
                     <LayoutGrid className="h-4 w-4 text-primary" />
                     قائمة الأقسام
+                    <span className="text-sm text-gray-500 font-normal mr-2">(يمكنك سحب الأقسام لتغيير ترتيبها)</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 pt-6">
@@ -195,12 +204,13 @@ const CategoriesAndSections: React.FC = () => {
                     loading={sectionsLoading}
                     searchQuery={searchQuery}
                     editingSection={editingSection}
-                    setEditingSection={setEditingSection}
+                    setEditingSection={safeSetEditingSection}
                     handleUpdateSection={handleUpdateSection}
                     handleDeleteSection={handleDeleteSection}
                     setNewSection={setNewSection}
                     setNewSectionType={setNewSectionType}
                     openAddDialog={() => setIsAddSectionDialogOpen(true)}
+                    handleReorderSections={handleReorderSections}
                   />
                 </CardContent>
               </Card>

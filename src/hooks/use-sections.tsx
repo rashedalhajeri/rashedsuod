@@ -6,7 +6,8 @@ import {
   fetchSections, 
   addSection, 
   updateSection, 
-  deleteSection, 
+  deleteSection,
+  updateSectionOrder,
   Section 
 } from "@/services/section-service";
 
@@ -122,6 +123,31 @@ export const useSections = () => {
     }
   };
 
+  const handleReorderSections = async (reorderedSections: Section[]) => {
+    if (!storeId) return;
+    
+    try {
+      // First update the UI immediately for better UX
+      setSections(reorderedSections);
+      
+      // Then update in the backend
+      const { error } = await updateSectionOrder(reorderedSections, storeId);
+      
+      if (error) throw error;
+      
+      toast.success("تم تغيير ترتيب الأقسام بنجاح");
+    } catch (err: any) {
+      console.error("Error reordering sections:", err);
+      toast.error("حدث خطأ أثناء تغيير ترتيب الأقسام");
+      
+      // Refresh the sections from the server on error
+      const { data } = await fetchSections(storeId);
+      if (data) {
+        setSections(data as Section[]);
+      }
+    }
+  };
+
   return {
     sections,
     loading,
@@ -140,6 +166,7 @@ export const useSections = () => {
     setEditingSection,
     handleAddSection,
     handleUpdateSection,
-    handleDeleteSection
+    handleDeleteSection,
+    handleReorderSections
   };
 };

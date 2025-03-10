@@ -1,17 +1,11 @@
 
-import React from "react";
-import { Tags, Plus, LayoutGrid } from "lucide-react";
+import React, { useState } from "react";
+import { LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SectionItem from "./SectionItem";
 import { motion } from "framer-motion";
-
-interface Section {
-  id: string;
-  name: string;
-  sort_order: number;
-  section_type: string;
-  is_active: boolean;
-}
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { Section } from "@/services/section-service";
 
 interface SectionListProps {
   sections: Section[];
@@ -24,6 +18,7 @@ interface SectionListProps {
   setNewSection: (name: string) => void;
   setNewSectionType: (type: string) => void;
   openAddDialog: () => void;
+  handleReorderSections?: (reorderedSections: Section[]) => void;
 }
 
 const SectionList: React.FC<SectionListProps> = ({
@@ -36,12 +31,29 @@ const SectionList: React.FC<SectionListProps> = ({
   handleDeleteSection,
   setNewSection,
   setNewSectionType,
-  openAddDialog
+  openAddDialog,
+  handleReorderSections
 }) => {
   // Filter sections by search query
   const filteredSections = sections.filter(
     section => section.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const onDragEnd = (result: any) => {
+    if (!result.destination || !handleReorderSections) return;
+    
+    const reorderedSections = Array.from(filteredSections);
+    const [removed] = reorderedSections.splice(result.source.index, 1);
+    reorderedSections.splice(result.destination.index, 0, removed);
+    
+    // Update sort order based on new positions
+    const updatedSections = reorderedSections.map((section, index) => ({
+      ...section,
+      sort_order: index
+    }));
+    
+    handleReorderSections(updatedSections);
+  };
 
   if (loading) {
     return (
@@ -76,7 +88,6 @@ const SectionList: React.FC<SectionListProps> = ({
             openAddDialog();
           }}
         >
-          <Plus className="h-4 w-4" />
           <span>إنشاء أول قسم</span>
         </Button>
       </motion.div>
@@ -84,24 +95,44 @@ const SectionList: React.FC<SectionListProps> = ({
   }
 
   return (
-    <div className="space-y-4">
-      {filteredSections.map((section, index) => (
-        <motion.div
-          key={section.id}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2, delay: index * 0.05 }}
-        >
-          <SectionItem
-            section={section}
-            editingSection={editingSection}
-            setEditingSection={setEditingSection}
-            handleUpdateSection={handleUpdateSection}
-            handleDeleteSection={handleDeleteSection}
-          />
-        </motion.div>
-      ))}
-    </div>
+    <DragDropContext onDragEnd={onDragEnd}>
+      <Droppable droppableId="sections">
+        {(provided) => (
+          <div 
+            {...provided.droppableProps}
+            ref={provided.innerRef}
+            className="space-y-4"
+          >
+            {filteredSections.map((section, index) => (
+              <Draggable 
+                key={section.id} 
+                draggableId={section.id} 
+                index={index}
+                isDragDisabled={!handleReorderSections}
+              >
+                {(provided, snapshot) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    className={`transition-shadow ${snapshot.isDragging ? 'shadow-lg' : ''}`}
+                  >
+                    <SectionItem
+                      section={section}
+                      editingSection={editingSection}
+                      setEditingSection={setEditingSection}
+                      handleUpdateSection={handleUpdateSection}
+                      handleDeleteSection={handleDeleteSection}
+                      dragHandleProps={provided.dragHandleProps}
+                    />
+                  </div>
+                )}
+              </Draggable>
+            ))}
+            {provided.placeholder}
+          </div>
+        )}
+      </Droppable>
+    </DragDropContext>
   );
 };
 

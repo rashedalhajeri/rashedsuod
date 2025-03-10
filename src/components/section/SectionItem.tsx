@@ -2,15 +2,16 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Section } from "@/services/section-service";
-import { Edit, Trash, ToggleLeft, ToggleRight, BanknoteIcon, ShoppingBag, Sparkles, Percent, Tag, LayoutGrid } from "lucide-react";
+import { Edit, Trash, ToggleLeft, ToggleRight, BanknoteIcon, ShoppingBag, Sparkles, Percent, Tag, LayoutGrid, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SectionItemProps {
   section: Section;
   editingSection: Section | null;
-  setEditingSection: (section: Section) => void;
+  setEditingSection: (section: Section | null) => void;
   handleUpdateSection: () => void;
   handleDeleteSection: (id: string) => void;
+  dragHandleProps?: any;
 }
 
 const SectionItem: React.FC<SectionItemProps> = ({
@@ -18,7 +19,8 @@ const SectionItem: React.FC<SectionItemProps> = ({
   editingSection,
   setEditingSection,
   handleUpdateSection,
-  handleDeleteSection
+  handleDeleteSection,
+  dragHandleProps
 }) => {
   const [showActions, setShowActions] = useState(false);
   
@@ -38,19 +40,19 @@ const SectionItem: React.FC<SectionItemProps> = ({
   const getSectionTypeIcon = () => {
     switch (section.section_type) {
       case 'best_selling': 
-        return <BanknoteIcon className="h-5 w-5 text-emerald-500" />;
+        return <BanknoteIcon className="h-4 w-4 text-emerald-500" />;
       case 'new_arrivals': 
-        return <ShoppingBag className="h-5 w-5 text-blue-500" />;
+        return <ShoppingBag className="h-4 w-4 text-blue-500" />;
       case 'featured': 
-        return <Sparkles className="h-5 w-5 text-amber-500" />;
+        return <Sparkles className="h-4 w-4 text-amber-500" />;
       case 'on_sale': 
-        return <Percent className="h-5 w-5 text-rose-500" />;
+        return <Percent className="h-4 w-4 text-rose-500" />;
       case 'category': 
-        return <Tag className="h-5 w-5 text-purple-500" />;
+        return <Tag className="h-4 w-4 text-purple-500" />;
       case 'custom': 
-        return <LayoutGrid className="h-5 w-5 text-indigo-500" />;
+        return <LayoutGrid className="h-4 w-4 text-indigo-500" />;
       default: 
-        return <LayoutGrid className="h-5 w-5 text-gray-500" />;
+        return <LayoutGrid className="h-4 w-4 text-gray-500" />;
     }
   };
   
@@ -81,38 +83,49 @@ const SectionItem: React.FC<SectionItemProps> = ({
   return (
     <div 
       className={cn(
-        "border rounded-md p-4 transition-all",
+        "border rounded-md p-4 transition-all flex items-center",
         showActions ? "bg-gray-50" : "bg-white",
         section.is_active ? "border-gray-200" : "border-gray-100 opacity-70"
       )}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
-      <div className="flex items-center justify-between">
+      {/* Drag handle */}
+      {dragHandleProps && (
+        <div {...dragHandleProps} className="cursor-grab mr-1 text-gray-400 hover:text-gray-600">
+          <GripVertical size={16} />
+        </div>
+      )}
+      
+      <div className="flex-1 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className={cn("p-2 rounded-full", section.is_active ? "bg-primary/10" : "bg-gray-100")}>
             {getSectionTypeIcon()}
           </div>
           <div>
-            <h3 className="font-medium text-gray-900">{section.name}</h3>
-            <div className="flex items-center gap-2 mt-1">
+            <div className="flex items-center gap-2">
+              <h3 className="font-medium text-gray-900">{section.name}</h3>
               <span 
                 className={cn(
-                  "text-xs px-2 py-1 rounded-full border", 
+                  "text-xs px-2 py-0.5 rounded-full border", 
                   getSectionTypeColor()
                 )}
               >
                 {getSectionTypeName()}
               </span>
-              <span className={cn(
-                "text-xs px-2 py-0.5 rounded-full",
-                section.is_active 
-                  ? "bg-green-50 text-green-700 border border-green-200" 
-                  : "bg-gray-50 text-gray-700 border border-gray-200"
-              )}>
-                {section.is_active ? "نشط" : "غير نشط"}
-              </span>
             </div>
+            
+            {(section.section_type === 'category' && section.category_id) && (
+              <div className="text-xs text-gray-500 mt-1">
+                فئة محددة
+              </div>
+            )}
+            
+            {(section.section_type === 'custom' && section.product_ids) && (
+              <div className="text-xs text-gray-500 mt-1">
+                {section.product_ids.length} منتج مخصص
+              </div>
+            )}
           </div>
         </div>
         

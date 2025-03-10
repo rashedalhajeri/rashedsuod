@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Plus, Search, BanknoteIcon, ShoppingBag, Sparkles, Percent, Tag, LayoutGrid, CheckIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,8 +26,6 @@ interface SectionFormProps {
   setNewCategoryId: (id: string | null) => void;
   newProductIds: string[] | null;
   setNewProductIds: (ids: string[] | null) => void;
-  newDisplayStyle: 'grid' | 'list';
-  setNewDisplayStyle: (style: 'grid' | 'list') => void;
   handleAddSection: () => void;
 }
 
@@ -56,8 +53,6 @@ const SectionForm: React.FC<SectionFormProps> = ({
   setNewCategoryId,
   newProductIds,
   setNewProductIds,
-  newDisplayStyle,
-  setNewDisplayStyle,
   handleAddSection
 }) => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -239,30 +234,29 @@ const SectionForm: React.FC<SectionFormProps> = ({
           
           <div className="space-y-3">
             <Label>نوع القسم</Label>
-            <div className="space-y-2 max-h-[200px] overflow-y-auto border rounded-md p-2">
-              {sectionTypes.map(type => (
-                <div 
-                  key={type.id}
-                  onClick={() => setNewSectionType(type.id)}
-                  className={cn(
-                    "flex items-center gap-3 p-3 rounded-md cursor-pointer transition-all border",
-                    newSectionType === type.id
-                      ? `border-${type.color}-500 bg-${type.color}-50`
-                      : "border-gray-200 hover:border-gray-300"
-                  )}
-                >
-                  <div className={`p-2 rounded-full bg-${type.color}-100 flex-shrink-0`}>
-                    {type.icon}
+            <div className="space-y-2 overflow-y-auto border rounded-md p-2">
+              <div className="grid grid-cols-2 gap-2">
+                {sectionTypes.map(type => (
+                  <div 
+                    key={type.id}
+                    onClick={() => setNewSectionType(type.id)}
+                    className={cn(
+                      "flex items-center gap-2 p-3 rounded-md cursor-pointer transition-all border",
+                      newSectionType === type.id
+                        ? `bg-${type.color}-50 border-${type.color}-200`
+                        : "border-gray-200 hover:border-gray-300"
+                    )}
+                  >
+                    <div className={`p-1.5 rounded-full bg-${type.color}-100 flex-shrink-0`}>
+                      {type.icon}
+                    </div>
+                    <div className="font-medium truncate">{type.name}</div>
+                    {newSectionType === type.id && (
+                      <CheckIcon className="h-4 w-4 text-primary ml-auto flex-shrink-0" />
+                    )}
                   </div>
-                  <div className="flex-grow">
-                    <div className="font-medium">{type.name}</div>
-                    <div className="text-xs text-gray-500">{type.description}</div>
-                  </div>
-                  {newSectionType === type.id && (
-                    <CheckIcon className="h-5 w-5 text-primary flex-shrink-0" />
-                  )}
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
 
@@ -329,15 +323,19 @@ const SectionForm: React.FC<SectionFormProps> = ({
                   ) : filteredProducts.length === 0 ? (
                     <div className="p-4 text-center text-sm text-gray-500">لا توجد منتجات مطابقة</div>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-1 gap-1">
                       {filteredProducts.map(product => (
-                        <div key={product.id} className="flex items-center space-x-2 space-x-reverse rtl p-2 hover:bg-gray-50 rounded-md">
+                        <div 
+                          key={product.id} 
+                          className="flex items-center space-x-2 space-x-reverse rtl p-2 hover:bg-gray-50 rounded-md cursor-pointer"
+                          onClick={() => handleProductSelect(product.id, !selectedProducts[product.id])}
+                        >
                           <input 
                             type="checkbox" 
                             id={`product-${product.id}`} 
                             className="rounded" 
                             checked={!!selectedProducts[product.id]}
-                            onChange={(e) => handleProductSelect(product.id, e.target.checked)}
+                            onChange={(e) => e.stopPropagation()}
                           />
                           <Label htmlFor={`product-${product.id}`} className="flex items-center gap-2 cursor-pointer flex-1">
                             {product.image_url && (
@@ -345,10 +343,13 @@ const SectionForm: React.FC<SectionFormProps> = ({
                                 src={product.image_url} 
                                 alt={product.name} 
                                 className="w-10 h-10 object-cover rounded-md" 
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = "/placeholder.svg";
+                                }}
                               />
                             )}
                             <div className="flex-grow">
-                              <div className="font-medium">{product.name}</div>
+                              <div className="font-medium truncate">{product.name}</div>
                               <div className="text-xs">
                                 {product.discount_price ? (
                                   <span className="text-green-600">{formatCurrency(product.discount_price)}</span>
