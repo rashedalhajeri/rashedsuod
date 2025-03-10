@@ -8,19 +8,27 @@ import { normalizeStoreDomain } from "@/utils/url-helpers";
 export function useStoreDomain() {
   const { storeDomain } = useParams<{ storeDomain: string }>();
   
-  // Always normalize the domain for consistency
-  const normalizedDomain = normalizeStoreDomain(storeDomain || '');
+  // تتبع الدومين الأصلي قبل التحويل
+  const rawDomainValue = storeDomain || '';
   
-  // Debug domain information
-  console.log("useStoreDomain - Raw domain from params:", storeDomain);
+  // دائمًا قم بتنسيق الدومين للاتساق
+  const normalizedDomain = normalizeStoreDomain(rawDomainValue);
+  
+  // معلومات تصحيح لمساعدة المطورين
+  console.log("useStoreDomain - Raw domain from params:", rawDomainValue);
   console.log("useStoreDomain - Normalized domain:", normalizedDomain);
   
-  // Check if we have a valid domain
+  // التحقق من وجود دومين صالح (ليس فارغًا ولا undefined)
   const isValidDomain = Boolean(normalizedDomain && normalizedDomain.length > 0);
+  console.log("useStoreDomain - Is valid domain:", isValidDomain);
+  
+  // في حالة استخدام المسار /store بدون تحديد متجر
+  const inStoresPath = window.location.pathname.includes('/store/');
   
   return {
-    rawDomain: storeDomain,
+    rawDomain: rawDomainValue,
     domain: normalizedDomain,
-    isValidDomain
+    isValidDomain,
+    inStoresPath
   };
 }

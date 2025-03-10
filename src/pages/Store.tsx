@@ -9,9 +9,11 @@ import StorePageLayout from "@/components/store/layout/StorePageLayout";
 import { useStoreDomain } from "@/hooks/use-store-domain";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
 import { ErrorState } from "@/components/ui/error-state";
+import { toast } from "sonner";
+import { checkStoreStatus } from "@/utils/store-helpers";
 
 const Store = () => {
-  const { domain: storeDomain, isValidDomain } = useStoreDomain();
+  const { domain: storeDomain, isValidDomain, rawDomain } = useStoreDomain();
   const { storeData, isLoading, error } = useStoreData();
   const [storeNotFound, setStoreNotFound] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
@@ -25,21 +27,50 @@ const Store = () => {
     bestSellingProducts: []
   });
 
-  // Debug logging to help identify domain issues
+  // تحقق من وجود وحالة المتجر عند التحميل
   useEffect(() => {
-    console.log("Store component - Domain:", storeDomain);
-    console.log("Store component - Is valid domain:", isValidDomain);
-    console.log("Store component - Window location:", window.location.href);
+    const verifyStore = async () => {
+      if (isValidDomain && storeDomain) {
+        console.log("التحقق من حالة المتجر:", storeDomain);
+        const { exists, active, store } = await checkStoreStatus(storeDomain);
+        
+        if (!exists) {
+          console.log("المتجر غير موجود:", storeDomain);
+          setStoreNotFound(true);
+        } else if (!active) {
+          console.log("المتجر موجود ولكنه غير نشط:", storeDomain);
+          toast.error("هذا المتجر غير نشط حالياً");
+          setStoreNotFound(true);
+        } else {
+          console.log("المتجر موجود ونشط:", store);
+          setStoreNotFound(false);
+          if (store) {
+            setCurrentStoreData(store);
+          }
+        }
+      }
+    };
+    
+    verifyStore();
   }, [storeDomain, isValidDomain]);
 
+  // Debug logging to help identify domain issues
+  useEffect(() => {
+    console.log("Store component - Raw domain:", rawDomain);
+    console.log("Store component - Normalized domain:", storeDomain);
+    console.log("Store component - Is valid domain:", isValidDomain);
+    console.log("Store component - Window location:", window.location.href);
+    console.log("Store component - Store not found state:", storeNotFound);
+  }, [storeDomain, isValidDomain, rawDomain, storeNotFound]);
+
   const handleStoreLoaded = (data: any) => {
-    console.log("Store loaded:", data);
+    console.log("تم تحميل بيانات المتجر بنجاح:", data?.store_name);
     setCurrentStoreData(data);
     setStoreNotFound(false);
   };
 
   const handleStoreDataLoaded = (data: any) => {
-    console.log("Store data loaded:", data);
+    console.log("تم تحميل بيانات المنتجات والفئات:", data);
     setLoadedStoreData(data);
   };
 
@@ -51,17 +82,17 @@ const Store = () => {
   };
 
   const handleStoreNotFound = () => {
-    console.log("Store not found for domain:", storeDomain);
+    console.log("لم يتم العثور على المتجر بالدومين:", storeDomain);
     setStoreNotFound(true);
   };
 
   if (!isValidDomain || storeNotFound) {
-    console.log("Showing StoreNotFound component. Valid domain:", isValidDomain, "Store not found:", storeNotFound);
-    return <StoreNotFound storeDomain={storeDomain} />;
+    console.log("إظهار مكون StoreNotFound. دومين صالح:", isValidDomain, "المتجر غير موجود:", storeNotFound);
+    return <StoreNotFound storeDomain={rawDomain || storeDomain} />;
   }
 
   if (error) {
-    console.error("Store error:", error);
+    console.error("خطأ في المتجر:", error);
     return <ErrorState title="خطأ" message={error.message || "حدث خطأ أثناء تحميل المتجر"} />;
   }
 
