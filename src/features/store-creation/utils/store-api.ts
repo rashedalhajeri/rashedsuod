@@ -15,7 +15,7 @@ export const createStore = async (formData: StoreFormData): Promise<boolean> => 
       return false;
     }
     
-    // Prepare store data for insertion
+    // Prepare store data for insertion - ensure domain_name is lowercase
     const storeData = {
       user_id: userData.user.id,
       store_name: formData.storeName,
@@ -159,7 +159,7 @@ export const getStoreByDomain = async (domainName: string): Promise<any> => {
     const { data, error } = await supabase
       .from("stores")
       .select("*")
-      .ilike("domain_name", cleanDomain)
+      .eq("domain_name", cleanDomain)  // Now using exact match because all domains are lowercase
       .eq("status", "active")
       .maybeSingle();
     

@@ -21,8 +21,8 @@ const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({
   const handleClick = () => {
     if (!storeUrl) return;
     
-    // Clean and standardize the URL
-    const trimmedUrl = storeUrl.trim();
+    // Clean and standardize the URL - always convert to lowercase
+    const trimmedUrl = storeUrl.trim().toLowerCase();
     
     // Check if it's a direct URL with /store/ prefix
     if (trimmedUrl.startsWith('/store/')) {
@@ -32,7 +32,7 @@ const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({
     }
     
     // If it's just a domain name, prefix it with /store/
-    const storeRoute = `/store/${trimmedUrl.toLowerCase()}`;
+    const storeRoute = `/store/${trimmedUrl}`;
     window.open(storeRoute, '_blank');
     
     // Log the URL for debugging
