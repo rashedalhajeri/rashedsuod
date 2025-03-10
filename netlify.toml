@@ -22,3 +22,6 @@
 
 [context.development.environment]
   VITE_APP_DOMAIN = "http://localhost:8080"
+
+# Remove dependence on netlify-plugin-inline-functions-env
+# and set up standard environment variable handling
