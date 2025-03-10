@@ -24,31 +24,21 @@ const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({
     // Clean and standardize the URL - always convert to lowercase
     const trimmedUrl = storeUrl.trim().toLowerCase();
     
+    // Remove leading/trailing slashes
+    const cleanUrl = trimmedUrl.replace(/^\/+|\/+$/g, '');
+    
     // Check if it's a full URL with protocol
-    if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
-      window.open(trimmedUrl, '_blank');
-      console.log("فتح رابط المتجر الكامل:", trimmedUrl);
+    if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+      window.open(cleanUrl, '_blank');
       return;
     }
     
-    // Check if it already has the /store/ prefix
-    if (trimmedUrl.startsWith('/store/')) {
-      window.open(trimmedUrl, '_blank');
-      console.log("فتح رابط المتجر:", trimmedUrl);
-      return;
-    }
+    // Remove store/ prefix if it exists
+    const domainName = cleanUrl.replace(/^store\/?/, '');
     
-    // Remove 'store/' prefix if it exists in the domain name to prevent double prefixing
-    const domainName = trimmedUrl.startsWith('store/') 
-      ? trimmedUrl.substring(6) // Remove 'store/' from the beginning
-      : trimmedUrl;
-    
-    // Now create the correct URL
+    // Create the correct URL with leading slash
     const storeRoute = `/store/${domainName}`;
     window.open(storeRoute, '_blank');
-    
-    // Log the URL for debugging
-    console.log("فتح رابط المتجر:", storeRoute);
   };
 
   return (

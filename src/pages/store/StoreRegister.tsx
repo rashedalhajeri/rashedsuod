@@ -30,7 +30,7 @@ const StoreRegister = () => {
           .select('store_name, logo_url, domain_name')
           .eq('domain_name', cleanDomain)
           .eq('status', 'active')
-          .single();
+          .maybeSingle();
           
         if (error) {
           console.error("Error fetching store:", error);
@@ -80,7 +80,7 @@ const StoreRegister = () => {
       <main className="flex-grow py-12 px-4 bg-gray-50">
         <div className="max-w-md mx-auto">
           <Link 
-            to={`/store/${storeData.domain_name || storeDomain?.toLowerCase()}`} 
+            to={`/store/${storeData.domain_name?.toLowerCase() || storeDomain?.toLowerCase()}`} 
             className="inline-flex items-center text-gray-600 hover:text-primary mb-6 transition-colors"
           >
             <ArrowLeft className="ml-1 h-4 w-4" />
