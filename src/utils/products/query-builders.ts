@@ -1,80 +1,83 @@
 
-import { Database } from '@/integrations/supabase/types';
 import { SupabaseClient } from '@supabase/supabase-js';
 
-/**
- * Builds a query to fetch products with various filters
- */
 export const buildProductQuery = (
-  supabase: SupabaseClient<Database>,
+  supabase: SupabaseClient,
   sectionType: string,
   storeId?: string,
   categoryId?: string,
   sectionId?: string,
-  limit?: number,
-  includeArchived: boolean = false
+  limit: number = 25
 ) => {
-  // Start with a base query
   let query = supabase
     .from('products')
-    .select('*, category:categories(name)')
-    .eq('is_active', true); // Make sure only active products are shown
-    
-  // Only include non-archived products unless specifically requested
-  if (!includeArchived) {
-    query = query.eq('is_archived', false);
-  }
+    .select(`
+      *,
+      category:categories(id, name)
+    `);
 
-  console.log(`Building query for sectionType: ${sectionType}`);
-
-  // Filter by store if provided
+  // Add store filter if provided
   if (storeId) {
     query = query.eq('store_id', storeId);
   }
+  
+  // Only active products
+  query = query.eq('is_active', true);
 
-  // Filter by category if provided
-  if (categoryId && categoryId !== 'all' && categoryId !== 'none') {
-    query = query.eq('category_id', categoryId);
-    console.log(`Filtering by category_id: ${categoryId}`);
-  }
-
-  // Filter by section if provided
-  if (sectionId && sectionId !== 'all' && sectionId !== 'none') {
-    query = query.eq('section_id', sectionId);
-    console.log(`Filtering by section_id: ${sectionId}`);
-  }
-
-  // Apply additional filters based on sectionType
+  // Add section-specific filters
   switch (sectionType) {
     case 'best_selling':
-      query = query.order('sales_count', { ascending: false });
+      // Get best selling products
+      query = query
+        .order('sales_count', { ascending: false })
+        .limit(limit);
       break;
+      
     case 'new_arrivals':
-      query = query.order('created_at', { ascending: false });
+      // Get newest products
+      query = query
+        .order('created_at', { ascending: false })
+        .limit(limit);
       break;
+      
     case 'featured':
-      query = query.eq('is_featured', true);
+      // Get featured products
+      query = query
+        .eq('is_featured', true)
+        .order('created_at', { ascending: false })
+        .limit(limit);
       break;
+      
     case 'on_sale':
-      query = query.not('discount_price', 'is', null);
+      // Get products with discount price
+      query = query
+        .not('discount_price', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(limit);
       break;
+      
     case 'category':
-      // Already filtered by category_id above
+      // Get products from a specific category
+      if (categoryId) {
+        query = query
+          .eq('category_id', categoryId)
+          .order('created_at', { ascending: false })
+          .limit(limit);
+      }
       break;
+      
     case 'custom':
-      // For custom sections, filtering by section_id above is enough
+      // Custom section - need to get product_ids from section first
+      if (sectionId) {
+        // This is a bit more complex - we'll need to fetch the section first
+        // to get the product_ids, then use them in the query
+        // This will be handled separately
+      }
       break;
+      
     default:
-      // Default sorting for 'all' and other types
-      query = query.order('created_at', { ascending: false });
-      break;
+      query = query.order('created_at', { ascending: false }).limit(limit);
   }
 
-  // Apply limit if provided
-  if (limit && limit > 0) {
-    query = query.limit(limit);
-  }
-
-  console.log("Final query:", query);
   return query;
 };

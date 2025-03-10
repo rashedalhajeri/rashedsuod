@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Plus, Grid, List } from "lucide-react";
+import { Plus, Grid, List, BanknoteIcon, ShoppingBag, Sparkles, Percent, Tag, LayoutGrid } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
@@ -14,6 +14,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { cn } from "@/lib/utils";
 
 interface SectionFormProps {
   isOpen: boolean;
@@ -133,6 +134,19 @@ const SectionForm: React.FC<SectionFormProps> = ({
     onClose();
   };
 
+  // Get section icon based on type
+  const getSectionTypeIcon = (type: string) => {
+    switch (type) {
+      case 'best_selling': return <BanknoteIcon className="h-5 w-5 text-emerald-500" />;
+      case 'new_arrivals': return <ShoppingBag className="h-5 w-5 text-blue-500" />;
+      case 'featured': return <Sparkles className="h-5 w-5 text-amber-500" />;
+      case 'on_sale': return <Percent className="h-5 w-5 text-rose-500" />;
+      case 'category': return <Tag className="h-5 w-5 text-purple-500" />;
+      case 'custom': return <LayoutGrid className="h-5 w-5 text-indigo-500" />;
+      default: return <LayoutGrid className="h-5 w-5 text-gray-500" />;
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px] bg-background">
@@ -152,24 +166,105 @@ const SectionForm: React.FC<SectionFormProps> = ({
             />
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="section-type">نوع القسم</Label>
-            <Select 
-              value={newSectionType}
-              onValueChange={setNewSectionType}
-            >
-              <SelectTrigger id="section-type" className="text-right">
-                <SelectValue placeholder="اختر نوع القسم" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="best_selling">الأكثر مبيعاً</SelectItem>
-                <SelectItem value="new_arrivals">وصل حديثاً</SelectItem>
-                <SelectItem value="featured">منتجات مميزة</SelectItem>
-                <SelectItem value="on_sale">تخفيضات</SelectItem>
-                <SelectItem value="category">فئة محددة</SelectItem>
-                <SelectItem value="custom">منتجات مخصصة</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="space-y-3">
+            <Label>نوع القسم</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setNewSectionType('best_selling')}
+                className={cn(
+                  "flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all",
+                  newSectionType === 'best_selling'
+                    ? "border-emerald-500 bg-emerald-50"
+                    : "border-gray-200 hover:border-emerald-200 hover:bg-emerald-50/30"
+                )}
+              >
+                <div className="p-2 rounded-full bg-emerald-100">
+                  <BanknoteIcon className="h-5 w-5 text-emerald-500" />
+                </div>
+                <span className="text-sm font-medium">الأكثر مبيعاً</span>
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => setNewSectionType('new_arrivals')}
+                className={cn(
+                  "flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all",
+                  newSectionType === 'new_arrivals'
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-200 hover:border-blue-200 hover:bg-blue-50/30"
+                )}
+              >
+                <div className="p-2 rounded-full bg-blue-100">
+                  <ShoppingBag className="h-5 w-5 text-blue-500" />
+                </div>
+                <span className="text-sm font-medium">وصل حديثاً</span>
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => setNewSectionType('featured')}
+                className={cn(
+                  "flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all",
+                  newSectionType === 'featured'
+                    ? "border-amber-500 bg-amber-50"
+                    : "border-gray-200 hover:border-amber-200 hover:bg-amber-50/30"
+                )}
+              >
+                <div className="p-2 rounded-full bg-amber-100">
+                  <Sparkles className="h-5 w-5 text-amber-500" />
+                </div>
+                <span className="text-sm font-medium">منتجات مميزة</span>
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => setNewSectionType('on_sale')}
+                className={cn(
+                  "flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all",
+                  newSectionType === 'on_sale'
+                    ? "border-rose-500 bg-rose-50"
+                    : "border-gray-200 hover:border-rose-200 hover:bg-rose-50/30"
+                )}
+              >
+                <div className="p-2 rounded-full bg-rose-100">
+                  <Percent className="h-5 w-5 text-rose-500" />
+                </div>
+                <span className="text-sm font-medium">تخفيضات</span>
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => setNewSectionType('category')}
+                className={cn(
+                  "flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all",
+                  newSectionType === 'category'
+                    ? "border-purple-500 bg-purple-50"
+                    : "border-gray-200 hover:border-purple-200 hover:bg-purple-50/30"
+                )}
+              >
+                <div className="p-2 rounded-full bg-purple-100">
+                  <Tag className="h-5 w-5 text-purple-500" />
+                </div>
+                <span className="text-sm font-medium">فئة محددة</span>
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => setNewSectionType('custom')}
+                className={cn(
+                  "flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all",
+                  newSectionType === 'custom'
+                    ? "border-indigo-500 bg-indigo-50"
+                    : "border-gray-200 hover:border-indigo-200 hover:bg-indigo-50/30"
+                )}
+              >
+                <div className="p-2 rounded-full bg-indigo-100">
+                  <LayoutGrid className="h-5 w-5 text-indigo-500" />
+                </div>
+                <span className="text-sm font-medium">منتجات مخصصة</span>
+              </button>
+            </div>
           </div>
 
           {newSectionType === 'category' && (
