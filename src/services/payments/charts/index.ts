@@ -1,37 +1,65 @@
 
-// Payment chart services
+// يحتوي هذا الملف على البيانات والوظائف المساعدة لرسومات الإحصائيات
 
-// Example data for a payment chart
-export const getPaymentChartData = (storeId: string, period: string = "monthly") => {
-  // This would typically fetch from an API, but we're returning mock data for now
-  const mockData = [
-    { date: '2023-01', amount: 1200 },
-    { date: '2023-02', amount: 1800 },
-    { date: '2023-03', amount: 2200 },
-    { date: '2023-04', amount: 1900 },
-    { date: '2023-05', amount: 2400 },
-    { date: '2023-06', amount: 2600 }
-  ];
+export interface ChartDataPoint {
+  name: string;
+  value: number;
+}
+
+export interface ChartSeries {
+  name: string;
+  data: ChartDataPoint[];
+}
+
+export const generateMockData = (months: number = 12): ChartDataPoint[] => {
+  const mockData: ChartDataPoint[] = [];
+  const currentDate = new Date();
+  
+  for (let i = months - 1; i >= 0; i--) {
+    const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+    const monthName = date.toLocaleDateString('ar-SA', { month: 'short' });
+    mockData.push({
+      name: monthName,
+      value: Math.floor(Math.random() * 10000) + 1000
+    });
+  }
   
   return mockData;
 };
 
-// Function to get chart configuration
-export const getChartConfig = (currency: string = "SAR") => {
-  return {
-    showGrid: true,
-    showTooltip: true,
-    currency
-  };
+export const generateMultiSeriesMockData = (
+  seriesCount: number = 2,
+  months: number = 12
+): ChartSeries[] => {
+  const series: ChartSeries[] = [];
+  const seriesNames = ["المبيعات", "المصروفات", "الأرباح"];
+  
+  for (let i = 0; i < seriesCount; i++) {
+    series.push({
+      name: seriesNames[i],
+      data: generateMockData(months)
+    });
+  }
+  
+  return series;
 };
 
-// Function to format chart data
-export const formatChartData = (data: any[], config: any) => {
-  return data.map(item => ({
-    ...item,
-    formattedAmount: new Intl.NumberFormat('ar-SA', {
-      style: 'currency', 
-      currency: config.currency
-    }).format(item.amount)
-  }));
+export const calculateYAxisDomain = (data: ChartDataPoint[]): [number, number] => {
+  const values = data.map(item => item.value);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  
+  // Round to nice numbers
+  const minNice = Math.floor(min / 100) * 100;
+  const maxNice = Math.ceil(max / 100) * 100 + 100;
+  
+  return [minNice, maxNice];
+};
+
+export const formatCurrency = (value: number): string => {
+  return new Intl.NumberFormat('ar-SA', {
+    style: 'currency', 
+    currency: 'SAR',
+    maximumFractionDigits: 0
+  }).format(value);
 };
