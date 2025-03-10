@@ -3,12 +3,16 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
+import { getFullStoreUrl } from "@/utils/url-helpers";
 
 interface StoreHeaderProps {
   storePreviewUrl: string;
 }
 
 const StoreHeader: React.FC<StoreHeaderProps> = ({ storePreviewUrl }) => {
+  // Generate full store URL for external link
+  const fullStoreUrl = storePreviewUrl ? getFullStoreUrl(storePreviewUrl) : '';
+  
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div>
@@ -27,10 +31,10 @@ const StoreHeader: React.FC<StoreHeaderProps> = ({ storePreviewUrl }) => {
         
         {storePreviewUrl && (
           <Button asChild className="gap-2">
-            <Link to={storePreviewUrl} target="_blank">
+            <a href={fullStoreUrl} target="_blank" rel="noopener noreferrer">
               <ExternalLink size={16} />
               عرض المتجر
-            </Link>
+            </a>
           </Button>
         )}
       </div>

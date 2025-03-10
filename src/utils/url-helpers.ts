@@ -17,42 +17,41 @@ export const getBaseDomain = (): string => {
 };
 
 /**
- * تنسيق اسم دومين المتجر
+ * Normalize a store domain name
+ * Ensures consistent domain formatting across the application
  */
 export const normalizeStoreDomain = (domain: string): string => {
   if (!domain) return '';
   
-  // تحويل إلى أحرف صغيرة وإزالة المسافات
+  // Convert to lowercase and remove spaces
   let normalizedDomain = domain.trim().toLowerCase();
   
-  // إزالة أي بادئة /store/ إذا وجدت
+  // Remove any '/store/' prefix if found
   normalizedDomain = normalizedDomain.replace(/^\/store\//, '');
   normalizedDomain = normalizedDomain.replace(/^store\//, '');
   
-  // إزالة أي لاحقة / إذا وجدت
+  // Remove any trailing slash if found
   normalizedDomain = normalizedDomain.replace(/\/$/, '');
   
-  // إزالة بادئة http:// أو https://
+  // Remove http:// or https:// prefixes
   normalizedDomain = normalizedDomain.replace(/^https?:\/\//, '');
   
-  // إزالة أي جزء من المجال بعد أول '/'
+  // Remove any part of the domain after the first '/'
   normalizedDomain = normalizedDomain.split('/')[0];
   
-  // إزالة الـ www. إذا وجدت
+  // Remove 'www.' prefix if found
   normalizedDomain = normalizedDomain.replace(/^www\./, '');
   
-  // إذا كان المجال يحتوي على '.'، نأخذ فقط الجزء الأول (قبل النقطة)
-  // إلا إذا كان المجال هو محدد داخلي (localhost)
+  // If the domain contains a '.' (except for localhost), take only the first part
   if (normalizedDomain.includes('.') && !normalizedDomain.startsWith('localhost')) {
-    // تقسيم بواسطة '.' وأخذ الجزء الفرعي الأول
     const parts = normalizedDomain.split('.');
     if (parts.length > 0 && parts[0] !== '') {
       normalizedDomain = parts[0];
     }
   }
   
-  // طباعة للتصحيح
-  console.log(`تنسيق الدومين:`, {
+  // Debug logging
+  console.log(`Domain normalization:`, {
     original: domain,
     normalized: normalizedDomain,
     timestamp: new Date().toISOString()

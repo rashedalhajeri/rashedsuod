@@ -2,21 +2,22 @@
 import { supabase } from "@/integrations/supabase/client";
 import { normalizeStoreDomain } from "./url-helpers";
 
-// Simple in-memory cache for store data
+// Improved in-memory cache for store data with timestamp
 const storeCache: Record<string, {data: any, timestamp: number}> = {};
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
 /**
- * يبحث عن متجر بناءً على اسم الدومين بطريقة أكثر قوة
+ * Robust function to fetch a store by domain name
+ * Uses multiple fallback strategies to ensure reliable store lookup
  */
 export const fetchStoreByDomain = async (domainName: string) => {
   if (!domainName) {
-    console.error("اسم الدومين فارغ أو غير محدد");
+    console.error("Domain name is empty or undefined");
     return null;
   }
 
   const cleanDomain = normalizeStoreDomain(domainName);
-  console.log("البحث عن متجر بواسطة fetchStoreByDomain:", {
+  console.log("Searching for store with fetchStoreByDomain:", {
     originalDomain: domainName,
     cleanDomain,
     timestamp: new Date().toISOString()
@@ -25,27 +26,12 @@ export const fetchStoreByDomain = async (domainName: string) => {
   // Check the cache first
   const cachedData = storeCache[cleanDomain];
   if (cachedData && (Date.now() - cachedData.timestamp < CACHE_DURATION)) {
-    console.log("تم استرجاع المتجر من الذاكرة المؤقتة:", cleanDomain);
+    console.log("Retrieved store from cache:", cleanDomain);
     return cachedData.data;
   }
 
   try {
-    // Log all stores for debugging
-    const { data: allStores, error: allError } = await supabase
-      .from("stores")
-      .select("id, domain_name, store_name, status")
-      .order("created_at", { ascending: false });
-      
-    console.log("جميع المتاجر في النظام:", allStores || []);
-    
-    if (allError) {
-      console.error("خطأ في جلب جميع المتاجر:", allError);
-    }
-
-    // تحقق مخصص باستخدام آلية البحث المزدوج
-    let foundStore = null;
-    
-    // 1. First search: Exact match using .eq()
+    // STRATEGY 1: Exact match using direct equals comparison
     const { data: exactMatch, error: exactError } = await supabase
       .from("stores")
       .select("*")
@@ -53,78 +39,104 @@ export const fetchStoreByDomain = async (domainName: string) => {
       .maybeSingle();
 
     if (exactError) {
-      console.error("خطأ في البحث المباشر:", {
+      console.error("Error in direct search:", {
         error: exactError,
         domain: cleanDomain,
-        query: "eq",
         timestamp: new Date().toISOString()
       });
     }
 
     if (exactMatch) {
-      console.log("تم العثور على المتجر (مطابقة مباشرة):", exactMatch);
-      foundStore = exactMatch;
-    } else {
-      // 2. Second search: Case-insensitive match using .ilike()
-      const { data: caseMatch, error: caseError } = await supabase
-        .from("stores")
-        .select("*")
-        .ilike("domain_name", cleanDomain)
-        .maybeSingle();
+      console.log("Found store (direct match):", exactMatch);
+      // Update the cache
+      storeCache[cleanDomain] = {
+        data: exactMatch,
+        timestamp: Date.now()
+      };
+      return exactMatch;
+    }
 
-      if (caseError) {
-        console.error("خطأ في البحث غير الحساس للأحرف:", {
-          error: caseError,
-          domain: cleanDomain,
-          query: "ilike",
-          timestamp: new Date().toISOString()
-        });
-      }
+    // STRATEGY 2: Case-insensitive match
+    const { data: caseMatch, error: caseError } = await supabase
+      .from("stores")
+      .select("*")
+      .ilike("domain_name", cleanDomain)
+      .maybeSingle();
 
-      if (caseMatch) {
-        console.log("تم العثور على المتجر (مطابقة غير حساسة للأحرف):", caseMatch);
-        foundStore = caseMatch;
-      }
+    if (caseError) {
+      console.error("Error in case-insensitive search:", {
+        error: caseError,
+        domain: cleanDomain,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    if (caseMatch) {
+      console.log("Found store (case-insensitive match):", caseMatch);
+      // Update the cache
+      storeCache[cleanDomain] = {
+        data: caseMatch,
+        timestamp: Date.now()
+      };
+      return caseMatch;
+    }
+
+    // STRATEGY 3: Fetch all stores for manual comparison
+    const { data: allStores, error: allStoresError } = await supabase
+      .from("stores")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(20);
+      
+    if (allStoresError) {
+      console.error("Error fetching all stores:", allStoresError);
     }
     
-    // 3. Manual search if no store found yet
-    if (!foundStore && allStores) {
-      console.log("محاولة البحث اليدوي عن المتجر:", cleanDomain);
+    if (allStores && allStores.length > 0) {
+      console.log("Manual store search for:", cleanDomain);
       
-      // Try exact lowercase comparison
-      foundStore = allStores.find(store => 
-        store.domain_name && store.domain_name.toLowerCase() === cleanDomain
+      // Look for exact lowercase match
+      const manualMatch = allStores.find(store => 
+        store.domain_name && store.domain_name.toLowerCase() === cleanDomain.toLowerCase()
       );
       
-      if (foundStore) {
-        console.log("تم العثور على المتجر بالمقارنة اليدوية:", foundStore);
+      if (manualMatch) {
+        console.log("Found store through manual comparison:", manualMatch);
+        // Update the cache
+        storeCache[cleanDomain] = {
+          data: manualMatch,
+          timestamp: Date.now()
+        };
+        return manualMatch;
+      }
+      
+      // Look for partial matches as a last resort
+      const partialMatches = allStores.filter(store => 
+        store.domain_name && 
+        (store.domain_name.toLowerCase().includes(cleanDomain.toLowerCase()) || 
+         cleanDomain.toLowerCase().includes(store.domain_name.toLowerCase()))
+      );
+      
+      if (partialMatches.length > 0) {
+        console.log("Found partial domain matches:", partialMatches);
         
-        // Fetch full store data
-        const { data: fullStoreData, error: fullStoreError } = await supabase
-          .from("stores")
-          .select("*")
-          .eq("id", foundStore.id)
-          .maybeSingle();
+        // If we find only one partial match, return it
+        if (partialMatches.length === 1) {
+          const bestMatch = partialMatches[0];
+          console.log("Using best partial match:", bestMatch);
           
-        if (fullStoreError) {
-          console.error("خطأ في جلب البيانات الكاملة للمتجر:", fullStoreError);
-        } else if (fullStoreData) {
-          foundStore = fullStoreData;
+          // Update the cache
+          storeCache[cleanDomain] = {
+            data: bestMatch,
+            timestamp: Date.now()
+          };
+          return bestMatch;
         }
       }
     }
 
-    if (foundStore) {
-      // Update the cache
-      storeCache[cleanDomain] = {
-        data: foundStore,
-        timestamp: Date.now()
-      };
-      return foundStore;
-    }
-
-    // يطبع معلومات مفصلة عن جميع المتاجر للمساعدة في التصحيح
-    console.log("لم يتم العثور على متجر:", {
+    // Print detailed info about all stores to help with debugging
+    console.log("No store found:", {
       searchedDomain: cleanDomain,
       availableStores: allStores?.map(s => ({ 
         id: s.id,
@@ -132,14 +144,14 @@ export const fetchStoreByDomain = async (domainName: string) => {
         name: s.store_name,
         status: s.status,
         domainLowercase: s.domain_name ? s.domain_name.toLowerCase() : null,
-        exactMatch: s.domain_name === cleanDomain,
-        lowercaseMatch: s.domain_name && s.domain_name.toLowerCase() === cleanDomain.toLowerCase()
+        cleanDomainLowercase: cleanDomain.toLowerCase(),
+        matches: s.domain_name && s.domain_name.toLowerCase() === cleanDomain.toLowerCase()
       })) || []
     });
 
     return null;
   } catch (err) {
-    console.error("خطأ غير متوقع في fetchStoreByDomain:", {
+    console.error("Unexpected error in fetchStoreByDomain:", {
       error: err,
       domain: cleanDomain,
       timestamp: new Date().toISOString()
@@ -149,7 +161,7 @@ export const fetchStoreByDomain = async (domainName: string) => {
 };
 
 /**
- * تحقق من وجود المتجر وحالته
+ * Check if a store exists and is active
  */
 export const checkStoreStatus = async (domainName: string) => {
   const store = await fetchStoreByDomain(domainName);
@@ -163,11 +175,11 @@ export const checkStoreStatus = async (domainName: string) => {
 };
 
 /**
- * مسح الذاكرة المؤقتة للمتاجر
+ * Clear the store cache
  */
 export const clearStoreCache = () => {
   Object.keys(storeCache).forEach(key => {
     delete storeCache[key];
   });
-  console.log("تم مسح الذاكرة المؤقتة للمتاجر");
+  console.log("Store cache cleared");
 };

@@ -3,7 +3,7 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
-import { normalizeStoreDomain } from "@/utils/url-helpers";
+import { normalizeStoreDomain, getFullStoreUrl } from "@/utils/url-helpers";
 
 interface StorePreviewProps {
   storeName: string;
@@ -16,20 +16,17 @@ const StorePreview: React.FC<StorePreviewProps> = ({
   storeDomain,
   logoUrl
 }) => {
-  // Generate the store URL from the domain
+  // Generate the proper store URL
   const cleanDomain = normalizeStoreDomain(storeDomain);
   const storeUrl = cleanDomain ? `/store/${cleanDomain}` : '';
-  const fullStoreUrl = `${window.location.origin}${storeUrl}`;
-  
-  // Get app domain from environment variables
-  const appDomain = import.meta.env.VITE_APP_DOMAIN || window.location.origin;
+  const fullStoreUrl = getFullStoreUrl(storeUrl);
   
   // Format displayed URL for cleaner presentation
   const displayUrl = cleanDomain ? `${cleanDomain}.linok.me` : 'متجرك';
   
   const handleOpenStore = () => {
-    if (storeUrl) {
-      window.open(storeUrl, "_blank");
+    if (fullStoreUrl) {
+      window.open(fullStoreUrl, "_blank", "noopener,noreferrer");
     }
   };
   
