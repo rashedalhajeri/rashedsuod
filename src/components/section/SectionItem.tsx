@@ -2,8 +2,9 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Section } from "@/services/section-service";
-import { Edit, Trash, ToggleLeft, ToggleRight, BanknoteIcon, ShoppingBag, Sparkles, Percent, Tag, LayoutGrid, GripVertical } from "lucide-react";
+import { Edit, Trash, ToggleLeft, ToggleRight, Crown, ShoppingBag, Star, Percent, Tag, LayoutGrid, GripVertical, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface SectionItemProps {
   section: Section;
@@ -23,28 +24,39 @@ const SectionItem: React.FC<SectionItemProps> = ({
   dragHandleProps
 }) => {
   const [showActions, setShowActions] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
   
   const isEditing = editingSection?.id === section.id;
 
-  const handleToggleActive = () => {
+  const handleToggleActive = async () => {
+    setIsToggling(true);
     setEditingSection({
       ...section,
       is_active: !section.is_active
     });
     
-    setTimeout(() => {
-      handleUpdateSection();
-    }, 0);
+    // Add small delay to show loading state
+    setTimeout(async () => {
+      await handleUpdateSection();
+      setIsToggling(false);
+      
+      // Show toast notification
+      if (!section.is_active) {
+        toast.success(`تم تفعيل قسم "${section.name}" بنجاح`);
+      } else {
+        toast.success(`تم إيقاف قسم "${section.name}" بنجاح`);
+      }
+    }, 300);
   };
   
   const getSectionTypeIcon = () => {
     switch (section.section_type) {
       case 'best_selling': 
-        return <BanknoteIcon className="h-4 w-4 text-emerald-500" />;
+        return <Crown className="h-4 w-4 text-emerald-500" />;
       case 'new_arrivals': 
         return <ShoppingBag className="h-4 w-4 text-blue-500" />;
       case 'featured': 
-        return <Sparkles className="h-4 w-4 text-amber-500" />;
+        return <Star className="h-4 w-4 text-amber-500" />;
       case 'on_sale': 
         return <Percent className="h-4 w-4 text-rose-500" />;
       case 'category': 
@@ -135,8 +147,11 @@ const SectionItem: React.FC<SectionItemProps> = ({
             variant="ghost"
             onClick={handleToggleActive}
             className="h-8 w-8"
+            disabled={isToggling}
           >
-            {section.is_active ? (
+            {isToggling ? (
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+            ) : section.is_active ? (
               <ToggleRight className="h-4 w-4 text-green-500" />
             ) : (
               <ToggleLeft className="h-4 w-4 text-gray-500" />

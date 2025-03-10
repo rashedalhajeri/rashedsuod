@@ -2,13 +2,15 @@
 import React, { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Search, CheckIcon, Loader2 } from "lucide-react";
+import { Search, CheckIcon, Loader2, Tag, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
 
 interface Category {
   id: string;
   name: string;
+  image_url?: string;
 }
 
 interface CategorySelectorProps {
@@ -41,11 +43,21 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
     }
   }, [searchQuery, categories]);
 
+  // Find selected category
+  const selectedCategory = categories.find(cat => cat.id === selectedCategoryId);
+
   return (
     <div className="space-y-2 mt-4">
-      <Label htmlFor="category-select" className="text-base font-medium">
-        <span className="text-rose-500">*</span> اختر الفئة
-      </Label>
+      <div className="flex items-center justify-between">
+        <Label htmlFor="category-select" className="text-base font-medium">
+          <span className="text-rose-500">*</span> اختر الفئة
+        </Label>
+        {selectedCategory && (
+          <div className="bg-purple-100 text-purple-700 text-xs rounded-full px-2.5 py-1 font-medium">
+            تم اختيار: {selectedCategory.name}
+          </div>
+        )}
+      </div>
       <p className="text-sm text-gray-500 mb-2">سيتم عرض منتجات هذه الفئة في هذا القسم</p>
       
       <div className="border rounded-md p-3">
@@ -73,7 +85,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
               <p className="text-xs">جرب كلمات بحث أخرى</p>
             </div>
           ) : (
-            <>
+            <div className="grid grid-cols-1 gap-1.5">
               {filteredCategories.map(category => (
                 <motion.div
                   key={category.id}
@@ -86,7 +98,17 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
                     selectedCategoryId === category.id ? "bg-primary/10 border border-primary/20" : "border border-transparent"
                   )}
                 >
-                  <span>{category.name}</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                      {category.image_url ? (
+                        <img src={category.image_url} alt={category.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <Tag className="h-3.5 w-3.5 text-gray-400" />
+                      )}
+                    </div>
+                    <span>{category.name}</span>
+                  </div>
+                  
                   {selectedCategoryId === category.id && (
                     <div className="bg-primary text-white rounded-full p-0.5">
                       <CheckIcon className="h-3.5 w-3.5" />
@@ -94,7 +116,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
                   )}
                 </motion.div>
               ))}
-            </>
+            </div>
           )}
         </div>
         

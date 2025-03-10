@@ -1,8 +1,8 @@
 
 import React from "react";
 import { Label } from "@/components/ui/label";
-import { LayoutGrid, List } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LayoutGrid, List, CheckIcon } from "lucide-react";
 
 interface DisplayStyleSelectorProps {
   displayStyle: 'grid' | 'list';
@@ -15,44 +15,50 @@ const DisplayStyleSelector: React.FC<DisplayStyleSelectorProps> = ({
 }) => {
   return (
     <div className="space-y-2">
-      <Label className="text-base font-medium">طريقة العرض</Label>
-      <p className="text-sm text-gray-500 mb-2">اختر طريقة عرض المنتجات في هذا القسم</p>
+      <Label className="text-base font-medium">طريقة عرض المنتجات</Label>
+      <p className="text-sm text-gray-500 mb-2">اختر كيفية ظهور المنتجات في هذا القسم</p>
       
-      <div className="flex gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <div
-          onClick={() => setDisplayStyle('grid')}
           className={cn(
-            "flex-1 border rounded-md p-3 cursor-pointer transition-all duration-200",
-            displayStyle === 'grid'
-              ? "bg-primary/5 border-primary text-primary"
-              : "bg-white hover:bg-gray-50 text-gray-600"
+            "border rounded-md p-4 cursor-pointer flex flex-col items-center transition-all hover:border-primary/40",
+            displayStyle === 'grid' 
+              ? "bg-primary/5 border-primary shadow-sm" 
+              : "hover:shadow-sm"
           )}
+          onClick={() => setDisplayStyle('grid')}
         >
-          <div className="flex flex-col items-center gap-2">
-            <LayoutGrid className={cn(
-              "h-6 w-6",
-              displayStyle === 'grid' ? "text-primary" : "text-gray-500"
-            )} />
-            <span className="text-sm font-medium">شبكة</span>
+          <div className="relative mb-2">
+            <LayoutGrid className="h-8 w-8 text-primary/80" />
+            {displayStyle === 'grid' && (
+              <div className="absolute -top-1 -right-1 bg-primary text-white rounded-full p-0.5">
+                <CheckIcon className="h-3 w-3" />
+              </div>
+            )}
           </div>
+          <span className="font-medium text-sm">عرض شبكي</span>
+          <p className="text-xs text-gray-500 text-center mt-1">مناسب لمعظم المنتجات</p>
         </div>
         
         <div
-          onClick={() => setDisplayStyle('list')}
           className={cn(
-            "flex-1 border rounded-md p-3 cursor-pointer transition-all duration-200",
-            displayStyle === 'list'
-              ? "bg-primary/5 border-primary text-primary"
-              : "bg-white hover:bg-gray-50 text-gray-600"
+            "border rounded-md p-4 cursor-pointer flex flex-col items-center transition-all hover:border-primary/40",
+            displayStyle === 'list' 
+              ? "bg-primary/5 border-primary shadow-sm" 
+              : "hover:shadow-sm"
           )}
+          onClick={() => setDisplayStyle('list')}
         >
-          <div className="flex flex-col items-center gap-2">
-            <List className={cn(
-              "h-6 w-6",
-              displayStyle === 'list' ? "text-primary" : "text-gray-500"
-            )} />
-            <span className="text-sm font-medium">قائمة</span>
+          <div className="relative mb-2">
+            <List className="h-8 w-8 text-primary/80" />
+            {displayStyle === 'list' && (
+              <div className="absolute -top-1 -right-1 bg-primary text-white rounded-full p-0.5">
+                <CheckIcon className="h-3 w-3" />
+              </div>
+            )}
           </div>
+          <span className="font-medium text-sm">عرض قائمة</span>
+          <p className="text-xs text-gray-500 text-center mt-1">مناسب للمقارنة بين المنتجات</p>
         </div>
       </div>
     </div>

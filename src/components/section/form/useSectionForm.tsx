@@ -23,6 +23,7 @@ export const useSectionForm = (
   const [customType, setCustomType] = useState<string>(""); // "products" or "category"
   const [categoryProducts, setCategoryProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [loadingCategoryProducts, setLoadingCategoryProducts] = useState(false);
 
   // Fetch categories and products when the dialog opens
   useEffect(() => {
@@ -77,7 +78,7 @@ export const useSectionForm = (
     try {
       const { data, error } = await supabase
         .from('categories')
-        .select('id, name')
+        .select('id, name, image_url')
         .order('name');
 
       if (error) throw error;
@@ -124,7 +125,7 @@ export const useSectionForm = (
   // Fetch products for a specific category
   const fetchCategoryProducts = useCallback(async (categoryId: string) => {
     try {
-      setIsLoading(true);
+      setLoadingCategoryProducts(true);
       const { data, error } = await supabase
         .from('products')
         .select('id, name, image_url, price, discount_price')
@@ -137,7 +138,7 @@ export const useSectionForm = (
       console.error("Error fetching category products:", err);
       setCategoryProducts([]);
     } finally {
-      setIsLoading(false);
+      setLoadingCategoryProducts(false);
     }
   }, []);
 
@@ -186,6 +187,7 @@ export const useSectionForm = (
     filteredProducts,
     filteredCategories,
     isLoading,
+    loadingCategoryProducts,
     selectedProducts,
     productSearchQuery,
     setProductSearchQuery,

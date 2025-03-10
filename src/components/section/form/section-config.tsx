@@ -1,8 +1,8 @@
 
 import React from "react";
 import { 
-  TrendingUp, ShoppingBag, Sparkles, Percent, 
-  Tag, LayoutGrid, Star, Clock, Heart
+  Crown, ShoppingBag, Star, Percent, 
+  Tag, LayoutGrid
 } from "lucide-react";
 import { SectionType } from "./types";
 
@@ -11,7 +11,7 @@ export const sectionTypes: SectionType[] = [
   {
     id: 'best_selling',
     name: 'الأكثر مبيعاً',
-    icon: <TrendingUp className="h-5 w-5" />,
+    icon: <Crown className="h-5 w-5" />,
     description: 'يعرض المنتجات الأكثر شراءً من قبل العملاء تلقائياً (حتى 25 منتج)',
     color: 'emerald'
   },
