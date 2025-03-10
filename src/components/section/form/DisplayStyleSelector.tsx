@@ -3,6 +3,7 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { LayoutGrid, List, CheckIcon } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface DisplayStyleSelectorProps {
   displayStyle: 'grid' | 'list';
@@ -19,7 +20,8 @@ const DisplayStyleSelector: React.FC<DisplayStyleSelectorProps> = ({
       <p className="text-sm text-gray-500 mb-2">اختر كيفية ظهور المنتجات في هذا القسم</p>
       
       <div className="grid grid-cols-2 gap-3">
-        <div
+        <motion.div
+          whileHover={{ scale: 1.02 }}
           className={cn(
             "border rounded-md p-4 cursor-pointer flex flex-col items-center transition-all hover:border-primary/40",
             displayStyle === 'grid' 
@@ -30,7 +32,7 @@ const DisplayStyleSelector: React.FC<DisplayStyleSelectorProps> = ({
         >
           <div className="relative mb-2">
             <div className="p-2 bg-primary/10 rounded-full">
-              <LayoutGrid className="h-7 w-7 text-primary/80" />
+              <LayoutGrid className="h-6 w-6 text-primary/80" />
             </div>
             {displayStyle === 'grid' && (
               <div className="absolute -top-1 -right-1 bg-primary text-white rounded-full p-0.5">
@@ -40,9 +42,10 @@ const DisplayStyleSelector: React.FC<DisplayStyleSelectorProps> = ({
           </div>
           <span className="font-medium text-sm">عرض شبكي</span>
           <p className="text-xs text-gray-500 text-center mt-1">مناسب لمعظم المنتجات</p>
-        </div>
+        </motion.div>
         
-        <div
+        <motion.div
+          whileHover={{ scale: 1.02 }}
           className={cn(
             "border rounded-md p-4 cursor-pointer flex flex-col items-center transition-all hover:border-primary/40",
             displayStyle === 'list' 
@@ -53,7 +56,7 @@ const DisplayStyleSelector: React.FC<DisplayStyleSelectorProps> = ({
         >
           <div className="relative mb-2">
             <div className="p-2 bg-primary/10 rounded-full">
-              <List className="h-7 w-7 text-primary/80" />
+              <List className="h-6 w-6 text-primary/80" />
             </div>
             {displayStyle === 'list' && (
               <div className="absolute -top-1 -right-1 bg-primary text-white rounded-full p-0.5">
@@ -63,7 +66,7 @@ const DisplayStyleSelector: React.FC<DisplayStyleSelectorProps> = ({
           </div>
           <span className="font-medium text-sm">عرض قائمة</span>
           <p className="text-xs text-gray-500 text-center mt-1">مناسب للمقارنة بين المنتجات</p>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

@@ -2,9 +2,10 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Section } from "@/services/section-service";
-import { Edit, Trash, ToggleLeft, ToggleRight, Crown, ShoppingBag, Star, Percent, Tag, LayoutGrid, GripVertical, Loader2 } from "lucide-react";
+import { Edit, Trash, ToggleLeft, ToggleRight, Crown, ShoppingBag, Star, Percent, Tag, LayoutGrid, GripVertical, Loader2, PackageSearch, Gift } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 
 interface SectionItemProps {
   section: Section;
@@ -26,8 +27,6 @@ const SectionItem: React.FC<SectionItemProps> = ({
   const [showActions, setShowActions] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
   
-  const isEditing = editingSection?.id === section.id;
-
   const handleToggleActive = async () => {
     setIsToggling(true);
     setEditingSection({
@@ -59,10 +58,12 @@ const SectionItem: React.FC<SectionItemProps> = ({
         return <Star className="h-4 w-4 text-amber-500" />;
       case 'on_sale': 
         return <Percent className="h-4 w-4 text-rose-500" />;
+      case 'all_products': 
+        return <PackageSearch className="h-4 w-4 text-gray-600" />;
       case 'category': 
         return <Tag className="h-4 w-4 text-purple-500" />;
       case 'custom': 
-        return <LayoutGrid className="h-4 w-4 text-indigo-500" />;
+        return <Gift className="h-4 w-4 text-indigo-500" />;
       default: 
         return <LayoutGrid className="h-4 w-4 text-gray-500" />;
     }
@@ -74,6 +75,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
       case 'new_arrivals': return 'وصل حديثاً';
       case 'featured': return 'منتجات مميزة';
       case 'on_sale': return 'تخفيضات';
+      case 'all_products': return 'جميع المنتجات';
       case 'category': return 'فئة محددة';
       case 'custom': return 'منتجات مخصصة';
       default: return 'قسم';
@@ -86,6 +88,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
       case 'new_arrivals': return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'featured': return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'on_sale': return 'bg-rose-50 text-rose-700 border-rose-200';
+      case 'all_products': return 'bg-gray-50 text-gray-700 border-gray-200';
       case 'category': return 'bg-purple-50 text-purple-700 border-purple-200';
       case 'custom': return 'bg-indigo-50 text-indigo-700 border-indigo-200';
       default: return 'bg-gray-50 text-gray-700 border-gray-200';
@@ -96,7 +99,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
     <div 
       className={cn(
         "border rounded-md p-4 transition-all flex items-center",
-        showActions ? "bg-gray-50" : "bg-white",
+        showActions ? "bg-gray-50/80" : "bg-white",
         section.is_active ? "border-gray-200" : "border-gray-100 opacity-70"
       )}
       onMouseEnter={() => setShowActions(true)}
@@ -117,14 +120,17 @@ const SectionItem: React.FC<SectionItemProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h3 className="font-medium text-gray-900">{section.name}</h3>
-              <span 
-                className={cn(
-                  "text-xs px-2 py-0.5 rounded-full border", 
-                  getSectionTypeColor()
-                )}
+              <Badge 
+                variant="outline" 
+                className={cn("font-normal text-xs", getSectionTypeColor())}
               >
                 {getSectionTypeName()}
-              </span>
+              </Badge>
+              {!section.is_active && (
+                <Badge variant="outline" className="bg-gray-50 text-gray-500 border-gray-200 text-xs">
+                  غير نشط
+                </Badge>
+              )}
             </div>
             
             {(section.section_type === 'category' && section.category_id) && (
@@ -141,20 +147,22 @@ const SectionItem: React.FC<SectionItemProps> = ({
           </div>
         </div>
         
-        <div className={cn("flex gap-1 transition-opacity", showActions ? "opacity-100" : "opacity-0")}>
+        <div className={cn("flex gap-1.5 transition-opacity md:opacity-100", 
+          showActions ? "opacity-100" : "opacity-0")}>
           <Button
             size="icon"
             variant="ghost"
             onClick={handleToggleActive}
             className="h-8 w-8"
             disabled={isToggling}
+            title={section.is_active ? "إيقاف القسم" : "تفعيل القسم"}
           >
             {isToggling ? (
               <Loader2 className="h-4 w-4 animate-spin text-primary" />
             ) : section.is_active ? (
-              <ToggleRight className="h-4 w-4 text-green-500" />
+              <ToggleRight className="h-4.5 w-4.5 text-green-500" />
             ) : (
-              <ToggleLeft className="h-4 w-4 text-gray-500" />
+              <ToggleLeft className="h-4.5 w-4.5 text-gray-500" />
             )}
           </Button>
           <Button
@@ -162,6 +170,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
             variant="ghost"
             onClick={() => setEditingSection(section)}
             className="h-8 w-8"
+            title="تعديل القسم"
           >
             <Edit className="h-4 w-4 text-blue-500" />
           </Button>
@@ -170,6 +179,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
             variant="ghost"
             onClick={() => handleDeleteSection(section.id)}
             className="h-8 w-8"
+            title="حذف القسم"
           >
             <Trash className="h-4 w-4 text-red-500" />
           </Button>

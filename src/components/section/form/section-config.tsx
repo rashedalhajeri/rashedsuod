@@ -2,7 +2,7 @@
 import React from "react";
 import { 
   Award, ShoppingBag, Star, BadgePercent, 
-  TagIcon, LayoutGrid, ShoppingCart, TrendingUp, Gift
+  TagIcon, LayoutGrid, PackageSearch, TrendingUp, Gift, ShoppingCart
 } from "lucide-react";
 import { SectionType } from "./types";
 
@@ -37,6 +37,13 @@ export const sectionTypes: SectionType[] = [
     color: 'rose'
   },
   {
+    id: 'all_products',
+    name: 'جميع المنتجات',
+    icon: <PackageSearch className="h-5 w-5" />,
+    description: 'يعرض جميع المنتجات المتوفرة في المتجر',
+    color: 'gray'
+  },
+  {
     id: 'category',
     name: 'فئة محددة',
     icon: <TagIcon className="h-5 w-5" />,
@@ -45,7 +52,7 @@ export const sectionTypes: SectionType[] = [
   },
   {
     id: 'custom',
-    name: 'مخصص',
+    name: 'منتجات مخصصة',
     icon: <Gift className="h-5 w-5" />,
     description: 'قسم مخصص من منتجات تختارها أنت بنفسك',
     color: 'indigo'

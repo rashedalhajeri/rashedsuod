@@ -3,6 +3,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import { CheckIcon } from "lucide-react";
 import { SectionType } from "./types";
+import { motion } from "framer-motion";
 
 interface SectionTypeItemProps {
   type: SectionType;
@@ -17,27 +18,66 @@ const SectionTypeItem: React.FC<SectionTypeItemProps> = ({
 }) => {
   // Get dynamic color classes based on the type
   const getColorClasses = (colorName: string) => {
-    const colorMap: Record<string, { bg: string, text: string, border: string }> = {
-      emerald: { bg: "bg-emerald-100", text: "text-emerald-600", border: "border-emerald-300" },
-      blue: { bg: "bg-blue-100", text: "text-blue-600", border: "border-blue-300" },
-      amber: { bg: "bg-amber-100", text: "text-amber-600", border: "border-amber-300" },
-      rose: { bg: "bg-rose-100", text: "text-rose-600", border: "border-rose-300" },
-      purple: { bg: "bg-purple-100", text: "text-purple-600", border: "border-purple-300" },
-      indigo: { bg: "bg-indigo-100", text: "text-indigo-600", border: "border-indigo-300" }
+    const colorMap: Record<string, { bg: string, text: string, border: string, lightBg: string }> = {
+      emerald: { 
+        bg: "bg-emerald-100", 
+        text: "text-emerald-600", 
+        border: "border-emerald-300",
+        lightBg: "bg-emerald-50"
+      },
+      blue: { 
+        bg: "bg-blue-100", 
+        text: "text-blue-600", 
+        border: "border-blue-300",
+        lightBg: "bg-blue-50"
+      },
+      amber: { 
+        bg: "bg-amber-100", 
+        text: "text-amber-600", 
+        border: "border-amber-300",
+        lightBg: "bg-amber-50"
+      },
+      rose: { 
+        bg: "bg-rose-100", 
+        text: "text-rose-600", 
+        border: "border-rose-300",
+        lightBg: "bg-rose-50"
+      },
+      purple: { 
+        bg: "bg-purple-100", 
+        text: "text-purple-600", 
+        border: "border-purple-300",
+        lightBg: "bg-purple-50"
+      },
+      indigo: { 
+        bg: "bg-indigo-100", 
+        text: "text-indigo-600", 
+        border: "border-indigo-300",
+        lightBg: "bg-indigo-50"
+      },
+      gray: { 
+        bg: "bg-gray-100", 
+        text: "text-gray-600", 
+        border: "border-gray-300",
+        lightBg: "bg-gray-50"
+      }
     };
     
-    return colorMap[colorName] || { bg: "bg-gray-100", text: "text-gray-600", border: "border-gray-300" };
+    return colorMap[colorName] || { bg: "bg-gray-100", text: "text-gray-600", border: "border-gray-300", lightBg: "bg-gray-50" };
   };
   
   const colors = getColorClasses(type.color);
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 5 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ scale: 1.02 }}
       onClick={onClick}
       className={cn(
         "border rounded-lg p-4 cursor-pointer transition-all hover:border-gray-400 relative",
         isSelected 
-          ? `${colors.bg} ${colors.border} shadow-sm` 
+          ? `${colors.lightBg} ${colors.border} shadow-sm` 
           : "hover:shadow-sm"
       )}
       dir="rtl"
@@ -56,7 +96,7 @@ const SectionTypeItem: React.FC<SectionTypeItemProps> = ({
       <p className="text-xs text-gray-600 mt-1">
         {type.description}
       </p>
-    </div>
+    </motion.div>
   );
 };
 

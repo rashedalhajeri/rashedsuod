@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -261,6 +260,17 @@ export const getSectionProducts = async (
           .eq('store_id', storeId)
           .eq('is_active', true)
           .not('discount_price', 'is', null)
+          .order('created_at', { ascending: false })
+          .limit(limit);
+        break;
+        
+      case 'all_products':
+        // Get all active products
+        query = supabase
+          .from('products')
+          .select('*')
+          .eq('store_id', storeId)
+          .eq('is_active', true)
           .order('created_at', { ascending: false })
           .limit(limit);
         break;

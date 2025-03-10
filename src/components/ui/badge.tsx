@@ -23,6 +23,20 @@ const badgeVariants = cva(
           "border-transparent bg-amber-100 text-amber-800 hover:bg-amber-200/80",
         info:
           "border-transparent bg-blue-100 text-blue-800 hover:bg-blue-200/80",
+        best_selling:
+          "border-transparent bg-emerald-100 text-emerald-800 hover:bg-emerald-200/80",
+        new_arrivals:
+          "border-transparent bg-blue-100 text-blue-800 hover:bg-blue-200/80",
+        featured:
+          "border-transparent bg-amber-100 text-amber-800 hover:bg-amber-200/80",
+        on_sale:
+          "border-transparent bg-rose-100 text-rose-800 hover:bg-rose-200/80",
+        category:
+          "border-transparent bg-purple-100 text-purple-800 hover:bg-purple-200/80",
+        custom:
+          "border-transparent bg-indigo-100 text-indigo-800 hover:bg-indigo-200/80",
+        all_products:
+          "border-transparent bg-gray-100 text-gray-800 hover:bg-gray-200/80",
       },
     },
     defaultVariants: {
