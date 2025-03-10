@@ -2,42 +2,69 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Edit, Trash, Save, X, GripHorizontal, LayoutGrid, List } from "lucide-react";
+import { LayoutGrid, Edit, Trash, Save, X, ChevronUp, ChevronDown, GripVertical } from "lucide-react";
 import { motion } from "framer-motion";
-import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
 } from "@/components/ui/tooltip";
-import { toast } from "@/hooks/use-toast";
-import DeleteConfirmDialog from "@/components/ui/delete-confirm-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Section } from "@/services/section-service";
+import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
+import DeleteConfirmDialog from "@/components/ui/delete-confirm-dialog";
+import { toast } from "@/hooks/use-toast";
 
 interface SectionItemProps {
   section: Section;
-  index: number;
   editingSection: Section | null;
   setEditingSection: (section: Section | null) => void;
   handleUpdateSection: () => void;
   handleDeleteSection: (id: string) => Promise<void>;
-  dragHandleProps?: any;
-  totalSections?: number;
+  index: number;
+  totalSections: number;
   handleReorderSections?: (sourceIndex: number, destinationIndex: number) => void;
+  dragHandleProps?: DraggableProvidedDragHandleProps;
 }
+
+const getSectionTypeLabel = (type: string) => {
+  switch (type) {
+    case "featured": return "المنتجات المميزة";
+    case "best_selling": return "الأكثر مبيعاً";
+    case "new_arrivals": return "وصل حديثاً";
+    case "all_products": return "جميع المنتجات";
+    case "category": return "فئة محددة";
+    case "custom": return "تخصيص يدوي";
+    default: return type;
+  }
+};
 
 const SectionItem: React.FC<SectionItemProps> = ({
   section,
-  index,
   editingSection,
   setEditingSection,
   handleUpdateSection,
   handleDeleteSection,
-  dragHandleProps,
+  index,
   totalSections,
-  handleReorderSections
+  handleReorderSections,
+  dragHandleProps
 }) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const isDraggable = !!dragHandleProps && !!handleReorderSections;
+  
+  const handleMoveUp = () => {
+    if (handleReorderSections && index > 0) {
+      handleReorderSections(index, index - 1);
+    }
+  };
+  
+  const handleMoveDown = () => {
+    if (handleReorderSections && index < totalSections - 1) {
+      handleReorderSections(index, index + 1);
+    }
+  };
   
   const handleDeleteClick = async () => {
     try {
@@ -49,35 +76,17 @@ const SectionItem: React.FC<SectionItemProps> = ({
     } catch (error) {
       console.error("Error deleting section:", error);
       toast({
-        description: "لم يتم حذف القسم، يرجى المحاولة مرة أخرى"
+        description: "لم يتم حذف القسم، يرجى المحاولة مرة أخرى",
       });
     }
   };
   
-  // Determine the section type display text
-  const getSectionTypeText = (type: string) => {
-    switch (type) {
-      case "best_selling":
-        return "الأكثر مبيعاً";
-      case "featured":
-        return "منتجات مميزة";
-      case "newest":
-        return "أحدث المنتجات";
-      case "category":
-        return "منتجات من فئة";
-      case "custom":
-        return "منتجات مخصصة";
-      default:
-        return "غير محدد";
-    }
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className="flex items-center justify-between p-4 border rounded-xl bg-white hover:shadow-sm mb-2 transition-all"
+      className="flex items-center justify-between p-4 border rounded-xl bg-white hover:shadow-sm transition-all"
     >
       {editingSection?.id === section.id ? (
         <div className="flex items-center gap-2 flex-1">
@@ -124,27 +133,66 @@ const SectionItem: React.FC<SectionItemProps> = ({
         </div>
       ) : (
         <>
-          <div className="flex items-center flex-1">
-            <div {...dragHandleProps} className="cursor-grab mr-2 text-gray-400 hover:text-gray-600">
-              <GripHorizontal size={18} />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-base font-medium">{section.name}</span>
-              <div className="flex items-center text-xs text-gray-500 mt-1 gap-3">
-                <span className="flex items-center gap-1 bg-gray-100 px-2 py-0.5 rounded">
-                  {getSectionTypeText(section.section_type)}
-                </span>
-                <span className="flex items-center gap-1">
-                  {section.display_style === 'grid' ? (
-                    <><LayoutGrid size={12} /> عرض شبكي</>
-                  ) : (
-                    <><List size={12} /> عرض قائمة</>
-                  )}
-                </span>
+          <div className="flex items-center">
+            {isDraggable && (
+              <div 
+                className="h-10 w-10 flex items-center justify-center text-gray-400 cursor-move hover:text-gray-600" 
+                {...dragHandleProps}
+              >
+                <GripVertical className="h-5 w-5" />
               </div>
+            )}
+            <div className="h-10 w-10 mr-3 rounded-lg bg-indigo-50 flex items-center justify-center">
+              <LayoutGrid className="h-5 w-5 text-indigo-500" />
+            </div>
+            <div>
+              <div className="font-medium">{section.name}</div>
+              <Badge variant="outline" className="mt-1 text-xs font-normal">
+                {getSectionTypeLabel(section.section_type)}
+              </Badge>
             </div>
           </div>
           <div className="flex gap-2">
+            {handleReorderSections && (
+              <>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="h-9 w-9 rounded-lg"
+                        onClick={handleMoveUp}
+                        disabled={index === 0}
+                      >
+                        <ChevronUp className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>نقل لأعلى</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="h-9 w-9 rounded-lg"
+                        onClick={handleMoveDown}
+                        disabled={index === totalSections - 1}
+                      >
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>نقل لأسفل</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </>
+            )}
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -188,11 +236,11 @@ const SectionItem: React.FC<SectionItemProps> = ({
         onOpenChange={setIsDeleteDialogOpen}
         title="تأكيد حذف القسم"
         description={
-          <>
+          <div className="text-center">
             <p>هل أنت متأكد من رغبتك في حذف القسم:</p>
             <p className="font-bold mt-1 text-black">{section.name}؟</p>
             <p className="mt-2 text-sm">سيتم حذف جميع المعلومات المرتبطة بهذا القسم.</p>
-          </>
+          </div>
         }
         onDelete={() => handleDeleteClick()}
         itemName={section.name}
