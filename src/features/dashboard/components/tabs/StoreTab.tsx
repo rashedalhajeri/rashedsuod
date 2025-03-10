@@ -8,6 +8,7 @@ import StoreFeatures from "@/features/dashboard/components/StoreFeatures";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import SaveButton from "@/components/ui/save-button";
+import StorePreviewButton from "@/features/dashboard/components/StorePreviewButton";
 
 interface StoreTabProps {
   storeData: any;
@@ -41,6 +42,10 @@ const StoreTab: React.FC<StoreTabProps> = ({ storeData }) => {
   
   return (
     <div className="space-y-4">
+      <div className="flex justify-end mb-4">
+        <StorePreviewButton storeId={storeData.id} storeDomain={storeData.domain_name} />
+      </div>
+      
       <Tabs defaultValue="logo">
         <TabsList className="w-full grid grid-cols-3 mb-4">
           <TabsTrigger value="logo">شعار المتجر</TabsTrigger>

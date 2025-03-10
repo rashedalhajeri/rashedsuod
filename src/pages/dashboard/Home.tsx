@@ -1,167 +1,287 @@
-
 import React from "react";
-import useStoreData, { getCurrencyFormatter } from "@/hooks/use-store-data";
-import DashboardLayout from "@/layouts/DashboardLayout";
-import LoadingState from "@/components/ui/loading-state";
-
-// Import components
-import WelcomeSection from "@/features/dashboard/components/WelcomeSection";
-import SalesChart from "@/features/dashboard/components/SalesChart";
-import DashboardStatsSection from "@/features/dashboard/components/DashboardStatsSection";
-import SubscriptionAlert from "@/features/dashboard/components/SubscriptionAlert";
-import ActivitySummarySection from "@/features/dashboard/components/ActivitySummarySection";
-import DashboardErrorHandler from "@/features/dashboard/components/DashboardErrorHandler";
-import SalesChartSkeleton from "@/features/dashboard/components/SalesChartSkeleton";
-
-// Import data fetching hook
-import useDashboardData from "@/features/dashboard/hooks/useDashboardData";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useStore } from "@/hooks/use-store";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowDownToLine } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PlusCircle, ShoppingBag, PackageCheck, Users, CreditCard, Settings as SettingsIcon, Percent } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import StorePreviewButton from "@/features/dashboard/components/StorePreviewButton";
 
-// Dashboard Home Page
-const DashboardHome: React.FC = () => {
-  // Use the custom hook to get all dashboard data
-  const {
-    storeData,
-    userName,
-    statsData,
-    salesData,
-    ordersData,
-    productsData,
-    isLoading,
-    storeError,
-    statsError,
-    salesError,
-    ordersError,
-    productsError,
-    setPeriod
-  } = useDashboardData();
+const Home = () => {
+  const { storeData, isLoading, error } = useStore();
   
-  // Handle period changes from the stats section
-  const handlePeriodChange = (period: string) => {
-    setPeriod(period);
-  };
-  
-  // Handle errors
-  const hasErrors = storeError || statsError || salesError || ordersError || productsError;
-  if (hasErrors) {
-    return (
-      <DashboardErrorHandler
-        storeError={storeError}
-        statsError={statsError}
-        salesError={salesError}
-        ordersError={ordersError}
-        productsError={productsError}
-      />
-    );
+  if (isLoading) {
+    return <div>Loading...</div>;
   }
   
-  // Format currency based on store settings
-  const formatCurrency = getCurrencyFormatter(storeData?.currency || 'KWD');
-  
-  // Subscription plan status
-  const subscriptionStatus = storeData?.subscription_plan || "free";
-  const isBasicPlan = subscriptionStatus === "basic";
-
-  // Transform salesData to match the expected format if needed
-  const formattedSalesData = salesData?.map(item => ({
-    name: item.name,
-    sales: item.value
-  })) || [];
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
   
   return (
-    <DashboardLayout>
-      <div className="space-y-6 pb-8">
-        {/* Welcome Section with Store Logo */}
-        <WelcomeSection 
-          storeName={storeData?.store_name || "متجرك"} 
-          ownerName={userName}
-          logoUrl={storeData?.logo_url}
-        />
-        
-        {/* Subscription Alert for Basic Plan */}
-        {isBasicPlan && <SubscriptionAlert isBasicPlan={isBasicPlan} />}
-        
-        {/* Stats Cards with Period Selector */}
-        <DashboardStatsSection 
-          stats={statsData || {
-            products: 0,
-            orders: 0,
-            customers: 0,
-            revenue: 0
-          }} 
-          formatCurrency={formatCurrency}
-          onPeriodChange={handlePeriodChange}
-          isLoading={isLoading && !statsData}
-        />
-        
-        {/* Sales Chart with Skeleton */}
-        {isLoading && !salesData ? (
-          <SalesChartSkeleton />
-        ) : (
-          <SalesChart 
-            data={formattedSalesData}
-            currency={storeData?.currency || "د.ك"}
-          />
-        )}
-        
-        {/* Activity Summary Section with Skeleton */}
-        {isLoading && (!ordersData || !productsData) ? (
-          <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-            <Skeleton className="h-8 w-48 mb-4" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Skeleton className="h-6 w-32 mb-3" />
-                {[1, 2, 3].map(i => (
-                  <Skeleton key={`order-${i}`} className="h-16 w-full mb-2" />
-                ))}
-              </div>
-              <div>
-                <Skeleton className="h-6 w-32 mb-3" />
-                {[1, 2, 3].map(i => (
-                  <Skeleton key={`product-${i}`} className="h-16 w-full mb-2" />
-                ))}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <ActivitySummarySection
-            orders={ordersData?.orders || []}
-            products={productsData || []}
-            currency={storeData?.currency || "KWD"}
-          />
-        )}
-        
-        {/* Report Section */}
-        <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200">
-          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-            <div>
-              <h3 className="text-lg font-bold text-gray-900">تقارير المتجر</h3>
-              <p className="text-sm text-gray-500">قم بتحميل تقارير مفصلة عن أداء متجرك</p>
-            </div>
-            
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" className="text-sm h-9 gap-1 hover:bg-primary-50 hover:text-primary-600 hover:border-primary-200">
-                <ArrowDownToLine className="h-4 w-4" />
-                تقرير المبيعات
-              </Button>
-              
-              <Button variant="outline" className="text-sm h-9 gap-1 hover:bg-primary-50 hover:text-primary-600 hover:border-primary-200">
-                <ArrowDownToLine className="h-4 w-4" />
-                تقرير المنتجات
-              </Button>
-              
-              <Button variant="outline" className="text-sm h-9 gap-1 hover:bg-primary-50 hover:text-primary-600 hover:border-primary-200">
-                <ArrowDownToLine className="h-4 w-4" />
-                تقرير العملاء
-              </Button>
-            </div>
-          </div>
+    <div className="container mx-auto py-6">
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">لوحة التحكم</h1>
+          <p className="text-gray-500">نظرة عامة على أداء متجرك</p>
         </div>
+        
+        {storeData && (
+          <StorePreviewButton storeId={storeData?.id} storeDomain={storeData?.domain_name} />
+        )}
       </div>
-    </DashboardLayout>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card className="bg-white shadow-sm border border-gray-100">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              <ShoppingBag className="mr-2 h-4 w-4 text-gray-500 inline-block align-middle" />
+              إجمالي المبيعات
+            </CardTitle>
+            <Link to="/dashboard/products">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                className="h-4 w-4 text-muted-foreground"
+              >
+                <path d="M4 4h16c1.33 0 2.639.52 3.604 1.451C21.523 6.393 22 7.683 22 9c0 1.316-.477 2.607-1.396 3.549C19.361 13.48 18.05 14 16.67 14H5"></path>
+                <path d="M4 14h.01"></path>
+                <path d="M20 14h.01"></path>
+                <path d="M4 20h.01"></path>
+                <path d="M20 20h.01"></path>
+                <path d="M4 8h.01"></path>
+                <path d="M20 8h.01"></path>
+              </svg>
+            </Link>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">452,318.89 ر.س</div>
+            <p className="text-sm text-muted-foreground">
+              +20.1% من الشهر الماضي
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-white shadow-sm border border-gray-100">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              <PackageCheck className="mr-2 h-4 w-4 text-gray-500 inline-block align-middle" />
+              الطلبات الجديدة
+            </CardTitle>
+            <Link to="/dashboard/orders">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                className="h-4 w-4 text-muted-foreground"
+              >
+                <path d="M4 4h16c1.33 0 2.639.52 3.604 1.451C21.523 6.393 22 7.683 22 9c0 1.316-.477 2.607-1.396 3.549C19.361 13.48 18.05 14 16.67 14H5"></path>
+                <path d="M4 14h.01"></path>
+                <path d="M20 14h.01"></path>
+                <path d="M4 20h.01"></path>
+                <path d="M20 20h.01"></path>
+                <path d="M4 8h.01"></path>
+                <path d="M20 8h.01"></path>
+              </svg>
+            </Link>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">72</div>
+            <p className="text-sm text-muted-foreground">
+              +5% من الشهر الماضي
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-white shadow-sm border border-gray-100">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              <Users className="mr-2 h-4 w-4 text-gray-500 inline-block align-middle" />
+              زوار الموقع
+            </CardTitle>
+            <Link to="/dashboard/customers">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                className="h-4 w-4 text-muted-foreground"
+              >
+                <path d="M4 4h16c1.33 0 2.639.52 3.604 1.451C21.523 6.393 22 7.683 22 9c0 1.316-.477 2.607-1.396 3.549C19.361 13.48 18.05 14 16.67 14H5"></path>
+                <path d="M4 14h.01"></path>
+                <path d="M20 14h.01"></path>
+                <path d="M4 20h.01"></path>
+                <path d="M20 20h.01"></path>
+                <path d="M4 8h.01"></path>
+                <path d="M20 8h.01"></path>
+              </svg>
+            </Link>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">1,437</div>
+            <p className="text-sm text-muted-foreground">
+              +10% من الشهر الماضي
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+      
+      <Separator className="my-6" />
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card className="bg-white shadow-sm border border-gray-100">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              <CreditCard className="mr-2 h-4 w-4 text-gray-500 inline-block align-middle" />
+              الأرباح
+            </CardTitle>
+            <Link to="/dashboard/payments">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                className="h-4 w-4 text-muted-foreground"
+              >
+                <path d="M4 4h16c1.33 0 2.639.52 3.604 1.451C21.523 6.393 22 7.683 22 9c0 1.316-.477 2.607-1.396 3.549C19.361 13.48 18.05 14 16.67 14H5"></path>
+                <path d="M4 14h.01"></path>
+                <path d="M20 14h.01"></path>
+                <path d="M4 20h.01"></path>
+                <path d="M20 20h.01"></path>
+                <path d="M4 8h.01"></path>
+                <path d="M20 8h.01"></path>
+              </svg>
+            </Link>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">57,000 ر.س</div>
+            <p className="text-sm text-muted-foreground">
+              +13% من الشهر الماضي
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-white shadow-sm border border-gray-100">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              <Percent className="mr-2 h-4 w-4 text-gray-500 inline-block align-middle" />
+              الكوبونات المستخدمة
+            </CardTitle>
+            <Link to="/dashboard/coupons">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                className="h-4 w-4 text-muted-foreground"
+              >
+                <path d="M4 4h16c1.33 0 2.639.52 3.604 1.451C21.523 6.393 22 7.683 22 9c0 1.316-.477 2.607-1.396 3.549C19.361 13.48 18.05 14 16.67 14H5"></path>
+                <path d="M4 14h.01"></path>
+                <path d="M20 14h.01"></path>
+                <path d="M4 20h.01"></path>
+                <path d="M20 20h.01"></path>
+                <path d="M4 8h.01"></path>
+                <path d="M20 8h.01"></path>
+              </svg>
+            </Link>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">34</div>
+            <p className="text-sm text-muted-foreground">
+              +6% من الشهر الماضي
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-white shadow-sm border border-gray-100">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              <SettingsIcon className="mr-2 h-4 w-4 text-gray-500 inline-block align-middle" />
+              إعدادات المتجر
+            </CardTitle>
+            <Link to="/dashboard/settings">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                className="h-4 w-4 text-muted-foreground"
+              >
+                <path d="M4 4h16c1.33 0 2.639.52 3.604 1.451C21.523 6.393 22 7.683 22 9c0 1.316-.477 2.607-1.396 3.549C19.361 13.48 18.05 14 16.67 14H5"></path>
+                <path d="M4 14h.01"></path>
+                <path d="M20 14h.01"></path>
+                <path d="M4 20h.01"></path>
+                <path d="M20 20h.01"></path>
+                <path d="M4 8h.01"></path>
+                <path d="M20 8h.01"></path>
+              </svg>
+            </Link>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">تعديل</div>
+            <p className="text-sm text-muted-foreground">
+              تعديل إعدادات المتجر
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+      
+      <Separator className="my-6" />
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="bg-white shadow-sm border border-gray-100">
+          <CardHeader>
+            <CardTitle>إدارة المنتجات</CardTitle>
+            <CardDescription>إضافة وتعديل وحذف المنتجات في متجرك</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link to="/dashboard/products">
+              <Button className="w-full">
+                <ShoppingBag className="mr-2 h-4 w-4" />
+                الذهاب إلى المنتجات
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-white shadow-sm border border-gray-100">
+          <CardHeader>
+            <CardTitle>إدارة الفئات</CardTitle>
+            <CardDescription>تصنيف المنتجات لتسهيل عملية التسوق</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link to="/dashboard/categories">
+              <Button className="w-full">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                الذهاب إلى الفئات
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 };
 
-export default DashboardHome;
+export default Home;
