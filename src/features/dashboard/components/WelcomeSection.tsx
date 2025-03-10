@@ -16,9 +16,6 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
   ownerName,
   logoUrl
 }) => {
-  const currentHour = new Date().getHours();
-  let greeting = currentHour < 12 ? "صباح الخير" : "مساء الخير";
-  
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -45,7 +42,7 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
               </div>
               <div>
                 <h2 className="text-2xl font-bold flex items-center gap-2 text-gray-900">
-                  {greeting}
+                  مرحباً
                   <Sparkles className="h-5 w-5 text-amber-500 animate-pulse" />
                 </h2>
                 <p className="text-muted-foreground mt-1 text-gray-700">
