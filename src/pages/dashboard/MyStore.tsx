@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useStoreData } from "@/hooks/use-store-data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -75,8 +74,7 @@ const MyStore = () => {
   const storeDomain = storeData.domain_name || storeData.domain;
   const storeName = storeData.store_name || storeData.name;
   
-  // Construct the proper store URL to prevent issues with relative paths
-  const storePreviewUrl = storeDomain ? `/store/${storeDomain.toLowerCase()}` : '';
+  const storePreviewUrl = storeDomain ? `store/${storeDomain.toLowerCase()}` : '';
   
   return (
     <div className="container max-w-7xl mx-auto py-8 space-y-8">
@@ -230,7 +228,7 @@ const MyStore = () => {
                     2
                   </div>
                   <div>
-                    <h3 className="font-medium text-emerald-900">أضف بنرات ترويجية جذابة</h3>
+                    <h3 className="font-medium text-emerald-900">أضف بنرات ت��ويجية جذابة</h3>
                     <p className="text-sm text-emerald-700 mt-1">
                       البنرات الترويجية تساعد في عرض العروض والمنتجات الجديدة وجذب انتباه العملاء لزيادة المبيعات.
                     </p>

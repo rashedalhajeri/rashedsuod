@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useStoreData } from "@/hooks/use-store-data";
@@ -24,20 +23,18 @@ const Store = () => {
   const [currentStoreData, setCurrentStoreData] = useState<any>(null);
   const [storeNotFound, setStoreNotFound] = useState(false);
 
-  // تحميل بيانات المتجر الحالي استناداً إلى اسم الدومين
   useEffect(() => {
     const fetchCurrentStore = async () => {
       if (!storeDomain) return;
       
       try {
-        // تنظيف اسم الدومين لضمان المطابقة الدقيقة
         const cleanDomain = storeDomain.trim().toLowerCase();
+        console.log("البحث عن متجر بالدومين:", cleanDomain);
         
-        // استعلام دقيق باستخدام المطابقة المباشرة للاسم
         const { data, error } = await supabase
           .from("stores")
           .select("*")
-          .eq("domain_name", cleanDomain)
+          .ilike("domain_name", cleanDomain)
           .maybeSingle();
           
         if (error) {
@@ -52,6 +49,7 @@ const Store = () => {
           return;
         }
         
+        console.log("تم العثور على المتجر:", data);
         setCurrentStoreData(data);
         setStoreNotFound(false);
       } catch (err) {
@@ -64,14 +62,12 @@ const Store = () => {
   }, [storeDomain]);
 
   useEffect(() => {
-    // تأكد من استخدام بيانات المتجر المحدد بدقة (من الدومين) بدلاً من storeData العام
     const store = currentStoreData || storeData;
     
     if (store?.id) {
       const fetchStoreData = async () => {
         setIsLoadingData(true);
         try {
-          // Fetch products
           const { data: productsData, error: productsError } = await supabase
             .from('products')
             .select('*')
@@ -88,7 +84,6 @@ const Store = () => {
           
           setProducts(productsData || []);
           
-          // Fetch categories with product counts
           const { data: categoriesData, error: categoriesError } = await supabase
             .from('categories')
             .select(`
@@ -100,7 +95,6 @@ const Store = () => {
           if (categoriesError) {
             console.error("خطأ في تحميل الفئات:", categoriesError);
           } else {
-            // Filter out categories with no products
             const categoriesWithProducts = categoriesData
               ?.filter(cat => cat.products.length > 0)
               .map(cat => cat.name) || [];
@@ -108,7 +102,6 @@ const Store = () => {
             setCategories(categoriesWithProducts);
           }
           
-          // Fetch active sections
           const { data: sectionsData, error: sectionsError } = await supabase
             .from('sections')
             .select('name')
@@ -122,7 +115,6 @@ const Store = () => {
             setSections(sectionNames);
           }
           
-          // Featured products
           const { data: featuredProductsData, error: featuredError } = await supabase
             .from('products')
             .select('*')
@@ -138,7 +130,6 @@ const Store = () => {
             setFeaturedProducts(featuredProductsData || []);
           }
           
-          // Best selling products
           const { data: bestSellingProductsData, error: bestSellingError } = await supabase
             .from('products')
             .select('*')
@@ -157,10 +148,8 @@ const Store = () => {
           console.error("خطأ في تحميل بيانات المتجر:", err);
           toast.error("حدث خطأ أثناء تحميل بيانات المتجر");
         } finally {
-          // Add a small delay for smoother transitions
           setTimeout(() => {
             setIsLoadingData(false);
-            // Short delay before showing content for smooth transition
             setTimeout(() => {
               setShowContent(true);
             }, 100);
@@ -209,10 +198,8 @@ const Store = () => {
     );
   }
 
-  // استخدام بيانات المتجر المحدد أو الافتراضي
   const storeToShow = currentStoreData || storeData || {};
 
-  // Instead of a loading state, render the layout with skeletons
   return (
     <StoreLayout storeData={storeToShow}>
       {isLoading || isLoadingData ? (

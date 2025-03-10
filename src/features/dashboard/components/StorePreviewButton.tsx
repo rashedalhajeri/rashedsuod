@@ -21,13 +21,16 @@ const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({
   const handleClick = () => {
     if (!storeUrl) return;
     
-    // Check if the URL starts with http or / to determine if it's absolute or relative
-    let fullUrl = storeUrl;
-    if (!storeUrl.startsWith('http') && !storeUrl.startsWith('/')) {
-      fullUrl = `/${storeUrl}`;
+    // تحويل اسم النطاق إلى أحرف صغيرة لضمان التوافق
+    const lowerCaseUrl = storeUrl.toLowerCase();
+    
+    // التحقق مما إذا كان الرابط يبدأ بـ http أو / لتحديد ما إذا كان مطلقًا أو نسبيًا
+    let fullUrl = lowerCaseUrl;
+    if (!lowerCaseUrl.startsWith('http') && !lowerCaseUrl.startsWith('/')) {
+      fullUrl = `/${lowerCaseUrl}`;
     }
     
-    // Open in a new tab
+    // فتح في علامة تبويب جديدة
     window.open(fullUrl, '_blank');
   };
 
