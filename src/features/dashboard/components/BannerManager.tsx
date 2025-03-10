@@ -48,18 +48,7 @@ const BannerManager: React.FC<BannerManagerProps> = ({ storeId }) => {
         setTransitionTime(settingsData.transition_time);
       }
       
-      // Transform the data to match the Banner type
-      const typedBanners = bannersData?.map(banner => ({
-        id: banner.id,
-        image_url: banner.image_url,
-        link_type: banner.link_type as "category" | "product" | "external" | "none",
-        link_url: banner.link_url || "",
-        title: banner.title || "",
-        sort_order: banner.sort_order,
-        is_active: banner.is_active
-      })) || [];
-      
-      setBanners(typedBanners);
+      setBanners(bannersData || []);
     } catch (error) {
       console.error("Error fetching banners:", error);
       toast.error("حدث خطأ أثناء تحميل البنرات");
@@ -199,16 +188,11 @@ const BannerManager: React.FC<BannerManagerProps> = ({ storeId }) => {
         if (deleteError) throw deleteError;
       }
       
-      // Prepare banners for database by ensuring they match the expected type
       const bannersToUpsert = banners.map((banner, index) => ({
+        ...banner,
         id: banner.id.toString().startsWith('temp_') ? undefined : banner.id,
         store_id: storeId,
-        image_url: banner.image_url,
-        link_type: banner.link_type,
-        link_url: banner.link_url,
-        title: banner.title,
-        sort_order: index,
-        is_active: banner.is_active
+        sort_order: index
       }));
       
       // Use the type assertion to tell TypeScript that the query is valid

@@ -1,3 +1,4 @@
+
 import { Routes, Route } from "react-router-dom";
 import { ProtectedRoute, CreateStoreRoute } from "./ProtectedRoutes";
 
@@ -28,7 +29,7 @@ import Customers from "@/pages/dashboard/Customers";
 import Payments from "@/pages/dashboard/Payments";
 import Coupons from "@/pages/dashboard/Coupons";
 import Settings from "@/pages/dashboard/Settings";
-import MyStore from "@/pages/dashboard/MyStore";
+import { useStoreData } from "@/hooks/use-store-data";
 
 const AppRoutes = () => {
   return (
@@ -37,18 +38,17 @@ const AppRoutes = () => {
       <Route path="/auth" element={<Auth />} />
       <Route path="/reset-password" element={<Auth />} />
       
-      {/* Store routes with normalized domain parameter - always converted to lowercase */}
-      <Route path="/store/:storeDomain/*" element={<Store />} />
+      <Route path="/store/:storeDomain" element={<Store />} />
       <Route path="/store/:storeDomain/category/:categoryName" element={<CategoryPage />} />
       <Route path="/store/:storeDomain/product/:productId" element={<ProductPage />} />
       <Route path="/store/:storeDomain/cart" element={<CartPage />} />
       <Route path="/store/:storeDomain/checkout" element={<CheckoutPage />} />
       <Route path="/store/:storeDomain/order-success/:orderId" element={<OrderSuccessPage />} />
+      
       <Route path="/store/:storeDomain/login" element={<StoreLogin />} />
       <Route path="/store/:storeDomain/register" element={<StoreRegister />} />
       <Route path="/store/:storeDomain/forgot-password" element={<StoreForgotPassword />} />
       
-      {/* Dashboard routes */}
       <Route 
         path="/create-store" 
         element={
@@ -126,15 +126,6 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Coupons />
-          </ProtectedRoute>
-        }
-      />
-      
-      <Route
-        path="/dashboard/my-store"
-        element={
-          <ProtectedRoute>
-            <MyStore />
           </ProtectedRoute>
         }
       />

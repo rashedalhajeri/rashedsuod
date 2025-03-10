@@ -61,11 +61,6 @@ const SidebarLinks: React.FC<SidebarLinksProps> = ({
           path: "/dashboard/customers",
           icon: <Users size={20} />,
           label: "العملاء"
-        },
-        {
-          path: "/dashboard/my-store",
-          icon: <Store size={20} />,
-          label: "متجري"
         }
       ]
     },
@@ -91,6 +86,12 @@ const SidebarLinks: React.FC<SidebarLinksProps> = ({
           path: "/dashboard/settings",
           icon: <Settings size={20} />,
           label: "الإعدادات"
+        },
+        {
+          path: "/preview-store",
+          icon: <Store size={20} />,
+          label: "معاينة المتجر",
+          external: true
         }
       ]
     }
@@ -106,30 +107,54 @@ const SidebarLinks: React.FC<SidebarLinksProps> = ({
           <div className="space-y-1">
             {group.links.map((link) => (
               <div key={link.path}>
-                <NavLink
-                  to={link.path}
-                  onClick={closeMobileMenu}
-                  className={({ isActive }) =>
-                    cn(
+                {link.external ? (
+                  <a
+                    href={link.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(
                       "flex items-center gap-3 py-2.5 px-3 rounded-lg transition-all duration-200 text-sm font-medium",
-                      isActive
-                        ? "bg-primary-50 text-primary-600 font-semibold"
-                        : "text-gray-600 hover:bg-gray-100/80 hover:text-primary-600",
+                      "text-gray-600 hover:bg-gray-100/80 hover:text-primary-600",
                       isCollapsed && !isMobile && "justify-center px-2"
-                    )
-                  }
-                  end={link.path === "/dashboard"}
-                >
-                  <span className={cn(
-                    "flex items-center justify-center rounded-md text-inherit",
-                    isCollapsed && !isMobile ? "w-9 h-9 bg-gray-100" : ""
-                  )}>
-                    {link.icon}
-                  </span>
-                  {(!isCollapsed || isMobile) && (
-                    <span>{link.label}</span>
-                  )}
-                </NavLink>
+                    )}
+                    onClick={closeMobileMenu}
+                  >
+                    <span className={cn(
+                      "flex items-center justify-center rounded-md text-inherit",
+                      isCollapsed && !isMobile ? "w-9 h-9 bg-gray-100" : ""
+                    )}>
+                      {link.icon}
+                    </span>
+                    {(!isCollapsed || isMobile) && (
+                      <span>{link.label}</span>
+                    )}
+                  </a>
+                ) : (
+                  <NavLink
+                    to={link.path}
+                    onClick={closeMobileMenu}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center gap-3 py-2.5 px-3 rounded-lg transition-all duration-200 text-sm font-medium",
+                        isActive
+                          ? "bg-primary-50 text-primary-600 font-semibold"
+                          : "text-gray-600 hover:bg-gray-100/80 hover:text-primary-600",
+                        isCollapsed && !isMobile && "justify-center px-2"
+                      )
+                    }
+                    end={link.path === "/dashboard"}
+                  >
+                    <span className={cn(
+                      "flex items-center justify-center rounded-md text-inherit",
+                      isCollapsed && !isMobile ? "w-9 h-9 bg-gray-100" : ""
+                    )}>
+                      {link.icon}
+                    </span>
+                    {(!isCollapsed || isMobile) && (
+                      <span>{link.label}</span>
+                    )}
+                  </NavLink>
+                )}
               </div>
             ))}
           </div>

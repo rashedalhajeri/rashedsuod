@@ -15,7 +15,7 @@ export const createStore = async (formData: StoreFormData): Promise<boolean> => 
       return false;
     }
     
-    // Prepare store data for insertion - ensure domain_name is lowercase
+    // Prepare store data for insertion
     const storeData = {
       user_id: userData.user.id,
       store_name: formData.storeName,
@@ -25,10 +25,12 @@ export const createStore = async (formData: StoreFormData): Promise<boolean> => 
       currency: formData.currency,
       description: formData.description,
       logo_url: formData.logoUrl,
+      // إزالة حقل banner_url إذا كان فارغاً لتجنب الأخطاء في قاعدة البيانات التي لا تحتوي على هذا العمود
     };
     
     // إضافة حقل banner_url فقط إذا كان موجوداً في formData وليس null
     if (formData.bannerUrl) {
+      // نضيف هذا للتحقق في وقت التشغيل - إذا فشل الاستدعاء سنجرب بدون هذا الحقل
       (storeData as any).banner_url = formData.bannerUrl;
     }
     
@@ -144,7 +146,7 @@ export const searchStoresByName = async (storeName: string): Promise<any[]> => {
 };
 
 /**
- * Get store by exact domain name, with case-insensitive search
+ * Get store by exact domain name
  */
 export const getStoreByDomain = async (domainName: string): Promise<any> => {
   try {
@@ -153,13 +155,11 @@ export const getStoreByDomain = async (domainName: string): Promise<any> => {
     }
     
     const cleanDomain = domainName.trim().toLowerCase();
-    console.log("البحث عن متجر بالدومين (getStoreByDomain):", cleanDomain);
     
-    // Search by domain_name column with case-insensitive match
     const { data, error } = await supabase
       .from("stores")
       .select("*")
-      .eq("domain_name", cleanDomain)  // Now using exact match because all domains are lowercase
+      .eq("domain_name", cleanDomain)
       .eq("status", "active")
       .maybeSingle();
     

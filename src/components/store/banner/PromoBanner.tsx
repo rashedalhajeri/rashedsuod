@@ -67,18 +67,7 @@ const PromoBanner: React.FC<PromoBannerProps> = ({ storeDomain }) => {
           setTransitionTime(settingsData.transition_time);
         }
         
-        // Type-safe transformation of banners data
-        const typedBanners = bannersData?.map(banner => ({
-          id: banner.id,
-          image_url: banner.image_url,
-          link_type: banner.link_type as "category" | "product" | "external" | "none",
-          link_url: banner.link_url || "",
-          title: banner.title || "",
-          sort_order: banner.sort_order,
-          is_active: banner.is_active
-        })) || [];
-        
-        setBanners(typedBanners);
+        setBanners(bannersData || []);
         setIsLoading(false);
       } catch (error) {
         console.error("Error in PromoBanner:", error);

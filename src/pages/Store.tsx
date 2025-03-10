@@ -1,131 +1,263 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { useStoreData } from "@/hooks/use-store-data";
-import StoreDataLoader from "@/components/store/StoreDataLoader";
-import StoreNotFound from "@/components/store/StoreNotFound";
-import StoreSkeleton from "@/components/store/StoreSkeleton";
-import StoreContent from "@/components/store/StoreContent";
-import StorePageLayout from "@/components/store/layout/StorePageLayout";
-import { useStoreDomain } from "@/hooks/use-store-domain";
-import ErrorBoundary from "@/components/ui/ErrorBoundary";
+import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
+import StoreLayout from "@/components/store/StoreLayout";
+import StoreContent from "@/components/store/StoreContent";
+import { supabase } from "@/integrations/supabase/client";
+import { motion } from "framer-motion";
+import ProductGridSkeleton from "@/components/store/skeletons/ProductGridSkeleton";
 import { toast } from "sonner";
-import { checkStoreStatus } from "@/utils/store-helpers";
 
 const Store = () => {
-  const { domain: storeDomain, isValidDomain, rawDomain } = useStoreDomain();
+  const { storeDomain } = useParams<{ storeDomain: string }>();
   const { storeData, isLoading, error } = useStoreData();
-  const [storeNotFound, setStoreNotFound] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [sections, setSections] = useState<string[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [bestSellingProducts, setBestSellingProducts] = useState([]);
   const [showContent, setShowContent] = useState(false);
   const [currentStoreData, setCurrentStoreData] = useState<any>(null);
-  const [loadedStoreData, setLoadedStoreData] = useState<any>({
-    products: [],
-    categories: [],
-    sections: [],
-    featuredProducts: [],
-    bestSellingProducts: []
-  });
+  const [storeNotFound, setStoreNotFound] = useState(false);
 
-  // تحقق من وجود وحالة المتجر عند التحميل
+  // تحميل بيانات المتجر الحالي استناداً إلى اسم الدومين
   useEffect(() => {
-    const verifyStore = async () => {
-      if (isValidDomain && storeDomain) {
-        console.log("التحقق من حالة المتجر:", storeDomain);
-        const { exists, active, store } = await checkStoreStatus(storeDomain);
+    const fetchCurrentStore = async () => {
+      if (!storeDomain) return;
+      
+      try {
+        // تنظيف اسم الدومين لضمان المطابقة الدقيقة
+        const cleanDomain = storeDomain.trim().toLowerCase();
         
-        if (!exists) {
-          console.log("المتجر غير موجود:", storeDomain);
+        // استعلام دقيق باستخدام المطابقة المباشرة للاسم
+        const { data, error } = await supabase
+          .from("stores")
+          .select("*")
+          .eq("domain_name", cleanDomain)
+          .maybeSingle();
+          
+        if (error) {
+          console.error("خطأ في تحميل بيانات المتجر:", error);
           setStoreNotFound(true);
-        } else if (!active) {
-          console.log("المتجر موجود ولكنه غير نشط:", storeDomain);
-          toast.error("هذا المتجر غير نشط حالياً");
-          setStoreNotFound(true);
-        } else {
-          console.log("المتجر موجود ونشط:", store);
-          setStoreNotFound(false);
-          if (store) {
-            setCurrentStoreData(store);
-          }
+          return;
         }
+        
+        if (!data) {
+          console.log("لم يتم العثور على متجر بهذا الدومين:", cleanDomain);
+          setStoreNotFound(true);
+          return;
+        }
+        
+        setCurrentStoreData(data);
+        setStoreNotFound(false);
+      } catch (err) {
+        console.error("خطأ غير متوقع في تحميل المتجر:", err);
+        setStoreNotFound(true);
       }
     };
     
-    verifyStore();
-  }, [storeDomain, isValidDomain]);
+    fetchCurrentStore();
+  }, [storeDomain]);
 
-  // Debug logging to help identify domain issues
   useEffect(() => {
-    console.log("Store component - Raw domain:", rawDomain);
-    console.log("Store component - Normalized domain:", storeDomain);
-    console.log("Store component - Is valid domain:", isValidDomain);
-    console.log("Store component - Window location:", window.location.href);
-    console.log("Store component - Store not found state:", storeNotFound);
-  }, [storeDomain, isValidDomain, rawDomain, storeNotFound]);
+    // تأكد من استخدام بيانات المتجر المحدد بدقة (من الدومين) بدلاً من storeData العام
+    const store = currentStoreData || storeData;
+    
+    if (store?.id) {
+      const fetchStoreData = async () => {
+        setIsLoadingData(true);
+        try {
+          // Fetch products
+          const { data: productsData, error: productsError } = await supabase
+            .from('products')
+            .select('*')
+            .eq('store_id', store.id)
+            .eq('is_active', true)
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false });
+          
+          if (productsError) {
+            console.error("خطأ في تحميل المنتجات:", productsError);
+            toast.error("حدث خطأ أثناء تحميل المنتجات");
+            return;
+          }
+          
+          setProducts(productsData || []);
+          
+          // Fetch categories with product counts
+          const { data: categoriesData, error: categoriesError } = await supabase
+            .from('categories')
+            .select(`
+              name,
+              products:products(count)
+            `)
+            .eq('store_id', store.id);
+          
+          if (categoriesError) {
+            console.error("خطأ في تحميل الفئات:", categoriesError);
+          } else {
+            // Filter out categories with no products
+            const categoriesWithProducts = categoriesData
+              ?.filter(cat => cat.products.length > 0)
+              .map(cat => cat.name) || [];
+              
+            setCategories(categoriesWithProducts);
+          }
+          
+          // Fetch active sections
+          const { data: sectionsData, error: sectionsError } = await supabase
+            .from('sections')
+            .select('name')
+            .eq('store_id', store.id)
+            .eq('is_active', true);
+          
+          if (sectionsError) {
+            console.error("خطأ في تحميل الأقسام:", sectionsError);
+          } else {
+            const sectionNames = sectionsData?.map(sec => sec.name) || [];
+            setSections(sectionNames);
+          }
+          
+          // Featured products
+          const { data: featuredProductsData, error: featuredError } = await supabase
+            .from('products')
+            .select('*')
+            .eq('store_id', store.id)
+            .eq('is_featured', true)
+            .eq('is_active', true)
+            .is('deleted_at', null)
+            .limit(4);
+          
+          if (featuredError) {
+            console.error("خطأ في تحميل المنتجات المميزة:", featuredError);
+          } else {
+            setFeaturedProducts(featuredProductsData || []);
+          }
+          
+          // Best selling products
+          const { data: bestSellingProductsData, error: bestSellingError } = await supabase
+            .from('products')
+            .select('*')
+            .eq('store_id', store.id)
+            .eq('is_active', true)
+            .is('deleted_at', null)
+            .order('sales_count', { ascending: false })
+            .limit(8);
+          
+          if (bestSellingError) {
+            console.error("خطأ في تحميل المنتجات الأكثر مبيعاً:", bestSellingError);
+          } else {
+            setBestSellingProducts(bestSellingProductsData || []);
+          }
+        } catch (err) {
+          console.error("خطأ في تحميل بيانات المتجر:", err);
+          toast.error("حدث خطأ أثناء تحميل بيانات المتجر");
+        } finally {
+          // Add a small delay for smoother transitions
+          setTimeout(() => {
+            setIsLoadingData(false);
+            // Short delay before showing content for smooth transition
+            setTimeout(() => {
+              setShowContent(true);
+            }, 100);
+          }, 300);
+        }
+      };
+      
+      fetchStoreData();
+    }
+  }, [currentStoreData, storeData]);
 
-  const handleStoreLoaded = (data: any) => {
-    console.log("تم تحميل بيانات المتجر بنجاح:", data?.store_name);
-    setCurrentStoreData(data);
-    setStoreNotFound(false);
-  };
-
-  const handleStoreDataLoaded = (data: any) => {
-    console.log("تم تحميل بيانات المنتجات والفئات:", data);
-    setLoadedStoreData(data);
-  };
-
-  const handleLoadingComplete = () => {
-    setIsLoadingData(false);
-    setTimeout(() => {
-      setShowContent(true);
-    }, 100);
-  };
-
-  const handleStoreNotFound = () => {
-    console.log("لم يتم العثور على المتجر بالدومين:", storeDomain);
-    setStoreNotFound(true);
-  };
-
-  if (!isValidDomain || storeNotFound) {
-    console.log("إظهار مكون StoreNotFound. دومين صالح:", isValidDomain, "المتجر غير موجود:", storeNotFound);
-    return <StoreNotFound storeDomain={rawDomain || storeDomain} />;
+  if (storeNotFound) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4"
+      >
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">المتجر غير موجود</h1>
+          <p className="text-gray-600 mb-6">
+            عذراً، لا يمكن العثور على متجر بالدومين: 
+            <span className="font-bold text-gray-800 mx-1 dir-ltr inline-block">{storeDomain}</span>
+          </p>
+          <a 
+            href="/" 
+            className="inline-block bg-primary-500 text-white px-6 py-2 rounded-md hover:bg-primary-600 transition-colors"
+          >
+            العودة للصفحة الرئيسية
+          </a>
+        </div>
+      </motion.div>
+    );
   }
 
   if (error) {
-    console.error("خطأ في المتجر:", error);
-    return <ErrorState title="خطأ" message={error.message || "حدث خطأ أثناء تحميل المتجر"} />;
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <ErrorState title="خطأ" message={error.message || "حدث خطأ أثناء تحميل المتجر"} />
+      </motion.div>
+    );
   }
 
+  // استخدام بيانات المتجر المحدد أو الافتراضي
   const storeToShow = currentStoreData || storeData || {};
 
+  // Instead of a loading state, render the layout with skeletons
   return (
-    <ErrorBoundary>
-      <StorePageLayout 
-        storeName={storeToShow.store_name || ''}
-        logoUrl={storeToShow.logo_url}
-      >
-        <StoreDataLoader
-          storeDomain={storeDomain}
-          onStoreLoaded={handleStoreLoaded}
-          onStoreNotFound={handleStoreNotFound}
-          onLoadingComplete={handleLoadingComplete}
-          storeData={storeToShow}
+    <StoreLayout storeData={storeToShow}>
+      {isLoading || isLoadingData ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="container mx-auto px-4 py-6"
         >
-          {isLoading || isLoadingData ? (
-            <StoreSkeleton />
-          ) : (
-            <StoreContent 
-              storeData={loadedStoreData}
-              products={loadedStoreData.products}
-              categories={loadedStoreData.categories}
-              sections={loadedStoreData.sections}
-              featuredProducts={loadedStoreData.featuredProducts}
-              bestSellingProducts={loadedStoreData.bestSellingProducts}
-            />
-          )}
-        </StoreDataLoader>
-      </StorePageLayout>
-    </ErrorBoundary>
+          <div className="grid grid-cols-5 gap-1.5 mx-auto mb-6">
+            {[...Array(5)].map((_, index) => (
+              <div key={`cat-skeleton-${index}`} className="flex-shrink-0">
+                <div className="w-full flex flex-col items-center bg-white rounded-lg p-1.5 shadow-sm border border-gray-100">
+                  <div className="w-full aspect-square mb-1 bg-gray-200 rounded-lg animate-pulse"></div>
+                  <div className="h-2 w-12 bg-gray-200 rounded animate-pulse"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="mb-6">
+            <div className="flex justify-between items-center py-3 px-5 bg-white border-b border-gray-100 rounded-t-lg shadow-sm">
+              <div className="h-7 w-32 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+            <div className="bg-white p-4 rounded-b-lg shadow-sm border border-t-0 border-gray-100">
+              <ProductGridSkeleton count={8} />
+            </div>
+          </div>
+        </motion.div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: showContent ? 1 : 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <StoreContent 
+            storeData={storeToShow}
+            products={products}
+            categories={categories}
+            sections={sections}
+            featuredProducts={featuredProducts}
+            bestSellingProducts={bestSellingProducts}
+          />
+        </motion.div>
+      )}
+    </StoreLayout>
   );
 };
 

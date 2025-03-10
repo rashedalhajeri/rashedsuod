@@ -1,29 +1,20 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useCart } from "@/hooks/use-cart";
 import { ErrorState } from "@/components/ui/error-state";
 import { toast } from "sonner";
+import StoreHeader from "@/components/store/unified/StoreHeader";
+import { motion } from "framer-motion";
 import { useProductDetails } from "@/hooks/use-product-details";
 import ProductContainer from "@/components/product/ProductContainer";
 import ProductOverview from "@/components/product/ProductOverview";
 import ProductPriceBar from "@/components/product/ProductPriceBar";
-import StorePageLayout from "@/components/store/layout/StorePageLayout";
-import { normalizeStoreDomain } from "@/utils/url-helpers";
 
 const ProductPage = () => {
   const { productId, storeDomain } = useParams<{ productId: string; storeDomain: string }>();
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
-  
-  // Debug log for domain handling
-  useEffect(() => {
-    console.log("ProductPage - Domain:", storeDomain);
-    console.log("ProductPage - Normalized domain:", normalizeStoreDomain(storeDomain || ''));
-    console.log("ProductPage - Product ID:", productId);
-  }, [storeDomain, productId]);
-  
-  const normalizedDomain = normalizeStoreDomain(storeDomain || '');
   
   const {
     product,
@@ -33,7 +24,7 @@ const ProductPage = () => {
     showContent,
     formatCurrency,
     isOutOfStock
-  } = useProductDetails(productId, normalizedDomain);
+  } = useProductDetails(productId, storeDomain);
   
   const handleQuantityChange = (type: 'increase' | 'decrease') => {
     if (type === 'decrease' && quantity > 1) {
@@ -68,29 +59,44 @@ const ProductPage = () => {
   };
   
   if (error) {
-    return <ErrorState title="خطأ" message={error} />;
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <ErrorState title="خطأ" message={error} />
+      </motion.div>
+    );
   }
   
   return (
-    <StorePageLayout 
-      storeName={storeData?.store_name || ''}
-      logoUrl={storeData?.logo_url}
-      showBackButton={true}
-    >
-      <ProductContainer 
-        loading={loading} 
-        product={product} 
-        storeData={storeData} 
-        formatCurrency={formatCurrency}
+    <div className="min-h-screen flex flex-col" dir="rtl">
+      <StoreHeader
+        title="تفاصيل المنتج"
+        storeDomain={storeDomain}
+        showBackButton={true}
       />
       
-      {!loading && product && (
-        <>
+      <main className="flex-grow bg-gray-50">
+        {/* Product Container */}
+        <ProductContainer 
+          loading={loading} 
+          product={product} 
+          storeData={storeData} 
+          formatCurrency={formatCurrency}
+        />
+        
+        {/* Product Overview */}
+        {!loading && product && (
           <ProductOverview 
             product={product} 
             showContent={showContent} 
           />
-          
+        )}
+        
+        {/* Price and Add to Cart Bar */}
+        {!loading && product && (
           <ProductPriceBar
             formatCurrency={formatCurrency}
             product={product}
@@ -100,9 +106,9 @@ const ProductPage = () => {
             onAddToCart={handleAddToCart}
             isOutOfStock={isOutOfStock}
           />
-        </>
-      )}
-    </StorePageLayout>
+        )}
+      </main>
+    </div>
   );
 };
 
