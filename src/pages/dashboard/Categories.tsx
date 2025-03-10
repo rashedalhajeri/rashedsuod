@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { motion } from "framer-motion";
 import { useCategories } from "@/hooks/use-categories";
@@ -8,6 +8,10 @@ import CategoryTabsManager from "@/components/category/CategoryTabsManager";
 import { Section } from "@/services/section-service";
 
 const CategoriesAndSections: React.FC = () => {
+  // Add the missing state variables
+  const [newCategoryId, setNewCategoryId] = useState<string | null>(null);
+  const [newProductIds, setNewProductIds] = useState<string[] | null>(null);
+
   // Categories state
   const {
     categories,
@@ -98,6 +102,11 @@ const CategoriesAndSections: React.FC = () => {
           handleReorderSections={handleReorderSections}
           isSubmitting={isSubmitting}
           error={error}
+          // Add the missing props
+          newCategoryId={newCategoryId}
+          setNewCategoryId={setNewCategoryId}
+          newProductIds={newProductIds}
+          setNewProductIds={setNewProductIds}
         />
       </div>
     </DashboardLayout>

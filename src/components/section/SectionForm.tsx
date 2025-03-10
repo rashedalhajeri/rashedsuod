@@ -27,6 +27,11 @@ interface SectionFormProps {
   setNewSectionType: (type: string) => void;
   newDisplayStyle?: 'grid' | 'list';
   setNewDisplayStyle: (style: 'grid' | 'list') => void;
+  // These props are needed by CategoryTabsManager but not used in this component
+  newCategoryId?: string | null;
+  setNewCategoryId?: (id: string | null) => void;
+  newProductIds?: string[] | null;
+  setNewProductIds?: (ids: string[] | null) => void;
   isSubmitting?: boolean;
   error?: string | null;
   handleAddSection?: () => Promise<void>;
@@ -41,6 +46,11 @@ const SectionForm: React.FC<SectionFormProps> = ({
   setNewSectionType,
   newDisplayStyle = 'grid',
   setNewDisplayStyle,
+  // We don't use these props in this component, but they're passed from CategoryTabsManager
+  newCategoryId,
+  setNewCategoryId,
+  newProductIds,
+  setNewProductIds,
   isSubmitting = false,
   error = null,
   handleAddSection
