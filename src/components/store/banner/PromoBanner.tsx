@@ -7,8 +7,18 @@ interface PromoBannerProps {
   storeDomain?: string;
 }
 
+interface Banner {
+  id: string;
+  image_url: string;
+  link_type: "category" | "product" | "external" | "none";
+  link_url: string;
+  title: string;
+  sort_order: number;
+  is_active: boolean;
+}
+
 const PromoBanner: React.FC<PromoBannerProps> = ({ storeDomain }) => {
-  const [banners, setBanners] = useState<any[]>([]);
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [transitionTime, setTransitionTime] = useState(5);
   const [isLoading, setIsLoading] = useState(true);
@@ -143,7 +153,7 @@ const PromoBanner: React.FC<PromoBannerProps> = ({ storeDomain }) => {
 };
 
 // Helper component for the banner content
-const BannerContent = ({ banner }: { banner: any }) => (
+const BannerContent = ({ banner }: { banner: Banner }) => (
   <div className="flex items-center justify-between gap-3 sm:gap-4 relative w-full">
     <div className="flex-1 flex flex-col items-end text-right">
       <h3 className="text-white font-bold text-lg sm:text-2xl mb-2 flex items-center gap-1 sm:gap-2">

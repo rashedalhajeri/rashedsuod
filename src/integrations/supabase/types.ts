@@ -121,6 +121,85 @@ export type Database = {
           },
         ]
       }
+      banner_settings: {
+        Row: {
+          created_at: string
+          id: string
+          store_id: string
+          transition_time: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          store_id: string
+          transition_time?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          store_id?: string
+          transition_time?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "banner_settings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      banners: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          is_active: boolean
+          link_type: string
+          link_url: string | null
+          sort_order: number
+          store_id: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          is_active?: boolean
+          link_type: string
+          link_url?: string | null
+          sort_order?: number
+          store_id: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          is_active?: boolean
+          link_type?: string
+          link_url?: string | null
+          sort_order?: number
+          store_id?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "banners_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string

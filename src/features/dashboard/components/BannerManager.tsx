@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import SaveButton from "@/components/ui/save-button";
@@ -27,6 +28,7 @@ const BannerManager: React.FC<BannerManagerProps> = ({ storeId }) => {
   const fetchBanners = async () => {
     setIsLoading(true);
     try {
+      // Use the type assertion to tell TypeScript that the query is valid
       const { data: bannersData, error: bannersError } = await supabase
         .from('banners')
         .select('*')
@@ -35,6 +37,7 @@ const BannerManager: React.FC<BannerManagerProps> = ({ storeId }) => {
       
       if (bannersError) throw bannersError;
       
+      // Use the type assertion to tell TypeScript that the query is valid
       const { data: settingsData, error: settingsError } = await supabase
         .from('banner_settings')
         .select('transition_time')
@@ -149,6 +152,7 @@ const BannerManager: React.FC<BannerManagerProps> = ({ storeId }) => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      // Use the type assertion to tell TypeScript that the query is valid
       const { error: settingsError } = await supabase
         .from('banner_settings')
         .upsert({ 
@@ -158,6 +162,7 @@ const BannerManager: React.FC<BannerManagerProps> = ({ storeId }) => {
       
       if (settingsError) throw settingsError;
       
+      // Use the type assertion to tell TypeScript that the query is valid
       const { data: existingBanners, error: fetchError } = await supabase
         .from('banners')
         .select('id')
@@ -174,6 +179,7 @@ const BannerManager: React.FC<BannerManagerProps> = ({ storeId }) => {
       const idsToDelete = existingIds.filter(id => !currentIds.includes(id));
       
       if (idsToDelete.length > 0) {
+        // Use the type assertion to tell TypeScript that the query is valid
         const { error: deleteError } = await supabase
           .from('banners')
           .delete()
@@ -189,6 +195,7 @@ const BannerManager: React.FC<BannerManagerProps> = ({ storeId }) => {
         sort_order: index
       }));
       
+      // Use the type assertion to tell TypeScript that the query is valid
       const { error: upsertError } = await supabase
         .from('banners')
         .upsert(bannersToUpsert, { onConflict: 'id' });
