@@ -26,6 +26,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [isFocused, setIsFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
   
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -39,6 +40,19 @@ const SearchBar: React.FC<SearchBarProps> = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+  
+  useEffect(() => {
+    // فلترة الاقتراحات إذا كان البحث غير فارغ
+    if (searchQuery && searchQuery.trim().length > 0) {
+      const filtered = productNames.filter(name => 
+        name.toLowerCase().includes(searchQuery.toLowerCase())
+      ).slice(0, 5);
+      setFilteredSuggestions(filtered);
+    } else {
+      // استخدام القائمة الكاملة إذا كان البحث فارغًا (بحد أقصى 5 اقتراحات)
+      setFilteredSuggestions(productNames.slice(0, 5));
+    }
+  }, [searchQuery, productNames]);
   
   const handleFocus = () => {
     setIsFocused(true);
@@ -59,7 +73,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   
   const placeholder = productNames.length 
     ? `ابحث عن "${productNames[placeholderIndex]}"` 
-    : "ابحث حسب المتجر أو المنتج";
+    : "ابحث حسب المنتج";
   
   return (
     <div 
@@ -116,7 +130,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       </form>
       
       <AnimatePresence>
-        {isFocused && productNames.length > 0 && searchQuery === "" && (
+        {isFocused && productNames.length > 0 && (
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -127,20 +141,44 @@ const SearchBar: React.FC<SearchBarProps> = ({
             <div className="p-2">
               <h4 className="text-xs font-medium text-gray-500 mb-2 px-2">اقتراحات البحث</h4>
               <div className="space-y-1">
-                {productNames.slice(0, 5).map((name, index) => (
-                  <div 
-                    key={index}
-                    className="px-3 py-1.5 hover:bg-gray-50 rounded-md cursor-pointer text-sm flex items-center justify-end"
-                    onClick={() => {
-                      setSearchQuery(name);
-                      setIsFocused(false);
-                      handleSearchSubmit(new Event('submit') as any);
-                    }}
-                  >
-                    <span>{name}</span>
-                    <Search className="h-3.5 w-3.5 text-gray-400 ml-2" />
+                {searchQuery.trim().length > 0 && filteredSuggestions.length > 0 ? (
+                  // عرض الاقتراحات المفلترة إذا كان هناك بحث
+                  filteredSuggestions.map((name, index) => (
+                    <div 
+                      key={index}
+                      className="px-3 py-1.5 hover:bg-gray-50 rounded-md cursor-pointer text-sm flex items-center justify-end"
+                      onClick={() => {
+                        setSearchQuery(name);
+                        setIsFocused(false);
+                        handleSearchSubmit(new Event('submit') as any);
+                      }}
+                    >
+                      <span>{name}</span>
+                      <Search className="h-3.5 w-3.5 text-gray-400 ml-2" />
+                    </div>
+                  ))
+                ) : searchQuery.trim().length > 0 && filteredSuggestions.length === 0 ? (
+                  // رسالة إذا لم يتم العثور على نتائج
+                  <div className="px-3 py-2 text-sm text-gray-500 text-center">
+                    لا توجد منتجات تطابق البحث
                   </div>
-                ))}
+                ) : (
+                  // عرض أول 5 منتجات إذا لم يكن هناك بحث
+                  productNames.slice(0, 5).map((name, index) => (
+                    <div 
+                      key={index}
+                      className="px-3 py-1.5 hover:bg-gray-50 rounded-md cursor-pointer text-sm flex items-center justify-end"
+                      onClick={() => {
+                        setSearchQuery(name);
+                        setIsFocused(false);
+                        handleSearchSubmit(new Event('submit') as any);
+                      }}
+                    >
+                      <span>{name}</span>
+                      <Search className="h-3.5 w-3.5 text-gray-400 ml-2" />
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </motion.div>

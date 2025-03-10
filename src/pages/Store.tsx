@@ -9,6 +9,7 @@ import StoreContent from "@/components/store/StoreContent";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import ProductGridSkeleton from "@/components/store/skeletons/ProductGridSkeleton";
+import { toast } from "sonner";
 
 const Store = () => {
   const { storeDomain } = useParams<{ storeDomain: string }>();
@@ -21,6 +22,7 @@ const Store = () => {
   const [bestSellingProducts, setBestSellingProducts] = useState([]);
   const [showContent, setShowContent] = useState(false);
   const [currentStoreData, setCurrentStoreData] = useState<any>(null);
+  const [storeNotFound, setStoreNotFound] = useState(false);
 
   // تحميل بيانات المتجر الحالي استناداً إلى اسم الدومين
   useEffect(() => {
@@ -28,22 +30,33 @@ const Store = () => {
       if (!storeDomain) return;
       
       try {
+        // تنظيف اسم الدومين لضمان المطابقة الدقيقة
         const cleanDomain = storeDomain.trim().toLowerCase();
         
+        // استعلام دقيق باستخدام المطابقة المباشرة للاسم
         const { data, error } = await supabase
           .from("stores")
           .select("*")
           .eq("domain_name", cleanDomain)
-          .single();
+          .maybeSingle();
           
         if (error) {
           console.error("خطأ في تحميل بيانات المتجر:", error);
+          setStoreNotFound(true);
+          return;
+        }
+        
+        if (!data) {
+          console.log("لم يتم العثور على متجر بهذا الدومين:", cleanDomain);
+          setStoreNotFound(true);
           return;
         }
         
         setCurrentStoreData(data);
+        setStoreNotFound(false);
       } catch (err) {
         console.error("خطأ غير متوقع في تحميل المتجر:", err);
+        setStoreNotFound(true);
       }
     };
     
@@ -59,16 +72,24 @@ const Store = () => {
         setIsLoadingData(true);
         try {
           // Fetch products
-          const { data: productsData } = await supabase
+          const { data: productsData, error: productsError } = await supabase
             .from('products')
             .select('*')
             .eq('store_id', store.id)
+            .eq('is_active', true)
+            .is('deleted_at', null)
             .order('created_at', { ascending: false });
+          
+          if (productsError) {
+            console.error("خطأ في تحميل المنتجات:", productsError);
+            toast.error("حدث خطأ أثناء تحميل المنتجات");
+            return;
+          }
           
           setProducts(productsData || []);
           
           // Fetch categories with product counts
-          const { data: categoriesData } = await supabase
+          const { data: categoriesData, error: categoriesError } = await supabase
             .from('categories')
             .select(`
               name,
@@ -76,46 +97,65 @@ const Store = () => {
             `)
             .eq('store_id', store.id);
           
-          // Filter out categories with no products
-          const categoriesWithProducts = categoriesData
-            ?.filter(cat => cat.products.length > 0)
-            .map(cat => cat.name) || [];
-            
-          setCategories(categoriesWithProducts);
+          if (categoriesError) {
+            console.error("خطأ في تحميل الفئات:", categoriesError);
+          } else {
+            // Filter out categories with no products
+            const categoriesWithProducts = categoriesData
+              ?.filter(cat => cat.products.length > 0)
+              .map(cat => cat.name) || [];
+              
+            setCategories(categoriesWithProducts);
+          }
           
           // Fetch active sections
-          const { data: sectionsData } = await supabase
+          const { data: sectionsData, error: sectionsError } = await supabase
             .from('sections')
             .select('name')
             .eq('store_id', store.id)
             .eq('is_active', true);
           
-          const sectionNames = sectionsData?.map(sec => sec.name) || [];
-          setSections(sectionNames);
-          
-          // Fetch featured and best selling products
-          // In a real app, these would be based on actual sales data
-          // For now, we'll just grab some products as examples
+          if (sectionsError) {
+            console.error("خطأ في تحميل الأقسام:", sectionsError);
+          } else {
+            const sectionNames = sectionsData?.map(sec => sec.name) || [];
+            setSections(sectionNames);
+          }
           
           // Featured products
-          const { data: featuredProductsData } = await supabase
+          const { data: featuredProductsData, error: featuredError } = await supabase
             .from('products')
             .select('*')
             .eq('store_id', store.id)
+            .eq('is_featured', true)
+            .eq('is_active', true)
+            .is('deleted_at', null)
             .limit(4);
           
-          setFeaturedProducts(featuredProductsData || []);
+          if (featuredError) {
+            console.error("خطأ في تحميل المنتجات المميزة:", featuredError);
+          } else {
+            setFeaturedProducts(featuredProductsData || []);
+          }
           
           // Best selling products
-          const { data: bestSellingProductsData } = await supabase
+          const { data: bestSellingProductsData, error: bestSellingError } = await supabase
             .from('products')
             .select('*')
             .eq('store_id', store.id)
+            .eq('is_active', true)
+            .is('deleted_at', null)
+            .order('sales_count', { ascending: false })
             .limit(8);
           
-          setBestSellingProducts(bestSellingProductsData || []);
+          if (bestSellingError) {
+            console.error("خطأ في تحميل المنتجات الأكثر مبيعاً:", bestSellingError);
+          } else {
+            setBestSellingProducts(bestSellingProductsData || []);
+          }
         } catch (err) {
-          console.error("Error fetching store data:", err);
+          console.error("خطأ في تحميل بيانات المتجر:", err);
+          toast.error("حدث خطأ أثناء تحميل بيانات المتجر");
         } finally {
           // Add a small delay for smoother transitions
           setTimeout(() => {
@@ -131,6 +171,31 @@ const Store = () => {
       fetchStoreData();
     }
   }, [currentStoreData, storeData]);
+
+  if (storeNotFound) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4"
+      >
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">المتجر غير موجود</h1>
+          <p className="text-gray-600 mb-6">
+            عذراً، لا يمكن العثور على متجر بالدومين: 
+            <span className="font-bold text-gray-800 mx-1 dir-ltr inline-block">{storeDomain}</span>
+          </p>
+          <a 
+            href="/" 
+            className="inline-block bg-primary-500 text-white px-6 py-2 rounded-md hover:bg-primary-600 transition-colors"
+          >
+            العودة للصفحة الرئيسية
+          </a>
+        </div>
+      </motion.div>
+    );
+  }
 
   if (error) {
     return (

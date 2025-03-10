@@ -40,7 +40,11 @@ const StoreContent: React.FC<StoreContentProps> = ({
   } = useStoreFilter();
   
   const { storeDomain } = useParams<{ storeDomain: string }>();
-  const productNames = useProductNames(storeDomain);
+  
+  // تأكد من استخدام الدومين الفعلي لاستدعاء أسماء المنتجات
+  const cleanDomain = storeDomain ? storeDomain.trim().toLowerCase() : "";
+  const productNames = useProductNames(cleanDomain);
+  
   const [showPromoBanner, setShowPromoBanner] = useState(false);
   const { sectionProducts } = useSectionProducts(storeData?.id);
 

@@ -19,7 +19,7 @@ export const createStore = async (formData: StoreFormData): Promise<boolean> => 
     const storeData = {
       user_id: userData.user.id,
       store_name: formData.storeName,
-      domain_name: formData.domainName,
+      domain_name: formData.domainName.trim().toLowerCase(),
       phone_number: formData.phoneNumber,
       country: formData.country,
       currency: formData.currency,
@@ -50,7 +50,7 @@ export const createStore = async (formData: StoreFormData): Promise<boolean> => 
           .insert({
             user_id: userData.user.id,
             store_name: formData.storeName,
-            domain_name: formData.domainName,
+            domain_name: formData.domainName.trim().toLowerCase(),
             phone_number: formData.phoneNumber,
             country: formData.country,
             currency: formData.currency,
@@ -88,14 +88,14 @@ export const createStore = async (formData: StoreFormData): Promise<boolean> => 
  */
 export const checkDomainAvailability = async (domainName: string): Promise<boolean> => {
   try {
-    // تأكد من عدم وجود سطور فارغة في البداية أو النهاية
+    // تنظيف اسم الدومين وتحويله إلى أحرف صغيرة للتأكد من المطابقة الدقيقة
     const cleanDomainName = domainName.trim().toLowerCase();
     
     if (!cleanDomainName) {
       return false;
     }
     
-    // استعلام دقيق للتحقق من توفر النطاق باستخدام المطابقة الدقيقة
+    // استعلام دقيق للتحقق من توفر النطاق باستخدام المطابقة الدقيقة للاسم
     const { data, error } = await supabase
       .from("stores")
       .select("domain_name")
@@ -112,5 +112,65 @@ export const checkDomainAvailability = async (domainName: string): Promise<boole
   } catch (error) {
     console.error("خطأ غير متوقع:", error);
     return false;
+  }
+};
+
+/**
+ * Search stores by name, not by domain
+ */
+export const searchStoresByName = async (storeName: string): Promise<any[]> => {
+  try {
+    if (!storeName || storeName.trim().length < 2) {
+      return [];
+    }
+    
+    const searchTerm = storeName.trim().toLowerCase();
+    
+    const { data, error } = await supabase
+      .from("stores")
+      .select("*")
+      .ilike("store_name", `%${searchTerm}%`)
+      .eq("status", "active")
+      .limit(10);
+    
+    if (error) {
+      console.error("خطأ في البحث عن المتاجر:", error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error("خطأ غير متوقع في البحث عن المتاجر:", error);
+    return [];
+  }
+};
+
+/**
+ * Get store by exact domain name
+ */
+export const getStoreByDomain = async (domainName: string): Promise<any> => {
+  try {
+    if (!domainName) {
+      return null;
+    }
+    
+    const cleanDomain = domainName.trim().toLowerCase();
+    
+    const { data, error } = await supabase
+      .from("stores")
+      .select("*")
+      .eq("domain_name", cleanDomain)
+      .eq("status", "active")
+      .maybeSingle();
+    
+    if (error) {
+      console.error("خطأ في الحصول على بيانات المتجر:", error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error("خطأ غير متوقع في الحصول على بيانات المتجر:", error);
+    return null;
   }
 };
