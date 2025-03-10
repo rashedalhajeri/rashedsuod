@@ -14,7 +14,7 @@ interface SectionListProps {
   editingSection: Section | null;
   setEditingSection: (section: Section | null) => void;
   handleUpdateSection: () => void;
-  handleDeleteSection: (id: string) => void;
+  handleDeleteSection: (id: string) => Promise<void>;
   setNewSection: (name: string) => void;
   setNewSectionType: (type: string) => void;
   openAddDialog: () => void;
@@ -123,6 +123,22 @@ const SectionList: React.FC<SectionListProps> = ({
                       handleUpdateSection={handleUpdateSection}
                       handleDeleteSection={handleDeleteSection}
                       dragHandleProps={provided.dragHandleProps}
+                      index={index}
+                      totalSections={filteredSections.length}
+                      handleReorderSections={(sourceIndex, destinationIndex) => {
+                        const reorderedSections = Array.from(filteredSections);
+                        const [removed] = reorderedSections.splice(sourceIndex, 1);
+                        reorderedSections.splice(destinationIndex, 0, removed);
+                        
+                        const updatedSections = reorderedSections.map((section, index) => ({
+                          ...section,
+                          sort_order: index
+                        }));
+                        
+                        if (handleReorderSections) {
+                          handleReorderSections(updatedSections);
+                        }
+                      }}
                     />
                   </div>
                 )}

@@ -18,6 +18,7 @@ const OrderDeleteDialog: React.FC<OrderDeleteDialogProps> = ({
   const handleDelete = async () => {
     onConfirm();
     // The parent component will handle closing the dialog
+    return Promise.resolve();
   };
 
   return (

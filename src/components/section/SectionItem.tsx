@@ -24,6 +24,7 @@ interface SectionItemProps {
   handleUpdateSection: () => void;
   handleDeleteSection: (id: string) => Promise<void>;
   handleReorderSections: (sourceIndex: number, destinationIndex: number) => void;
+  dragHandleProps?: any;
 }
 
 const SectionItem: React.FC<SectionItemProps> = ({
@@ -35,6 +36,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
   handleUpdateSection,
   handleDeleteSection,
   handleReorderSections,
+  dragHandleProps
 }) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
@@ -57,15 +59,17 @@ const SectionItem: React.FC<SectionItemProps> = ({
   const handleDeleteClick = async () => {
     try {
       await handleDeleteSection(section.id);
-      toast("تم الحذف بنجاح", {
+      toast({
+        title: "تم الحذف بنجاح",
         description: `تم حذف القسم "${section.name}" بنجاح`
       });
       setIsDeleteDialogOpen(false);
     } catch (error) {
       console.error("Error deleting section:", error);
-      toast("حدث خطأ", {
+      toast({
+        title: "حدث خطأ",
         description: "لم يتم حذف القسم، يرجى المحاولة مرة أخرى",
-        style: { backgroundColor: 'red', color: 'white' }
+        variant: "destructive"
       });
     }
   };
@@ -77,7 +81,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
       transition={{ duration: 0.2 }}
       className="flex items-center justify-between p-4 border rounded-xl bg-white hover:shadow-sm transition-all"
     >
-      <div className="hidden sm:flex items-center mr-2 text-gray-400">
+      <div className="hidden sm:flex items-center mr-2 text-gray-400" {...dragHandleProps}>
         <GripVertical className="h-5 w-5" />
       </div>
 

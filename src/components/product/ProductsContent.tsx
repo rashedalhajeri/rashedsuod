@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Product } from "@/utils/products/types";
 import ProductsList from "./ProductsList";
