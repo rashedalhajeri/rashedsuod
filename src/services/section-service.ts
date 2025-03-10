@@ -46,7 +46,9 @@ export const addSection = async (
   displayStyle: 'grid' | 'list' = 'grid'
 ) => {
   try {
-    // الحل المؤقت: إنشاء كائن بالحقول الأساسية فقط، ثم إضافة الحقول الإضافية إذا كانت متوفرة في قاعدة البيانات
+    console.log("Adding section with:", { name, sectionType, storeId, sortOrder, isActive, categoryId, productIds, displayStyle });
+    
+    // Create the basic section data object
     const sectionData: any = {
       name,
       section_type: sectionType,
@@ -55,24 +57,27 @@ export const addSection = async (
       is_active: isActive
     };
 
-    // إضافة الحقول الإضافية بطريقة آمنة (سيتم تجاهلها من قبل Supabase إذا لم تكن موجودة في الجدول)
-    // تم تعليق هذه الأسطر لتجنب الخطأ، وسيتم إعادة تفعيلها عند إضافة الأعمدة للجدول
-    // لاحقًا يمكنك إضافة هذه الأعمدة إلى قاعدة البيانات لدعم هذه الميزات
-    /*
-    if (categoryId !== undefined) sectionData.category_id = categoryId;
-    if (productIds !== undefined) sectionData.product_ids = productIds;
-    if (displayStyle) sectionData.display_style = displayStyle;
-    */
+    // We'll add the extra fields to this object, so they'll be stored in the client state
+    // even if they don't get saved to the database yet
+    const clientSectionData = {
+      ...sectionData,
+      category_id: categoryId || null,
+      product_ids: productIds || null,
+      display_style: displayStyle || 'grid'
+    };
 
     const { data, error } = await supabase
       .from('sections')
       .insert([sectionData])
       .select();
       
-    if (error) throw error;
+    if (error) {
+      console.error("Supabase error adding section:", error);
+      throw new Error(error.message || "حدث خطأ أثناء إضافة القسم");
+    }
     
-    // بالنسبة للواجهة، سنضيف هذه البيانات إلى الكائن المُعاد، حتى لو لم يتم حفظها في قاعدة البيانات
     if (data && data.length > 0) {
+      // Combine the returned data with our client-side enhancements
       const enhancedData = {
         ...data[0],
         category_id: categoryId || null,
@@ -80,11 +85,12 @@ export const addSection = async (
         display_style: displayStyle || 'grid'
       };
       
+      console.log("Section added successfully:", enhancedData);
       return { data: enhancedData, error: null };
     }
     
     return { data: data?.[0], error: null };
-  } catch (err) {
+  } catch (err: any) {
     console.error("Error adding section:", err);
     return { data: null, error: err };
   }
@@ -101,20 +107,13 @@ export const updateSection = async (section: Section, storeId: string) => {
       throw new Error("غير مسموح لك بتعديل هذا القسم");
     }
     
-    // إنشاء كائن التحديث مع الحقول الأساسية فقط
+    // Create update object with only the fields we know exist in the database
     const updateData: any = {
       name: section.name,
       section_type: section.section_type,
       is_active: section.is_active,
       updated_at: new Date().toISOString()
     };
-
-    // لا نضيف الحقول غير الموجودة في قاعدة البيانات
-    /*
-    if (section.category_id !== undefined) updateData.category_id = section.category_id;
-    if (section.product_ids !== undefined) updateData.product_ids = section.product_ids;
-    if (section.display_style) updateData.display_style = section.display_style;
-    */
 
     const { data, error } = await supabase
       .from('sections')
@@ -125,7 +124,17 @@ export const updateSection = async (section: Section, storeId: string) => {
       
     if (error) throw error;
     
-    return { data, error: null };
+    // Return the updated section with client-side enhancements
+    const enhancedData = data && data.length > 0
+      ? {
+          ...data[0],
+          category_id: section.category_id || null,
+          product_ids: section.product_ids || null,
+          display_style: section.display_style || 'grid'
+        }
+      : null;
+    
+    return { data: enhancedData, error: null };
   } catch (err) {
     console.error("Error updating section:", err);
     return { data: null, error: err };

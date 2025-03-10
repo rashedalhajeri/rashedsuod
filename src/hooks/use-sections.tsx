@@ -70,6 +70,17 @@ export const useSections = () => {
         ? Math.max(...sections.map(c => c.sort_order)) + 1 
         : 0;
       
+      console.log("Adding section with values:", {
+        name: newSection,
+        type: newSectionType,
+        storeId,
+        order: nextOrder,
+        isActive: true,
+        categoryId: newCategoryId,
+        productIds: newProductIds,
+        displayStyle: newDisplayStyle
+      });
+      
       const { data, error } = await addSection(
         newSection, 
         newSectionType, 
@@ -94,11 +105,14 @@ export const useSections = () => {
         setNewProductIds(null);
         setNewDisplayStyle('grid');
         toast.success("تم إضافة القسم بنجاح");
+        return true; // Indicate success
       }
+      return false; // Indicate failure
     } catch (err: any) {
       console.error("Error adding section:", err);
       setError(err.message || "حدث خطأ أثناء إضافة القسم");
       toast.error("حدث خطأ أثناء إضافة القسم. يرجى المحاولة مرة أخرى.");
+      return false; // Indicate failure
     } finally {
       setIsSubmitting(false);
     }

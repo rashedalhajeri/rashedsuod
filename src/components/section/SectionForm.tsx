@@ -69,7 +69,8 @@ const SectionForm: React.FC<SectionFormProps> = ({
     handleTypeChange,
     handleCustomTypeChange,
     categoryProducts,
-    fetchCategoryProducts
+    fetchCategoryProducts,
+    selectedCategory
   } = useSectionForm(
     isOpen,
     newSectionType,
@@ -83,11 +84,18 @@ const SectionForm: React.FC<SectionFormProps> = ({
     if (selectedSectionType) {
       setNewSectionType(selectedSectionType);
       const selectedType = sectionTypes.find(type => type.id === selectedSectionType);
-      if (selectedType && selectedType.id !== 'custom') {
+      
+      // Only set default name if it's not a custom section or if no name has been set yet
+      if (selectedType && selectedType.id !== 'custom' && (!newSection || newSection === "")) {
         setNewSection(selectedType.name);
       }
+      
+      // When selecting category type, update section name to match selected category if available
+      if (selectedType && selectedType.id === 'category' && selectedCategory) {
+        setNewSection(`منتجات ${selectedCategory.name}`);
+      }
     }
-  }, [selectedSectionType, setNewSectionType, setNewSection]);
+  }, [selectedSectionType, setNewSectionType, setNewSection, selectedCategory]);
 
   // Fetch products when category is selected
   useEffect(() => {
@@ -96,7 +104,108 @@ const SectionForm: React.FC<SectionFormProps> = ({
     }
   }, [newCategoryId, fetchCategoryProducts]);
 
-  const renderCustomContent = () => {
+  const handleSubmit = async () => {
+    if (handleAddSection) {
+      try {
+        await handleAddSection();
+        onClose(); // Close the dialog after successful submission
+      } catch (error) {
+        console.error("Error adding section:", error);
+        // Dialog stays open if there's an error
+      }
+    }
+  };
+
+  const isSubmitDisabled = 
+    isSubmitting ||
+    !newSection.trim() || 
+    !selectedSectionType ||
+    (selectedSectionType === 'category' && !newCategoryId) || 
+    (selectedSectionType === 'custom' && customType === 'category' && !newCategoryId) ||
+    (selectedSectionType === 'custom' && customType === 'products' && (!newProductIds || newProductIds.length === 0));
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent 
+        className="sm:max-w-[550px] bg-background max-h-[90vh] overflow-hidden p-0 gap-0"
+        dir="rtl"
+      >
+        <DialogHeader className="p-4 md:p-6 border-b sticky top-0 bg-background z-10">
+          <DialogTitle className="text-xl font-bold">إضافة قسم جديد</DialogTitle>
+          <DialogDescription className="text-sm text-gray-500">
+            الأقسام تظهر كصفحات منفصلة في متجرك تعرض فيها المنتجات حسب تصنيفها
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="flex flex-col space-y-5 overflow-y-auto py-4 px-4 md:px-6 custom-scrollbar">
+          {error && (
+            <Alert variant="destructive" className="mb-2">
+              <AlertTitle>حدث خطأ</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <SectionTypeSelector 
+              selectedSectionType={selectedSectionType}
+              onTypeChange={handleTypeChange}
+            />
+          </motion.div>
+          
+          {selectedSectionType && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+            >
+              <SectionNameField 
+                name={newSection}
+                onNameChange={setNewSection}
+                isCustom={selectedSectionType === 'custom'}
+                selectedCategoryName={selectedCategory?.name}
+                sectionType={selectedSectionType}
+              />
+            </motion.div>
+          )}
+          
+          {renderCustomContent()}
+        </div>
+        
+        <DialogFooter className="p-4 md:p-6 border-t sticky bottom-0 bg-background z-10 flex-row gap-2 justify-between sm:justify-between">
+          <DialogClose asChild>
+            <Button type="button" variant="outline" className="flex items-center gap-2">
+              <X className="h-4 w-4" />
+              <span>إلغاء</span>
+            </Button>
+          </DialogClose>
+          
+          <Button 
+            onClick={handleSubmit}
+            disabled={isSubmitDisabled}
+            className="flex items-center gap-2"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>جاري الإضافة...</span>
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4" />
+                <span>إضافة القسم</span>
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+  
+  function renderCustomContent() {
     if (selectedSectionType === 'custom') {
       return (
         <motion.div
@@ -118,7 +227,14 @@ const SectionForm: React.FC<SectionFormProps> = ({
               <CategorySelector 
                 categories={categories}
                 selectedCategoryId={newCategoryId}
-                onCategorySelect={setNewCategoryId}
+                onCategorySelect={(id) => {
+                  setNewCategoryId(id);
+                  // Find category name and update section name
+                  const category = categories.find(c => c.id === id);
+                  if (category) {
+                    setNewSection(`منتجات ${category.name}`);
+                  }
+                }}
                 isLoading={isLoading}
               />
               
@@ -165,7 +281,14 @@ const SectionForm: React.FC<SectionFormProps> = ({
           <CategorySelector 
             categories={categories}
             selectedCategoryId={newCategoryId}
-            onCategorySelect={setNewCategoryId}
+            onCategorySelect={(id) => {
+              setNewCategoryId(id);
+              // Find category name and update section name
+              const category = categories.find(c => c.id === id);
+              if (category) {
+                setNewSection(`منتجات ${category.name}`);
+              }
+            }}
             isLoading={isLoading}
           />
           
@@ -218,98 +341,7 @@ const SectionForm: React.FC<SectionFormProps> = ({
     }
     
     return null;
-  };
-
-  const handleSubmit = () => {
-    handleAddSection?.();
-  };
-
-  const isSubmitDisabled = 
-    isSubmitting ||
-    !newSection.trim() || 
-    !selectedSectionType ||
-    (selectedSectionType === 'category' && !newCategoryId) || 
-    (selectedSectionType === 'custom' && customType === 'category' && !newCategoryId) ||
-    (selectedSectionType === 'custom' && customType === 'products' && (!newProductIds || newProductIds.length === 0));
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent 
-        className="sm:max-w-[550px] bg-background max-h-[90vh] overflow-hidden p-0 gap-0"
-        dir="rtl"
-      >
-        <DialogHeader className="p-4 md:p-6 border-b sticky top-0 bg-background z-10">
-          <DialogTitle className="text-xl font-bold">إضافة قسم جديد</DialogTitle>
-          <DialogDescription className="text-sm text-gray-500">
-            القسم الجديد سيظهر في المتجر كمجموعة من المنتجات
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="flex flex-col space-y-5 overflow-y-auto py-4 px-4 md:px-6 custom-scrollbar">
-          {error && (
-            <Alert variant="destructive" className="mb-2">
-              <AlertTitle>حدث خطأ</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <SectionTypeSelector 
-              selectedSectionType={selectedSectionType}
-              onTypeChange={handleTypeChange}
-            />
-          </motion.div>
-          
-          {selectedSectionType && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-            >
-              <SectionNameField 
-                name={newSection}
-                onNameChange={setNewSection}
-                isCustom={selectedSectionType === 'custom'}
-              />
-            </motion.div>
-          )}
-          
-          {renderCustomContent()}
-        </div>
-        
-        <DialogFooter className="p-4 md:p-6 border-t sticky bottom-0 bg-background z-10 flex-row gap-2 justify-between sm:justify-between">
-          <DialogClose asChild>
-            <Button type="button" variant="outline" className="flex items-center gap-2">
-              <X className="h-4 w-4" />
-              <span>إلغاء</span>
-            </Button>
-          </DialogClose>
-          
-          <Button 
-            onClick={handleSubmit}
-            disabled={isSubmitDisabled}
-            className="flex items-center gap-2"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>جاري الإضافة...</span>
-              </>
-            ) : (
-              <>
-                <Plus className="h-4 w-4" />
-                <span>إضافة القسم</span>
-              </>
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
+  }
 };
 
 export default SectionForm;

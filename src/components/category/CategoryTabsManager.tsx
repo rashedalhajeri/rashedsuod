@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tags, LayoutGrid } from "lucide-react";
@@ -140,6 +141,17 @@ const CategoryTabsManager: React.FC<CategoryTabsManagerProps> = ({
   const handleSetEditingSection = (section: Section | null) => {
     setEditingSection(section);
   };
+  
+  // Handle adding a section and closing the dialog
+  const handleAddSectionAndClose = async () => {
+    try {
+      await handleAddSection();
+      // Dialog will be closed from SectionForm component
+    } catch (error) {
+      console.error("Error in handleAddSection:", error);
+      // Dialog remains open on error
+    }
+  };
 
   return (
     <>
@@ -241,7 +253,7 @@ const CategoryTabsManager: React.FC<CategoryTabsManagerProps> = ({
         setNewDisplayStyle={setNewDisplayStyle}
         isSubmitting={isSubmitting}
         error={error}
-        handleAddSection={handleAddSection}
+        handleAddSection={handleAddSectionAndClose}
       />
 
       {/* Confirm dialog for toggling images */}

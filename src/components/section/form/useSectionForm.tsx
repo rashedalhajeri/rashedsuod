@@ -22,6 +22,7 @@ export const useSectionForm = (
   const [selectedSectionType, setSelectedSectionType] = useState<string>("");
   const [customType, setCustomType] = useState<string>(""); // "products" or "category"
   const [categoryProducts, setCategoryProducts] = useState<Product[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
   // Fetch categories and products when the dialog opens
   useEffect(() => {
@@ -31,6 +32,16 @@ export const useSectionForm = (
       fetchProducts();
     }
   }, [isOpen, newSectionType]);
+
+  // Update selected category when newCategoryId changes
+  useEffect(() => {
+    if (newCategoryId) {
+      const category = categories.find(c => c.id === newCategoryId);
+      setSelectedCategory(category || null);
+    } else {
+      setSelectedCategory(null);
+    }
+  }, [newCategoryId, categories]);
 
   // Filter products based on search query
   useEffect(() => {
@@ -188,6 +199,7 @@ export const useSectionForm = (
     fetchCategoryProducts,
     handleProductSelect,
     handleTypeChange,
-    handleCustomTypeChange
+    handleCustomTypeChange,
+    selectedCategory
   };
 };
