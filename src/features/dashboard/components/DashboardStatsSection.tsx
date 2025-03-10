@@ -1,5 +1,6 @@
+
 import React, { useState } from "react";
-import { ShoppingBag, Package, Users, DollarSign, Calendar, ArrowRight, ChevronDown } from "lucide-react";
+import { ShoppingBag, Package, Users, DollarSign, Calendar, ChevronDown } from "lucide-react";
 import StatsCard from "@/features/dashboard/components/StatsCard";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ const DashboardStatsSection: React.FC<DashboardStatsSectionProps> = ({
 }) => {
   const [selectedPeriod, setSelectedPeriod] = useState<string>("day");
   
+  // بيانات لإظهار الاتجاهات والمخططات المصغرة
   const trends = {
     products: { value: 12, isPositive: true },
     orders: { value: 8, isPositive: true },
@@ -45,6 +47,7 @@ const DashboardStatsSection: React.FC<DashboardStatsSectionProps> = ({
     revenue: [12, 15, 18, 16, 19, 22, 25]
   };
   
+  // الفترات الزمنية المتاحة
   const periods = [
     { value: "day", label: "24 ساعة" },
     { value: "week", label: "7 أيام" },
@@ -64,7 +67,7 @@ const DashboardStatsSection: React.FC<DashboardStatsSectionProps> = ({
   const selectedPeriodLabel = periods.find(p => p.value === selectedPeriod)?.label || "24 ساعة";
   
   return (
-    <div className="mb-8">
+    <div className="mb-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-gray-800">إحصائيات المتجر</h2>
         
@@ -72,7 +75,6 @@ const DashboardStatsSection: React.FC<DashboardStatsSectionProps> = ({
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
-          className="relative"
         >
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -95,7 +97,6 @@ const DashboardStatsSection: React.FC<DashboardStatsSectionProps> = ({
                   }`}
                 >
                   {period.label}
-                  {selectedPeriod === period.value && <ArrowRight className="h-4 w-4" />}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -105,10 +106,11 @@ const DashboardStatsSection: React.FC<DashboardStatsSectionProps> = ({
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {isLoading ? (
+          // حالة التحميل
           <>
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="w-full">
-                <div className="border border-gray-100 bg-white rounded-lg p-4 md:p-6 h-full">
+                <div className="border border-gray-100 bg-white rounded-lg p-4 md:p-5 h-full">
                   <div className="flex justify-between items-center">
                     <div className="space-y-2">
                       <Skeleton className="h-4 w-20" />
@@ -122,6 +124,7 @@ const DashboardStatsSection: React.FC<DashboardStatsSectionProps> = ({
             ))}
           </>
         ) : (
+          // البطاقات الإحصائية
           <>
             <StatsCard 
               title="المنتجات"

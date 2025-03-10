@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import useAuth from "@/hooks/useAuth";
 import SidebarHeader from "./SidebarHeader";
@@ -29,20 +28,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
     const updateGreeting = () => {
       const hour = new Date().getHours();
       setCurrentHour(hour);
-      
-      if (hour >= 5 && hour < 12) {
-        setGreeting("صباح الخير");
-      } else if (hour >= 12 && hour < 17) {
-        setGreeting("مساء الخير");
-      } else {
-        setGreeting("مساء الخير");
-      }
+      setGreeting(hour >= 5 && hour < 12 ? "صباح الخير" : "مساء الخير");
     };
     
     updateGreeting();
     // تحديث التحية كل ساعة
     const interval = setInterval(updateGreeting, 60 * 60 * 1000);
-    
     return () => clearInterval(interval);
   }, []);
 
@@ -64,30 +55,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
     await signOut();
   };
 
-  const sidebarVariants = {
-    expanded: {
-      width: 250
-    },
-    collapsed: {
-      width: 80
-    },
-    mobile: {
-      width: "100%",
-      maxWidth: 280
-    }
-  };
-
-  const currentVariant = isMobile 
-    ? "mobile" 
-    : isCollapsed 
-      ? "collapsed" 
-      : "expanded";
-
   // رمز الوقت المناسب حسب الساعة
   const TimeIcon = currentHour >= 5 && currentHour < 18 ? Sun : Moon;
 
   return (
     <>
+      {/* طبقة التعتيم خلف القائمة في الأجهزة المحمولة */}
       {isMobile && isMobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30 backdrop-blur-sm"
@@ -95,6 +68,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
         />
       )}
 
+      {/* القائمة الجانبية */}
       <div
         className={cn(
           "fixed top-0 right-0 h-screen bg-white shadow-md z-40 overflow-hidden rtl flex flex-col",
@@ -108,6 +82,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
         }}
       >
         <div className="flex flex-col h-full">
+          {/* رأس القائمة الجانبية */}
           <SidebarHeader 
             isCollapsed={isCollapsed}
             isMobile={isMobile}
@@ -115,6 +90,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
             closeMobileMenu={closeMobileMenu}
           />
 
+          {/* روابط القائمة */}
           <SidebarLinks 
             isCollapsed={isCollapsed}
             isMobile={isMobile}
@@ -122,18 +98,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
             closeMobileMenu={closeMobileMenu}
           />
 
+          {/* تذييل القائمة */}
           <div className="p-4 border-t border-gray-200 mt-auto space-y-3">
-            {/* بطاقة التحية والايميل */}
+            {/* بطاقة التحية */}
             {(!isCollapsed || isMobile) && (
               <div className="flex flex-col px-3 py-3 rounded-lg bg-primary-50/80 text-sm">
-                <div className="flex items-center gap-2 text-primary-700 mb-1.5">
+                <div className="flex items-center gap-2 text-primary-700">
                   <TimeIcon size={14} className="shrink-0" />
                   <span className="font-medium">{greeting}</span>
                 </div>
               </div>
             )}
             
-            {/* عرض الايميل فوق زر تسجيل الخروج */}
+            {/* عرض البريد الإلكتروني */}
             {(!isCollapsed || isMobile) && userEmail && (
               <div className="flex items-center gap-2 px-3 py-2 text-gray-600 text-sm">
                 <Mail size={14} className="shrink-0" />
@@ -141,6 +118,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
               </div>
             )}
             
+            {/* زر تسجيل الخروج */}
             <LogoutButton 
               isCollapsed={isCollapsed}
               isMobile={isMobile}

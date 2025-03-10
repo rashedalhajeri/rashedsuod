@@ -35,13 +35,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 rtl">
-      {/* الشريط الجانبي مع دعم عرض/إخفاء في الأجهزة المحمولة */}
+      {/* القائمة الجانبية */}
       <Sidebar isMobileMenuOpen={isMobileMenuOpen} />
       
-      {/* إضافة مكون الإشعارات إذا كان المتجر موجودًا */}
+      {/* إشعارات المتجر */}
       {storeData?.id && <RealTimeNotifications storeId={storeData.id} />}
       
-      {/* زر فتح القائمة الجانبية في الأجهزة المحمولة */}
+      {/* زر القائمة للأجهزة المحمولة */}
       {isMobile && (
         <div className="fixed top-4 right-4 z-50">
           <Button
@@ -55,14 +55,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         </div>
       )}
       
+      {/* المحتوى الرئيسي */}
       <main 
         className={`flex-1 overflow-x-hidden overflow-y-auto py-2 px-0 transition-all duration-300 ${
           isMobile ? "mr-0" : isTablet ? "mr-[80px]" : "mr-[250px]"
         }`}
       >
-        <div 
-          className="container py-2 px-3 md:px-6 max-w-7xl mx-auto h-full"
-        >
+        <div className="container py-2 px-3 md:px-6 max-w-7xl mx-auto h-full">
           {children}
         </div>
       </main>

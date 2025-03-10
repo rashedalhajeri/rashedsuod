@@ -18,18 +18,9 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
 }) => {
   const currentHour = new Date().getHours();
   
-  let greeting = "مرحباً";
-  let greeting2 = "بك مجدداً";
-  if (currentHour < 12) {
-    greeting = "صباح الخير";
-    greeting2 = "يوم موفق";
-  } else if (currentHour < 18) {
-    greeting = "مساء الخير";
-    greeting2 = "نهار سعيد";
-  } else {
-    greeting = "مساء الخير";
-    greeting2 = "ليلة طيبة";
-  }
+  // تحسين التحية لتكون أكثر اختصارًا
+  let greeting = currentHour < 12 ? "صباح الخير" : "مساء الخير";
+  let subGreeting = currentHour < 12 ? "يوم موفق" : "يوم سعيد";
   
   return (
     <motion.div
@@ -44,7 +35,7 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
         <CardContent className="pt-6 relative z-10">
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
-              <div className="h-14 w-14 rounded-xl overflow-hidden bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-200">
+              <div className="h-14 w-14 rounded-xl overflow-hidden bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center shadow-sm transition-all duration-200">
                 {logoUrl ? (
                   <img 
                     src={logoUrl} 
@@ -61,12 +52,12 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
                   <Sparkles className="h-5 w-5 text-amber-500 animate-pulse" />
                 </h2>
                 <p className="text-muted-foreground mt-1 flex items-center text-gray-700">
-                  {storeName} <span className="mx-1 text-xs">•</span> <span className="text-xs text-gray-500">{greeting2}</span>
+                  {storeName} <span className="mx-1 text-xs">•</span> <span className="text-xs text-gray-500">{subGreeting}</span>
                 </p>
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center">
               <StorePreviewButton />
             </div>
           </div>

@@ -138,10 +138,10 @@ export const useSections = () => {
   };
   
   const handleDeleteSection = async (sectionId: string): Promise<void> => {
-    if (!sections[0]?.store_id) return Promise.reject("No store ID");
+    if (!storeId) return Promise.reject("No store ID");
     
     try {
-      const { error } = await deleteSection(sectionId, sections[0].store_id);
+      const { error } = await deleteSection(sectionId, storeId);
       
       if (error) throw error;
       
