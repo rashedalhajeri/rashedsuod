@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -27,6 +28,7 @@ const StoreDataLoader: React.FC<StoreDataLoaderProps> = ({
   useEffect(() => {
     const fetchCurrentStore = async () => {
       if (!storeDomain) {
+        console.error("Store domain is missing");
         onStoreNotFound();
         return;
       }
@@ -60,6 +62,7 @@ const StoreDataLoader: React.FC<StoreDataLoaderProps> = ({
             .maybeSingle();
             
           if (altError || !altData) {
+            console.error("لم يتم العثور على المتجر بعد محاولتين للبحث:", cleanDomain);
             onStoreNotFound();
             return;
           }
@@ -89,6 +92,8 @@ const StoreDataLoader: React.FC<StoreDataLoaderProps> = ({
       const fetchStoreData = async () => {
         setIsLoadingData(true);
         try {
+          console.log("تحميل بيانات المتجر بمعرف:", store.id);
+          
           const { data: productsData, error: productsError } = await supabase
             .from('products')
             .select('*')
@@ -167,6 +172,12 @@ const StoreDataLoader: React.FC<StoreDataLoaderProps> = ({
             featuredProducts: featuredProductsData || [],
             bestSellingProducts: bestSellingProductsData || []
           });
+          
+          console.log("تم تحميل بيانات المتجر بنجاح:", 
+            `منتجات: ${productsData?.length || 0}`, 
+            `فئات: ${categoriesWithProducts.length || 0}`,
+            `أقسام: ${sectionNames.length || 0}`
+          );
           
         } catch (err) {
           console.error("خطأ في تحميل بيانات المتجر:", err);

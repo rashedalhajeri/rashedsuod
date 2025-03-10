@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useCart } from "@/hooks/use-cart";
 import { ErrorState } from "@/components/ui/error-state";
@@ -8,11 +9,21 @@ import ProductContainer from "@/components/product/ProductContainer";
 import ProductOverview from "@/components/product/ProductOverview";
 import ProductPriceBar from "@/components/product/ProductPriceBar";
 import StorePageLayout from "@/components/store/layout/StorePageLayout";
+import { normalizeStoreDomain } from "@/utils/url-helpers";
 
 const ProductPage = () => {
   const { productId, storeDomain } = useParams<{ productId: string; storeDomain: string }>();
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
+  
+  // Debug log for domain handling
+  useEffect(() => {
+    console.log("ProductPage - Domain:", storeDomain);
+    console.log("ProductPage - Normalized domain:", normalizeStoreDomain(storeDomain || ''));
+    console.log("ProductPage - Product ID:", productId);
+  }, [storeDomain, productId]);
+  
+  const normalizedDomain = normalizeStoreDomain(storeDomain || '');
   
   const {
     product,
@@ -22,7 +33,7 @@ const ProductPage = () => {
     showContent,
     formatCurrency,
     isOutOfStock
-  } = useProductDetails(productId, storeDomain);
+  } = useProductDetails(productId, normalizedDomain);
   
   const handleQuantityChange = (type: 'increase' | 'decrease') => {
     if (type === 'decrease' && quantity > 1) {

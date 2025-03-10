@@ -11,6 +11,10 @@ export function useStoreDomain() {
   // Always normalize the domain for consistency
   const normalizedDomain = normalizeStoreDomain(storeDomain || '');
   
+  // Debug domain information
+  console.log("useStoreDomain - Raw domain from params:", storeDomain);
+  console.log("useStoreDomain - Normalized domain:", normalizedDomain);
+  
   // Check if we have a valid domain
   const isValidDomain = Boolean(normalizedDomain);
   

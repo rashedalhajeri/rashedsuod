@@ -7,9 +7,12 @@
  * Get the base domain for the application
  */
 export const getBaseDomain = (): string => {
+  // Check if we're in the lovableproject.com development environment
   if (window.location.hostname.includes('lovableproject.com')) {
     return window.location.origin;
   }
+  
+  // Production environment
   return import.meta.env.VITE_APP_DOMAIN || 'https://lovable.app';
 };
 
@@ -18,6 +21,8 @@ export const getBaseDomain = (): string => {
  */
 export const normalizeStoreDomain = (domain: string): string => {
   if (!domain) return '';
+  
+  // Simply convert to lowercase and trim spaces
   return domain.trim().toLowerCase();
 };
 

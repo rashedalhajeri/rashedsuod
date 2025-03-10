@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { useStoreData } from "@/hooks/use-store-data";
 import StoreDataLoader from "@/components/store/StoreDataLoader";
 import StoreNotFound from "@/components/store/StoreNotFound";
@@ -23,6 +24,12 @@ const Store = () => {
     featuredProducts: [],
     bestSellingProducts: []
   });
+
+  // Debug logging to help identify domain issues
+  useEffect(() => {
+    console.log("Store component - Domain:", storeDomain);
+    console.log("Store component - Is valid domain:", isValidDomain);
+  }, [storeDomain, isValidDomain]);
 
   const handleStoreLoaded = (data: any) => {
     setCurrentStoreData(data);
