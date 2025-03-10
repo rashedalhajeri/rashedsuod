@@ -77,19 +77,11 @@ export const useSectionProducts = (storeId?: string) => {
                 .order('created_at', { ascending: false })
                 .limit(12);
               break;
-            case 'category':
-              if (section.category_id) {
-                productsQuery = productsQuery
-                  .eq('category_id', section.category_id)
-                  .limit(8);
-              }
-              break;
-            case 'custom':
-              if (section.product_ids && section.product_ids.length > 0) {
-                productsQuery = productsQuery
-                  .in('id', section.product_ids)
-                  .limit(section.product_ids.length);
-              }
+            case 'trending':
+              // For trending, we'll use a combination of sales and views (using sales_count for now)
+              productsQuery = productsQuery
+                .order('sales_count', { ascending: false })
+                .limit(8);
               break;
             default:
               productsQuery = productsQuery.limit(8);

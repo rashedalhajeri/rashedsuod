@@ -2,70 +2,37 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { sectionTypes } from "./section-config";
 
 interface SectionNameFieldProps {
   name: string;
-  onNameChange: (name: string) => void;
-  isCustom: boolean;
-  selectedCategoryName?: string;
-  sectionType?: string;
+  onNameChange: (value: string) => void;
+  sectionType: string;
 }
 
 const SectionNameField: React.FC<SectionNameFieldProps> = ({
   name,
   onNameChange,
-  isCustom,
-  selectedCategoryName,
   sectionType
 }) => {
-  let placeholder = "أدخل اسم القسم...";
+  // Find the selected section type
+  const selectedType = sectionTypes.find(type => type.id === sectionType);
   
-  if (sectionType === 'category' && selectedCategoryName) {
-    placeholder = `منتجات ${selectedCategoryName}`;
-  } else if (sectionType === 'all_products') {
-    placeholder = "جميع المنتجات";
-  } else if (isCustom) {
-    placeholder = "أدخل اسم القسم المخصص...";
-  }
-
-  // Determine if name field is required
-  const isRequired = isCustom || sectionType === 'category';
-  
-  // Add subtle highlight for required fields
-  const fieldStyle = isRequired ? 
-    { borderColor: '#f43f5e40', background: '#f43f5e05' } : 
-    {};
-
   return (
     <div className="space-y-2">
-      <Label htmlFor="section-name" className="text-base font-medium">
-        {isRequired && <span className="text-rose-500 ml-1">*</span>} اسم القسم
-      </Label>
+      <div className="flex items-center justify-between">
+        <Label htmlFor="section-name" className="text-base font-medium">اسم القسم</Label>
+      </div>
+      <p className="text-sm text-gray-500 mb-2">
+        اسم القسم كما سيظهر للزوار في متجرك
+      </p>
       <Input
         id="section-name"
         value={name}
         onChange={(e) => onNameChange(e.target.value)}
-        placeholder={placeholder}
-        className="text-right border-gray-300 focus:border-primary"
-        style={fieldStyle}
+        placeholder={selectedType ? selectedType.name : "أدخل اسم القسم"}
+        className="w-full"
       />
-      {sectionType === 'category' ? (
-        <p className="text-xs text-gray-500">
-          يمكنك تخصيص اسم القسم أو استخدام الاسم التلقائي للفئة المختارة
-        </p>
-      ) : sectionType === 'all_products' ? (
-        <p className="text-xs text-gray-500">
-          يعرض جميع المنتجات المتوفرة في متجرك بترتيب مخصص
-        </p>
-      ) : isCustom ? (
-        <p className="text-xs text-gray-500">
-          هذا القسم مخصص لعرض المنتجات التي تختارها. اختر اسماً واضحاً ومعبراً.
-        </p>
-      ) : (
-        <p className="text-xs text-gray-500">
-          يمكنك تعديل الاسم الافتراضي للقسم حسب رغبتك.
-        </p>
-      )}
     </div>
   );
 };

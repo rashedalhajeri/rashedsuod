@@ -16,8 +16,6 @@ export const useSections = () => {
   const [storeId, setStoreId] = useState<string | null>(null);
   const [newSection, setNewSection] = useState("");
   const [newSectionType, setNewSectionType] = useState("best_selling");
-  const [newCategoryId, setNewCategoryId] = useState<string | null>(null);
-  const [newProductIds, setNewProductIds] = useState<string[] | null>(null);
   const [newDisplayStyle, setNewDisplayStyle] = useState<'grid' | 'list'>('grid');
   const [editingSection, setEditingSection] = useState<Section | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -75,8 +73,6 @@ export const useSections = () => {
         storeId,
         order: nextOrder,
         isActive: true,
-        categoryId: newCategoryId,
-        productIds: newProductIds,
         displayStyle: newDisplayStyle
       });
       
@@ -86,8 +82,8 @@ export const useSections = () => {
         storeId, 
         nextOrder, 
         true,
-        newCategoryId,
-        newProductIds,
+        null,
+        null,
         newDisplayStyle
       );
       
@@ -100,8 +96,6 @@ export const useSections = () => {
         setSections([...sections, data as Section]);
         setNewSection("");
         setNewSectionType("best_selling");
-        setNewCategoryId(null);
-        setNewProductIds(null);
         setNewDisplayStyle('grid');
         toast.success("تم إضافة القسم بنجاح");
       }
@@ -201,10 +195,6 @@ export const useSections = () => {
     setNewSection,
     newSectionType,
     setNewSectionType,
-    newCategoryId,
-    setNewCategoryId,
-    newProductIds,
-    setNewProductIds,
     newDisplayStyle,
     setNewDisplayStyle,
     editingSection,

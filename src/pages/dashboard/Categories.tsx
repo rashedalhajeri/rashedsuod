@@ -34,10 +34,6 @@ const CategoriesAndSections: React.FC = () => {
     setNewSection,
     newSectionType,
     setNewSectionType,
-    newCategoryId,
-    setNewCategoryId,
-    newProductIds,
-    setNewProductIds,
     newDisplayStyle,
     setNewDisplayStyle,
     editingSection,
@@ -92,10 +88,6 @@ const CategoriesAndSections: React.FC = () => {
           setNewSection={setNewSection}
           newSectionType={newSectionType}
           setNewSectionType={setNewSectionType}
-          newCategoryId={newCategoryId}
-          setNewCategoryId={setNewCategoryId}
-          newProductIds={newProductIds}
-          setNewProductIds={setNewProductIds}
           newDisplayStyle={newDisplayStyle}
           setNewDisplayStyle={(style: 'grid' | 'list') => setNewDisplayStyle(style)}
           editingSection={editingSection}

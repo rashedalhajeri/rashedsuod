@@ -2,7 +2,7 @@
 import React from "react";
 import { 
   Award, ShoppingBag, Star, BadgePercent, 
-  TagIcon, LayoutGrid, PackageSearch, TrendingUp, Gift, ShoppingCart
+  PackageSearch, TrendingUp, Gift
 } from "lucide-react";
 import { SectionType } from "./types";
 
@@ -44,17 +44,10 @@ export const sectionTypes: SectionType[] = [
     color: 'gray'
   },
   {
-    id: 'category',
-    name: 'فئة محددة',
-    icon: <TagIcon className="h-5 w-5" />,
-    description: 'يعرض منتجات من فئة محددة تختارها أنت (حتى 25 منتج)',
-    color: 'purple'
-  },
-  {
-    id: 'custom',
-    name: 'منتجات مخصصة',
-    icon: <Gift className="h-5 w-5" />,
-    description: 'قسم مخصص من منتجات تختارها أنت بنفسك',
+    id: 'trending',
+    name: 'الأكثر رواجاً',
+    icon: <TrendingUp className="h-5 w-5" />,
+    description: 'يعرض المنتجات الأكثر مشاهدة وتفاعلاً (حتى 25 منتج)',
     color: 'indigo'
   }
 ];

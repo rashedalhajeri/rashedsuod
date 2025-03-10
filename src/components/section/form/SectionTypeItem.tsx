@@ -20,50 +20,44 @@ const SectionTypeItem: React.FC<SectionTypeItemProps> = ({
   const getColorClasses = (colorName: string) => {
     const colorMap: Record<string, { bg: string, text: string, border: string, lightBg: string }> = {
       emerald: { 
-        bg: "bg-emerald-100", 
-        text: "text-emerald-600", 
+        bg: "bg-emerald-500", 
+        text: "text-white", 
         border: "border-emerald-300",
         lightBg: "bg-emerald-50"
       },
       blue: { 
-        bg: "bg-blue-100", 
-        text: "text-blue-600", 
+        bg: "bg-blue-500", 
+        text: "text-white", 
         border: "border-blue-300",
         lightBg: "bg-blue-50"
       },
       amber: { 
-        bg: "bg-amber-100", 
-        text: "text-amber-600", 
+        bg: "bg-amber-500", 
+        text: "text-white", 
         border: "border-amber-300",
         lightBg: "bg-amber-50"
       },
       rose: { 
-        bg: "bg-rose-100", 
-        text: "text-rose-600", 
+        bg: "bg-rose-500", 
+        text: "text-white", 
         border: "border-rose-300",
         lightBg: "bg-rose-50"
       },
-      purple: { 
-        bg: "bg-purple-100", 
-        text: "text-purple-600", 
-        border: "border-purple-300",
-        lightBg: "bg-purple-50"
-      },
       indigo: { 
-        bg: "bg-indigo-100", 
-        text: "text-indigo-600", 
+        bg: "bg-indigo-500", 
+        text: "text-white", 
         border: "border-indigo-300",
         lightBg: "bg-indigo-50"
       },
       gray: { 
-        bg: "bg-gray-100", 
-        text: "text-gray-600", 
+        bg: "bg-gray-500", 
+        text: "text-white", 
         border: "border-gray-300",
         lightBg: "bg-gray-50"
       }
     };
     
-    return colorMap[colorName] || { bg: "bg-gray-100", text: "text-gray-600", border: "border-gray-300", lightBg: "bg-gray-50" };
+    return colorMap[colorName] || { bg: "bg-gray-500", text: "text-white", border: "border-gray-300", lightBg: "bg-gray-50" };
   };
   
   const colors = getColorClasses(type.color);

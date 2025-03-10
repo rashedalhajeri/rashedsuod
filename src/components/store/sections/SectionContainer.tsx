@@ -4,7 +4,7 @@ import AllProductsSection from "./AllProductsSection";
 import { Badge } from "@/components/ui/badge";
 import { 
   Award, ShoppingBag, Star, BadgePercent, 
-  PackageSearch, TagIcon, Gift
+  PackageSearch, TrendingUp
 } from "lucide-react";
 
 interface SectionContainerProps {
@@ -34,10 +34,10 @@ const SectionContainer: React.FC<SectionContainerProps> = ({
       return <BadgePercent className="h-4 w-4 ml-1.5" />;
     } else if (name.includes('جميع المنتجات') || name.includes('كل المنتجات')) {
       return <PackageSearch className="h-4 w-4 ml-1.5" />;
-    } else if (name.includes('فئة') || name.includes('تصنيف')) {
-      return <TagIcon className="h-4 w-4 ml-1.5" />;
+    } else if (name.includes('الأكثر رواجاً') || name.includes('رواجا')) {
+      return <TrendingUp className="h-4 w-4 ml-1.5" />;
     } else {
-      return <Gift className="h-4 w-4 ml-1.5" />;
+      return <PackageSearch className="h-4 w-4 ml-1.5" />;
     }
   };
   
@@ -47,7 +47,7 @@ const SectionContainer: React.FC<SectionContainerProps> = ({
         <div key={sectionName} className="mb-8">
           <div className="flex items-center mb-2">
             {getSectionIcon(sectionName)}
-            <h2 className="text-xl font-bold">{sectionName}</h2>
+            <h2 className="text-xl font-bold text-gray-800">{sectionName}</h2>
           </div>
           <AllProductsSection 
             products={products}
