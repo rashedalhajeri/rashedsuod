@@ -2,6 +2,19 @@
 import { supabase } from "@/integrations/supabase/client";
 import { normalizeStoreDomain } from "./url-helpers";
 
+// Simple in-memory cache for store data
+const storeCache: Record<string, any> = {};
+
+/**
+ * Clears the store cache, useful when retrying fetches
+ */
+export const clearStoreCache = () => {
+  Object.keys(storeCache).forEach(key => {
+    delete storeCache[key];
+  });
+  console.log("Store cache cleared");
+};
+
 /**
  * Fetch a store by domain name with simplified, direct lookup
  */
@@ -10,6 +23,12 @@ export const fetchStoreByDomain = async (domainName: string) => {
 
   const cleanDomain = normalizeStoreDomain(domainName);
   console.log("Looking up store:", cleanDomain);
+
+  // Check cache first
+  if (storeCache[cleanDomain]) {
+    console.log("Cache hit for domain:", cleanDomain);
+    return storeCache[cleanDomain];
+  }
 
   try {
     const { data, error } = await supabase
@@ -21,6 +40,11 @@ export const fetchStoreByDomain = async (domainName: string) => {
     if (error) {
       console.error("Error fetching store:", error);
       return null;
+    }
+    
+    // Cache the result for future lookups
+    if (data) {
+      storeCache[cleanDomain] = data;
     }
     
     return data;
