@@ -5,8 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { 
   BanknoteIcon, ShoppingBag, Sparkles, Percent, 
-  Tag, LayoutGrid, CheckIcon, Search, Plus,
-  ChevronDown
+  Tag, LayoutGrid, CheckIcon, Search, Plus
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -16,44 +15,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { createCurrencyFormatter } from "@/hooks/use-currency-formatter";
-
-interface SectionFormProps {
-  isOpen: boolean;
-  onClose: () => void;
-  newSection: string;
-  setNewSection: (name: string) => void;
-  newSectionType: string;
-  setNewSectionType: (type: string) => void;
-  newCategoryId: string | null;
-  setNewCategoryId: (id: string | null) => void;
-  newProductIds: string[] | null;
-  setNewProductIds: (ids: string[] | null) => void;
-  newDisplayStyle?: 'grid' | 'list';
-  setNewDisplayStyle?: (style: 'grid' | 'list') => void;
-  handleAddSection: () => void;
-}
-
-interface Category {
-  id: string;
-  name: string;
-}
-
-interface Product {
-  id: string;
-  name: string;
-  image_url?: string;
-  price: number;
-  discount_price?: number | null;
-}
 
 // Define section types
 const sectionTypes = [
@@ -100,6 +63,35 @@ const sectionTypes = [
     color: 'indigo'
   }
 ];
+
+interface SectionFormProps {
+  isOpen: boolean;
+  onClose: () => void;
+  newSection: string;
+  setNewSection: (name: string) => void;
+  newSectionType: string;
+  setNewSectionType: (type: string) => void;
+  newCategoryId: string | null;
+  setNewCategoryId: (id: string | null) => void;
+  newProductIds: string[] | null;
+  setNewProductIds: (ids: string[] | null) => void;
+  newDisplayStyle?: 'grid' | 'list';
+  setNewDisplayStyle?: (style: 'grid' | 'list') => void;
+  handleAddSection: () => void;
+}
+
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  image_url?: string;
+  price: number;
+  discount_price?: number | null;
+}
 
 const SectionForm: React.FC<SectionFormProps> = ({
   isOpen,
@@ -237,18 +229,18 @@ const SectionForm: React.FC<SectionFormProps> = ({
     setNewProductIds(selectedIds.length > 0 ? selectedIds : null);
   };
 
-  const handleTypeChange = (value: string) => {
-    setSelectedSectionType(value);
-    setCustomType(""); // Reset custom type selection
+  const handleTypeChange = (type: string) => {
+    setSelectedSectionType(type);
     
-    // Reset selection fields for different types
-    if (value !== 'category') {
+    // Reset fields for different types
+    if (type !== 'category') {
       setNewCategoryId(null);
     }
     
-    if (value !== 'custom') {
+    if (type !== 'custom') {
       setNewProductIds(null);
       setSelectedProducts({});
+      setCustomType("");
     }
   };
 
@@ -267,6 +259,37 @@ const SectionForm: React.FC<SectionFormProps> = ({
   const handleSubmit = () => {
     handleAddSection();
     onClose();
+  };
+
+  // Function to render section type selection
+  const renderSectionTypes = () => {
+    return (
+      <div className="grid grid-cols-2 gap-3 mt-2">
+        {sectionTypes.map((type) => (
+          <div
+            key={type.id}
+            onClick={() => handleTypeChange(type.id)}
+            className={cn(
+              "border rounded-lg p-3 cursor-pointer transition-all hover:border-gray-400",
+              selectedSectionType === type.id 
+                ? `bg-${type.color}-50 border-${type.color}-300` 
+                : ""
+            )}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              {type.icon}
+              <span className="font-medium">{type.name}</span>
+              {selectedSectionType === type.id && (
+                <CheckIcon className="h-4 w-4 text-primary ml-auto" />
+              )}
+            </div>
+            <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+              {type.description}
+            </p>
+          </div>
+        ))}
+      </div>
+    );
   };
 
   // Function to render custom content based on selected section type
@@ -447,21 +470,7 @@ const SectionForm: React.FC<SectionFormProps> = ({
         <div className="flex flex-col space-y-4 overflow-y-auto py-4 pr-2 pl-6">
           <div className="space-y-2">
             <Label htmlFor="section-type">نوع القسم</Label>
-            <Select value={selectedSectionType} onValueChange={handleTypeChange}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="اختر نوع القسم" />
-              </SelectTrigger>
-              <SelectContent>
-                {sectionTypes.map(type => (
-                  <SelectItem key={type.id} value={type.id} className="flex items-center gap-2">
-                    <div className="flex items-center gap-2">
-                      {type.icon}
-                      <span>{type.name}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {renderSectionTypes()}
           </div>
           
           {selectedSectionType && selectedSectionType !== 'custom' && (

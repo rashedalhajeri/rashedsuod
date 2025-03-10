@@ -84,6 +84,22 @@ const CategoriesAndSections: React.FC = () => {
     setEditingSection(section);
   };
 
+  // Reset section dialog state
+  const handleCloseSectionDialog = () => {
+    setIsAddSectionDialogOpen(false);
+    setNewSection("");
+    setNewSectionType("best_selling");
+    setNewCategoryId(null);
+    setNewProductIds(null);
+  };
+
+  // Reset category dialog state
+  const handleCloseCategoryDialog = () => {
+    setIsAddCategoryDialogOpen(false);
+    setNewCategory("");
+    setCategoryImage(null);
+  };
+
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6">
@@ -218,7 +234,7 @@ const CategoriesAndSections: React.FC = () => {
             
             <SectionForm
               isOpen={isAddSectionDialogOpen}
-              onClose={() => setIsAddSectionDialogOpen(false)}
+              onClose={handleCloseSectionDialog}
               newSection={newSection}
               setNewSection={setNewSection}
               newSectionType={newSectionType}
@@ -237,11 +253,7 @@ const CategoriesAndSections: React.FC = () => {
         {/* Category dialog with simplified props */}
         <CategoryDialog
           isOpen={isAddCategoryDialogOpen}
-          onClose={() => {
-            setIsAddCategoryDialogOpen(false);
-            setNewCategory("");
-            setCategoryImage(null);
-          }}
+          onClose={handleCloseCategoryDialog}
           newCategory={newCategory}
           setNewCategory={setNewCategory}
           categoryImage={categoryImage}
