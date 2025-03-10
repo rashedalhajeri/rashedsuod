@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { normalizeStoreDomain } from "@/utils/url-helpers";
 
 interface StoreDataLoaderProps {
   storeDomain: string | undefined;
@@ -32,7 +33,7 @@ const StoreDataLoader: React.FC<StoreDataLoaderProps> = ({
       }
       
       try {
-        const cleanDomain = storeDomain.trim().toLowerCase();
+        const cleanDomain = normalizeStoreDomain(storeDomain);
         console.log("البحث عن متجر بالدومين:", cleanDomain);
         
         const { data, error } = await supabase

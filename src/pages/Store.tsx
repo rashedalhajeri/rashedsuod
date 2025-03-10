@@ -1,18 +1,18 @@
 
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
 import { useStoreData } from "@/hooks/use-store-data";
-import { LoadingState } from "@/components/ui/loading-state";
-import { ErrorState } from "@/components/ui/error-state";
+import { motion } from "framer-motion";
 import StoreLayout from "@/components/store/StoreLayout";
 import StoreContent from "@/components/store/StoreContent";
-import { motion } from "framer-motion";
 import StoreNotFound from "@/components/store/StoreNotFound";
 import StoreDataLoader from "@/components/store/StoreDataLoader";
 import StoreSkeleton from "@/components/store/StoreSkeleton";
+import { useStoreDomain } from "@/hooks/use-store-domain";
+import ErrorBoundary from "@/components/ui/ErrorBoundary";
+import { ErrorState } from "@/components/ui/error-state";
 
 const Store = () => {
-  const { storeDomain } = useParams<{ storeDomain: string }>();
+  const { domain: storeDomain, isValidDomain } = useStoreDomain();
   const { storeData, isLoading, error } = useStoreData();
   const [storeNotFound, setStoreNotFound] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
@@ -50,10 +50,17 @@ const Store = () => {
     setStoreNotFound(true);
   };
 
+  // Handle validation error (invalid or missing domain)
+  if (!isValidDomain) {
+    return <StoreNotFound storeDomain={storeDomain} />;
+  }
+  
+  // Handle store not found
   if (storeNotFound) {
     return <StoreNotFound storeDomain={storeDomain} />;
   }
 
+  // Handle error from store data fetching
   if (error) {
     return (
       <motion.div
@@ -61,7 +68,10 @@ const Store = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
       >
-        <ErrorState title="خطأ" message={error.message || "حدث خطأ أثناء تحميل المتجر"} />
+        <ErrorState 
+          title="خطأ" 
+          message={error.message || "حدث خطأ أثناء تحميل المتجر"} 
+        />
       </motion.div>
     );
   }
@@ -69,34 +79,36 @@ const Store = () => {
   const storeToShow = currentStoreData || storeData || {};
 
   return (
-    <StoreLayout storeData={storeToShow}>
-      <StoreDataLoader
-        storeDomain={storeDomain}
-        onStoreLoaded={handleStoreDataLoaded}
-        onStoreNotFound={handleStoreNotFound}
-        onLoadingComplete={handleLoadingComplete}
-        storeData={storeToShow}
-      >
-        {isLoading || isLoadingData ? (
-          <StoreSkeleton />
-        ) : (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: showContent ? 1 : 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            <StoreContent 
-              storeData={loadedStoreData}
-              products={loadedStoreData.products}
-              categories={loadedStoreData.categories}
-              sections={loadedStoreData.sections}
-              featuredProducts={loadedStoreData.featuredProducts}
-              bestSellingProducts={loadedStoreData.bestSellingProducts}
-            />
-          </motion.div>
-        )}
-      </StoreDataLoader>
-    </StoreLayout>
+    <ErrorBoundary>
+      <StoreLayout storeData={storeToShow}>
+        <StoreDataLoader
+          storeDomain={storeDomain}
+          onStoreLoaded={handleStoreDataLoaded}
+          onStoreNotFound={handleStoreNotFound}
+          onLoadingComplete={handleLoadingComplete}
+          storeData={storeToShow}
+        >
+          {isLoading || isLoadingData ? (
+            <StoreSkeleton />
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: showContent ? 1 : 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              <StoreContent 
+                storeData={loadedStoreData}
+                products={loadedStoreData.products}
+                categories={loadedStoreData.categories}
+                sections={loadedStoreData.sections}
+                featuredProducts={loadedStoreData.featuredProducts}
+                bestSellingProducts={loadedStoreData.bestSellingProducts}
+              />
+            </motion.div>
+          )}
+        </StoreDataLoader>
+      </StoreLayout>
+    </ErrorBoundary>
   );
 };
 

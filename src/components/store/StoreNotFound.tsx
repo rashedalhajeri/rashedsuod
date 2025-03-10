@@ -21,7 +21,7 @@ const StoreNotFound: React.FC<StoreNotFoundProps> = ({ storeDomain }) => {
         <h1 className="text-2xl font-bold text-red-600 mb-4">المتجر غير موجود</h1>
         <p className="text-gray-600 mb-6">
           عذراً، لا يمكن العثور على متجر بالدومين: 
-          <span className="font-bold text-gray-800 mx-1 dir-ltr inline-block">{storeDomain}</span>
+          <span className="font-bold text-gray-800 mx-1 dir-ltr inline-block">{storeDomain || 'غير محدد'}</span>
         </p>
         <button 
           onClick={() => navigate('/')}

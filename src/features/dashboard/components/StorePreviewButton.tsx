@@ -2,6 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Eye, ExternalLink } from "lucide-react";
+import { openStoreInNewTab } from "@/utils/url-helpers";
 
 interface StorePreviewButtonProps {
   storeUrl?: string;
@@ -19,26 +20,7 @@ const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({
   showExternalIcon = false 
 }) => {
   const handleClick = () => {
-    if (!storeUrl) return;
-    
-    // Clean and standardize the URL - always convert to lowercase
-    const trimmedUrl = storeUrl.trim().toLowerCase();
-    
-    // Remove leading/trailing slashes
-    const cleanUrl = trimmedUrl.replace(/^\/+|\/+$/g, '');
-    
-    // Check if it's a full URL with protocol
-    if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
-      window.open(cleanUrl, '_blank');
-      return;
-    }
-    
-    // Remove store/ prefix if it exists
-    const domainName = cleanUrl.replace(/^store\/?/, '');
-    
-    // Create the correct URL with leading slash
-    const storeRoute = `/store/${domainName}`;
-    window.open(storeRoute, '_blank');
+    openStoreInNewTab(storeUrl);
   };
 
   return (
