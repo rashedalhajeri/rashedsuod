@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import SaveButton from "@/components/ui/save-button";
@@ -6,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import TransitionTimeSlider from "./banner-manager/TransitionTimeSlider";
 import BannersList from "./banner-manager/BannersList";
+import BannerPreview from "./banner-manager/BannerPreview";
 import { Banner, BannerManagerProps } from "./banner-manager/types";
 
 const BannerManager: React.FC<BannerManagerProps> = ({ storeId }) => {
@@ -27,12 +27,25 @@ const BannerManager: React.FC<BannerManagerProps> = ({ storeId }) => {
   const fetchBanners = async () => {
     setIsLoading(true);
     try {
-      // For now, we'll use local state only since the table doesn't exist
-      // In a real implementation, you would fetch from the database
-      setBanners([]);
+      const { data: bannersData, error: bannersError } = await supabase
+        .from('banners')
+        .select('*')
+        .eq('store_id', storeId)
+        .order('sort_order', { ascending: true });
       
-      // Set default transition time
-      setTransitionTime(5);
+      if (bannersError) throw bannersError;
+      
+      const { data: settingsData, error: settingsError } = await supabase
+        .from('banner_settings')
+        .select('transition_time')
+        .eq('store_id', storeId)
+        .single();
+      
+      if (!settingsError && settingsData) {
+        setTransitionTime(settingsData.transition_time);
+      }
+      
+      setBanners(bannersData || []);
     } catch (error) {
       console.error("Error fetching banners:", error);
       toast.error("حدث خطأ أثناء تحميل البنرات");
@@ -89,7 +102,6 @@ const BannerManager: React.FC<BannerManagerProps> = ({ storeId }) => {
     const updatedBanners = [...banners];
     updatedBanners.splice(index, 1);
     
-    // Update sort_order for remaining banners
     updatedBanners.forEach((banner, idx) => {
       banner.sort_order = idx;
     });
@@ -125,10 +137,8 @@ const BannerManager: React.FC<BannerManagerProps> = ({ storeId }) => {
     const updatedBanners = [...banners];
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     
-    // Swap banners
     [updatedBanners[index], updatedBanners[targetIndex]] = [updatedBanners[targetIndex], updatedBanners[index]];
     
-    // Update sort_order
     updatedBanners.forEach((banner, idx) => {
       banner.sort_order = idx;
     });
@@ -139,9 +149,54 @@ const BannerManager: React.FC<BannerManagerProps> = ({ storeId }) => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      const { error: settingsError } = await supabase
+        .from('banner_settings')
+        .upsert({ 
+          store_id: storeId,
+          transition_time: transitionTime
+        }, { onConflict: 'store_id' });
+      
+      if (settingsError) throw settingsError;
+      
+      const { data: existingBanners, error: fetchError } = await supabase
+        .from('banners')
+        .select('id')
+        .eq('store_id', storeId);
+      
+      if (fetchError) throw fetchError;
+      
+      const existingIds = existingBanners?.map(banner => banner.id) || [];
+      
+      const currentIds = banners
+        .filter(banner => !banner.id.toString().startsWith('temp_'))
+        .map(banner => banner.id);
+      
+      const idsToDelete = existingIds.filter(id => !currentIds.includes(id));
+      
+      if (idsToDelete.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('banners')
+          .delete()
+          .in('id', idsToDelete);
+        
+        if (deleteError) throw deleteError;
+      }
+      
+      const bannersToUpsert = banners.map((banner, index) => ({
+        ...banner,
+        id: banner.id.toString().startsWith('temp_') ? undefined : banner.id,
+        store_id: storeId,
+        sort_order: index
+      }));
+      
+      const { error: upsertError } = await supabase
+        .from('banners')
+        .upsert(bannersToUpsert, { onConflict: 'id' });
+      
+      if (upsertError) throw upsertError;
+      
       toast.success("تم حفظ البنرات بنجاح");
-      // In a real implementation, you would save to the database
-      // For now, we'll just show a success message
+      fetchBanners();
     } catch (error) {
       console.error("Error saving banners:", error);
       toast.error("حدث خطأ أثناء حفظ البنرات");
@@ -170,23 +225,32 @@ const BannerManager: React.FC<BannerManagerProps> = ({ storeId }) => {
       </CardHeader>
       
       <CardContent>
-        <div className="space-y-4">
-          <TransitionTimeSlider 
-            transitionTime={transitionTime}
-            setTransitionTime={setTransitionTime}
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <TransitionTimeSlider 
+              transitionTime={transitionTime}
+              setTransitionTime={setTransitionTime}
+            />
+            
+            <BannersList
+              banners={banners}
+              storeId={storeId}
+              categories={categories}
+              products={products}
+              onAddBanner={handleAddBanner}
+              onRemoveBanner={handleRemoveBanner}
+              onBannerChange={handleBannerChange}
+              onBannerImageChange={handleBannerImageChange}
+              onMoveBanner={handleMoveBanner}
+            />
+          </div>
           
-          <BannersList
-            banners={banners}
-            storeId={storeId}
-            categories={categories}
-            products={products}
-            onAddBanner={handleAddBanner}
-            onRemoveBanner={handleRemoveBanner}
-            onBannerChange={handleBannerChange}
-            onBannerImageChange={handleBannerImageChange}
-            onMoveBanner={handleMoveBanner}
-          />
+          <div>
+            <BannerPreview 
+              banners={banners}
+              transitionTime={transitionTime}
+            />
+          </div>
         </div>
       </CardContent>
       

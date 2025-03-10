@@ -12,3 +12,8 @@ export interface Banner {
 export interface BannerManagerProps {
   storeId: string;
 }
+
+export interface BannerPreviewProps {
+  banners: Banner[];
+  transitionTime: number;
+}
