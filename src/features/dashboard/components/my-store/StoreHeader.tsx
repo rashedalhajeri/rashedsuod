@@ -11,10 +11,9 @@ import {
 
 interface StoreHeaderProps {
   storePreviewUrl?: string;
-  customDomain?: string | null;
 }
 
-const StoreHeader: React.FC<StoreHeaderProps> = ({ storePreviewUrl, customDomain }) => {
+const StoreHeader: React.FC<StoreHeaderProps> = ({ storePreviewUrl }) => {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
@@ -27,7 +26,6 @@ const StoreHeader: React.FC<StoreHeaderProps> = ({ storePreviewUrl, customDomain
       <div className="flex flex-wrap items-center gap-2">
         <StorePreviewButton 
           storeUrl={storePreviewUrl}
-          customDomain={customDomain || undefined}
           variant="outline" 
           showExternalIcon={true}
         />

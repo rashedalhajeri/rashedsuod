@@ -15,7 +15,6 @@ import {
   StoreCustomizationCard
 } from "@/features/dashboard/components/my-store";
 
-// Extend the StoreData type to handle custom_domain
 interface MyStoreProps {}
 
 const MyStore: React.FC<MyStoreProps> = () => {
@@ -64,15 +63,12 @@ const MyStore: React.FC<MyStoreProps> = () => {
   const storeDomain = normalizeStoreDomain(storeData.domain_name || storeData.domain || '');
   const storeName = storeData.store_name || storeData.name;
   
-  // Get custom domain from storeData
-  const customDomain = (storeData as any).custom_domain || null;
-  
   // Create a proper URL for the StorePreviewButton
   const storePreviewUrl = storeDomain ? `store/${storeDomain}` : '';
   
   return (
     <div className="container max-w-7xl mx-auto py-8 space-y-8">
-      <StoreHeader storePreviewUrl={storePreviewUrl} customDomain={customDomain} />
+      <StoreHeader storePreviewUrl={storePreviewUrl} />
       
       <Separator className="my-6" />
       
@@ -82,7 +78,6 @@ const MyStore: React.FC<MyStoreProps> = () => {
             storeName={storeName} 
             storeDomain={storeDomain} 
             logoUrl={logoUrl}
-            customDomain={customDomain}
           />
           <StoreTips />
         </div>

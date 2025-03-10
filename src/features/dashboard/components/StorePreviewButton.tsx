@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Eye, ExternalLink } from "lucide-react";
-import { openStoreInNewTab, getFullStoreUrl } from "@/utils/url-helpers";
+import { getFullStoreUrl } from "@/utils/url-helpers";
 import {
   Tooltip,
   TooltipContent,
@@ -12,7 +12,6 @@ import {
 
 interface StorePreviewButtonProps {
   storeUrl?: string;
-  customDomain?: string;
   className?: string;
   variant?: "default" | "outline" | "secondary" | "ghost" | "link" | "destructive";
   size?: "default" | "sm" | "lg" | "icon";
@@ -21,7 +20,6 @@ interface StorePreviewButtonProps {
 
 const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({ 
   storeUrl, 
-  customDomain,
   className, 
   variant = "default", 
   size = "sm",
@@ -29,10 +27,8 @@ const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({
 }) => {
   const [showLink, setShowLink] = useState(false);
   
-  // Determine which URL to use - custom domain takes precedence
-  const finalUrl = customDomain 
-    ? (customDomain.startsWith('http') ? customDomain : `https://${customDomain}`)
-    : getFullStoreUrl(storeUrl || '');
+  // Generate the URL in linok.me/store/name format
+  const finalUrl = getFullStoreUrl(storeUrl || '');
   
   const handleClick = () => {
     if (!finalUrl) return;
