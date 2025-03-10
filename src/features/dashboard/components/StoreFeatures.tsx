@@ -1,52 +1,13 @@
 
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import SaveButton from "@/components/ui/save-button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Trash, Star, BadgePercent, ShieldCheck, Truck } from "lucide-react";
-
-interface StoreFeaturesProps {
-  storeId: string;
-}
-
-interface Feature {
-  id: string;
-  icon: string;
-  title: string;
-  description: string;
-  is_active: boolean;
-}
-
-const icons = [
-  { value: 'star', label: 'نجمة', component: <Star className="h-4 w-4" /> },
-  { value: 'percent', label: 'خصم', component: <BadgePercent className="h-4 w-4" /> },
-  { value: 'shield', label: 'حماية', component: <ShieldCheck className="h-4 w-4" /> },
-  { value: 'truck', label: 'شحن', component: <Truck className="h-4 w-4" /> },
-];
-
-const IconSelector = ({ value, onChange }: { value: string, onChange: (value: string) => void }) => {
-  return (
-    <div className="flex gap-2">
-      {icons.map((icon) => (
-        <Button
-          key={icon.value}
-          type="button"
-          variant={value === icon.value ? "default" : "outline"}
-          className={`h-10 w-10 p-0 ${value === icon.value ? 'bg-primary text-primary-foreground' : ''}`}
-          onClick={() => onChange(icon.value)}
-        >
-          {icon.component}
-        </Button>
-      ))}
-    </div>
-  );
-};
+import FeaturesList from "./store-features/FeaturesList";
+import { Feature, StoreFeaturesProps } from "./store-features/types";
 
 const StoreFeatures: React.FC<StoreFeaturesProps> = ({ storeId }) => {
   const [features, setFeatures] = useState<Feature[]>([]);
@@ -169,76 +130,12 @@ const StoreFeatures: React.FC<StoreFeaturesProps> = ({ storeId }) => {
           </div>
           
           {showFeaturesSection && (
-            <div className="space-y-6 mt-6">
-              {features.map((feature, index) => (
-                <div key={feature.id} className="border rounded-md p-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-medium">الميزة {index + 1}</h3>
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      onClick={() => handleRemoveFeature(index)}
-                    >
-                      <Trash className="h-4 w-4 text-red-500" />
-                    </Button>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="mb-2 block">الأيقونة</Label>
-                      <IconSelector 
-                        value={feature.icon} 
-                        onChange={(value) => handleFeatureChange(index, 'icon', value)} 
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor={`feature-title-${index}`} className="mb-2 block">العنوان</Label>
-                      <Input 
-                        id={`feature-title-${index}`}
-                        value={feature.title} 
-                        onChange={(e) => handleFeatureChange(index, 'title', e.target.value)}
-                        placeholder="عنوان الميزة"
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor={`feature-description-${index}`} className="mb-2 block">الوصف</Label>
-                      <Textarea
-                        id={`feature-description-${index}`}
-                        value={feature.description}
-                        onChange={(e) => handleFeatureChange(index, 'description', e.target.value)}
-                        placeholder="وصف الميزة"
-                        rows={2}
-                      />
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Switch 
-                        id={`feature-active-${index}`}
-                        checked={feature.is_active}
-                        onCheckedChange={(checked) => handleFeatureChange(index, 'is_active', checked)}
-                      />
-                      <Label htmlFor={`feature-active-${index}`}>تفعيل الميزة</Label>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              
-              <Button 
-                onClick={handleAddFeature} 
-                className="w-full"
-                disabled={features.length >= 4}
-              >
-                <Plus className="h-4 w-4 me-2" /> إضافة ميزة جديدة
-              </Button>
-              
-              {features.length >= 4 && (
-                <p className="text-xs text-muted-foreground text-center">
-                  الحد الأقصى للمميزات هو 4 مميزات
-                </p>
-              )}
-            </div>
+            <FeaturesList
+              features={features}
+              onAddFeature={handleAddFeature}
+              onRemoveFeature={handleRemoveFeature}
+              onFeatureChange={handleFeatureChange}
+            />
           )}
         </div>
       </CardContent>
