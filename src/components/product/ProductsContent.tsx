@@ -34,40 +34,32 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
   onRefresh,
   onActionClick
 }) => {
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const isMobile = useIsMobile();
-  // Products per page based on screen size
   const getItemsPerPage = () => {
     if (isMobile) return 10;
     return 20;
   };
   const itemsPerPage = getItemsPerPage();
   
-  // Bulk action states
   const [showBulkActivateConfirm, setShowBulkActivateConfirm] = useState(false);
   const [bulkActivateStatus, setBulkActivateStatus] = useState(false);
   const [showChangeCategoryDialog, setShowChangeCategoryDialog] = useState(false);
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
   
-  // Product delete dialog state
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
   const [deleteProductName, setDeleteProductName] = useState<string>("");
   
-  // Calculate pagination
   const totalPages = Math.ceil(products.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedProducts = products.slice(startIndex, startIndex + itemsPerPage);
   
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // Reset selected items when changing page
     onSelectionChange([]);
-    // Scroll to top of the table
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   
-  // Handle bulk activate/deactivate confirmation
   const handleBulkActivateClick = (setActive: boolean) => {
     if (selectedItems.length === 0) return;
     setBulkActivateStatus(setActive);
@@ -79,46 +71,38 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
     
     setIsBulkProcessing(true);
     try {
-      // Apply activation status to each selected product
       await Promise.all(
         selectedItems.map(id => onActivate(id, bulkActivateStatus))
       );
       
-      // Show success toast
       toast.success(
         bulkActivateStatus 
           ? `تم تفعيل ${selectedItems.length} منتج بنجاح`
           : `تم تعطيل ${selectedItems.length} منتج بنجاح`
       );
       
-      // Reset selection
       onSelectionChange([]);
       
-      // Refresh product list
       if (onRefresh) {
         onRefresh();
       }
     } catch (error) {
       toast.error(`حدث خطأ: ${(error as Error).message}`);
     } finally {
-      // Ensure dialog is closed
       setIsBulkProcessing(false);
       setShowBulkActivateConfirm(false);
     }
   };
 
-  // Handle bulk category change
   const handleChangeCategoryClick = () => {
     if (selectedItems.length === 0) return;
     setShowChangeCategoryDialog(true);
   };
   
-  // Handle category dialog close
   const handleCategoryDialogClose = (open: boolean) => {
     setShowChangeCategoryDialog(open);
   };
   
-  // Handle single product delete
   const handleOpenDeleteDialog = (product: Product) => {
     setDeleteProductId(product.id);
     setDeleteProductName(product.name);
@@ -142,7 +126,6 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
   
   return (
     <div className="space-y-4">
-      {/* Show bulk actions if items are selected */}
       {selectedItems.length > 0 && (
         <BulkActionsBar 
           selectedItemsCount={selectedItems.length}
@@ -164,7 +147,6 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
         onActionClick={onActionClick}
       />
       
-      {/* Pagination control */}
       {totalPages > 1 && (
         <div className={isMobile ? "mt-4" : "mt-6"}>
           <ProductsPagination 
@@ -175,7 +157,6 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
         </div>
       )}
       
-      {/* Bulk Activate/Deactivate Confirmation Dialog */}
       <ConfirmDialog
         open={showBulkActivateConfirm}
         onOpenChange={(open) => {
@@ -203,7 +184,6 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
         variant={bulkActivateStatus ? "info" : "warning"}
       />
 
-      {/* Change Category Dialog */}
       <ChangeCategoryDialog
         open={showChangeCategoryDialog}
         onOpenChange={handleCategoryDialogClose}
@@ -215,7 +195,6 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
         }}
       />
       
-      {/* Single Product Delete Confirmation */}
       <DeleteConfirmDialog
         open={!!deleteProductId}
         onOpenChange={(open) => {

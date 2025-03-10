@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,14 +59,13 @@ const SectionItem: React.FC<SectionItemProps> = ({
     try {
       await handleDeleteSection(section.id);
       toast({
-        title: "تم الحذف بنجاح",
-        description: `تم حذف القسم "${section.name}" بنجاح`
+        description: `تم حذف القسم "${section.name}" بنجاح`,
+        variant: "default"
       });
       setIsDeleteDialogOpen(false);
     } catch (error) {
       console.error("Error deleting section:", error);
       toast({
-        title: "حدث خطأ",
         description: "لم يتم حذف القسم، يرجى المحاولة مرة أخرى",
         variant: "destructive"
       });

@@ -12,7 +12,7 @@ interface SectionsContentProps {
   editingSection: Section | null;
   setEditingSection: (section: Section | null) => void;
   handleUpdateSection: () => void;
-  handleDeleteSection: (id: string) => void;
+  handleDeleteSection: (id: string) => Promise<void>;
   setNewSection: (name: string) => void;
   setNewSectionType: (type: string) => void;
   openAddDialog: () => void;
