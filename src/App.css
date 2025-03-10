@@ -83,3 +83,38 @@
 .scroll-item {
   flex: 0 0 auto;
 }
+
+/* Custom scrollbar for better UX */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* RTL specific styles */
+[dir="rtl"] .custom-scrollbar {
+  scrollbar-width: thin;
+}
+
+/* Dialog animation for mobile responsiveness */
+@media (max-width: 640px) {
+  .dialog-content-mobile {
+    width: 100%;
+    border-radius: 0;
+    height: 100vh;
+    max-height: 100vh;
+  }
+}

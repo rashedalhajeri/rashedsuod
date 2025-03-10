@@ -19,18 +19,25 @@ const SectionTypeItem: React.FC<SectionTypeItemProps> = ({
     <div
       onClick={onClick}
       className={cn(
-        "border rounded-lg p-3 cursor-pointer transition-all hover:border-gray-400",
-        isSelected ? `bg-${type.color}-50 border-${type.color}-300` : ""
+        "border rounded-lg p-4 cursor-pointer transition-all hover:border-gray-400 relative",
+        isSelected 
+          ? `bg-${type.color}-50 border-${type.color}-300 shadow-sm` 
+          : "hover:shadow-sm"
       )}
+      dir="rtl"
     >
-      <div className="flex items-center gap-2 mb-1">
-        {type.icon}
-        <span className="font-medium">{type.name}</span>
+      <div className="flex items-center gap-2 mb-2">
+        <div className={`bg-${type.color}-100 p-1.5 rounded-full text-${type.color}-500`}>
+          {type.icon}
+        </div>
+        <span className="font-medium text-base">{type.name}</span>
         {isSelected && (
-          <CheckIcon className="h-4 w-4 text-primary ml-auto" />
+          <div className="absolute top-2 left-2 bg-primary text-white rounded-full p-0.5">
+            <CheckIcon className="h-3.5 w-3.5" />
+          </div>
         )}
       </div>
-      <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+      <p className="text-xs text-gray-600 mt-1">
         {type.description}
       </p>
     </div>
