@@ -10,7 +10,7 @@ import { useStoreDomain } from "@/hooks/use-store-domain";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
 import { ErrorState } from "@/components/ui/error-state";
 import { toast } from "sonner";
-import { checkStoreStatus } from "@/utils/store-helpers";
+import { checkStoreStatus, clearStoreCache } from "@/utils/store-helpers";
 import { supabase } from "@/integrations/supabase/client";
 
 const Store = () => {
@@ -27,14 +27,20 @@ const Store = () => {
     featuredProducts: [],
     bestSellingProducts: []
   });
+  const [verificationAttempt, setVerificationAttempt] = useState(0);
 
   // تحقق من وجود وحالة المتجر عند التحميل
   useEffect(() => {
     const verifyStore = async () => {
       if (isValidDomain && storeDomain) {
-        console.log("التحقق من حالة المتجر:", storeDomain);
+        console.log("التحقق من حالة المتجر:", storeDomain, "محاولة رقم:", verificationAttempt + 1);
         
         try {
+          // إذا كانت هذه محاولة ثانية، نمسح الذاكرة المؤقتة أولاً
+          if (verificationAttempt > 0) {
+            clearStoreCache();
+          }
+          
           // تحقق أولاً من وجود المتجر بشكل مباشر عبر supabase
           const { data: directData, error: directError } = await supabase
             .from('stores')
@@ -64,6 +70,13 @@ const Store = () => {
           
           if (!exists) {
             console.log("المتجر غير موجود:", storeDomain);
+            
+            // محاولة أخرى إذا كانت هذه ليست المحاولة الأخيرة
+            if (verificationAttempt < 2) {
+              setVerificationAttempt(prev => prev + 1);
+              return; // سوف ينفذ useEffect مرة أخرى بسبب تغير verificationAttempt
+            }
+            
             setStoreNotFound(true);
           } else if (!active) {
             console.log("المتجر موجود ولكنه غير نشط:", storeDomain);
@@ -78,6 +91,13 @@ const Store = () => {
           }
         } catch (error) {
           console.error("خطأ في التحقق من المتجر:", error);
+          
+          // في حالة الفشل، نحاول مرة أخرى إذا لم نصل إلى الحد الأقصى للمحاولات
+          if (verificationAttempt < 2) {
+            setVerificationAttempt(prev => prev + 1);
+            return;
+          }
+          
           setStoreNotFound(true);
         }
       }
@@ -92,6 +112,18 @@ const Store = () => {
           .order("created_at", { ascending: false });
           
         console.log("جميع المتاجر المتاحة في Store.tsx:", allStores);
+        
+        // فحص مطابقة يدوية
+        if (allStores && storeDomain) {
+          const normalizedDomain = storeDomain.toLowerCase();
+          const matchingStores = allStores.filter(store => 
+            store.domain_name && store.domain_name.toLowerCase() === normalizedDomain
+          );
+          
+          if (matchingStores.length > 0) {
+            console.log("تم العثور على مطابقات يدوية:", matchingStores);
+          }
+        }
       } catch (err) {
         console.error("خطأ في جلب جميع المتاجر:", err);
       }
@@ -99,7 +131,7 @@ const Store = () => {
     
     logAllStores();
     verifyStore();
-  }, [storeDomain, isValidDomain]);
+  }, [storeDomain, isValidDomain, verificationAttempt]);
 
   // Debug logging to help identify domain issues
   useEffect(() => {
@@ -108,16 +140,32 @@ const Store = () => {
     console.log("Store component - Is valid domain:", isValidDomain);
     console.log("Store component - Window location:", window.location.href);
     console.log("Store component - Store not found state:", storeNotFound);
-  }, [storeDomain, isValidDomain, rawDomain, storeNotFound]);
+    console.log("Store component - Verification attempt:", verificationAttempt);
+  }, [storeDomain, isValidDomain, rawDomain, storeNotFound, verificationAttempt]);
 
   const handleStoreLoaded = (data: any) => {
     console.log("تم تحميل بيانات المتجر بنجاح:", data?.store_name);
     setCurrentStoreData(data);
     setStoreNotFound(false);
+    
+    // بيانات المنتجات والفئات إذا كانت موجودة في الاستجابة
+    if (data.products) {
+      setLoadedStoreData({
+        products: data.products || [],
+        categories: data.categories || [],
+        sections: data.sections || [],
+        featuredProducts: data.featuredProducts || [],
+        bestSellingProducts: data.bestSellingProducts || []
+      });
+    }
   };
 
   const handleStoreDataLoaded = (data: any) => {
-    console.log("تم تحميل بيانات المنتجات والفئات:", data);
+    console.log("تم تحميل بيانات المنتجات والفئات:", {
+      productsCount: data.products?.length || 0,
+      categoriesCount: data.categories?.length || 0,
+      sectionsCount: data.sections?.length || 0
+    });
     setLoadedStoreData(data);
   };
 
@@ -162,7 +210,7 @@ const Store = () => {
             <StoreSkeleton />
           ) : (
             <StoreContent 
-              storeData={loadedStoreData}
+              storeData={storeToShow}
               products={loadedStoreData.products}
               categories={loadedStoreData.categories}
               sections={loadedStoreData.sections}

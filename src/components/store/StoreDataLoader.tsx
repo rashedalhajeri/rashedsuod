@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { normalizeStoreDomain } from "@/utils/url-helpers";
-import { fetchStoreByDomain } from "@/utils/store-helpers";
+import { fetchStoreByDomain, clearStoreCache } from "@/utils/store-helpers";
 
 interface StoreDataLoaderProps {
   storeDomain: string | undefined;
@@ -24,6 +24,7 @@ const StoreDataLoader: React.FC<StoreDataLoaderProps> = ({
 }) => {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [currentStoreData, setCurrentStoreData] = useState<any>(null);
+  const [retryCount, setRetryCount] = useState(0);
   
   // Fetch the current store based on domain
   useEffect(() => {
@@ -35,7 +36,12 @@ const StoreDataLoader: React.FC<StoreDataLoaderProps> = ({
       }
       
       try {
-        console.log("بدء البحث عن المتجر بالدومين:", storeDomain);
+        console.log("بدء البحث عن المتجر بالدومين:", storeDomain, "محاولة رقم:", retryCount + 1);
+        
+        // If this is a retry attempt, clear the cache first
+        if (retryCount > 0) {
+          clearStoreCache();
+        }
         
         // استخدام الدالة الجديدة للبحث عن المتجر
         const storeData = await fetchStoreByDomain(storeDomain);
@@ -43,16 +49,24 @@ const StoreDataLoader: React.FC<StoreDataLoaderProps> = ({
         if (!storeData) {
           console.error("لم يتم العثور على المتجر بعد محاولات متعددة للبحث:", storeDomain);
           
-          // طباعة جميع المتاجر للتصحيح
-          const { data: allStores } = await supabase
-            .from("stores")
-            .select("domain_name, store_name, status")
-            .order("created_at", { ascending: false });
+          // إذا كان هذا رقم المحاولة الأخيرة، نستسلم ونعرض رسالة الخطأ
+          if (retryCount >= 2) {
+            // طباعة جميع المتاجر للتصحيح
+            const { data: allStores } = await supabase
+              .from("stores")
+              .select("domain_name, store_name, status, id")
+              .order("created_at", { ascending: false });
+              
+            console.log("جميع المتاجر المتاحة في StoreDataLoader:", allStores);
             
-          console.log("جميع المتاجر المتاحة في StoreDataLoader:", allStores);
-          
-          onStoreNotFound();
-          return;
+            onStoreNotFound();
+            return;
+          } else {
+            // محاولة أخرى بعد تأخير قصير
+            setRetryCount(prev => prev + 1);
+            setTimeout(() => fetchCurrentStore(), 1000);
+            return;
+          }
         }
         
         if (storeData.status !== 'active') {
@@ -65,14 +79,24 @@ const StoreDataLoader: React.FC<StoreDataLoaderProps> = ({
         console.log("تم العثور على المتجر:", storeData);
         setCurrentStoreData(storeData);
         onStoreLoaded(storeData);
+        // Reset retry count on success
+        setRetryCount(0);
       } catch (err) {
         console.error("خطأ غير متوقع في تحميل المتجر:", err);
-        onStoreNotFound();
+        
+        // على المحاولة الأخيرة، نستسلم
+        if (retryCount >= 2) {
+          onStoreNotFound();
+        } else {
+          // محاولة أخرى
+          setRetryCount(prev => prev + 1);
+          setTimeout(() => fetchCurrentStore(), 1000);
+        }
       }
     };
     
     fetchCurrentStore();
-  }, [storeDomain, onStoreLoaded, onStoreNotFound]);
+  }, [storeDomain, onStoreLoaded, onStoreNotFound, retryCount]);
 
   // Fetch store products and other data
   useEffect(() => {
@@ -83,8 +107,9 @@ const StoreDataLoader: React.FC<StoreDataLoaderProps> = ({
         setIsLoadingData(true);
         try {
           console.log("تحميل بيانات المتجر بمعرف:", store.id);
-          console.log("بيانات المتجر الكاملة:", store);
           
+          // Fetch products with additional logging
+          console.log("جاري جلب المنتجات للمتجر:", store.id);
           const { data: productsData, error: productsError } = await supabase
             .from('products')
             .select('*')
@@ -99,6 +124,10 @@ const StoreDataLoader: React.FC<StoreDataLoaderProps> = ({
             return;
           }
           
+          console.log(`تم جلب ${productsData?.length || 0} منتجات`);
+          
+          // Fetch categories
+          console.log("جاري جلب الفئات للمتجر:", store.id);
           const { data: categoriesData, error: categoriesError } = await supabase
             .from('categories')
             .select(`
@@ -107,12 +136,16 @@ const StoreDataLoader: React.FC<StoreDataLoaderProps> = ({
             `)
             .eq('store_id', store.id);
           
+          // Fetch sections
+          console.log("جاري جلب الأقسام للمتجر:", store.id);
           const { data: sectionsData, error: sectionsError } = await supabase
             .from('sections')
             .select('name')
             .eq('store_id', store.id)
             .eq('is_active', true);
           
+          // Fetch featured products
+          console.log("جاري جلب المنتجات المميزة للمتجر:", store.id);
           const { data: featuredProductsData, error: featuredError } = await supabase
             .from('products')
             .select('*')
@@ -122,6 +155,8 @@ const StoreDataLoader: React.FC<StoreDataLoaderProps> = ({
             .is('deleted_at', null)
             .limit(4);
           
+          // Fetch best selling products
+          console.log("جاري جلب المنتجات الأكثر مبيعاً للمتجر:", store.id);
           const { data: bestSellingProductsData, error: bestSellingError } = await supabase
             .from('products')
             .select('*')
@@ -131,6 +166,7 @@ const StoreDataLoader: React.FC<StoreDataLoaderProps> = ({
             .order('sales_count', { ascending: false })
             .limit(8);
           
+          // Log any errors
           if (categoriesError) {
             console.error("خطأ في تحميل الفئات:", categoriesError);
           }

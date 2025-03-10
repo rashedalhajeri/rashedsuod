@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { normalizeStoreDomain } from "@/utils/url-helpers";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import { Loader2, RefreshCcw } from "lucide-react";
 
 interface StoreNotFoundProps {
   storeDomain?: string;
@@ -15,59 +15,93 @@ const StoreNotFound: React.FC<StoreNotFoundProps> = ({ storeDomain }) => {
   const normalizedDomain = normalizeStoreDomain(storeDomain || '');
   const [debugInfo, setDebugInfo] = useState<any>(null);
   const [isChecking, setIsChecking] = useState(true);
+  const [retryAttempt, setRetryAttempt] = useState(0);
+  
+  const checkStore = async () => {
+    setIsChecking(true);
+    try {
+      // Collect debug info
+      const info: any = {
+        timestamp: new Date().toISOString(),
+        normalizedDomain,
+        originalDomain: storeDomain,
+        url: window.location.href,
+        retryAttempt
+      };
+      
+      // Get all stores for reference
+      const { data: allStores, error: allStoresError } = await supabase
+        .from('stores')
+        .select('id, domain_name, store_name, status')
+        .order('created_at', { ascending: false });
+        
+      info.allStoresError = allStoresError;
+      info.allStores = allStores?.map(store => ({
+        id: store.id,
+        domain: store.domain_name,
+        name: store.store_name,
+        status: store.status,
+        normalizedDomain: normalizeStoreDomain(store.domain_name || ''),
+        matches: normalizeStoreDomain(store.domain_name || '') === normalizedDomain
+      }));
+      
+      // Check direct domain match
+      const { data: directMatch, error: directError } = await supabase
+        .from('stores')
+        .select('id, domain_name, store_name, status')
+        .eq('domain_name', normalizedDomain)
+        .maybeSingle();
+        
+      info.directMatch = directMatch;
+      info.directError = directError;
+      
+      // Check case insensitive match
+      const { data: caseInsensitiveMatch, error: caseError } = await supabase
+        .from('stores')
+        .select('id, domain_name, store_name, status')
+        .ilike('domain_name', normalizedDomain)
+        .maybeSingle();
+        
+      info.caseInsensitiveMatch = caseInsensitiveMatch;
+      info.caseError = caseError;
+      
+      // Manual search (direct comparison)
+      if (allStores && allStores.length > 0) {
+        const manualMatches = allStores.filter(store => 
+          normalizeStoreDomain(store.domain_name || '') === normalizedDomain
+        );
+        info.manualMatches = manualMatches;
+        
+        if (manualMatches.length > 0) {
+          info.hasManualMatch = true;
+          
+          // If we found a match manually but the query didn't find it, there's a problem
+          if (!directMatch && !caseInsensitiveMatch) {
+            info.anomaly = "Found store manually but queries failed to find it";
+          }
+        }
+      }
+      
+      setDebugInfo(info);
+    } catch (error) {
+      console.error("خطأ في فحص المتجر:", error);
+      setDebugInfo({ error: String(error) });
+    } finally {
+      setIsChecking(false);
+    }
+  };
   
   useEffect(() => {
-    const checkStore = async () => {
-      setIsChecking(true);
-      try {
-        // Collect debug info
-        const info: any = {
-          timestamp: new Date().toISOString(),
-          normalizedDomain,
-          originalDomain: storeDomain,
-          url: window.location.href
-        };
-        
-        // Check direct domain match
-        const { data: directMatch, error: directError } = await supabase
-          .from('stores')
-          .select('id, domain_name, store_name, status')
-          .eq('domain_name', normalizedDomain)
-          .maybeSingle();
-          
-        info.directMatch = directMatch;
-        info.directError = directError;
-        
-        // Check case insensitive match
-        const { data: caseInsensitiveMatch, error: caseError } = await supabase
-          .from('stores')
-          .select('id, domain_name, store_name, status')
-          .ilike('domain_name', normalizedDomain)
-          .maybeSingle();
-          
-        info.caseInsensitiveMatch = caseInsensitiveMatch;
-        info.caseError = caseError;
-        
-        // Get all stores for reference
-        const { data: allStores } = await supabase
-          .from('stores')
-          .select('id, domain_name, store_name, status')
-          .order('created_at', { ascending: false })
-          .limit(10);
-          
-        info.recentStores = allStores;
-        
-        setDebugInfo(info);
-      } catch (error) {
-        console.error("خطأ في فحص المتجر:", error);
-        setDebugInfo({ error: String(error) });
-      } finally {
-        setIsChecking(false);
-      }
-    };
-    
     checkStore();
-  }, [normalizedDomain, storeDomain]);
+  }, [normalizedDomain, storeDomain, retryAttempt]);
+  
+  const handleRetry = () => {
+    setRetryAttempt(prev => prev + 1);
+    setIsChecking(true);
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
+  };
   
   return (
     <motion.div
@@ -84,7 +118,7 @@ const StoreNotFound: React.FC<StoreNotFoundProps> = ({ storeDomain }) => {
         </p>
         
         <div className="text-sm text-gray-500 mb-6 p-3 bg-gray-100 rounded">
-          <div className="mb-2">تأكد من:</div>
+          <div className="mb-2 font-medium">تأكد من:</div>
           <ul className="list-disc list-inside text-right">
             <li>أن اسم الدومين مكتوب بشكل صحيح</li>
             <li>أن المتجر نشط وغير معلق</li>
@@ -113,9 +147,11 @@ const StoreNotFound: React.FC<StoreNotFoundProps> = ({ storeDomain }) => {
         
         <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
           <button 
-            onClick={() => window.location.reload()}
-            className="inline-block bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors"
+            onClick={handleRetry}
+            className="inline-flex items-center justify-center gap-2 bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors"
+            disabled={isChecking}
           >
+            <RefreshCcw className="h-4 w-4" />
             إعادة المحاولة
           </button>
           <button 

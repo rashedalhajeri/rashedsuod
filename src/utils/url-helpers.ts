@@ -32,10 +32,30 @@ export const normalizeStoreDomain = (domain: string): string => {
   // إزالة أي لاحقة / إذا وجدت
   normalizedDomain = normalizedDomain.replace(/\/$/, '');
   
+  // إزالة بادئة http:// أو https://
+  normalizedDomain = normalizedDomain.replace(/^https?:\/\//, '');
+  
+  // إزالة أي جزء من المجال بعد أول '/'
+  normalizedDomain = normalizedDomain.split('/')[0];
+  
+  // إزالة الـ www. إذا وجدت
+  normalizedDomain = normalizedDomain.replace(/^www\./, '');
+  
+  // إذا كان المجال يحتوي على '.'، نأخذ فقط الجزء الأول (قبل النقطة)
+  // إلا إذا كان المجال هو محدد داخلي (localhost)
+  if (normalizedDomain.includes('.') && !normalizedDomain.startsWith('localhost')) {
+    // تقسيم بواسطة '.' وأخذ الجزء الفرعي الأول
+    const parts = normalizedDomain.split('.');
+    if (parts.length > 0 && parts[0] !== '') {
+      normalizedDomain = parts[0];
+    }
+  }
+  
   // طباعة للتصحيح
   console.log(`تنسيق الدومين:`, {
     original: domain,
-    normalized: normalizedDomain
+    normalized: normalizedDomain,
+    timestamp: new Date().toISOString()
   });
   
   return normalizedDomain;
