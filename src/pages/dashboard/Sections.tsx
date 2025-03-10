@@ -58,20 +58,19 @@ const Sections = () => {
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <SectionForm
+            isOpen={isAddDialogOpen}
+            onClose={closeAddDialog}
+            newSection={newSection}
+            setNewSection={setNewSection}
+            newSectionType={newSectionType}
+            setNewSectionType={setNewSectionType}
+            newDisplayStyle={newDisplayStyle}
+            setNewDisplayStyle={setNewDisplayStyle}
             isSubmitting={false}
-            formTitle="إضافة قسم جديد"
-            submitButtonText="إضافة"
-            sectionName={newSection}
-            setSectionName={setNewSection}
-            sectionType={newSectionType}
-            setSectionType={setNewSectionType}
-            displayStyle={newDisplayStyle}
-            setDisplayStyle={setNewDisplayStyle}
-            onSubmit={async () => {
+            handleAddSection={async () => {
               await handleAddSection();
               closeAddDialog();
             }}
-            onCancel={closeAddDialog}
           />
         </DialogContent>
       </Dialog>
