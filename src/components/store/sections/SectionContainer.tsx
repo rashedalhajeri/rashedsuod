@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import ProductGrid from "@/components/store/ProductGrid";
+import { motion } from "framer-motion";
 
 interface SectionContainerProps {
   sectionProducts: {[key: string]: any[]};
@@ -26,19 +27,40 @@ const SectionContainer: React.FC<SectionContainerProps> = ({
     const name = sectionName.toLowerCase();
     
     if (name.includes('الأكثر مبيعاً') || name.includes('الاكثر مبيعا')) {
-      return <Award className="h-4 w-4 ml-1.5" />;
+      return <Award className="h-5 w-5 ml-2" />;
     } else if (name.includes('وصل حديثاً') || name.includes('وصل حديثا')) {
-      return <ShoppingBag className="h-4 w-4 ml-1.5" />;
+      return <ShoppingBag className="h-5 w-5 ml-2" />;
     } else if (name.includes('مميزة') || name.includes('مميز')) {
-      return <Star className="h-4 w-4 ml-1.5" />;
+      return <Star className="h-5 w-5 ml-2" />;
     } else if (name.includes('تخفيضات') || name.includes('خصم')) {
-      return <BadgePercent className="h-4 w-4 ml-1.5" />;
+      return <BadgePercent className="h-5 w-5 ml-2" />;
     } else if (name.includes('جميع المنتجات') || name.includes('كل المنتجات')) {
-      return <PackageSearch className="h-4 w-4 ml-1.5" />;
+      return <PackageSearch className="h-5 w-5 ml-2" />;
     } else if (name.includes('الأكثر رواجاً') || name.includes('رواجا')) {
-      return <TrendingUp className="h-4 w-4 ml-1.5" />;
+      return <TrendingUp className="h-5 w-5 ml-2" />;
     } else {
-      return <PackageSearch className="h-4 w-4 ml-1.5" />;
+      return <PackageSearch className="h-5 w-5 ml-2" />;
+    }
+  };
+
+  // Helper to get a color for the section icon based on section name
+  const getSectionColor = (sectionName: string) => {
+    const name = sectionName.toLowerCase();
+    
+    if (name.includes('الأكثر مبيعاً') || name.includes('الاكثر مبيعا')) {
+      return "bg-emerald-500";
+    } else if (name.includes('وصل حديثاً') || name.includes('وصل حديثا')) {
+      return "bg-blue-500";
+    } else if (name.includes('مميزة') || name.includes('مميز')) {
+      return "bg-amber-500";
+    } else if (name.includes('تخفيضات') || name.includes('خصم')) {
+      return "bg-rose-500";
+    } else if (name.includes('جميع المنتجات') || name.includes('كل المنتجات')) {
+      return "bg-gray-500";
+    } else if (name.includes('الأكثر رواجاً') || name.includes('رواجا')) {
+      return "bg-indigo-500";
+    } else {
+      return "bg-primary";
     }
   };
 
@@ -68,29 +90,75 @@ const SectionContainer: React.FC<SectionContainerProps> = ({
       {Object.entries(sectionProducts).map(([sectionName, products]) => (
         <div key={sectionName} className="mb-8">
           <div className="flex items-center justify-between mb-2 px-4">
-            <div className="flex items-center">
-              {getSectionIcon(sectionName)}
-              <h2 className="text-xl font-bold text-gray-800">{sectionName}</h2>
-            </div>
+            <motion.div 
+              className="flex items-center"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <motion.div 
+                className={`${getSectionColor(sectionName)} p-2 rounded-full text-white flex items-center justify-center mr-2`}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                initial={{ rotate: -10 }}
+                animate={{ rotate: 0 }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 260, 
+                  damping: 20,
+                  duration: 1 
+                }}
+              >
+                {getSectionIcon(sectionName)}
+              </motion.div>
+              <motion.h2 
+                className="text-xl font-bold text-gray-800"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.3 }}
+              >
+                {sectionName}
+              </motion.h2>
+            </motion.div>
             
             {storeDomain && (
-              <Link 
-                to={`/store/${storeDomain}/section/${encodeURIComponent(sectionName)}`}
-                className="text-primary text-sm font-medium flex items-center"
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
               >
-                مشاهدة الكل <ChevronLeft size={16} />
-              </Link>
+                <Link 
+                  to={`/store/${storeDomain}/section/${encodeURIComponent(sectionName)}`}
+                  className="text-primary text-sm font-medium flex items-center hover:underline"
+                >
+                  مشاهدة الكل <ChevronLeft size={16} />
+                </Link>
+              </motion.div>
             )}
           </div>
           
-          <p className="text-sm text-gray-500 mb-3 px-4">{getSectionDescription(sectionName)}</p>
+          <motion.p 
+            className="text-sm text-gray-500 mb-3 px-4"
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.3 }}
+          >
+            {getSectionDescription(sectionName)}
+          </motion.p>
           
           <div className="overflow-x-auto pb-4">
             <div className="flex flex-nowrap gap-4 px-4 md:grid md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-              {products.slice(0, 10).map(product => (
-                <div 
+              {products.slice(0, 10).map((product, index) => (
+                <motion.div 
                   key={product.id} 
                   className="w-[170px] min-w-[170px] md:w-full md:min-w-0"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 * index, duration: 0.3 }}
+                  whileHover={{ 
+                    scale: 1.03, 
+                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)" 
+                  }}
                 >
                   <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 h-full">
                     <Link to={`/store/${storeDomain}/product/${product.id}`}>
@@ -128,7 +196,7 @@ const SectionContainer: React.FC<SectionContainerProps> = ({
                       </div>
                     </Link>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>

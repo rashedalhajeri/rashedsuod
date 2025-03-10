@@ -16,6 +16,7 @@ import SectionTypeSelector from "./form/SectionTypeSelector";
 import SectionNameField from "./form/SectionNameField";
 import { motion } from "framer-motion";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Section } from "@/services/section-service";
 
 interface SectionFormProps {
   isOpen: boolean;
@@ -26,7 +27,7 @@ interface SectionFormProps {
   setNewSectionType: (type: string) => void;
   newDisplayStyle?: 'grid' | 'list';
   setNewDisplayStyle: (style: 'grid' | 'list') => void;
-  // These props are needed by CategoryTabsManager but not used in this component
+  // Make these props optional
   newCategoryId?: string | null;
   setNewCategoryId?: (id: string | null) => void;
   newProductIds?: string[] | null;
@@ -34,6 +35,7 @@ interface SectionFormProps {
   isSubmitting?: boolean;
   error?: string | null;
   handleAddSection?: () => Promise<void>;
+  existingSections?: Section[]; // Add this new prop
 }
 
 const SectionForm: React.FC<SectionFormProps> = ({
@@ -52,7 +54,8 @@ const SectionForm: React.FC<SectionFormProps> = ({
   setNewProductIds,
   isSubmitting = false,
   error = null,
-  handleAddSection
+  handleAddSection,
+  existingSections = [] // Default to empty array
 }) => {
   // Update section name when section type changes
   useEffect(() => {
@@ -63,6 +66,20 @@ const SectionForm: React.FC<SectionFormProps> = ({
       }
     }
   }, [newSectionType, setNewSection]);
+
+  // Get list of section types that already exist
+  const existingSectionTypes = existingSections.map(section => section.section_type);
+
+  // Set a valid default section type that isn't already added
+  useEffect(() => {
+    if (isOpen && existingSectionTypes.includes(newSectionType)) {
+      // Find first available section type
+      const availableType = sectionTypes.find(type => !existingSectionTypes.includes(type.id));
+      if (availableType) {
+        setNewSectionType(availableType.id);
+      }
+    }
+  }, [isOpen, existingSectionTypes, newSectionType, setNewSectionType]);
 
   const handleTypeChange = (type: string) => {
     setNewSectionType(type);
@@ -111,6 +128,7 @@ const SectionForm: React.FC<SectionFormProps> = ({
             <SectionTypeSelector 
               selectedSectionType={newSectionType}
               onTypeChange={handleTypeChange}
+              existingSections={existingSections}
             />
           </motion.div>
           

@@ -1,7 +1,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { CheckIcon } from "lucide-react";
+import { CheckIcon, LockIcon } from "lucide-react";
 import { SectionType } from "./types";
 import { motion } from "framer-motion";
 
@@ -9,12 +9,14 @@ interface SectionTypeItemProps {
   type: SectionType;
   isSelected: boolean;
   onClick: () => void;
+  isDisabled?: boolean;
 }
 
 const SectionTypeItem: React.FC<SectionTypeItemProps> = ({
   type,
   isSelected,
-  onClick
+  onClick,
+  isDisabled = false
 }) => {
   // Get dynamic color classes based on the type
   const getColorClasses = (colorName: string) => {
@@ -66,29 +68,37 @@ const SectionTypeItem: React.FC<SectionTypeItemProps> = ({
     <motion.div
       initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.02 }}
-      onClick={onClick}
+      whileHover={{ scale: isDisabled ? 1 : 1.02 }}
+      onClick={isDisabled ? undefined : onClick}
       className={cn(
-        "border rounded-lg p-4 cursor-pointer transition-all hover:border-gray-400 relative",
-        isSelected 
+        "border rounded-lg p-4 relative",
+        isDisabled 
+          ? "opacity-60 cursor-not-allowed border-gray-200 bg-gray-50" 
+          : "cursor-pointer transition-all hover:border-gray-400 hover:shadow-sm",
+        isSelected && !isDisabled
           ? `${colors.lightBg} ${colors.border} shadow-sm` 
-          : "hover:shadow-sm"
+          : ""
       )}
       dir="rtl"
     >
       <div className="flex items-center gap-2 mb-2">
-        <div className={`${colors.bg} p-1.5 rounded-full ${colors.text}`}>
+        <div className={`${isDisabled ? 'bg-gray-400' : colors.bg} p-1.5 rounded-full ${colors.text}`}>
           {type.icon}
         </div>
         <span className="font-medium text-base">{type.name}</span>
-        {isSelected && (
+        {isSelected && !isDisabled && (
           <div className="absolute top-2 left-2 bg-primary text-white rounded-full p-0.5">
             <CheckIcon className="h-3.5 w-3.5" />
           </div>
         )}
+        {isDisabled && (
+          <div className="absolute top-2 left-2 bg-gray-400 text-white rounded-full p-0.5">
+            <LockIcon className="h-3.5 w-3.5" />
+          </div>
+        )}
       </div>
       <p className="text-xs text-gray-600 mt-1">
-        {type.description}
+        {isDisabled ? "تم إضافة هذا القسم مسبقاً" : type.description}
       </p>
     </motion.div>
   );
