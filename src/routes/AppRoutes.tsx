@@ -1,3 +1,4 @@
+
 import { Routes, Route } from "react-router-dom";
 import { ProtectedRoute, CreateStoreRoute } from "./ProtectedRoutes";
 
@@ -25,7 +26,6 @@ import Products from "@/pages/dashboard/Products";
 import Orders from "@/pages/dashboard/Orders";
 import Categories from "@/pages/dashboard/Categories";
 import Customers from "@/pages/dashboard/Customers";
-import Payments from "@/pages/dashboard/Payments";
 import Coupons from "@/pages/dashboard/Coupons";
 import Settings from "@/pages/dashboard/Settings";
 import MyStore from "@/pages/dashboard/MyStore";
@@ -108,15 +108,6 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Customers />
-          </ProtectedRoute>
-        }
-      />
-      
-      <Route
-        path="/dashboard/payments"
-        element={
-          <ProtectedRoute>
-            <Payments />
           </ProtectedRoute>
         }
       />

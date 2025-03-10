@@ -7,7 +7,6 @@ import {
   Package, 
   Tags, 
   Users, 
-  CreditCard, 
   Settings, 
   FileText, 
   Store 
@@ -70,23 +69,13 @@ const SidebarLinks: React.FC<SidebarLinksProps> = ({
       ]
     },
     {
-      title: "المالية",
+      title: "النظام",
       links: [
-        {
-          path: "/dashboard/payments",
-          icon: <CreditCard size={20} />,
-          label: "المدفوعات"
-        },
         {
           path: "/dashboard/coupons",
           icon: <FileText size={20} />,
           label: "الكوبونات"
-        }
-      ]
-    },
-    {
-      title: "النظام",
-      links: [
+        },
         {
           path: "/dashboard/settings",
           icon: <Settings size={20} />,
