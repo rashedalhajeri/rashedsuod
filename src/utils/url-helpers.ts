@@ -57,7 +57,16 @@ export const getStoreUrl = (domain: string): string => {
     return cleanDomain.startsWith('http') ? cleanDomain : `https://${cleanDomain}`;
   }
   
-  // Otherwise, return the standard store path
+  // For our subdomain format, we use the main domain with the store name
+  // E.g., mystore.linok.me
+  const baseDomain = getBaseDomain().replace(/^https?:\/\//, '').replace(/^www\./, '');
+  const mainDomain = baseDomain.split('/')[0]; // Remove any paths
+  
+  if (cleanDomain) {
+    return `https://${cleanDomain}.${mainDomain}`;
+  }
+  
+  // Fallback to store path format if something is wrong
   return cleanDomain ? `/store/${cleanDomain}` : '';
 };
 
@@ -77,6 +86,16 @@ export const getFullStoreUrl = (path: string): string => {
     return `https://${path}`;
   }
   
+  // For store/{storename} paths, convert to subdomain format
+  if (path.startsWith('/store/')) {
+    const storeName = path.replace('/store/', '');
+    const baseDomain = getBaseDomain().replace(/^https?:\/\//, '').replace(/^www\./, '');
+    const mainDomain = baseDomain.split('/')[0]; // Remove any paths
+    
+    return `https://${storeName}.${mainDomain}`;
+  }
+  
+  // For any other relative paths, append to base domain
   const baseDomain = getBaseDomain();
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   
@@ -110,6 +129,6 @@ export const openStoreInNewTab = (storeUrl?: string): void => {
   }
   
   // For regular store paths
-  const fullUrl = getFullStoreUrl(getStoreUrl(storeUrl));
+  const fullUrl = getFullStoreUrl(storeUrl);
   window.open(fullUrl, '_blank', 'noopener,noreferrer');
 };

@@ -1,9 +1,9 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 import { normalizeStoreDomain, getFullStoreUrl, isCustomDomain } from "@/utils/url-helpers";
+import { toast } from "sonner";
 
 interface StorePreviewProps {
   storeName: string;
@@ -24,10 +24,8 @@ const StorePreview: React.FC<StorePreviewProps> = ({
   
   // Prefer custom domain if available
   const displayDomain = hasCustomDomain ? customDomain : cleanDomain;
-  const storeUrl = hasCustomDomain ? 
-    customDomain : 
-    (cleanDomain ? `/store/${cleanDomain}` : '');
-    
+  
+  // For display in the UI
   const fullStoreUrl = hasCustomDomain ? 
     (customDomain?.startsWith('http') ? customDomain : `https://${customDomain}`) : 
     getFullStoreUrl(`/store/${cleanDomain}`);

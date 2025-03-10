@@ -24,6 +24,8 @@ export interface StoreData {
   status?: string;
   subscription_plan?: string;
   subscription_end_date?: string;
+  custom_domain?: string;
+  custom_domain_verified?: boolean;
 }
 
 /**
