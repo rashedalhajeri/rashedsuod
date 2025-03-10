@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { fetchUserStoreId } from "@/services/category-service";
@@ -56,7 +55,7 @@ export const useSections = () => {
     initializeSections();
   }, []);
 
-  const handleAddSection = async () => {
+  const handleAddSection = async (): Promise<void> => {
     if (!newSection.trim() || !storeId) {
       toast.error("يرجى إدخال اسم القسم");
       return;
@@ -105,14 +104,11 @@ export const useSections = () => {
         setNewProductIds(null);
         setNewDisplayStyle('grid');
         toast.success("تم إضافة القسم بنجاح");
-        return true; // Indicate success
       }
-      return false; // Indicate failure
     } catch (err: any) {
       console.error("Error adding section:", err);
       setError(err.message || "حدث خطأ أثناء إضافة القسم");
       toast.error("حدث خطأ أثناء إضافة القسم. يرجى المحاولة مرة أخرى.");
-      return false; // Indicate failure
     } finally {
       setIsSubmitting(false);
     }
