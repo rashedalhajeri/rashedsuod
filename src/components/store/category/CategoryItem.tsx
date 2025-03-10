@@ -28,14 +28,16 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
     >
       <button
         onClick={onClick}
-        className={`w-full h-full flex flex-col items-center transition-all duration-300 bg-white rounded-lg p-1.5 shadow-sm ${
+        className={`w-full h-full flex flex-col items-center transition-all duration-300 ${
           isActive
-            ? 'border-2 border-blue-400'
-            : 'border border-gray-100'
-        }`}
+            ? 'bg-blue-50 border-2 border-blue-400 shadow-md'
+            : 'bg-white border border-gray-100 hover:shadow-sm hover:border-blue-200'
+        } rounded-lg p-2`}
       >
         {showImage && (
-          <div className="w-full aspect-square mb-1 flex items-center justify-center overflow-hidden rounded-lg bg-gray-50">
+          <div className={`w-full aspect-square mb-1.5 flex items-center justify-center overflow-hidden rounded-md ${
+            isActive ? 'bg-white' : 'bg-gray-50'
+          }`}>
             <img 
               src={imagePath || "/placeholder.svg"}
               alt={category} 
@@ -46,10 +48,10 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
             />
           </div>
         )}
-        <span className={`text-xs truncate w-full text-center ${
+        <span className={`text-xs leading-tight text-center font-medium ${
           isActive
             ? 'text-blue-600'
-            : 'text-gray-800'
+            : 'text-gray-700'
         }`}>
           {category}
         </span>

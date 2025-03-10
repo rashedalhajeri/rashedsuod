@@ -34,7 +34,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
       initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className="flex items-center justify-between p-3 border rounded-lg bg-white hover:shadow-sm transition-all"
+      className="flex items-center justify-between p-4 border rounded-xl bg-white hover:shadow-sm transition-all"
     >
       {editingCategory?.id === category.id ? (
         <div className="flex items-center gap-2 flex-1">
@@ -52,6 +52,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
                   variant="default"
                   onClick={handleUpdateCategory}
                   disabled={!editingCategory.name.trim()}
+                  className="bg-primary hover:bg-primary/90"
                 >
                   <Save className="h-4 w-4" />
                 </Button>
@@ -82,7 +83,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
         <>
           <div className="flex items-center">
             {hasImage ? (
-              <div className="h-8 w-8 mr-2 rounded-md overflow-hidden flex-shrink-0 border border-gray-100">
+              <div className="h-10 w-10 mr-3 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100 shadow-sm">
                 <img 
                   src={category.image_url || ''} 
                   alt={category.name} 
@@ -93,9 +94,11 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
                 />
               </div>
             ) : (
-              <Tag className="h-4 w-4 mr-2 text-primary" />
+              <div className="h-10 w-10 mr-3 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Tag className="h-5 w-5 text-primary" />
+              </div>
             )}
-            <span className="text-lg">{category.name}</span>
+            <span className="text-lg font-medium">{category.name}</span>
           </div>
           <div className="flex gap-2">
             <TooltipProvider>
@@ -103,8 +106,8 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
                 <TooltipTrigger asChild>
                   <Button 
                     size="sm" 
-                    variant="ghost"
-                    className="h-8 w-8"
+                    variant="outline"
+                    className="h-9 w-9 rounded-lg"
                     onClick={() => setEditingCategory(category)}
                   >
                     <Edit className="h-4 w-4" />
@@ -120,8 +123,8 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
                 <TooltipTrigger asChild>
                   <Button 
                     size="sm" 
-                    variant="ghost"
-                    className="h-8 w-8 text-destructive hover:text-white hover:bg-destructive"
+                    variant="outline"
+                    className="h-9 w-9 rounded-lg text-destructive hover:text-white hover:bg-destructive border-destructive/20"
                     onClick={() => handleDeleteCategory(category.id)}
                   >
                     <Trash className="h-4 w-4" />

@@ -131,13 +131,13 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = memo(({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="py-2 z-10 transition-all duration-300"
+      className="py-2 z-10 transition-all duration-300 mb-4"
       dir="rtl"
     >
-      <div className="grid grid-cols-5 gap-1.5 mx-auto">
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 mx-auto">
         {isLoading ? (
           // Placeholder for loading state using CategorySkeleton
-          [...Array(5)].map((_, index) => (
+          [...Array(6)].map((_, index) => (
             <CategoryItemSkeleton key={`category-skeleton-${index}`} index={index} />
           ))
         ) : (
