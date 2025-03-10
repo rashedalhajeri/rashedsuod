@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { StoreFormData } from "../types";
 import { toast } from "sonner";
@@ -152,8 +153,9 @@ export const getStoreByDomain = async (domainName: string): Promise<any> => {
     }
     
     const cleanDomain = domainName.trim().toLowerCase();
+    console.log("البحث عن متجر بالدومين (getStoreByDomain):", cleanDomain);
     
-    // Try first with case-insensitive search using ILIKE
+    // Fix: Only search by domain_name column which is the correct column name
     const { data, error } = await supabase
       .from("stores")
       .select("*")
@@ -164,23 +166,6 @@ export const getStoreByDomain = async (domainName: string): Promise<any> => {
     if (error) {
       console.error("خطأ في الحصول على بيانات المتجر:", error);
       return null;
-    }
-    
-    if (!data) {
-      // Try alternative search with case-insensitive OR condition
-      const { data: altData, error: altError } = await supabase
-        .from("stores")
-        .select("*")
-        .or(`domain_name.ilike.${cleanDomain},domain.ilike.${cleanDomain}`)
-        .eq("status", "active")
-        .maybeSingle();
-      
-      if (altError) {
-        console.error("خطأ في البحث البديل عن بيانات المتجر:", altError);
-        return null;
-      }
-      
-      return altData;
     }
     
     return data;

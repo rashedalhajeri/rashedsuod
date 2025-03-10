@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useStoreData } from "@/hooks/use-store-data";
@@ -32,12 +31,11 @@ const Store = () => {
         const cleanDomain = storeDomain.trim().toLowerCase();
         console.log("البحث عن متجر بالدومين:", cleanDomain);
         
-        // Use ilike for case-insensitive match and ensure we handle both ways
-        // the domain might be stored in the database (domain or domain_name)
         const { data, error } = await supabase
           .from("stores")
           .select("*")
-          .or(`domain_name.ilike.${cleanDomain},domain.ilike.${cleanDomain}`)
+          .ilike("domain_name", cleanDomain)
+          .eq("status", "active")
           .maybeSingle();
           
         if (error) {
@@ -48,21 +46,7 @@ const Store = () => {
         
         if (!data) {
           console.log("لم يتم العثور على متجر بهذا الدومين:", cleanDomain);
-          // Second attempt with exact match
-          const { data: exactData, error: exactError } = await supabase
-            .from("stores")
-            .select("*")
-            .eq("domain_name", cleanDomain)
-            .maybeSingle();
-            
-          if (exactError || !exactData) {
-            setStoreNotFound(true);
-            return;
-          }
-          
-          console.log("تم العثور على المتجر بالمطابقة الدقيقة:", exactData);
-          setCurrentStoreData(exactData);
-          setStoreNotFound(false);
+          setStoreNotFound(true);
           return;
         }
         
@@ -95,7 +79,7 @@ const Store = () => {
           
           if (productsError) {
             console.error("خطأ في تحميل المنتجات:", productsError);
-            toast.error("حدث خطأ أثناء تحميل المنتجات");
+            toast.error("حدث خطأ أثناء تحميل المن��جات");
             return;
           }
           

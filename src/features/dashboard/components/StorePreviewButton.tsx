@@ -22,21 +22,21 @@ const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({
     if (!storeUrl) return;
     
     // Clean and standardize the URL
-    const lowerCaseUrl = storeUrl.trim().toLowerCase();
+    const trimmedUrl = storeUrl.trim();
     
-    // Build the full URL, ensuring it starts with "/" for relative paths
-    let fullUrl = lowerCaseUrl;
-    
-    // If it's a relative path not starting with "/"
-    if (!lowerCaseUrl.startsWith('http') && !lowerCaseUrl.startsWith('/')) {
-      fullUrl = `/${lowerCaseUrl}`;
+    // Check if it's a direct URL with /store/ prefix
+    if (trimmedUrl.startsWith('/store/')) {
+      window.open(trimmedUrl, '_blank');
+      console.log("فتح رابط المتجر:", trimmedUrl);
+      return;
     }
     
-    // Open in a new tab
-    window.open(fullUrl, '_blank');
+    // If it's just a domain name, prefix it with /store/
+    const storeRoute = `/store/${trimmedUrl.toLowerCase()}`;
+    window.open(storeRoute, '_blank');
     
     // Log the URL for debugging
-    console.log("فتح رابط المتجر:", fullUrl);
+    console.log("فتح رابط المتجر:", storeRoute);
   };
 
   return (
