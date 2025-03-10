@@ -17,7 +17,7 @@ interface CategoryListProps {
   editingCategory: Category | null;
   setEditingCategory: (category: Category | null) => void;
   handleUpdateCategory: () => void;
-  handleDeleteCategory: (id: string) => void;
+  handleDeleteCategory: (id: string) => Promise<void>;
   setNewCategory: (name: string) => void;
   openAddDialog: () => void;
 }

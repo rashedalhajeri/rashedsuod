@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SectionItem from "./SectionItem";
@@ -126,16 +126,16 @@ const SectionList: React.FC<SectionListProps> = ({
                       index={index}
                       totalSections={filteredSections.length}
                       handleReorderSections={(sourceIndex, destinationIndex) => {
-                        const reorderedSections = Array.from(filteredSections);
-                        const [removed] = reorderedSections.splice(sourceIndex, 1);
-                        reorderedSections.splice(destinationIndex, 0, removed);
-                        
-                        const updatedSections = reorderedSections.map((section, index) => ({
-                          ...section,
-                          sort_order: index
-                        }));
-                        
                         if (handleReorderSections) {
+                          const reorderedSections = Array.from(filteredSections);
+                          const [removed] = reorderedSections.splice(sourceIndex, 1);
+                          reorderedSections.splice(destinationIndex, 0, removed);
+                          
+                          const updatedSections = reorderedSections.map((section, index) => ({
+                            ...section,
+                            sort_order: index
+                          }));
+                          
                           handleReorderSections(updatedSections);
                         }
                       }}

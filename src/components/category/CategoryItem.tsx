@@ -36,14 +36,12 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
     try {
       await handleDeleteCategory(category.id);
       toast({
-        title: "تم الحذف بنجاح",
         description: `تم حذف الفئة "${category.name}" بنجاح`
       });
       setIsDeleteDialogOpen(false);
     } catch (error) {
       console.error("Error deleting category:", error);
       toast({
-        title: "حدث خطأ",
         description: "لم يتم حذف الفئة، يرجى المحاولة مرة أخرى",
       });
     }
