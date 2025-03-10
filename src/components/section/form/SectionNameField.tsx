@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
@@ -18,16 +18,18 @@ const SectionNameField: React.FC<SectionNameFieldProps> = ({
   selectedCategoryName,
   sectionType
 }) => {
-  let placeholder = isCustom ? "أدخل اسم القسم المخصص..." : "أدخل اسم القسم...";
+  let placeholder = "أدخل اسم القسم...";
   
   if (sectionType === 'category' && selectedCategoryName) {
     placeholder = `منتجات ${selectedCategoryName}`;
+  } else if (isCustom) {
+    placeholder = "أدخل اسم القسم المخصص...";
   }
 
   return (
     <div className="space-y-2">
       <Label htmlFor="section-name" className="text-base font-medium">
-        {isCustom && <span className="text-rose-500">*</span>} اسم القسم
+        {(isCustom || sectionType === 'category') && <span className="text-rose-500">*</span>} اسم القسم
       </Label>
       <Input
         id="section-name"
@@ -35,17 +37,19 @@ const SectionNameField: React.FC<SectionNameFieldProps> = ({
         onChange={(e) => onNameChange(e.target.value)}
         placeholder={placeholder}
         className="text-right border-gray-300 focus:border-primary"
-        style={isCustom ? { borderColor: '#f43f5e40', background: '#f43f5e05' } : {}}
+        style={(isCustom || sectionType === 'category') ? { borderColor: '#f43f5e40', background: '#f43f5e05' } : {}}
       />
-      {!isCustom ? (
+      {sectionType === 'category' ? (
         <p className="text-xs text-gray-500">
-          {sectionType === 'category' 
-            ? "سيتم عرض منتجات الفئة المختارة تحت هذا الاسم في المتجر." 
-            : "يمكنك تعديل الاسم الافتراضي للقسم حسب رغبتك."}
+          يمكنك تخصيص اسم القسم أو استخدام الاسم التلقائي للفئة المختارة
+        </p>
+      ) : isCustom ? (
+        <p className="text-xs text-gray-500">
+          هذا القسم مخصص لعرض المنتجات التي تختارها. اختر اسماً واضحاً ومعبراً.
         </p>
       ) : (
         <p className="text-xs text-gray-500">
-          هذا القسم سيظهر كصفحة خاصة في متجرك. اختر اسماً واضحاً ومعبراً.
+          يمكنك تعديل الاسم الافتراضي للقسم حسب رغبتك.
         </p>
       )}
     </div>

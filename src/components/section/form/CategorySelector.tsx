@@ -2,10 +2,10 @@
 import React, { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Search, CheckIcon, Loader2, Tag, ImageIcon } from "lucide-react";
+import { Search, CheckIcon, Loader2, TagIcon, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface Category {
   id: string;
@@ -53,14 +53,14 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
           <span className="text-rose-500">*</span> اختر الفئة
         </Label>
         {selectedCategory && (
-          <div className="bg-purple-100 text-purple-700 text-xs rounded-full px-2.5 py-1 font-medium">
-            تم اختيار: {selectedCategory.name}
-          </div>
+          <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+            <TagIcon className="h-3 w-3 mr-1" /> {selectedCategory.name}
+          </Badge>
         )}
       </div>
       <p className="text-sm text-gray-500 mb-2">سيتم عرض منتجات هذه الفئة في هذا القسم</p>
       
-      <div className="border rounded-md p-3">
+      <div className="border rounded-md p-3 border-gray-200 shadow-sm">
         <div className="mb-3">
           <div className="relative">
             <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
@@ -94,19 +94,22 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
                   transition={{ duration: 0.2 }}
                   onClick={() => onCategorySelect(category.id)}
                   className={cn(
-                    "p-2.5 rounded-md cursor-pointer hover:bg-gray-50 flex items-center justify-between",
+                    "p-2.5 rounded-md cursor-pointer hover:bg-gray-50 flex items-center justify-between transition-all",
                     selectedCategoryId === category.id ? "bg-primary/10 border border-primary/20" : "border border-transparent"
                   )}
                 >
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center border">
                       {category.image_url ? (
                         <img src={category.image_url} alt={category.name} className="w-full h-full object-cover" />
                       ) : (
-                        <Tag className="h-3.5 w-3.5 text-gray-400" />
+                        <TagIcon className="h-4 w-4 text-gray-400" />
                       )}
                     </div>
-                    <span>{category.name}</span>
+                    <div>
+                      <div className="font-medium">{category.name}</div>
+                      <div className="text-xs text-gray-500">اضغط للاختيار</div>
+                    </div>
                   </div>
                   
                   {selectedCategoryId === category.id && (

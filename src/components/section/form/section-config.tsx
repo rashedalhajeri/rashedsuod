@@ -1,8 +1,8 @@
 
 import React from "react";
 import { 
-  Crown, ShoppingBag, Star, Percent, 
-  Tag, LayoutGrid
+  Award, ShoppingBag, Star, BadgePercent, 
+  TagIcon, LayoutGrid, ShoppingCart, TrendingUp, Gift
 } from "lucide-react";
 import { SectionType } from "./types";
 
@@ -11,7 +11,7 @@ export const sectionTypes: SectionType[] = [
   {
     id: 'best_selling',
     name: 'الأكثر مبيعاً',
-    icon: <Crown className="h-5 w-5" />,
+    icon: <Award className="h-5 w-5" />,
     description: 'يعرض المنتجات الأكثر شراءً من قبل العملاء تلقائياً (حتى 25 منتج)',
     color: 'emerald'
   },
@@ -32,22 +32,22 @@ export const sectionTypes: SectionType[] = [
   {
     id: 'on_sale',
     name: 'تخفيضات',
-    icon: <Percent className="h-5 w-5" />,
+    icon: <BadgePercent className="h-5 w-5" />,
     description: 'يعرض المنتجات التي تحتوي على خصومات وتخفيضات (حتى 25 منتج)',
     color: 'rose'
   },
   {
     id: 'category',
     name: 'فئة محددة',
-    icon: <Tag className="h-5 w-5" />,
-    description: 'يعرض منتجات من فئة محددة من اختيارك (حتى 25 منتج)',
+    icon: <TagIcon className="h-5 w-5" />,
+    description: 'يعرض منتجات من فئة محددة تختارها أنت (حتى 25 منتج)',
     color: 'purple'
   },
   {
     id: 'custom',
     name: 'مخصص',
-    icon: <LayoutGrid className="h-5 w-5" />,
-    description: 'قسم مخصص من منتجات أو فئة تختارها أنت بنفسك',
+    icon: <Gift className="h-5 w-5" />,
+    description: 'قسم مخصص من منتجات تختارها أنت بنفسك',
     color: 'indigo'
   }
 ];

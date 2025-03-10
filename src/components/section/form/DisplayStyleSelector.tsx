@@ -29,7 +29,9 @@ const DisplayStyleSelector: React.FC<DisplayStyleSelectorProps> = ({
           onClick={() => setDisplayStyle('grid')}
         >
           <div className="relative mb-2">
-            <LayoutGrid className="h-8 w-8 text-primary/80" />
+            <div className="p-2 bg-primary/10 rounded-full">
+              <LayoutGrid className="h-7 w-7 text-primary/80" />
+            </div>
             {displayStyle === 'grid' && (
               <div className="absolute -top-1 -right-1 bg-primary text-white rounded-full p-0.5">
                 <CheckIcon className="h-3 w-3" />
@@ -50,7 +52,9 @@ const DisplayStyleSelector: React.FC<DisplayStyleSelectorProps> = ({
           onClick={() => setDisplayStyle('list')}
         >
           <div className="relative mb-2">
-            <List className="h-8 w-8 text-primary/80" />
+            <div className="p-2 bg-primary/10 rounded-full">
+              <List className="h-7 w-7 text-primary/80" />
+            </div>
             {displayStyle === 'list' && (
               <div className="absolute -top-1 -right-1 bg-primary text-white rounded-full p-0.5">
                 <CheckIcon className="h-3 w-3" />
