@@ -2,20 +2,25 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "./types";
 
-/**
- * Updates a product by its ID
- */
-export const updateProduct = async (productId: string, updates: Partial<Product>) => {
+export const updateProduct = async (id: string, updates: Partial<Product>) => {
   try {
-    const { data, error } = await supabase
-      .from('products')
-      .update(updates)
-      .eq('id', productId)
-      .select();
+    // Convert Date objects to ISO strings for Supabase
+    const formattedUpdates = {
+      ...updates,
+      created_at: updates.created_at instanceof Date ? updates.created_at.toISOString() : updates.created_at,
+      updated_at: updates.updated_at instanceof Date ? updates.updated_at.toISOString() : updates.updated_at
+    };
     
-    return { data, error };
+    const { data, error } = await supabase
+      .from("products")
+      .update(formattedUpdates)
+      .eq("id", id)
+      .select();
+
+    if (error) throw error;
+    return { data: data[0], error: null };
   } catch (err) {
-    console.error('Error updating product:', err);
+    console.error("Error updating product:", err);
     return { data: null, error: err };
   }
 };

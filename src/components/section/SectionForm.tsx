@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Plus, Grid, List, BanknoteIcon, ShoppingBag, Sparkles, Percent, Tag, LayoutGrid } from "lucide-react";
+import { Plus, Search, BanknoteIcon, ShoppingBag, Sparkles, Percent, Tag, LayoutGrid, CheckIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
@@ -13,8 +13,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
+import { createCurrencyFormatter } from "@/hooks/use-currency-formatter";
 
 interface SectionFormProps {
   isOpen: boolean;
@@ -41,6 +41,8 @@ interface Product {
   id: string;
   name: string;
   image_url?: string;
+  price: number;
+  discount_price?: number | null;
 }
 
 const SectionForm: React.FC<SectionFormProps> = ({
@@ -60,8 +62,60 @@ const SectionForm: React.FC<SectionFormProps> = ({
 }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<Record<string, boolean>>({});
+  const [productSearchQuery, setProductSearchQuery] = useState("");
+  const [categorySearchQuery, setCategorySearchQuery] = useState("");
+  const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
+  
+  const formatCurrency = createCurrencyFormatter("KWD");
+
+  // Define section types
+  const sectionTypes = [
+    {
+      id: 'best_selling',
+      name: 'الأكثر مبيعاً',
+      icon: <BanknoteIcon className="h-5 w-5 text-emerald-500" />,
+      description: 'يعرض المنتجات الأكثر مبيعاً في متجرك',
+      color: 'emerald'
+    },
+    {
+      id: 'new_arrivals',
+      name: 'وصل حديثاً',
+      icon: <ShoppingBag className="h-5 w-5 text-blue-500" />,
+      description: 'يعرض أحدث المنتجات التي تمت إضافتها',
+      color: 'blue'
+    },
+    {
+      id: 'featured',
+      name: 'منتجات مميزة',
+      icon: <Sparkles className="h-5 w-5 text-amber-500" />,
+      description: 'يعرض المنتجات المميزة في متجرك',
+      color: 'amber'
+    },
+    {
+      id: 'on_sale',
+      name: 'تخفيضات',
+      icon: <Percent className="h-5 w-5 text-rose-500" />,
+      description: 'يعرض المنتجات التي عليها خصومات',
+      color: 'rose'
+    },
+    {
+      id: 'category',
+      name: 'فئة محددة',
+      icon: <Tag className="h-5 w-5 text-purple-500" />,
+      description: 'يعرض منتجات من فئة محددة',
+      color: 'purple'
+    },
+    {
+      id: 'custom',
+      name: 'منتجات مخصصة',
+      icon: <LayoutGrid className="h-5 w-5 text-indigo-500" />,
+      description: 'يعرض منتجات مخصصة تختارها أنت',
+      color: 'indigo'
+    }
+  ];
 
   // Fetch categories and products when the dialog opens
   useEffect(() => {
@@ -70,6 +124,34 @@ const SectionForm: React.FC<SectionFormProps> = ({
       fetchProducts();
     }
   }, [isOpen]);
+
+  // Filter products based on search query
+  useEffect(() => {
+    if (productSearchQuery.trim() === '') {
+      setFilteredProducts(products);
+    } else {
+      const query = productSearchQuery.toLowerCase();
+      setFilteredProducts(
+        products.filter(product => 
+          product.name.toLowerCase().includes(query)
+        )
+      );
+    }
+  }, [productSearchQuery, products]);
+
+  // Filter categories based on search query
+  useEffect(() => {
+    if (categorySearchQuery.trim() === '') {
+      setFilteredCategories(categories);
+    } else {
+      const query = categorySearchQuery.toLowerCase();
+      setFilteredCategories(
+        categories.filter(category => 
+          category.name.toLowerCase().includes(query)
+        )
+      );
+    }
+  }, [categorySearchQuery, categories]);
 
   // Fetch categories from the database
   const fetchCategories = async () => {
@@ -82,6 +164,7 @@ const SectionForm: React.FC<SectionFormProps> = ({
 
       if (error) throw error;
       setCategories(data || []);
+      setFilteredCategories(data || []);
     } catch (err) {
       console.error("Error fetching categories:", err);
     } finally {
@@ -95,11 +178,12 @@ const SectionForm: React.FC<SectionFormProps> = ({
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, image_url')
+        .select('id, name, image_url, price, discount_price')
         .order('name');
 
       if (error) throw error;
       setProducts(data || []);
+      setFilteredProducts(data || []);
       
       // Initialize selected products from newProductIds
       if (newProductIds) {
@@ -134,27 +218,14 @@ const SectionForm: React.FC<SectionFormProps> = ({
     onClose();
   };
 
-  // Get section icon based on type
-  const getSectionTypeIcon = (type: string) => {
-    switch (type) {
-      case 'best_selling': return <BanknoteIcon className="h-5 w-5 text-emerald-500" />;
-      case 'new_arrivals': return <ShoppingBag className="h-5 w-5 text-blue-500" />;
-      case 'featured': return <Sparkles className="h-5 w-5 text-amber-500" />;
-      case 'on_sale': return <Percent className="h-5 w-5 text-rose-500" />;
-      case 'category': return <Tag className="h-5 w-5 text-purple-500" />;
-      case 'custom': return <LayoutGrid className="h-5 w-5 text-indigo-500" />;
-      default: return <LayoutGrid className="h-5 w-5 text-gray-500" />;
-    }
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] bg-background">
+      <DialogContent className="sm:max-w-[500px] bg-background max-h-[90vh] overflow-hidden">
         <DialogHeader>
-          <DialogTitle>إضافة قسم جديد</DialogTitle>
+          <DialogTitle className="text-xl">إضافة قسم جديد</DialogTitle>
         </DialogHeader>
         
-        <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto">
+        <div className="flex flex-col space-y-4 overflow-y-auto py-4 pr-2 pl-6">
           <div className="space-y-2">
             <Label htmlFor="section-name">اسم القسم</Label>
             <Input
@@ -168,190 +239,136 @@ const SectionForm: React.FC<SectionFormProps> = ({
           
           <div className="space-y-3">
             <Label>نوع القسم</Label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setNewSectionType('best_selling')}
-                className={cn(
-                  "flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all",
-                  newSectionType === 'best_selling'
-                    ? "border-emerald-500 bg-emerald-50"
-                    : "border-gray-200 hover:border-emerald-200 hover:bg-emerald-50/30"
-                )}
-              >
-                <div className="p-2 rounded-full bg-emerald-100">
-                  <BanknoteIcon className="h-5 w-5 text-emerald-500" />
+            <div className="space-y-2 max-h-[200px] overflow-y-auto border rounded-md p-2">
+              {sectionTypes.map(type => (
+                <div 
+                  key={type.id}
+                  onClick={() => setNewSectionType(type.id)}
+                  className={cn(
+                    "flex items-center gap-3 p-3 rounded-md cursor-pointer transition-all border",
+                    newSectionType === type.id
+                      ? `border-${type.color}-500 bg-${type.color}-50`
+                      : "border-gray-200 hover:border-gray-300"
+                  )}
+                >
+                  <div className={`p-2 rounded-full bg-${type.color}-100 flex-shrink-0`}>
+                    {type.icon}
+                  </div>
+                  <div className="flex-grow">
+                    <div className="font-medium">{type.name}</div>
+                    <div className="text-xs text-gray-500">{type.description}</div>
+                  </div>
+                  {newSectionType === type.id && (
+                    <CheckIcon className="h-5 w-5 text-primary flex-shrink-0" />
+                  )}
                 </div>
-                <span className="text-sm font-medium">الأكثر مبيعاً</span>
-              </button>
-              
-              <button
-                type="button"
-                onClick={() => setNewSectionType('new_arrivals')}
-                className={cn(
-                  "flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all",
-                  newSectionType === 'new_arrivals'
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-200 hover:border-blue-200 hover:bg-blue-50/30"
-                )}
-              >
-                <div className="p-2 rounded-full bg-blue-100">
-                  <ShoppingBag className="h-5 w-5 text-blue-500" />
-                </div>
-                <span className="text-sm font-medium">وصل حديثاً</span>
-              </button>
-              
-              <button
-                type="button"
-                onClick={() => setNewSectionType('featured')}
-                className={cn(
-                  "flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all",
-                  newSectionType === 'featured'
-                    ? "border-amber-500 bg-amber-50"
-                    : "border-gray-200 hover:border-amber-200 hover:bg-amber-50/30"
-                )}
-              >
-                <div className="p-2 rounded-full bg-amber-100">
-                  <Sparkles className="h-5 w-5 text-amber-500" />
-                </div>
-                <span className="text-sm font-medium">منتجات مميزة</span>
-              </button>
-              
-              <button
-                type="button"
-                onClick={() => setNewSectionType('on_sale')}
-                className={cn(
-                  "flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all",
-                  newSectionType === 'on_sale'
-                    ? "border-rose-500 bg-rose-50"
-                    : "border-gray-200 hover:border-rose-200 hover:bg-rose-50/30"
-                )}
-              >
-                <div className="p-2 rounded-full bg-rose-100">
-                  <Percent className="h-5 w-5 text-rose-500" />
-                </div>
-                <span className="text-sm font-medium">تخفيضات</span>
-              </button>
-              
-              <button
-                type="button"
-                onClick={() => setNewSectionType('category')}
-                className={cn(
-                  "flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all",
-                  newSectionType === 'category'
-                    ? "border-purple-500 bg-purple-50"
-                    : "border-gray-200 hover:border-purple-200 hover:bg-purple-50/30"
-                )}
-              >
-                <div className="p-2 rounded-full bg-purple-100">
-                  <Tag className="h-5 w-5 text-purple-500" />
-                </div>
-                <span className="text-sm font-medium">فئة محددة</span>
-              </button>
-              
-              <button
-                type="button"
-                onClick={() => setNewSectionType('custom')}
-                className={cn(
-                  "flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all",
-                  newSectionType === 'custom'
-                    ? "border-indigo-500 bg-indigo-50"
-                    : "border-gray-200 hover:border-indigo-200 hover:bg-indigo-50/30"
-                )}
-              >
-                <div className="p-2 rounded-full bg-indigo-100">
-                  <LayoutGrid className="h-5 w-5 text-indigo-500" />
-                </div>
-                <span className="text-sm font-medium">منتجات مخصصة</span>
-              </button>
+              ))}
             </div>
           </div>
 
           {newSectionType === 'category' && (
             <div className="space-y-2">
               <Label htmlFor="category-select">اختر الفئة</Label>
-              <Select 
-                value={newCategoryId || ""}
-                onValueChange={(value) => setNewCategoryId(value || null)}
-              >
-                <SelectTrigger id="category-select" className="text-right">
-                  <SelectValue placeholder="اختر الفئة" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map(category => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="border rounded-md p-2">
+                <div className="mb-2">
+                  <div className="relative">
+                    <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="ابحث عن فئة..."
+                      className="pr-9 text-right"
+                      value={categorySearchQuery}
+                      onChange={(e) => setCategorySearchQuery(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="max-h-[200px] overflow-y-auto space-y-1 mt-2">
+                  {isLoading ? (
+                    <div className="p-4 text-center text-sm text-gray-500">جاري التحميل...</div>
+                  ) : filteredCategories.length === 0 ? (
+                    <div className="p-4 text-center text-sm text-gray-500">لا توجد فئات مطابقة</div>
+                  ) : (
+                    filteredCategories.map(category => (
+                      <div
+                        key={category.id}
+                        onClick={() => setNewCategoryId(category.id)}
+                        className={cn(
+                          "p-2 rounded-md cursor-pointer hover:bg-gray-100 flex items-center justify-between",
+                          newCategoryId === category.id ? "bg-primary/10" : ""
+                        )}
+                      >
+                        <span>{category.name}</span>
+                        {newCategoryId === category.id && (
+                          <CheckIcon className="h-4 w-4 text-primary" />
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
           {newSectionType === 'custom' && (
             <div className="space-y-2">
               <Label>اختر المنتجات</Label>
-              <div className="border p-2 rounded-md h-64 overflow-y-auto bg-white">
-                {isLoading ? (
-                  <div className="flex justify-center items-center h-full">
-                    <span className="text-sm text-gray-500">جاري التحميل...</span>
+              <div className="border rounded-md p-2">
+                <div className="mb-2">
+                  <div className="relative">
+                    <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="ابحث عن منتج..."
+                      className="pr-9 text-right"
+                      value={productSearchQuery}
+                      onChange={(e) => setProductSearchQuery(e.target.value)}
+                    />
                   </div>
-                ) : products.length === 0 ? (
-                  <div className="flex justify-center items-center h-full">
-                    <span className="text-sm text-gray-500">لا توجد منتجات متاحة</span>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {products.map(product => (
-                      <div key={product.id} className="flex items-center space-x-2 space-x-reverse rtl p-2 hover:bg-gray-50 rounded-md">
-                        <input 
-                          type="checkbox" 
-                          id={`product-${product.id}`} 
-                          className="rounded" 
-                          checked={!!selectedProducts[product.id]}
-                          onChange={(e) => handleProductSelect(product.id, e.target.checked)}
-                        />
-                        <Label htmlFor={`product-${product.id}`} className="flex items-center gap-2 cursor-pointer flex-1">
-                          {product.image_url && (
-                            <img 
-                              src={product.image_url} 
-                              alt={product.name} 
-                              className="w-8 h-8 object-cover rounded-md" 
-                            />
-                          )}
-                          <span>{product.name}</span>
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                </div>
+                <div className="max-h-[300px] overflow-y-auto">
+                  {isLoading ? (
+                    <div className="p-4 text-center text-sm text-gray-500">جاري التحميل...</div>
+                  ) : filteredProducts.length === 0 ? (
+                    <div className="p-4 text-center text-sm text-gray-500">لا توجد منتجات مطابقة</div>
+                  ) : (
+                    <div className="space-y-2">
+                      {filteredProducts.map(product => (
+                        <div key={product.id} className="flex items-center space-x-2 space-x-reverse rtl p-2 hover:bg-gray-50 rounded-md">
+                          <input 
+                            type="checkbox" 
+                            id={`product-${product.id}`} 
+                            className="rounded" 
+                            checked={!!selectedProducts[product.id]}
+                            onChange={(e) => handleProductSelect(product.id, e.target.checked)}
+                          />
+                          <Label htmlFor={`product-${product.id}`} className="flex items-center gap-2 cursor-pointer flex-1">
+                            {product.image_url && (
+                              <img 
+                                src={product.image_url} 
+                                alt={product.name} 
+                                className="w-10 h-10 object-cover rounded-md" 
+                              />
+                            )}
+                            <div className="flex-grow">
+                              <div className="font-medium">{product.name}</div>
+                              <div className="text-xs">
+                                {product.discount_price ? (
+                                  <span className="text-green-600">{formatCurrency(product.discount_price)}</span>
+                                ) : (
+                                  <span>{formatCurrency(product.price)}</span>
+                                )}
+                              </div>
+                            </div>
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="text-sm text-right text-gray-500">
+                تم اختيار {Object.values(selectedProducts).filter(Boolean).length} منتج
               </div>
             </div>
           )}
-          
-          <div className="space-y-2">
-            <Label>طريقة العرض</Label>
-            <RadioGroup 
-              value={newDisplayStyle}
-              onValueChange={(value) => setNewDisplayStyle(value as 'grid' | 'list')}
-              className="flex gap-4"
-            >
-              <div className="flex items-center space-x-2 space-x-reverse">
-                <RadioGroupItem value="grid" id="display-grid" />
-                <Label htmlFor="display-grid" className="flex items-center gap-2 cursor-pointer">
-                  <Grid size={16} />
-                  <span>شبكة</span>
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2 space-x-reverse">
-                <RadioGroupItem value="list" id="display-list" />
-                <Label htmlFor="display-list" className="flex items-center gap-2 cursor-pointer">
-                  <List size={16} />
-                  <span>قائمة</span>
-                </Label>
-              </div>
-            </RadioGroup>
-          </div>
         </div>
         
         <DialogFooter>
