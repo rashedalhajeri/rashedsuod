@@ -48,15 +48,11 @@ const SectionItem: React.FC<SectionItemProps> = ({
   const handleDeleteClick = async () => {
     try {
       await handleDeleteSection(section.id);
-      toast({
-        description: `تم حذف القسم "${section.name}" بنجاح`
-      });
+      toast(`تم حذف القسم "${section.name}" بنجاح`);
       setIsDeleteDialogOpen(false);
     } catch (error) {
       console.error("Error deleting section:", error);
-      toast({
-        description: "لم يتم حذف القسم، يرجى المحاولة مرة أخرى",
-      });
+      toast("لم يتم حذف القسم، يرجى المحاولة مرة أخرى");
     }
   };
   
