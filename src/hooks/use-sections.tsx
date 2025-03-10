@@ -1,17 +1,20 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { 
-  fetchUserStoreId, 
   fetchSections, 
   addSection, 
   updateSection, 
   deleteSection, 
-  Section
+  Section,
+  updateSectionOrder
 } from "@/services/section-service";
+import { fetchUserStoreId } from "@/services/category-service";
 
 export const useSections = () => {
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
+  const [storeId, setStoreId] = useState<string | null>(null);
   const [newSection, setNewSection] = useState("");
   const [newSectionType, setNewSectionType] = useState("best_selling");
   const [newCategoryId, setNewCategoryId] = useState<string | null>(null);

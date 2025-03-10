@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -142,7 +141,7 @@ export const deleteSection = async (sectionId: string, storeId: string) => {
   }
 };
 
-// Update section order
+// Add updateSectionOrder function if it's not already defined
 export const updateSectionOrder = async (sections: Section[], storeId: string) => {
   try {
     // Instead of using a custom RPC, we'll update sections one by one

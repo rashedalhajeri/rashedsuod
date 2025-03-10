@@ -62,9 +62,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
       setIsDeleteDialogOpen(false);
     } catch (error) {
       console.error("Error deleting section:", error);
-      toast(`لم يتم حذف القسم، يرجى المحاولة مرة أخرى`, {
-        variant: "destructive"
-      });
+      toast(`لم يتم حذف القسم، يرجى المحاولة مرة أخرى`);
     }
   };
 
