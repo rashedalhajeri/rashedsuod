@@ -16,3 +16,9 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
+# Environment variable configuration
+[context.production.environment]
+  VITE_APP_DOMAIN = "https://linok.me"
+
+[context.development.environment]
+  VITE_APP_DOMAIN = "http://localhost:8080"
