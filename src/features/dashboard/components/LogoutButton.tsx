@@ -16,29 +16,36 @@ import {
 } from "@/components/ui/alert-dialog";
 
 interface LogoutButtonProps {
-  isCollapsed: boolean;
-  isMobile: boolean;
+  isCollapsed?: boolean;
+  isMobile?: boolean;
   onLogout: () => Promise<void>;
+  className?: string;
+  children?: React.ReactNode;
 }
 
 const LogoutButton: React.FC<LogoutButtonProps> = ({ 
   isCollapsed, 
   isMobile, 
-  onLogout 
+  onLogout,
+  className,
+  children
 }) => {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button
-          variant="ghost"
-          className={cn(
-            "w-full justify-start gap-2.5 text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors rounded-lg",
-            isCollapsed && !isMobile && "justify-center px-2"
-          )}
-        >
-          <LogOut size={16} className="shrink-0" />
-          {(!isCollapsed || isMobile) && <span>تسجيل الخروج</span>}
-        </Button>
+        {children ? children : (
+          <Button
+            variant="ghost"
+            className={cn(
+              "w-full justify-start gap-2.5 text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors rounded-lg",
+              isCollapsed && !isMobile && "justify-center px-2",
+              className
+            )}
+          >
+            <LogOut size={16} className="shrink-0" />
+            {(!isCollapsed || isMobile) && <span>تسجيل الخروج</span>}
+          </Button>
+        )}
       </AlertDialogTrigger>
       <AlertDialogContent className="sm:max-w-[400px]">
         <AlertDialogHeader>

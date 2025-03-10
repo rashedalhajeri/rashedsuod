@@ -6,8 +6,14 @@ import useAuth from "@/hooks/useAuth";
 import SidebarHeader from "./SidebarHeader";
 import SidebarLinks from "./SidebarLinks";
 import LogoutButton from "./LogoutButton";
-import { Mail, Sun, Moon } from "lucide-react";
+import { Mail, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 interface SidebarProps {
   isMobileMenuOpen?: boolean;
@@ -19,23 +25,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
   const { signOut, session } = useAuth();
   const userEmail = session?.user?.email || "";
-
-  // تحديد وقت اليوم للتحية
-  const [greeting, setGreeting] = useState<string>("");
-  const [currentHour, setCurrentHour] = useState<number>(new Date().getHours());
+  const userName = session?.user?.user_metadata?.full_name || "المستخدم";
   
-  useEffect(() => {
-    const updateGreeting = () => {
-      const hour = new Date().getHours();
-      setCurrentHour(hour);
-      setGreeting(hour >= 5 && hour < 12 ? "صباح الخير" : "مساء الخير");
-    };
-    
-    updateGreeting();
-    const interval = setInterval(updateGreeting, 60 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
-
   useEffect(() => {
     setIsCollapsed(isMobile && !isMobileMenuOpen);
   }, [isMobile, isMobileMenuOpen]);
@@ -53,9 +44,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
   const handleLogout = async () => {
     await signOut();
   };
-
-  // رمز الوقت المناسب حسب الساعة
-  const TimeIcon = currentHour >= 5 && currentHour < 18 ? Sun : Moon;
 
   return (
     <>
@@ -99,28 +87,30 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
 
           {/* تذييل القائمة */}
           <div className="p-3 mt-auto space-y-3 border-t border-gray-100 dark:border-gray-800">
-            {/* بطاقة التحية */}
-            {(!isCollapsed || isMobile) && (
-              <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-800/50 text-sm">
-                <TimeIcon size={18} className="text-primary-500" />
-                <span className="font-medium text-gray-700 dark:text-gray-200">{greeting}</span>
-              </div>
-            )}
+            {/* حذفنا قسم التحية هنا */}
             
-            {/* عرض البريد الإلكتروني */}
-            {(!isCollapsed || isMobile) && userEmail && (
-              <div className="flex items-center gap-2.5 px-3 py-2 text-gray-500 dark:text-gray-400 text-xs">
-                <Mail size={14} className="shrink-0" />
-                <span className="truncate">{userEmail}</span>
-              </div>
-            )}
-            
-            {/* زر تسجيل الخروج */}
-            <LogoutButton 
-              isCollapsed={isCollapsed}
-              isMobile={isMobile}
-              onLogout={handleLogout}
-            />
+            {/* عرض اسم المستخدم مع القائمة المنسدلة */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2.5 w-full px-3 py-2.5 text-sm rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                  <User size={18} className="text-primary-500 shrink-0" />
+                  <span className="font-medium text-gray-700 dark:text-gray-200 truncate">
+                    {isCollapsed && !isMobile ? "" : userName}
+                  </span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                {userEmail && (
+                  <DropdownMenuItem className="flex items-center gap-2 cursor-default">
+                    <Mail size={14} className="shrink-0" />
+                    <span className="truncate text-xs">{userEmail}</span>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem className="text-red-500 hover:text-red-600" onClick={handleLogout}>
+                  تسجيل الخروج
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
