@@ -11,7 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import DeleteConfirmDialog from "@/components/ui/delete-confirm-dialog";
 
 interface SectionItemProps {
@@ -58,15 +58,11 @@ const SectionItem: React.FC<SectionItemProps> = ({
   const handleDeleteClick = async () => {
     try {
       await handleDeleteSection(section.id);
-      toast({
-        description: `تم حذف القسم "${section.name}" بنجاح`,
-        variant: "default"
-      });
+      toast(`تم حذف القسم "${section.name}" بنجاح`);
       setIsDeleteDialogOpen(false);
     } catch (error) {
       console.error("Error deleting section:", error);
-      toast({
-        description: "لم يتم حذف القسم، يرجى المحاولة مرة أخرى",
+      toast(`لم يتم حذف القسم، يرجى المحاولة مرة أخرى`, {
         variant: "destructive"
       });
     }

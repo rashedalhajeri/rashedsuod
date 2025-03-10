@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tags, LayoutGrid } from "lucide-react";
@@ -32,7 +33,7 @@ interface CategoryTabsManagerProps {
   showCategoryImages: boolean;
   handleAddCategory: () => Promise<void>;
   handleUpdateCategory: () => void;
-  handleDeleteCategory: (id: string) => void;
+  handleDeleteCategory: (id: string) => Promise<void>;
   handleToggleShowCategoryImages: (show: boolean) => Promise<boolean>;
   
   // Sections props
@@ -52,7 +53,7 @@ interface CategoryTabsManagerProps {
   setEditingSection: (section: Section | null) => void;
   handleAddSection: () => Promise<void>;
   handleUpdateSection: () => void;
-  handleDeleteSection: (id: string) => void;
+  handleDeleteSection: (id: string) => Promise<void>;
   handleReorderSections: (reorderedSections: Section[]) => void;
 
   // New props

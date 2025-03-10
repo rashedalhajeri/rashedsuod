@@ -12,7 +12,7 @@ interface ProductsListProps {
   onSelectionChange: (items: string[]) => void;
   searchTerm: string;
   onSearch: (term: string) => void;
-  onDelete?: (id: string) => Promise<void>;
+  onDelete: (product: Product) => void;
   onActivate?: (id: string, isActive: boolean) => Promise<void>;
   onRefresh?: () => void;
   onActionClick: (product: Product) => void;

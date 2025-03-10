@@ -1,21 +1,21 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { fetchUserStoreId } from "@/services/category-service";
 import { 
+  fetchUserStoreId, 
   fetchSections, 
   addSection, 
   updateSection, 
-  deleteSection,
-  updateSectionOrder,
-  Section 
+  deleteSection, 
+  Section
 } from "@/services/section-service";
 
 export const useSections = () => {
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
-  const [storeId, setStoreId] = useState<string | null>(null);
   const [newSection, setNewSection] = useState("");
   const [newSectionType, setNewSectionType] = useState("best_selling");
+  const [newCategoryId, setNewCategoryId] = useState<string | null>(null);
+  const [newProductIds, setNewProductIds] = useState<string[] | null>(null);
   const [newDisplayStyle, setNewDisplayStyle] = useState<'grid' | 'list'>('grid');
   const [editingSection, setEditingSection] = useState<Section | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -134,28 +134,23 @@ export const useSections = () => {
     }
   };
   
-  const handleDeleteSection = async (sectionId: string) => {
-    if (!storeId) return;
+  const handleDeleteSection = async (sectionId: string): Promise<void> => {
+    if (!sections[0]?.store_id) return Promise.reject("No store ID");
     
     try {
-      setIsSubmitting(true);
-      setError(null);
-      
-      const { error } = await deleteSection(sectionId, storeId);
+      const { error } = await deleteSection(sectionId, sections[0].store_id);
       
       if (error) throw error;
       
       setSections(sections.filter(s => s.id !== sectionId));
-      toast.success("تم حذف القسم بنجاح");
+      return Promise.resolve();
     } catch (err: any) {
       console.error("Error deleting section:", err);
-      setError(err.message || "حدث خطأ أثناء حذف القسم");
       toast.error("حدث خطأ أثناء حذف القسم");
-    } finally {
-      setIsSubmitting(false);
+      return Promise.reject(err);
     }
   };
-
+  
   const handleReorderSections = async (reorderedSections: Section[]) => {
     if (!storeId) return;
     
@@ -195,6 +190,10 @@ export const useSections = () => {
     setNewSection,
     newSectionType,
     setNewSectionType,
+    newCategoryId,
+    setNewCategoryId,
+    newProductIds,
+    setNewProductIds,
     newDisplayStyle,
     setNewDisplayStyle,
     editingSection,

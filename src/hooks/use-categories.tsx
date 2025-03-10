@@ -113,8 +113,8 @@ export const useCategories = () => {
     }
   };
   
-  const handleDeleteCategory = async (categoryId: string) => {
-    if (!storeId) return;
+  const handleDeleteCategory = async (categoryId: string): Promise<void> => {
+    if (!storeId) return Promise.reject("No store ID");
     
     setIsUpdating(true);
     try {
@@ -124,9 +124,11 @@ export const useCategories = () => {
       
       setCategories(categories.filter(c => c.id !== categoryId));
       toast.success("تم حذف التصنيف بنجاح");
+      return Promise.resolve();
     } catch (err: any) {
       console.error("Error deleting category:", err);
       toast.error("حدث خطأ أثناء حذف التصنيف");
+      return Promise.reject(err);
     } finally {
       setIsUpdating(false);
     }

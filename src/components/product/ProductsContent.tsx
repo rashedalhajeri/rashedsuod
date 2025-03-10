@@ -110,6 +110,7 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
   
   const handleDeleteProduct = async () => {
     if (!deleteProductId) return;
+    
     try {
       await onDelete(deleteProductId);
       toast.success(`تم حذف المنتج "${deleteProductName}" بنجاح`);
