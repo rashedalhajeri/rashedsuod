@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   BrowserRouter as Router,
@@ -5,26 +6,28 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
-import Login from "@/pages/Login";
-import Register from "@/pages/Register";
-import Dashboard from "@/pages/dashboard/Dashboard";
-import Home from "@/pages/dashboard/Home";
-import Products from "@/pages/dashboard/Products";
-import Categories from "@/pages/dashboard/Categories";
-import Orders from "@/pages/dashboard/Orders";
-import Customers from "@/pages/dashboard/Customers";
-import Payments from "@/pages/dashboard/Payments";
-import Settings from "@/pages/dashboard/Settings";
-import Coupons from "@/pages/dashboard/Coupons";
-import Store from "@/pages/Store";
-import ProductDetails from "@/pages/ProductDetails";
-import CategoryProducts from "@/pages/CategoryProducts";
-import Sections from "@/pages/dashboard/Sections";
-import StorePreview from "@/pages/dashboard/StorePreview";
+import { AuthContext } from "@/context/AuthContext";
+import { useContext } from "react";
+import Login from "../pages/Login";
+import Register from "../pages/Register";
+import Dashboard from "../pages/dashboard/Dashboard";
+import Home from "../pages/dashboard/Home";
+import Products from "../pages/dashboard/Products";
+import Categories from "../pages/dashboard/Categories";
+import Orders from "../pages/dashboard/Orders";
+import Customers from "../pages/dashboard/Customers";
+import Payments from "../pages/dashboard/Payments";
+import Settings from "../pages/dashboard/Settings";
+import Coupons from "../pages/dashboard/Coupons";
+import Store from "../pages/Store";
+import ProductDetails from "../pages/ProductDetails";
+import CategoryProducts from "../pages/CategoryProducts";
+import Sections from "../pages/dashboard/Sections";
+import StorePreview from "../pages/dashboard/StorePreview";
 
 const AppRoutes = () => {
-  const { isLoggedIn } = useAuth();
+  const { session } = useContext(AuthContext);
+  const isLoggedIn = !!session;
 
   return (
     <Router>
