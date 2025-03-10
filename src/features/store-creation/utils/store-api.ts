@@ -88,10 +88,18 @@ export const createStore = async (formData: StoreFormData): Promise<boolean> => 
  */
 export const checkDomainAvailability = async (domainName: string): Promise<boolean> => {
   try {
+    // تأكد من عدم وجود سطور فارغة في البداية أو النهاية
+    const cleanDomainName = domainName.trim().toLowerCase();
+    
+    if (!cleanDomainName) {
+      return false;
+    }
+    
+    // استعلام دقيق للتحقق من توفر النطاق باستخدام المطابقة الدقيقة
     const { data, error } = await supabase
       .from("stores")
       .select("domain_name")
-      .eq("domain_name", domainName)
+      .eq("domain_name", cleanDomainName)
       .maybeSingle();
     
     if (error) {

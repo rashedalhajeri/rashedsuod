@@ -71,6 +71,56 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_logs: {
+        Row: {
+          action_type: string
+          created_at: string | null
+          id: string
+          ip_address: string | null
+          new_data: Json | null
+          old_data: Json | null
+          reason: string | null
+          record_id: string
+          store_id: string | null
+          table_name: string
+          user_id: string | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          new_data?: Json | null
+          old_data?: Json | null
+          reason?: string | null
+          record_id: string
+          store_id?: string | null
+          table_name: string
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          new_data?: Json | null
+          old_data?: Json | null
+          reason?: string | null
+          record_id?: string
+          store_id?: string | null
+          table_name?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string
@@ -113,6 +163,9 @@ export type Database = {
         Row: {
           city: string | null
           created_at: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          deletion_reason: string | null
           email: string | null
           id: string
           last_order_date: string | null
@@ -127,6 +180,9 @@ export type Database = {
         Insert: {
           city?: string | null
           created_at?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
           email?: string | null
           id?: string
           last_order_date?: string | null
@@ -141,6 +197,9 @@ export type Database = {
         Update: {
           city?: string | null
           created_at?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
           email?: string | null
           id?: string
           last_order_date?: string | null
@@ -200,12 +259,36 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          created_at: string | null
+          id: string
+          preferences: Json | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          preferences?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          preferences?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
           id: string
           order_id: string
-          product_id: string
+          product_id: string | null
           quantity: number
           total_price: number
           unit_price: number
@@ -214,7 +297,7 @@ export type Database = {
           created_at?: string
           id?: string
           order_id: string
-          product_id: string
+          product_id?: string | null
           quantity: number
           total_price: number
           unit_price: number
@@ -223,7 +306,7 @@ export type Database = {
           created_at?: string
           id?: string
           order_id?: string
-          product_id?: string
+          product_id?: string | null
           quantity?: number
           total_price?: number
           unit_price?: number
@@ -251,6 +334,9 @@ export type Database = {
           customer_email: string | null
           customer_name: string
           customer_phone: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          deletion_reason: string | null
           id: string
           notes: string | null
           order_number: string
@@ -266,6 +352,9 @@ export type Database = {
           customer_email?: string | null
           customer_name: string
           customer_phone?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
           id?: string
           notes?: string | null
           order_number: string
@@ -281,6 +370,9 @@ export type Database = {
           customer_email?: string | null
           customer_name?: string
           customer_phone?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
           id?: string
           notes?: string | null
           order_number?: string
@@ -398,6 +490,9 @@ export type Database = {
           available_sizes: Json | null
           category_id: string | null
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
+          deletion_reason: string | null
           description: string | null
           discount_price: number | null
           has_colors: boolean | null
@@ -424,6 +519,9 @@ export type Database = {
           available_sizes?: Json | null
           category_id?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
           description?: string | null
           discount_price?: number | null
           has_colors?: boolean | null
@@ -450,6 +548,9 @@ export type Database = {
           available_sizes?: Json | null
           category_id?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
           description?: string | null
           discount_price?: number | null
           has_colors?: boolean | null
@@ -725,9 +826,54 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_plans: {
+        Row: {
+          created_at: string | null
+          features: Json
+          id: string
+          max_orders: number
+          max_products: number
+          name: string
+          price: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          features?: Json
+          id?: string
+          max_orders?: number
+          max_products?: number
+          name: string
+          price?: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          features?: Json
+          id?: string
+          max_orders?: number
+          max_products?: number
+          name?: string
+          price?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      admin_deleted_items: {
+        Row: {
+          deleted_at: string | null
+          deleted_by_email: string | null
+          deletion_reason: string | null
+          id: string | null
+          item_name: string | null
+          store_id: string | null
+          store_name: string | null
+          type: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       count_payment_methods_by_store: {
@@ -756,6 +902,14 @@ export type Database = {
           details: Json
         }
         Returns: string
+      }
+      upgrade_store_plan: {
+        Args: {
+          store_id: string
+          new_plan: string
+          payment_status?: string
+        }
+        Returns: undefined
       }
       user_owns_store: {
         Args: {

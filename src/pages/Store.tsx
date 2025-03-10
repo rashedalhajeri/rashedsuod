@@ -20,9 +20,41 @@ const Store = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [bestSellingProducts, setBestSellingProducts] = useState([]);
   const [showContent, setShowContent] = useState(false);
+  const [currentStoreData, setCurrentStoreData] = useState<any>(null);
+
+  // تحميل بيانات المتجر الحالي استناداً إلى اسم الدومين
+  useEffect(() => {
+    const fetchCurrentStore = async () => {
+      if (!storeDomain) return;
+      
+      try {
+        const cleanDomain = storeDomain.trim().toLowerCase();
+        
+        const { data, error } = await supabase
+          .from("stores")
+          .select("*")
+          .eq("domain_name", cleanDomain)
+          .single();
+          
+        if (error) {
+          console.error("خطأ في تحميل بيانات المتجر:", error);
+          return;
+        }
+        
+        setCurrentStoreData(data);
+      } catch (err) {
+        console.error("خطأ غير متوقع في تحميل المتجر:", err);
+      }
+    };
+    
+    fetchCurrentStore();
+  }, [storeDomain]);
 
   useEffect(() => {
-    if (storeData?.id) {
+    // تأكد من استخدام بيانات المتجر المحدد بدقة (من الدومين) بدلاً من storeData العام
+    const store = currentStoreData || storeData;
+    
+    if (store?.id) {
       const fetchStoreData = async () => {
         setIsLoadingData(true);
         try {
@@ -30,7 +62,7 @@ const Store = () => {
           const { data: productsData } = await supabase
             .from('products')
             .select('*')
-            .eq('store_id', storeData.id)
+            .eq('store_id', store.id)
             .order('created_at', { ascending: false });
           
           setProducts(productsData || []);
@@ -42,7 +74,7 @@ const Store = () => {
               name,
               products:products(count)
             `)
-            .eq('store_id', storeData.id);
+            .eq('store_id', store.id);
           
           // Filter out categories with no products
           const categoriesWithProducts = categoriesData
@@ -55,7 +87,7 @@ const Store = () => {
           const { data: sectionsData } = await supabase
             .from('sections')
             .select('name')
-            .eq('store_id', storeData.id)
+            .eq('store_id', store.id)
             .eq('is_active', true);
           
           const sectionNames = sectionsData?.map(sec => sec.name) || [];
@@ -69,7 +101,7 @@ const Store = () => {
           const { data: featuredProductsData } = await supabase
             .from('products')
             .select('*')
-            .eq('store_id', storeData.id)
+            .eq('store_id', store.id)
             .limit(4);
           
           setFeaturedProducts(featuredProductsData || []);
@@ -78,7 +110,7 @@ const Store = () => {
           const { data: bestSellingProductsData } = await supabase
             .from('products')
             .select('*')
-            .eq('store_id', storeData.id)
+            .eq('store_id', store.id)
             .limit(8);
           
           setBestSellingProducts(bestSellingProductsData || []);
@@ -98,7 +130,7 @@ const Store = () => {
       
       fetchStoreData();
     }
-  }, [storeData]);
+  }, [currentStoreData, storeData]);
 
   if (error) {
     return (
@@ -112,9 +144,12 @@ const Store = () => {
     );
   }
 
+  // استخدام بيانات المتجر المحدد أو الافتراضي
+  const storeToShow = currentStoreData || storeData || {};
+
   // Instead of a loading state, render the layout with skeletons
   return (
-    <StoreLayout storeData={storeData || {}}>
+    <StoreLayout storeData={storeToShow}>
       {isLoading || isLoadingData ? (
         <motion.div
           initial={{ opacity: 0 }}
@@ -148,7 +183,7 @@ const Store = () => {
           transition={{ duration: 0.4 }}
         >
           <StoreContent 
-            storeData={storeData}
+            storeData={storeToShow}
             products={products}
             categories={categories}
             sections={sections}

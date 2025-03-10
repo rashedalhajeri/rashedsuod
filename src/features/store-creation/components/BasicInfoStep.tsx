@@ -4,9 +4,10 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { StoreFormData } from "../types";
 import { supabase } from "@/integrations/supabase/client";
+import { checkDomainAvailability } from "../utils/store-api";
 
 interface BasicInfoStepProps {
   formData: StoreFormData;
@@ -29,50 +30,43 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
 }) => {
   const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  // Automatically check domain availability when domainName changes
+  // التحقق من توفر النطاق عند تغيير قيمة domainName
   useEffect(() => {
-    if (!formData.domainName || formData.domainName.length < 3) {
+    if (!formData.domainName || formData.domainName.trim().length < 3) {
       setDomainAvailable(null);
       return;
     }
 
-    // Validate domain name format first (alphanumeric and hyphens only)
+    // التحقق من صحة تنسيق اسم النطاق (فقط الأحرف والأرقام والشرطات)
     const domainRegex = /^[a-zA-Z0-9-]+$/;
     if (!domainRegex.test(formData.domainName)) {
       setDomainAvailable(false);
       return;
     }
 
-    // Debounce the domain availability check to avoid too many requests
+    // تأخير عملية التحقق لتجنب الكثير من الطلبات
     if (debounceTimeout) {
       clearTimeout(debounceTimeout);
     }
 
     setCheckingDomain(true);
+    
     const timeout = setTimeout(async () => {
       try {
-        // Check if domain already exists in database
-        const { data, error } = await supabase
-          .from('stores')
-          .select('domain_name')
-          .eq('domain_name', formData.domainName)
-          .maybeSingle();
-
-        if (error) throw error;
-        
-        // If data is null, domain is available
-        setDomainAvailable(!data);
+        // استخدام الدالة المحسنة للتحقق من توفر النطاق
+        const isAvailable = await checkDomainAvailability(formData.domainName);
+        setDomainAvailable(isAvailable);
       } catch (error) {
-        console.error("Error checking domain:", error);
+        console.error("خطأ في التحقق من توفر النطاق:", error);
         setDomainAvailable(null);
       } finally {
         setCheckingDomain(false);
       }
-    }, 500); // 500ms debounce delay
+    }, 500); // تأخير 500 مللي ثانية
 
     setDebounceTimeout(timeout);
 
-    // Cleanup on unmount
+    // التنظيف عند إزالة المكون
     return () => {
       if (debounceTimeout) {
         clearTimeout(debounceTimeout);
@@ -80,8 +74,17 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
     };
   }, [formData.domainName, setDomainAvailable, setCheckingDomain]);
 
-  // Handle domain name input change
+  // معالجة تغيير قيمة اسم النطاق
   const handleDomainChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // تنظيف اسم النطاق قبل حفظه (إزالة المسافات وتحويل إلى أحرف صغيرة)
+    const rawValue = e.target.value;
+    const cleanValue = rawValue.trim().toLowerCase().replace(/\s+/g, '');
+    
+    // إذا تم تنظيف القيمة، نقوم بتحديث الحقل يدويًا
+    if (cleanValue !== rawValue) {
+      e.target.value = cleanValue;
+    }
+    
     handleChange(e);
   };
 
@@ -130,7 +133,9 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
             </div>
           </div>
           {checkingDomain && (
-            <p className="text-gray-500 text-sm">جاري التحقق...</p>
+            <p className="text-gray-500 text-sm flex items-center">
+              <Loader2 className="h-3 w-3 mr-1 animate-spin" /> جاري التحقق...
+            </p>
           )}
           {domainAvailable === true && !checkingDomain && (
             <p className="text-green-600 text-sm flex items-center">
