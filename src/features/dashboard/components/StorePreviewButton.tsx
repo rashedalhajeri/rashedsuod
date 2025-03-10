@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Eye, ExternalLink } from "lucide-react";
-import { openStoreInNewTab, getBaseDomain } from "@/utils/url-helpers";
+import { openStoreInNewTab, getFullStoreUrl } from "@/utils/url-helpers";
 import {
   Tooltip,
   TooltipContent,
@@ -33,9 +33,7 @@ const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({
     openStoreInNewTab(storeUrl);
   };
 
-  const displayUrl = storeUrl ? 
-    `${getBaseDomain()}${storeUrl.startsWith('/') ? '' : '/'}${storeUrl}` : 
-    'رابط المتجر غير متوفر';
+  const displayUrl = storeUrl ? getFullStoreUrl(storeUrl) : 'رابط المتجر غير متوفر';
 
   return (
     <div className="inline-block">

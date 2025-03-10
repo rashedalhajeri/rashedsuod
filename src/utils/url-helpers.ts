@@ -7,6 +7,9 @@
  * Get the base domain for the application
  */
 export const getBaseDomain = (): string => {
+  if (window.location.hostname.includes('lovableproject.com')) {
+    return window.location.origin;
+  }
   return import.meta.env.VITE_APP_DOMAIN || 'https://lovable.app';
 };
 
@@ -55,6 +58,12 @@ export const getStoreProductUrl = (domain: string, productId: string): string =>
 export const getFullStoreUrl = (path: string): string => {
   if (!path) return getBaseDomain();
   
+  // Check if we're in the Lovable project environment
+  if (window.location.hostname.includes('lovableproject.com')) {
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    return `${window.location.origin}${normalizedPath}`;
+  }
+  
   const baseDomain = getBaseDomain();
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   
@@ -83,6 +92,6 @@ export const openStoreInNewTab = (storeUrl?: string): void => {
   const domainName = cleanUrl.replace(/^store\/?/, '');
   
   // Create the correct URL with base domain
-  const fullUrl = `${getBaseDomain()}/store/${domainName}`;
+  const fullUrl = getFullStoreUrl(`/store/${domainName}`);
   window.open(fullUrl, '_blank');
 };
