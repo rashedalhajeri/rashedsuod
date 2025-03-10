@@ -95,7 +95,7 @@ const CategoriesAndSections: React.FC = () => {
           newProductIds={newProductIds}
           setNewProductIds={setNewProductIds}
           newDisplayStyle={newDisplayStyle}
-          setNewDisplayStyle={setNewDisplayStyle}
+          setNewDisplayStyle={(style: 'grid' | 'list') => setNewDisplayStyle(style)}
           editingSection={editingSection}
           setEditingSection={handleSetEditingSection}
           handleAddSection={handleAddSection}
