@@ -50,6 +50,18 @@ export const getStoreProductUrl = (domain: string, productId: string): string =>
 };
 
 /**
+ * Creates a full URL with the correct base domain for any store route
+ */
+export const getFullStoreUrl = (path: string): string => {
+  if (!path) return getBaseDomain();
+  
+  const baseDomain = getBaseDomain();
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  
+  return `${baseDomain}${normalizedPath}`;
+};
+
+/**
  * Handles opening a store URL in a new tab with proper domain normalization
  */
 export const openStoreInNewTab = (storeUrl?: string): void => {

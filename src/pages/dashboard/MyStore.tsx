@@ -5,6 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Layout } from "lucide-react";
+import { normalizeStoreDomain } from "@/utils/url-helpers";
 import {
   LoadingState,
   NoStoreFound,
@@ -58,7 +59,7 @@ const MyStore = () => {
   }
   
   // Make sure domain is always lowercase for consistency
-  const storeDomain = storeData.domain_name?.toLowerCase() || storeData.domain?.toLowerCase();
+  const storeDomain = normalizeStoreDomain(storeData.domain_name || storeData.domain || '');
   const storeName = storeData.store_name || storeData.name;
   
   // Create a proper URL for the StorePreviewButton

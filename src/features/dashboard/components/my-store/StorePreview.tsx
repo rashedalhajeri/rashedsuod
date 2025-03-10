@@ -1,9 +1,9 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { BellRing, Eye, ExternalLink, Layout, PencilRuler, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PromoBanner from "@/components/store/banner/PromoBanner";
+import { getBaseDomain, normalizeStoreDomain } from "@/utils/url-helpers";
 
 interface StorePreviewProps {
   storeName: string;
@@ -12,6 +12,13 @@ interface StorePreviewProps {
 }
 
 const StorePreview: React.FC<StorePreviewProps> = ({ storeName, storeDomain, logoUrl }) => {
+  const normalizedDomain = normalizeStoreDomain(storeDomain);
+  
+  const handleStoreOpen = () => {
+    const fullUrl = `${getBaseDomain()}/store/${normalizedDomain}`;
+    window.open(fullUrl, '_blank');
+  };
+  
   return (
     <Card className="overflow-hidden border-none shadow-md">
       <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 pb-3">
@@ -53,7 +60,7 @@ const StorePreview: React.FC<StorePreviewProps> = ({ storeName, storeDomain, log
                 size="sm" 
                 variant="outline" 
                 className="text-xs flex items-center gap-1 h-7"
-                onClick={() => window.open(`/store/${storeDomain}`, '_blank')}
+                onClick={handleStoreOpen}
               >
                 <Eye className="h-3 w-3" />
                 زيارة المتجر
@@ -62,7 +69,7 @@ const StorePreview: React.FC<StorePreviewProps> = ({ storeName, storeDomain, log
           </div>
           
           <div className="p-0">
-            <PromoBanner storeDomain={storeDomain} />
+            <PromoBanner storeDomain={normalizedDomain} />
             
             <div className="text-center py-10 bg-gray-50 mt-2 mx-2 mb-2 rounded-md border border-dashed border-gray-200">
               <Store className="w-10 h-10 mx-auto text-gray-400 mb-3" />
@@ -94,7 +101,7 @@ const StorePreview: React.FC<StorePreviewProps> = ({ storeName, storeDomain, log
           size="sm" 
           variant="outline" 
           className="text-xs flex items-center gap-1 border-primary/20 bg-white"
-          onClick={() => window.open(`/store/${storeDomain}`, '_blank')}
+          onClick={handleStoreOpen}
         >
           <Eye className="h-3.5 w-3.5" />
           معاينة كاملة
