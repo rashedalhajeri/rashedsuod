@@ -1,110 +1,48 @@
 
 /**
- * URL and domain handling utilities with simplified, consistent behavior
- */
-
-/**
- * Get the base domain for the application
- */
-export const getBaseDomain = (): string => {
-  // Always return the configured domain or default
-  return import.meta.env.VITE_APP_DOMAIN || 'https://linok.me';
-};
-
-/**
- * Normalize a store domain name with simplified rules
+ * Normalize store domain to a consistent format
+ * Always returns lowercase with no special characters
  */
 export const normalizeStoreDomain = (domain: string): string => {
   if (!domain) return '';
   
-  // Convert to lowercase and remove spaces
-  let normalizedDomain = domain.trim().toLowerCase();
+  // Remove any protocol prefix (http://, https://)
+  let normalizedDomain = domain.toLowerCase().trim();
+  normalizedDomain = normalizedDomain.replace(/^https?:\/\//, '');
   
-  // Remove store/ prefix and trailing slash
-  normalizedDomain = normalizedDomain.replace(/^\/?(store\/)?/, '').replace(/\/$/, '');
+  // Remove trailing slashes
+  normalizedDomain = normalizedDomain.replace(/\/+$/, '');
   
-  // Remove protocol and www
-  normalizedDomain = normalizedDomain.replace(/^https?:\/\/(www\.)?/, '');
-  
-  // Extract just the domain part from something like "example.com/path" or "linok.me/storename"
-  if (normalizedDomain.includes('/')) {
-    normalizedDomain = normalizedDomain.split('/').pop() || '';
-  } else if (normalizedDomain.includes('.')) {
-    // If it includes a dot but no slash, it's probably a full domain
-    // Extract just the first part if it's a subdomain
-    if (normalizedDomain.includes('linok.me')) {
-      const parts = normalizedDomain.split('.');
-      if (parts.length > 2) {
-        normalizedDomain = parts[0];
-      } else {
-        // It's just linok.me without a subdomain
-        normalizedDomain = '';
-      }
-    } else {
-      // For non-platform domains, just return the entire string
-      normalizedDomain = normalizedDomain.split('/')[0];
-    }
+  // If using the store/ path format, extract just the domain part
+  const storePathMatch = normalizedDomain.match(/store\/([^\/]+)/);
+  if (storePathMatch && storePathMatch[1]) {
+    normalizedDomain = storePathMatch[1];
   }
   
-  return normalizedDomain;
-};
-
-/**
- * Creates a store URL from a domain
- */
-export const getStoreUrl = (domain: string): string => {
-  const cleanDomain = normalizeStoreDomain(domain);
-  
-  // If no valid domain, return empty string
-  if (!cleanDomain) return '';
-  
-  // Always use the path format
-  const baseDomain = getBaseDomain();
-  return `${baseDomain}/store/${cleanDomain}`;
-};
-
-/**
- * Creates a full URL with the correct base domain for any store route
- */
-export const getFullStoreUrl = (path: string): string => {
-  if (!path) return getBaseDomain();
-  
-  // If the path is already a full URL, return it
-  if (path.startsWith('http')) {
-    return path;
+  // Remove subdomains and TLDs if a full domain is provided
+  // This ensures consistency regardless of input format
+  const domainParts = normalizedDomain.split('.');
+  if (domainParts.length > 1 && !normalizedDomain.includes('/')) {
+    // Extract just the domain name part (e.g., 'mystore' from 'mystore.example.com')
+    return domainParts[0];
   }
   
-  // Ensure the path starts with a slash
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  // Replace spaces with dashes and remove special characters
+  return normalizedDomain.replace(/\s+/g, '-').replace(/[^\w\-]/g, '');
+};
+
+/**
+ * Get the full URL for a store in the linok.me/store/name format
+ */
+export const getFullStoreUrl = (storeUrl: string): string => {
+  if (!storeUrl) return '';
   
-  // For any relative path, append to base domain
-  const baseDomain = getBaseDomain();
-  return `${baseDomain}${normalizedPath}`;
-};
-
-/**
- * Determines if a domain is a custom domain - always false now
- */
-export const isCustomDomain = (domain: string): boolean => {
-  // Custom domains are no longer supported
-  return false;
-};
-
-/**
- * Determines if a domain is a subdomain of our platform - always false now
- */
-export const isSubdomain = (domain: string): boolean => {
-  // Subdomains are no longer supported
-  return false;
-};
-
-/**
- * Handles opening a store URL in a new tab
- */
-export const openStoreInNewTab = (storeUrl?: string): void => {
-  if (!storeUrl) return;
+  // Always normalize the domain first
+  const normalizedDomain = normalizeStoreDomain(storeUrl);
   
-  // Generate a proper URL in the linok.me/store/name format
-  const fullUrl = getFullStoreUrl(storeUrl);
-  window.open(fullUrl, '_blank', 'noopener,noreferrer');
+  // If empty after normalization, return empty string
+  if (!normalizedDomain) return '';
+  
+  // Return URL in the format linok.me/store/name (no subdomain or custom domain support)
+  return `https://linok.me/store/${normalizedDomain}`;
 };

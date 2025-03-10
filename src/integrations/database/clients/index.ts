@@ -1,4 +1,12 @@
 
-export * from './product-client';
-export * from './order-client';
-export * from './customer-client';
+import { productClient, SupabaseProductClient } from './product-client';
+import type { ProductDatabaseClient } from './product/types';
+
+export { 
+  productClient, 
+  SupabaseProductClient 
+};
+
+export type { 
+  ProductDatabaseClient 
+};
