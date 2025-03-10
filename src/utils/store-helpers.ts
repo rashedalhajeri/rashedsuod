@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { normalizeStoreDomain } from "./url-helpers";
+import { normalizeStoreDomain, isCustomDomain } from "./url-helpers";
 
 // Simple in-memory cache for store data
 const storeCache: Record<string, any> = {};
@@ -31,6 +31,27 @@ export const fetchStoreByDomain = async (domainName: string) => {
   }
 
   try {
+    // For custom domains, search by custom_domain instead of domain_name
+    if (isCustomDomain(cleanDomain)) {
+      console.log("Looking up custom domain:", cleanDomain);
+      
+      const { data, error } = await supabase
+        .from("stores")
+        .select("*")
+        .eq("custom_domain", cleanDomain.toLowerCase())
+        .maybeSingle();
+        
+      if (error) {
+        console.error("Error fetching store by custom domain:", error);
+        // Fall back to regular domain lookup
+      } else if (data) {
+        console.log("Found store by custom domain:", data);
+        storeCache[cleanDomain] = data;
+        return data;
+      }
+    }
+    
+    // Standard domain lookup
     const { data, error } = await supabase
       .from("stores")
       .select("*")

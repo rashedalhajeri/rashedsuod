@@ -12,6 +12,7 @@ import {
 
 interface StorePreviewButtonProps {
   storeUrl?: string;
+  customDomain?: string;
   className?: string;
   variant?: "default" | "outline" | "secondary" | "ghost" | "link" | "destructive";
   size?: "default" | "sm" | "lg" | "icon";
@@ -20,6 +21,7 @@ interface StorePreviewButtonProps {
 
 const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({ 
   storeUrl, 
+  customDomain,
   className, 
   variant = "default", 
   size = "sm",
@@ -27,15 +29,22 @@ const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({
 }) => {
   const [showLink, setShowLink] = useState(false);
   
+  // Prefer custom domain if available
+  const effectiveUrl = customDomain || storeUrl;
+  
   const handleClick = () => {
-    if (!storeUrl) return;
+    if (!effectiveUrl) return;
     
     setShowLink(true);
     setTimeout(() => setShowLink(false), 3000);
-    openStoreInNewTab(storeUrl);
+    openStoreInNewTab(effectiveUrl);
   };
 
-  const fullStoreUrl = storeUrl ? getFullStoreUrl(getStoreUrl(storeUrl)) : 'رابط المتجر غير متوفر';
+  const fullStoreUrl = effectiveUrl ? 
+    (customDomain ? 
+      (customDomain.startsWith('http') ? customDomain : `https://${customDomain}`) : 
+      getFullStoreUrl(getStoreUrl(storeUrl || ''))) : 
+    'رابط المتجر غير متوفر';
 
   return (
     <div className="inline-block">
@@ -47,7 +56,7 @@ const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({
               className={`flex items-center gap-1.5 ${className || ''}`}
               variant={variant}
               onClick={handleClick}
-              disabled={!storeUrl}
+              disabled={!effectiveUrl}
             >
               {showExternalIcon ? (
                 <ExternalLink className="h-4 w-4" />

@@ -3,26 +3,37 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
-import { normalizeStoreDomain, getFullStoreUrl } from "@/utils/url-helpers";
+import { normalizeStoreDomain, getFullStoreUrl, isCustomDomain } from "@/utils/url-helpers";
 
 interface StorePreviewProps {
   storeName: string;
   storeDomain: string;
   logoUrl: string | null;
+  customDomain?: string | null;
 }
 
 const StorePreview: React.FC<StorePreviewProps> = ({
   storeName,
   storeDomain,
-  logoUrl
+  logoUrl,
+  customDomain
 }) => {
   // Generate the proper store URL
   const cleanDomain = normalizeStoreDomain(storeDomain);
-  const storeUrl = cleanDomain ? `/store/${cleanDomain}` : '';
+  const hasCustomDomain = Boolean(customDomain);
+  
+  // Prefer custom domain if available
+  const displayDomain = hasCustomDomain ? customDomain : cleanDomain;
+  const storeUrl = hasCustomDomain ? 
+    customDomain : 
+    (cleanDomain ? `/store/${cleanDomain}` : '');
+    
   const fullStoreUrl = getFullStoreUrl(storeUrl);
   
   // Format displayed URL for cleaner presentation
-  const displayUrl = cleanDomain ? `${cleanDomain}.linok.me` : 'متجرك';
+  const displayUrl = hasCustomDomain ? 
+    customDomain : 
+    (cleanDomain ? `${cleanDomain}.linok.me` : 'متجرك');
   
   const handleOpenStore = () => {
     if (fullStoreUrl) {
@@ -61,13 +72,19 @@ const StorePreview: React.FC<StorePreviewProps> = ({
             <h2 className="text-xl font-bold mb-2">{storeName || "اسم المتجر"}</h2>
             <div className="text-sm text-muted-foreground mb-4">
               <span className="font-medium">{displayUrl}</span>
+              
+              {hasCustomDomain && (
+                <span className="inline-block mr-3 bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded">
+                  دومين مخصص
+                </span>
+              )}
             </div>
             
             <Button 
               onClick={handleOpenStore}
               variant="default"
               className="gap-2"
-              disabled={!cleanDomain}
+              disabled={!cleanDomain && !hasCustomDomain}
             >
               <ExternalLink size={16} />
               زيارة المتجر
@@ -96,6 +113,32 @@ const StorePreview: React.FC<StorePreviewProps> = ({
               نسخ
             </Button>
           </div>
+          
+          {hasCustomDomain && (
+            <div className="mt-3 text-xs">
+              <div className="bg-green-50 text-green-800 p-2 rounded border border-green-200">
+                <p className="font-medium">تم تفعيل الدومين المخصص: {customDomain}</p>
+                <p className="mt-1">يمكن للعملاء الوصول لمتجرك مباشرة عبر هذا الدومين.</p>
+              </div>
+            </div>
+          )}
+          
+          {!hasCustomDomain && (
+            <div className="mt-3 text-xs flex items-start gap-2">
+              <div className="bg-blue-50 text-blue-800 p-2 rounded border border-blue-200 flex-1">
+                <p className="font-medium">إضافة دومين مخصص</p>
+                <p className="mt-1">يمكنك إضافة دومين مخصص لمتجرك من إعدادات المتجر</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-auto py-1"
+                onClick={() => window.location.href = '/dashboard/settings?tab=store'}
+              >
+                الإعدادات
+              </Button>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -1,6 +1,6 @@
 
 import { useParams } from "react-router-dom";
-import { normalizeStoreDomain } from "@/utils/url-helpers";
+import { normalizeStoreDomain, isCustomDomain } from "@/utils/url-helpers";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchStoreByDomain } from "@/utils/store-helpers";
@@ -12,11 +12,35 @@ export function useStoreDomain() {
   const { storeDomain } = useParams<{ storeDomain: string }>();
   const [storeExists, setStoreExists] = useState<boolean | null>(null);
   
+  // Check if we're on a custom domain
+  const [isOnCustomDomain, setIsOnCustomDomain] = useState(false);
+  
   // Track original domain before normalization
   const rawDomainValue = storeDomain || '';
   
+  // Detect if we're on a custom domain
+  useEffect(() => {
+    const hostname = window.location.hostname;
+    const isCustom = hostname !== 'localhost' && 
+                      !hostname.includes('lovableproject.com') &&
+                      !hostname.includes('vercel.app');
+    
+    setIsOnCustomDomain(isCustom);
+  }, []);
+  
+  // Handle custom domain case
+  useEffect(() => {
+    if (isOnCustomDomain && !storeDomain) {
+      console.log("On custom domain:", window.location.hostname);
+      // We're on a custom domain but don't have a storeDomain param
+      // This means the custom domain itself is the store identifier
+    }
+  }, [isOnCustomDomain, storeDomain]);
+  
   // Always normalize domain for consistency
-  const normalizedDomain = normalizeStoreDomain(rawDomainValue);
+  const normalizedDomain = isOnCustomDomain && !storeDomain ? 
+    normalizeStoreDomain(window.location.hostname) :
+    normalizeStoreDomain(rawDomainValue);
   
   // Check if domain is valid (not empty or undefined)
   const isValidDomain = Boolean(normalizedDomain && normalizedDomain.length > 0);
@@ -28,6 +52,7 @@ export function useStoreDomain() {
   useEffect(() => {
     // Print debug info to help developers
     console.log("useStoreDomain - Raw domain from params:", rawDomainValue);
+    console.log("useStoreDomain - Using custom domain:", isOnCustomDomain);
     console.log("useStoreDomain - Normalized domain:", normalizedDomain);
     console.log("useStoreDomain - Is valid domain:", isValidDomain);
     
@@ -47,7 +72,7 @@ export function useStoreDomain() {
             const { data, error, count } = await supabase
               .from('stores')
               .select('*', { count: 'exact' })
-              .ilike('domain_name', normalizedDomain)
+              .or(`domain_name.eq.${normalizedDomain},custom_domain.eq.${normalizedDomain}`)
               .limit(10);
               
             if (error) {
@@ -61,7 +86,7 @@ export function useStoreDomain() {
               // Get all stores for manual debugging
               const { data: allStores } = await supabase
                 .from('stores')
-                .select('id, domain_name, store_name, status')
+                .select('id, domain_name, custom_domain, store_name, status')
                 .order('created_at', { ascending: false })
                 .limit(20);
                 
@@ -76,13 +101,14 @@ export function useStoreDomain() {
     };
     
     checkStoreExists();
-  }, [normalizedDomain, rawDomainValue, isValidDomain]);
+  }, [normalizedDomain, rawDomainValue, isValidDomain, isOnCustomDomain]);
   
   return {
     rawDomain: rawDomainValue,
     domain: normalizedDomain,
     isValidDomain,
     inStoresPath,
-    storeExists
+    storeExists,
+    isOnCustomDomain
   };
 }

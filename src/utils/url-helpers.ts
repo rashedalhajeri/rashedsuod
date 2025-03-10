@@ -1,4 +1,3 @@
-
 /**
  * URL and domain handling utilities with simplified, consistent behavior
  */
@@ -7,9 +6,14 @@
  * Get the base domain for the application
  */
 export const getBaseDomain = (): string => {
-  if (window.location.hostname.includes('lovableproject.com')) {
+  // For custom domains configured in Supabase, check if we're on a custom domain
+  if (window.location.hostname !== 'localhost' && 
+      !window.location.hostname.includes('lovableproject.com') &&
+      !window.location.hostname.includes('localhost')) {
     return window.location.origin;
   }
+  
+  // Fallback to configured domain or default
   return import.meta.env.VITE_APP_DOMAIN || 'https://lovable.app';
 };
 
@@ -28,8 +32,15 @@ export const normalizeStoreDomain = (domain: string): string => {
   // Remove protocol and www
   normalizedDomain = normalizedDomain.replace(/^https?:\/\/(www\.)?/, '');
   
-  // Get first part before any dots or slashes
-  normalizedDomain = normalizedDomain.split(/[./]/)[0];
+  // Handle custom domains - if it includes a dot, we treat it as a full domain
+  // Otherwise, we assume it's a subdomain of the default domain
+  if (normalizedDomain.includes('.')) {
+    // Extract just the domain part from something like "example.com/path"
+    normalizedDomain = normalizedDomain.split('/')[0];
+  } else {
+    // Get first part before any slashes for regular store domains
+    normalizedDomain = normalizedDomain.split('/')[0];
+  }
   
   return normalizedDomain;
 };
@@ -39,6 +50,13 @@ export const normalizeStoreDomain = (domain: string): string => {
  */
 export const getStoreUrl = (domain: string): string => {
   const cleanDomain = normalizeStoreDomain(domain);
+  
+  // If it's a custom domain (contains a dot), return the full path
+  if (cleanDomain && cleanDomain.includes('.')) {
+    return cleanDomain.startsWith('http') ? cleanDomain : `https://${cleanDomain}`;
+  }
+  
+  // Otherwise, return the standard store path
   return cleanDomain ? `/store/${cleanDomain}` : '';
 };
 
@@ -48,10 +66,28 @@ export const getStoreUrl = (domain: string): string => {
 export const getFullStoreUrl = (path: string): string => {
   if (!path) return getBaseDomain();
   
+  // If the path is already a full URL (custom domain), return it
+  if (path.startsWith('http')) {
+    return path;
+  }
+  
+  // If path is a custom domain without protocol, add https://
+  if (path.includes('.') && !path.startsWith('/')) {
+    return `https://${path}`;
+  }
+  
   const baseDomain = getBaseDomain();
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   
   return `${baseDomain}${normalizedPath}`;
+};
+
+/**
+ * Determines if a domain is a custom domain
+ */
+export const isCustomDomain = (domain: string): boolean => {
+  const normalizedDomain = normalizeStoreDomain(domain);
+  return normalizedDomain.includes('.');
 };
 
 /**
