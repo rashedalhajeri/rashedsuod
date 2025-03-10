@@ -39,23 +39,23 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       {isMobile && (
         <div className="fixed top-4 right-4 z-50">
           <Button
-            variant="outline"
+            variant="default"
             size="icon"
-            className="rounded-full shadow-md bg-white"
+            className="rounded-full shadow-md bg-primary-500 hover:bg-primary-600"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
-            <Menu size={20} />
+            <Menu size={18} className="text-white" />
           </Button>
         </div>
       )}
       
       {/* المحتوى الرئيسي */}
       <main 
-        className={`flex-1 overflow-x-hidden overflow-y-auto py-2 px-0 transition-all duration-300 ${
-          isMobile ? "mr-0" : isTablet ? "mr-[80px]" : "mr-[250px]"
+        className={`flex-1 overflow-x-hidden overflow-y-auto transition-all duration-300 ${
+          isMobile ? "mr-0" : isTablet ? "mr-[80px]" : "mr-[240px]"
         }`}
       >
-        <div className="container py-2 px-3 md:px-6 max-w-7xl mx-auto h-full">
+        <div className="container py-4 px-4 md:px-6 max-w-7xl mx-auto h-full">
           {children}
         </div>
       </main>

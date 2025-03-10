@@ -113,13 +113,18 @@ const SidebarLinks: React.FC<SidebarLinksProps> = ({
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cn(
-                      "flex items-center gap-2 px-3 py-2.5 rounded-md transition-colors duration-200 text-sm font-medium",
-                      "text-gray-700 hover:bg-gray-50 hover:text-primary-700",
+                      "flex items-center gap-3 py-2.5 px-3 rounded-lg transition-all duration-200 text-sm font-medium",
+                      "text-gray-600 hover:bg-gray-100/80 hover:text-primary-600",
                       isCollapsed && !isMobile && "justify-center px-2"
                     )}
                     onClick={closeMobileMenu}
                   >
-                    <span className="text-inherit">{link.icon}</span>
+                    <span className={cn(
+                      "flex items-center justify-center rounded-md text-inherit",
+                      isCollapsed && !isMobile ? "w-9 h-9 bg-gray-100" : ""
+                    )}>
+                      {link.icon}
+                    </span>
                     {(!isCollapsed || isMobile) && (
                       <span>{link.label}</span>
                     )}
@@ -130,16 +135,21 @@ const SidebarLinks: React.FC<SidebarLinksProps> = ({
                     onClick={closeMobileMenu}
                     className={({ isActive }) =>
                       cn(
-                        "flex items-center gap-2 px-3 py-2.5 rounded-md transition-colors duration-200 text-sm font-medium",
+                        "flex items-center gap-3 py-2.5 px-3 rounded-lg transition-all duration-200 text-sm font-medium",
                         isActive
-                          ? "bg-primary-100 text-primary-800"
-                          : "text-gray-700 hover:bg-gray-50 hover:text-primary-700",
+                          ? "bg-primary-50 text-primary-600 font-semibold"
+                          : "text-gray-600 hover:bg-gray-100/80 hover:text-primary-600",
                         isCollapsed && !isMobile && "justify-center px-2"
                       )
                     }
                     end={link.path === "/dashboard"}
                   >
-                    <span className="text-inherit">{link.icon}</span>
+                    <span className={cn(
+                      "flex items-center justify-center rounded-md text-inherit",
+                      isCollapsed && !isMobile ? "w-9 h-9 bg-gray-100" : ""
+                    )}>
+                      {link.icon}
+                    </span>
                     {(!isCollapsed || isMobile) && (
                       <span>{link.label}</span>
                     )}

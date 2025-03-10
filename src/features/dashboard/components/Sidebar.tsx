@@ -62,7 +62,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
       {/* طبقة التعتيم خلف القائمة في الأجهزة المحمولة */}
       {isMobile && isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 backdrop-blur-sm"
+          className="fixed inset-0 bg-black/30 z-30 backdrop-blur-sm"
           onClick={closeMobileMenu}
         />
       )}
@@ -70,14 +70,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
       {/* القائمة الجانبية */}
       <div
         className={cn(
-          "fixed top-0 right-0 h-screen bg-white shadow-md z-40 overflow-hidden rtl flex flex-col",
-          isMobile ? "border-none" : "border-l border-gray-200"
+          "fixed top-0 right-0 h-screen z-40 overflow-hidden rtl flex flex-col transition-all duration-300 ease-in-out",
+          "bg-white dark:bg-gray-900 shadow-lg",
+          isMobile ? "border-none" : "border-l border-gray-200 dark:border-gray-800"
         )}
         style={{ 
           width: isMobile && !isMobileMenuOpen ? 0 : 
-                 isCollapsed && !isMobile ? "80px" : "250px",
+                 isCollapsed && !isMobile ? "80px" : "240px",
           right: isMobile && !isMobileMenuOpen ? "-100%" : 0,
-          transition: "width 0.2s ease-in-out, right 0.2s ease-in-out"
         }}
       >
         <div className="flex flex-col h-full">
@@ -98,20 +98,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
           />
 
           {/* تذييل القائمة */}
-          <div className="p-3 border-t border-gray-200 mt-auto space-y-2">
+          <div className="p-3 mt-auto space-y-3 border-t border-gray-100 dark:border-gray-800">
             {/* بطاقة التحية */}
             {(!isCollapsed || isMobile) && (
-              <div className="flex flex-col px-3 py-2 rounded-lg bg-primary-50/80 text-sm">
-                <div className="flex items-center gap-2 text-primary-700">
-                  <TimeIcon size={14} className="shrink-0" />
-                  <span className="font-medium">{greeting}</span>
-                </div>
+              <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-800/50 text-sm">
+                <TimeIcon size={18} className="text-primary-500" />
+                <span className="font-medium text-gray-700 dark:text-gray-200">{greeting}</span>
               </div>
             )}
             
             {/* عرض البريد الإلكتروني */}
             {(!isCollapsed || isMobile) && userEmail && (
-              <div className="flex items-center gap-2 px-3 py-2 text-gray-600 text-xs">
+              <div className="flex items-center gap-2.5 px-3 py-2 text-gray-500 dark:text-gray-400 text-xs">
                 <Mail size={14} className="shrink-0" />
                 <span className="truncate">{userEmail}</span>
               </div>

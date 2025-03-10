@@ -32,11 +32,11 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
         <Button
           variant="ghost"
           className={cn(
-            "w-full justify-start gap-2 text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors",
+            "w-full justify-start gap-2.5 text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors rounded-lg",
             isCollapsed && !isMobile && "justify-center px-2"
           )}
         >
-          <LogOut size={18} className="shrink-0" />
+          <LogOut size={16} className="shrink-0" />
           {(!isCollapsed || isMobile) && <span>تسجيل الخروج</span>}
         </Button>
       </AlertDialogTrigger>
@@ -49,7 +49,7 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
         </AlertDialogHeader>
         <AlertDialogFooter className="flex justify-start gap-2">
           <AlertDialogCancel className="mt-0">إلغاء</AlertDialogCancel>
-          <AlertDialogAction onClick={onLogout} className="bg-red-600 hover:bg-red-700">
+          <AlertDialogAction onClick={onLogout} className="bg-red-500 hover:bg-red-600">
             تسجيل الخروج
           </AlertDialogAction>
         </AlertDialogFooter>
