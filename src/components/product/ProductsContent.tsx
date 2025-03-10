@@ -8,6 +8,7 @@ import ProductsPagination from "./pagination/ProductsPagination";
 import ChangeCategoryDialog from "./bulk-actions/ChangeCategoryDialog";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-media-query";
+import DeleteConfirmDialog from "@/components/ui/delete-confirm-dialog";
 
 interface ProductsContentProps {
   products: Product[];
@@ -49,6 +50,10 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
   const [bulkActivateStatus, setBulkActivateStatus] = useState(false);
   const [showChangeCategoryDialog, setShowChangeCategoryDialog] = useState(false);
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
+  
+  // Product delete dialog state
+  const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
+  const [deleteProductName, setDeleteProductName] = useState<string>("");
   
   // Calculate pagination
   const totalPages = Math.ceil(products.length / itemsPerPage);
@@ -114,6 +119,28 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
     setShowChangeCategoryDialog(open);
   };
   
+  // Handle single product delete
+  const handleOpenDeleteDialog = (product: Product) => {
+    setDeleteProductId(product.id);
+    setDeleteProductName(product.name);
+  };
+  
+  const handleDeleteProduct = async () => {
+    if (!deleteProductId) return;
+    try {
+      await onDelete(deleteProductId);
+      toast.success(`تم حذف المنتج "${deleteProductName}" بنجاح`);
+      if (onRefresh) {
+        onRefresh();
+      }
+    } catch (error) {
+      toast.error(`فشل حذف المنتج: ${(error as Error).message}`);
+    } finally {
+      setDeleteProductId(null);
+      setDeleteProductName("");
+    }
+  };
+  
   return (
     <div className="space-y-4">
       {/* Show bulk actions if items are selected */}
@@ -132,7 +159,7 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
         onSelectionChange={onSelectionChange}
         searchTerm={searchTerm}
         onSearch={onSearch}
-        onDelete={onDelete}
+        onDelete={handleOpenDeleteDialog}
         onActivate={onActivate}
         onRefresh={onRefresh}
         onActionClick={onActionClick}
@@ -159,9 +186,10 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
         }}
         title={bulkActivateStatus ? "تأكيد تفعيل المنتجات" : "تأكيد تعطيل المنتجات"}
         description={
-          bulkActivateStatus
-            ? `هل أنت متأكد من رغبتك في تفعيل ${selectedItems.length} منتج؟`
-            : `هل أنت متأكد من رغبتك في تعطيل ${selectedItems.length} منتج؟`
+          <div className="text-center">
+            <p>هل أنت متأكد من رغبتك في {bulkActivateStatus ? "تفعيل" : "تعطيل"}</p>
+            <p className="font-bold mt-1 text-black">{selectedItems.length} منتج؟</p>
+          </div>
         }
         confirmText={isBulkProcessing ? (bulkActivateStatus ? "جاري التفعيل..." : "جاري التعطيل...") : (bulkActivateStatus ? "تفعيل" : "تعطيل")}
         cancelText="إلغاء"
@@ -173,6 +201,7 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
             : "text-gray-600 border-gray-200 hover:bg-gray-50",
           disabled: isBulkProcessing
         }}
+        variant={bulkActivateStatus ? "info" : "warning"}
       />
 
       {/* Change Category Dialog */}
@@ -185,6 +214,28 @@ const ProductsContent: React.FC<ProductsContentProps> = ({
           if (onRefresh) onRefresh();
           onSelectionChange([]);
         }}
+      />
+      
+      {/* Single Product Delete Confirmation */}
+      <DeleteConfirmDialog
+        open={!!deleteProductId}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteProductId(null);
+            setDeleteProductName("");
+          }
+        }}
+        title="تأكيد حذف المنتج"
+        description={
+          <div className="text-center">
+            <p>هل أنت متأكد من رغبتك في حذف المنتج:</p>
+            <p className="font-bold mt-1 text-black">{deleteProductName}؟</p>
+            <p className="mt-2 text-sm">لا يمكن التراجع عن هذا الإجراء.</p>
+          </div>
+        }
+        onDelete={handleDeleteProduct}
+        itemName={deleteProductName}
+        itemType="منتج"
       />
     </div>
   );

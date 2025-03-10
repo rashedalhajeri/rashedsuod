@@ -1,8 +1,8 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Edit, Trash, Save, X, Tag, ArrowRight, Image } from "lucide-react";
+import { Edit, Trash, Save, X, Tag } from "lucide-react";
 import { motion } from "framer-motion";
 import { 
   Tooltip, 
@@ -11,6 +11,8 @@ import {
   TooltipTrigger 
 } from "@/components/ui/tooltip";
 import { Category } from "@/services/category-service";
+import DeleteConfirmDialog from "@/components/ui/delete-confirm-dialog";
+import { toast } from "@/hooks/use-toast";
 
 interface CategoryItemProps {
   category: Category;
@@ -28,6 +30,23 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
   handleDeleteCategory
 }) => {
   const hasImage = !!category.image_url;
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  
+  const handleDeleteClick = async () => {
+    try {
+      await handleDeleteCategory(category.id);
+      toast("تم الحذف بنجاح", {
+        description: `تم حذف الفئة "${category.name}" بنجاح`
+      });
+      setIsDeleteDialogOpen(false);
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      toast("حدث خطأ", {
+        description: "لم يتم حذف الفئة، يرجى المحاولة مرة أخرى",
+        style: { backgroundColor: 'red', color: 'white' }
+      });
+    }
+  };
   
   return (
     <motion.div
@@ -125,7 +144,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
                     size="sm" 
                     variant="outline"
                     className="h-9 w-9 rounded-lg text-destructive hover:text-white hover:bg-destructive border-destructive/20"
-                    onClick={() => handleDeleteCategory(category.id)}
+                    onClick={() => setIsDeleteDialogOpen(true)}
                   >
                     <Trash className="h-4 w-4" />
                   </Button>
@@ -138,6 +157,22 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
           </div>
         </>
       )}
+      
+      <DeleteConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title="تأكيد حذف الفئة"
+        description={
+          <div className="text-center">
+            <p>هل أنت متأكد من رغبتك في حذف الفئة:</p>
+            <p className="font-bold mt-1 text-black">{category.name}؟</p>
+            <p className="mt-2 text-sm">سيتم حذف جميع المعلومات المرتبطة بهذه الفئة.</p>
+          </div>
+        }
+        onDelete={() => handleDeleteClick()}
+        itemName={category.name}
+        itemType="فئة"
+      />
     </motion.div>
   );
 };

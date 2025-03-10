@@ -1,191 +1,246 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Edit, Trash, Save, X, GripVertical, ChevronUp, ChevronDown } from "lucide-react";
+import { sectionTypes } from "./form/section-config";
 import { Section } from "@/services/section-service";
-import { Edit, Trash, ToggleLeft, ToggleRight, Crown, ShoppingBag, Star, Percent, Tag, LayoutGrid, GripVertical, Loader2, PackageSearch, Gift } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
+import { motion } from "framer-motion";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { toast } from "@/hooks/use-toast";
+import DeleteConfirmDialog from "@/components/ui/delete-confirm-dialog";
 
 interface SectionItemProps {
   section: Section;
+  index: number;
+  totalSections: number;
   editingSection: Section | null;
   setEditingSection: (section: Section | null) => void;
   handleUpdateSection: () => void;
-  handleDeleteSection: (id: string) => void;
-  dragHandleProps?: any;
+  handleDeleteSection: (id: string) => Promise<void>;
+  handleReorderSections: (sourceIndex: number, destinationIndex: number) => void;
 }
 
 const SectionItem: React.FC<SectionItemProps> = ({
   section,
+  index,
+  totalSections,
   editingSection,
   setEditingSection,
   handleUpdateSection,
   handleDeleteSection,
-  dragHandleProps
+  handleReorderSections,
 }) => {
-  const [showActions, setShowActions] = useState(false);
-  const [isToggling, setIsToggling] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
-  const handleToggleActive = async () => {
-    setIsToggling(true);
-    setEditingSection({
-      ...section,
-      is_active: !section.is_active
-    });
-    
-    // Add small delay to show loading state
-    setTimeout(async () => {
-      await handleUpdateSection();
-      setIsToggling(false);
-      
-      // Show toast notification
-      if (!section.is_active) {
-        toast.success(`تم تفعيل قسم "${section.name}" بنجاح`);
-      } else {
-        toast.success(`تم إيقاف قسم "${section.name}" بنجاح`);
-      }
-    }, 300);
+  // Find the section type object for this section
+  const sectionTypeObj = sectionTypes.find(type => type.id === section.section_type);
+
+  // Control reordering
+  const handleMoveUp = () => {
+    if (index > 0) {
+      handleReorderSections(index, index - 1);
+    }
   };
-  
-  const getSectionTypeIcon = () => {
-    switch (section.section_type) {
-      case 'best_selling': 
-        return <Crown className="h-4 w-4 text-emerald-500" />;
-      case 'new_arrivals': 
-        return <ShoppingBag className="h-4 w-4 text-blue-500" />;
-      case 'featured': 
-        return <Star className="h-4 w-4 text-amber-500" />;
-      case 'on_sale': 
-        return <Percent className="h-4 w-4 text-rose-500" />;
-      case 'all_products': 
-        return <PackageSearch className="h-4 w-4 text-gray-600" />;
-      case 'category': 
-        return <Tag className="h-4 w-4 text-purple-500" />;
-      case 'custom': 
-        return <Gift className="h-4 w-4 text-indigo-500" />;
-      default: 
-        return <LayoutGrid className="h-4 w-4 text-gray-500" />;
+
+  const handleMoveDown = () => {
+    if (index < totalSections - 1) {
+      handleReorderSections(index, index + 1);
     }
   };
   
-  const getSectionTypeName = () => {
-    switch (section.section_type) {
-      case 'best_selling': return 'الأكثر مبيعاً';
-      case 'new_arrivals': return 'وصل حديثاً';
-      case 'featured': return 'منتجات مميزة';
-      case 'on_sale': return 'تخفيضات';
-      case 'all_products': return 'جميع المنتجات';
-      case 'category': return 'فئة محددة';
-      case 'custom': return 'منتجات مخصصة';
-      default: return 'قسم';
-    }
-  };
-  
-  const getSectionTypeColor = () => {
-    switch (section.section_type) {
-      case 'best_selling': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      case 'new_arrivals': return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'featured': return 'bg-amber-50 text-amber-700 border-amber-200';
-      case 'on_sale': return 'bg-rose-50 text-rose-700 border-rose-200';
-      case 'all_products': return 'bg-gray-50 text-gray-700 border-gray-200';
-      case 'category': return 'bg-purple-50 text-purple-700 border-purple-200';
-      case 'custom': return 'bg-indigo-50 text-indigo-700 border-indigo-200';
-      default: return 'bg-gray-50 text-gray-700 border-gray-200';
+  const handleDeleteClick = async () => {
+    try {
+      await handleDeleteSection(section.id);
+      toast("تم الحذف بنجاح", {
+        description: `تم حذف القسم "${section.name}" بنجاح`
+      });
+      setIsDeleteDialogOpen(false);
+    } catch (error) {
+      console.error("Error deleting section:", error);
+      toast("حدث خطأ", {
+        description: "لم يتم حذف القسم، يرجى المحاولة مرة أخرى",
+        style: { backgroundColor: 'red', color: 'white' }
+      });
     }
   };
 
   return (
-    <div 
-      className={cn(
-        "border rounded-md p-4 transition-all flex items-center",
-        showActions ? "bg-gray-50/80" : "bg-white",
-        section.is_active ? "border-gray-200" : "border-gray-100 opacity-70"
-      )}
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
+    <motion.div
+      initial={{ opacity: 0, y: 5 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+      className="flex items-center justify-between p-4 border rounded-xl bg-white hover:shadow-sm transition-all"
     >
-      {/* Drag handle */}
-      {dragHandleProps && (
-        <div {...dragHandleProps} className="cursor-grab mr-1 text-gray-400 hover:text-gray-600">
-          <GripVertical size={16} />
-        </div>
-      )}
-      
-      <div className="flex-1 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className={cn("p-2 rounded-full", section.is_active ? "bg-primary/10" : "bg-gray-100")}>
-            {getSectionTypeIcon()}
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-medium text-gray-900">{section.name}</h3>
-              <Badge 
-                variant="outline" 
-                className={cn("font-normal text-xs", getSectionTypeColor())}
-              >
-                {getSectionTypeName()}
-              </Badge>
-              {!section.is_active && (
-                <Badge variant="outline" className="bg-gray-50 text-gray-500 border-gray-200 text-xs">
-                  غير نشط
-                </Badge>
-              )}
-            </div>
-            
-            {(section.section_type === 'category' && section.category_id) && (
-              <div className="text-xs text-gray-500 mt-1">
-                فئة محددة
-              </div>
-            )}
-            
-            {(section.section_type === 'custom' && section.product_ids) && (
-              <div className="text-xs text-gray-500 mt-1">
-                {section.product_ids.length} منتج مخصص
-              </div>
-            )}
-          </div>
-        </div>
-        
-        <div className={cn("flex gap-1.5 transition-opacity md:opacity-100", 
-          showActions ? "opacity-100" : "opacity-0")}>
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={handleToggleActive}
-            className="h-8 w-8"
-            disabled={isToggling}
-            title={section.is_active ? "إيقاف القسم" : "تفعيل القسم"}
-          >
-            {isToggling ? (
-              <Loader2 className="h-4 w-4 animate-spin text-primary" />
-            ) : section.is_active ? (
-              <ToggleRight className="h-4.5 w-4.5 text-green-500" />
-            ) : (
-              <ToggleLeft className="h-4.5 w-4.5 text-gray-500" />
-            )}
-          </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={() => setEditingSection(section)}
-            className="h-8 w-8"
-            title="تعديل القسم"
-          >
-            <Edit className="h-4 w-4 text-blue-500" />
-          </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={() => handleDeleteSection(section.id)}
-            className="h-8 w-8"
-            title="حذف القسم"
-          >
-            <Trash className="h-4 w-4 text-red-500" />
-          </Button>
-        </div>
+      <div className="hidden sm:flex items-center mr-2 text-gray-400">
+        <GripVertical className="h-5 w-5" />
       </div>
-    </div>
+
+      <div className="flex items-center flex-1">
+        {editingSection?.id === section.id ? (
+          <div className="flex items-center gap-2 flex-1">
+            <Input
+              value={editingSection.name}
+              onChange={(e) =>
+                setEditingSection({ ...editingSection, name: e.target.value })
+              }
+              className="flex-1"
+              autoFocus
+            />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="default"
+                    onClick={handleUpdateSection}
+                    disabled={!editingSection.name.trim()}
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    <Save className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>حفظ التغييرات</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setEditingSection(null)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>إلغاء</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center">
+              {sectionTypeObj && (
+                <div className={`h-10 w-10 mr-3 rounded-lg bg-${sectionTypeObj.color}-50 flex items-center justify-center`}>
+                  <div className={`text-${sectionTypeObj.color}-500`}>
+                    {sectionTypeObj.icon}
+                  </div>
+                </div>
+              )}
+              <div>
+                <span className="text-lg font-medium block">{section.name}</span>
+                <span className="text-xs text-gray-500">
+                  {sectionTypeObj?.description || 'قسم مخصص'}
+                </span>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-1 ml-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-9 w-9 p-0"
+                  onClick={handleMoveUp}
+                  disabled={index === 0}
+                >
+                  <ChevronUp className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>نقل للأعلى</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-9 w-9 p-0"
+                  onClick={handleMoveDown}
+                  disabled={index === totalSections - 1}
+                >
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>نقل للأسفل</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-9 w-9 rounded-lg"
+                onClick={() => setEditingSection(section)}
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>تعديل</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-9 w-9 rounded-lg text-destructive hover:text-white hover:bg-destructive border-destructive/20"
+                onClick={() => setIsDeleteDialogOpen(true)}
+              >
+                <Trash className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>حذف</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+      
+      <DeleteConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title="تأكيد حذف القسم"
+        description={
+          <div className="text-center">
+            <p>هل أنت متأكد من رغبتك في حذف القسم:</p>
+            <p className="font-bold mt-1 text-black">{section.name}؟</p>
+            <p className="mt-2 text-sm">سيتم إخفاء هذا القسم من متجرك.</p>
+          </div>
+        }
+        onDelete={() => handleDeleteClick()}
+        itemName={section.name}
+        itemType="قسم"
+      />
+    </motion.div>
   );
 };
 
