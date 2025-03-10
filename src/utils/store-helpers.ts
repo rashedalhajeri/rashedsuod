@@ -35,19 +35,18 @@ export const fetchStoreByDomain = async (domainName: string) => {
     if (isCustomDomain(cleanDomain)) {
       console.log("Looking up custom domain:", cleanDomain);
       
-      const { data, error } = await supabase
+      const { data: customDomainData, error: customDomainError } = await supabase
         .from("stores")
         .select("*")
         .eq("custom_domain", cleanDomain.toLowerCase())
         .maybeSingle();
         
-      if (error) {
-        console.error("Error fetching store by custom domain:", error);
-        // Fall back to regular domain lookup
-      } else if (data) {
-        console.log("Found store by custom domain:", data);
-        storeCache[cleanDomain] = data;
-        return data;
+      if (customDomainError) {
+        console.error("Error fetching store by custom domain:", customDomainError);
+      } else if (customDomainData) {
+        console.log("Found store by custom domain:", customDomainData);
+        storeCache[cleanDomain] = customDomainData;
+        return customDomainData;
       }
     }
     
