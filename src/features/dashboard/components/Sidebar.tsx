@@ -5,8 +5,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import useAuth from "@/hooks/useAuth";
 import SidebarHeader from "./SidebarHeader";
 import SidebarLinks from "./SidebarLinks";
-import LogoutButton from "./LogoutButton";
-import { Mail, User } from "lucide-react";
+import { Bell, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -76,6 +75,41 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
             handleToggleSidebar={handleToggleSidebar}
             closeMobileMenu={closeMobileMenu}
           />
+          
+          {/* معلومات المستخدم والإشعارات في الأعلى */}
+          <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-800">
+            {/* عرض اسم المستخدم مع القائمة المنسدلة */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 px-2 py-1.5 text-sm rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                  <User size={18} className="text-primary-500 shrink-0" />
+                  <span className={cn("font-medium text-gray-700 dark:text-gray-200 truncate", isCollapsed && !isMobile && "hidden")}>
+                    {userName}
+                  </span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                {userEmail && (
+                  <DropdownMenuItem className="flex items-center gap-2 cursor-default">
+                    <span className="truncate text-xs">{userEmail}</span>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem>
+                  إدارة اشتراكاتي
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-red-500 hover:text-red-600" onClick={handleLogout}>
+                  تسجيل الخروج
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            {/* إشعارات */}
+            {!isCollapsed && (
+              <button className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <Bell size={18} className="text-gray-500" />
+              </button>
+            )}
+          </div>
 
           {/* روابط القائمة */}
           <SidebarLinks 
@@ -84,34 +118,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen = false }) => {
             currentPath={location.pathname}
             closeMobileMenu={closeMobileMenu}
           />
-
-          {/* تذييل القائمة */}
-          <div className="p-3 mt-auto space-y-3 border-t border-gray-100 dark:border-gray-800">
-            {/* حذفنا قسم التحية هنا */}
-            
-            {/* عرض اسم المستخدم مع القائمة المنسدلة */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2.5 w-full px-3 py-2.5 text-sm rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                  <User size={18} className="text-primary-500 shrink-0" />
-                  <span className="font-medium text-gray-700 dark:text-gray-200 truncate">
-                    {isCollapsed && !isMobile ? "" : userName}
-                  </span>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                {userEmail && (
-                  <DropdownMenuItem className="flex items-center gap-2 cursor-default">
-                    <Mail size={14} className="shrink-0" />
-                    <span className="truncate text-xs">{userEmail}</span>
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem className="text-red-500 hover:text-red-600" onClick={handleLogout}>
-                  تسجيل الخروج
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
         </div>
       </div>
     </>
