@@ -38,7 +38,7 @@ const AppRoutes = () => {
       <Route path="/auth" element={<Auth />} />
       <Route path="/reset-password" element={<Auth />} />
       
-      {/* Store routes with case insensitive domain parameter */}
+      {/* Store routes with normalized domain parameter - always converted to lowercase */}
       <Route path="/store/:storeDomain" element={<Store />} />
       <Route path="/store/:storeDomain/category/:categoryName" element={<CategoryPage />} />
       <Route path="/store/:storeDomain/product/:productId" element={<ProductPage />} />

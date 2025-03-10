@@ -24,7 +24,14 @@ const StorePreviewButton: React.FC<StorePreviewButtonProps> = ({
     // Clean and standardize the URL - always convert to lowercase
     const trimmedUrl = storeUrl.trim().toLowerCase();
     
-    // Check if it's a direct URL with /store/ prefix
+    // Check if it's a full URL with protocol
+    if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
+      window.open(trimmedUrl, '_blank');
+      console.log("فتح رابط المتجر الكامل:", trimmedUrl);
+      return;
+    }
+    
+    // Check if it already has the /store/ prefix
     if (trimmedUrl.startsWith('/store/')) {
       window.open(trimmedUrl, '_blank');
       console.log("فتح رابط المتجر:", trimmedUrl);

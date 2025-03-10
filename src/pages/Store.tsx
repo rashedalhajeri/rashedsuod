@@ -1,5 +1,6 @@
+
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useStoreData } from "@/hooks/use-store-data";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
@@ -11,6 +12,7 @@ import ProductGridSkeleton from "@/components/store/skeletons/ProductGridSkeleto
 import { toast } from "sonner";
 
 const Store = () => {
+  const navigate = useNavigate();
   const { storeDomain } = useParams<{ storeDomain: string }>();
   const { storeData, isLoading, error } = useStoreData();
   const [products, setProducts] = useState([]);
@@ -25,7 +27,10 @@ const Store = () => {
 
   useEffect(() => {
     const fetchCurrentStore = async () => {
-      if (!storeDomain) return;
+      if (!storeDomain) {
+        setStoreNotFound(true);
+        return;
+      }
       
       try {
         const cleanDomain = storeDomain.trim().toLowerCase();
@@ -34,7 +39,7 @@ const Store = () => {
         const { data, error } = await supabase
           .from("stores")
           .select("*")
-          .ilike("domain_name", cleanDomain)
+          .eq("domain_name", cleanDomain)
           .eq("status", "active")
           .maybeSingle();
           
@@ -79,7 +84,7 @@ const Store = () => {
           
           if (productsError) {
             console.error("خطأ في تحميل المنتجات:", productsError);
-            toast.error("حدث خطأ أثناء تحميل المن��جات");
+            toast.error("حدث خطأ أثناء تحميل المنتجات");
             return;
           }
           
@@ -176,12 +181,12 @@ const Store = () => {
             عذراً، لا يمكن العثور على متجر بالدومين: 
             <span className="font-bold text-gray-800 mx-1 dir-ltr inline-block">{storeDomain}</span>
           </p>
-          <a 
-            href="/" 
+          <button 
+            onClick={() => navigate('/')}
             className="inline-block bg-primary-500 text-white px-6 py-2 rounded-md hover:bg-primary-600 transition-colors"
           >
             العودة للصفحة الرئيسية
-          </a>
+          </button>
         </div>
       </motion.div>
     );

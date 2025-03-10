@@ -40,11 +40,14 @@ const StoreHeader: React.FC<StoreHeaderProps> = ({
   };
 
   const initials = getInitials(storeName || "Store");
+  
+  // Make sure storeDomain is lowercase for consistency
+  const cleanStoreDomain = storeDomain?.trim().toLowerCase();
 
   // العودة للصفحة السابقة
   const handleNavigateBack = () => {
-    if (storeDomain) {
-      navigate(`/store/${storeDomain}`);
+    if (cleanStoreDomain) {
+      navigate(`/store/${cleanStoreDomain}`);
     } else {
       navigate(-1);
     }
@@ -107,8 +110,8 @@ const StoreHeader: React.FC<StoreHeaderProps> = ({
             {/* القسم الأيمن: أزرار الحساب والسلة */}
             <div className="flex items-center gap-2">
               {/* زر الحساب الشخصي */}
-              {isMainHeader && (
-                <Link to={`/store/${storeDomain}/profile`}>
+              {isMainHeader && cleanStoreDomain && (
+                <Link to={`/store/${cleanStoreDomain}/profile`}>
                   <Button 
                     variant="ghost" 
                     size="icon"
@@ -121,21 +124,23 @@ const StoreHeader: React.FC<StoreHeaderProps> = ({
               )}
               
               {/* زر سلة التسوق */}
-              <Link to={`/store/${storeDomain}/cart`}>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="h-9 w-9 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 flex items-center justify-center"
-                  aria-label="عربة التسوق"
-                >
-                  <ShoppingCart className="h-4 w-4" />
-                  {totalItems > 0 && (
-                    <Badge className="absolute -top-1 -right-1 bg-blue-500 text-white text-[10px] h-4 min-w-4 flex items-center justify-center rounded-full px-1 border border-white/20 shadow-md">
-                      {totalItems}
-                    </Badge>
-                  )}
-                </Button>
-              </Link>
+              {cleanStoreDomain && (
+                <Link to={`/store/${cleanStoreDomain}/cart`}>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="h-9 w-9 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 flex items-center justify-center"
+                    aria-label="عربة التسوق"
+                  >
+                    <ShoppingCart className="h-4 w-4" />
+                    {totalItems > 0 && (
+                      <Badge className="absolute -top-1 -right-1 bg-blue-500 text-white text-[10px] h-4 min-w-4 flex items-center justify-center rounded-full px-1 border border-white/20 shadow-md">
+                        {totalItems}
+                      </Badge>
+                    )}
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         </div>
