@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Category, Product } from "./types";
 
@@ -21,6 +21,7 @@ export const useSectionForm = (
   const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
   const [selectedSectionType, setSelectedSectionType] = useState<string>("");
   const [customType, setCustomType] = useState<string>(""); // "products" or "category"
+  const [categoryProducts, setCategoryProducts] = useState<Product[]>([]);
 
   // Fetch categories and products when the dialog opens
   useEffect(() => {
@@ -109,6 +110,26 @@ export const useSectionForm = (
     }
   };
 
+  // Fetch products for a specific category
+  const fetchCategoryProducts = useCallback(async (categoryId: string) => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, name, image_url, price, discount_price')
+        .eq('category_id', categoryId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setCategoryProducts(data || []);
+    } catch (err) {
+      console.error("Error fetching category products:", err);
+      setCategoryProducts([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   // Handle product selection
   const handleProductSelect = (productId: string, isSelected: boolean) => {
     const updatedSelection = { ...selectedProducts, [productId]: isSelected };
@@ -125,6 +146,7 @@ export const useSectionForm = (
     // Reset fields for different types
     if (type !== 'category') {
       setNewCategoryId(null);
+      setCategoryProducts([]);
     }
     
     if (type !== 'custom') {
@@ -140,6 +162,7 @@ export const useSectionForm = (
     // Reset other fields
     if (type === 'products') {
       setNewCategoryId(null);
+      setCategoryProducts([]);
     } else if (type === 'category') {
       setNewProductIds(null);
       setSelectedProducts({});
@@ -161,6 +184,8 @@ export const useSectionForm = (
     setSelectedSectionType,
     customType,
     setCustomType,
+    categoryProducts,
+    fetchCategoryProducts,
     handleProductSelect,
     handleTypeChange,
     handleCustomTypeChange

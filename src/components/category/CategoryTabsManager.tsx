@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tags, LayoutGrid } from "lucide-react";
@@ -232,6 +231,7 @@ const CategoryTabsManager: React.FC<CategoryTabsManagerProps> = ({
         setNewProductIds={setNewProductIds}
         newDisplayStyle={newDisplayStyle}
         setNewDisplayStyle={setNewDisplayStyle}
+        handleAddSection={handleAddSection}
       />
 
       {/* Confirm dialog for toggling images */}
