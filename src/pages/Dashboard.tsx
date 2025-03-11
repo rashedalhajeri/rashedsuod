@@ -1,8 +1,6 @@
 import React from "react";
 import useStoreData, { getCurrencyFormatter } from "@/hooks/use-store-data";
-import { secureRetrieve } from "@/lib/encryption";
 import DashboardLayout from "@/layouts/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
 import LoadingState from "@/components/ui/loading-state";
 import ErrorState from "@/components/ui/error-state";
 
@@ -232,7 +230,7 @@ const Dashboard: React.FC = () => {
   // Format currency based on store settings
   const formatCurrency = getCurrencyFormatter(storeData?.currency || 'SAR');
   
-  // Stats data for demonstration
+  // Update stats data to match the expected structure
   const statsData = {
     products: 54,
     orders: 128,
@@ -240,18 +238,6 @@ const Dashboard: React.FC = () => {
     revenue: 8425
   };
 
-  // Advanced stats data
-  const advancedStatsData = {
-    revenue: 8425,
-    orderCount: 128,
-    conversionRate: 3.7,
-    avgOrderValue: 65.8,
-    lowStockCount: mockEnhancedProducts.filter(p => p.status !== 'in_stock').length
-  };
-  
-  // Subscription plan status - use basic as default
-  const subscriptionPlan = storeData?.subscription_plan || "basic";
-  
   return (
     <DashboardLayout>
       <div className="flex justify-between items-center mb-4">
@@ -308,11 +294,9 @@ const Dashboard: React.FC = () => {
       {/* Legacy Stats - can be removed or kept for compatibility */}
       <div className="hidden">
         <DashboardStats 
-          products={statsData.products}
-          orders={statsData.orders}
-          customers={statsData.customers}
-          revenue={statsData.revenue}
+          stats={statsData}
           formatCurrency={formatCurrency}
+          isLoading={isLoading}
         />
       </div>
     </DashboardLayout>
